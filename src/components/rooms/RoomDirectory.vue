@@ -13,6 +13,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { NCard, NSpin, NInput, NButton, NTag, NAvatar, NEmpty, NSpace, NTooltip, useMessage } from 'naive-ui'
 import { matrixClientService } from '@/services/matrixClientService'
 import { logger } from '@/utils/logger'
+import { useI18n } from 'vue-i18n'
 interface Props {
   /** Initial search term */
   initialSearchTerm?: string
@@ -32,6 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const message = useMessage()
+const { t } = useI18n()
 
 // Local interface for public room data from SDK
 interface PublicRoom {
@@ -201,31 +203,31 @@ watch(
       <NInput
         v-model:value="searchTerm"
         type="text"
-        placeholder="Search rooms..."
+        :placeholder="t('matrix.roomDirectory.searchPlaceholder')"
         clearable
         @keyup.enter="handleSearch">
         <template #prefix>
           <span class="icon">🔍</span>
         </template>
         <template #suffix>
-          <NButton secondary type="primary" :disabled="loading" @click="handleSearch">Search</NButton>
+          <NButton secondary type="primary" :disabled="loading" @click="handleSearch">{{ t('matrix.roomDirectory.searchRooms') }}</NButton>
         </template>
       </NInput>
     </div>
 
     <!-- Results Count -->
-    <div v-if="hasRooms" class="room-directory__count">Found {{ totalCount }} rooms</div>
+    <div v-if="hasRooms" class="room-directory__count">{{ t('matrix.roomDirectory.foundRooms', { count: totalCount }) }}</div>
 
     <!-- Room List -->
     <div class="room-directory__list">
       <NSpin :show="loading && rooms.length === 0">
         <!-- Empty State -->
-        <NEmpty v-if="!hasRooms && !loading" description="No public rooms found">
+        <NEmpty v-if="!hasRooms && !loading" :description="t('matrix.roomDirectory.noRooms')">
           <template #icon>
             <span class="empty-icon">🏠</span>
           </template>
           <template #extra>
-            <NButton size="small" @click="handleSearch">Refresh</NButton>
+            <NButton size="small" @click="handleSearch">{{ t('matrix.roomDirectory.refresh') }}</NButton>
           </template>
         </NEmpty>
 
@@ -251,15 +253,15 @@ watch(
 
               <!-- Room Tags -->
               <div class="room-card__tags">
-                <NTag v-if="room.worldReadable" type="info" size="small">Public</NTag>
-                <NTag v-if="room.guestCanJoin" type="success" size="small">Guests Allowed</NTag>
-                <NTag type="default" size="small">{{ room.numJoinedMembers || 0 }} members</NTag>
+                <NTag v-if="room.worldReadable" type="info" size="small">{{ t('matrix.roomDirectory.public') }}</NTag>
+                <NTag v-if="room.guestCanJoin" type="success" size="small">{{ t('matrix.roomDirectory.guestsAllowed') }}</NTag>
+                <NTag type="default" size="small">{{ t('matrix.roomDirectory.members', { count: room.numJoinedMembers || 0 }) }}</NTag>
               </div>
 
               <!-- Actions -->
               <div class="room-card__actions">
-                <NButton size="small" type="default" @click="handlePreviewRoom(room.roomId)">Preview</NButton>
-                <NButton size="small" type="primary" @click="handleJoinRoom(room.roomId, room.name)">Join Room</NButton>
+                <NButton size="small" type="default" @click="handlePreviewRoom(room.roomId)">{{ t('matrix.roomDirectory.preview') }}</NButton>
+                <NButton size="small" type="primary" @click="handleJoinRoom(room.roomId, room.name)">{{ t('matrix.roomDirectory.joinRoom') }}</NButton>
               </div>
             </div>
           </NCard>
@@ -269,7 +271,7 @@ watch(
 
     <!-- Load More -->
     <div v-if="hasMore" class="room-directory__load-more">
-      <NButton secondary :loading="loading" @click="loadMore">Load More Rooms</NButton>
+      <NButton secondary :loading="loading" @click="loadMore">{{ t('matrix.roomDirectory.loadMore') }}</NButton>
     </div>
   </div>
 </template>

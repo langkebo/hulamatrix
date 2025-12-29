@@ -12,6 +12,7 @@ import { ref, watch, nextTick } from 'vue'
 import { NModal, NInput, NButton, NSpace, NSpin, NCard, useMessage } from 'naive-ui'
 import { matrixClientService } from '@/services/matrixClientService'
 import { logger } from '@/utils/logger'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   show: boolean
@@ -32,6 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const message = useMessage()
+const { t } = useI18n()
 
 // State
 const editing = ref(false)
@@ -53,7 +55,7 @@ function createMessageContent(text: string): Record<string, unknown> {
  */
 async function saveEdit() {
   if (!editContent.value.trim()) {
-    message.warning('Message cannot be empty')
+    message.warning(t('matrix.messageEdit.cannotBeEmpty'))
     return
   }
 
@@ -97,13 +99,13 @@ async function saveEdit() {
 
     logger.info('[MessageEditDialog] Message edited successfully')
 
-    message.success('Message edited')
+    message.success(t('matrix.messageEdit.editedSuccess'))
 
     emit('edited', props.eventId, editContent.value)
     closeDialog()
   } catch (error) {
     logger.error('[MessageEditDialog] Failed to edit message:', error)
-    message.error('Failed to edit message')
+    message.error(t('matrix.messageEdit.editFailed'))
   } finally {
     editing.value = false
   }
@@ -159,7 +161,7 @@ watch(
   <NModal
     :show="show"
     preset="card"
-    title="Edit Message"
+    :title="t('matrix.messageEdit.title')"
     :style="{ width: '600px' }"
     :mask-closable="false"
     :closable="!editing"
@@ -167,18 +169,18 @@ watch(
     <div class="message-edit-dialog">
       <!-- Original Message -->
       <div class="message-edit-dialog__original">
-        <div class="label">Original message:</div>
+        <div class="label">{{ t('matrix.messageEdit.originalMessage') }}:</div>
         <div class="content">{{ originalContent }}</div>
       </div>
 
       <!-- Edit Input -->
       <div class="message-edit-dialog__edit">
-        <div class="label">Edit to:</div>
+        <div class="label">{{ t('matrix.messageEdit.editTo') }}:</div>
         <NInput
           ref="inputRef"
           v-model:value="editContent"
           type="textarea"
-          placeholder="Enter your edited message..."
+          :placeholder="t('matrix.messageEdit.placeholder')"
           :rows="6"
           :disabled="editing"
           @keydown="handleKeydown" />
@@ -191,11 +193,11 @@ watch(
             <kbd>Ctrl</kbd>
             +
             <kbd>Enter</kbd>
-            to save
+            {{ t('matrix.messageEdit.ctrlEnterToSave') }}
           </div>
           <div class="hint">
             <kbd>Esc</kbd>
-            to cancel
+            {{ t('matrix.messageEdit.escToCancel') }}
           </div>
         </NSpace>
       </div>
@@ -204,12 +206,12 @@ watch(
     <!-- Actions -->
     <template #footer>
       <NSpace justify="end">
-        <NButton :disabled="editing" @click="cancelEdit">Cancel</NButton>
+        <NButton :disabled="editing" @click="cancelEdit">{{ t('matrix.messageEdit.cancel') }}</NButton>
         <NButton type="primary" :disabled="!editContent.trim()" :loading="editing" @click="saveEdit">
           <template #icon>
             <span v-if="!editing">✓</span>
           </template>
-          {{ editing ? 'Saving...' : 'Save' }}
+          {{ editing ? t('matrix.messageEdit.saving') : t('matrix.messageEdit.save') }}
         </NButton>
       </NSpace>
     </template>
