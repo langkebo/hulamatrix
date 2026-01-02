@@ -59,36 +59,23 @@
 
 ---
 
-## 🔴 P0 - 核心功能 (高优先级)
+## ✅ P0 - 核心功能 (已完成)
 
 ### Matrix RTC 集成
-| 任务 | 文件 | 说明 |
+| 任务 | 文件 | 状态 |
 |------|------|------|
-| Matrix RTC 调用实现 | `stores/core/index.ts:1379-1404` | 需要集成 Matrix RTC SDK API |
-
-**实现指南**:
-```typescript
-// src/services/matrixRtcService.ts (待创建)
-import { MatrixCall } from 'matrix-js-sdk'
-
-export class MatrixRtcService {
-  async startCall(roomId: string, type: 'audio' | 'video') {
-    const client = matrixClientService.getClient()
-    // 使用 m.call 协议建立 WebRTC 连接
-  }
-}
-```
+| Matrix RTC 调用实现 | `stores/core/index.ts:1379-1404` | ✅ 已完成 |
 
 ### 设备管理 UI
-| 任务 | 文件 | 说明 |
+| 任务 | 文件 | 状态 |
 |------|------|------|
-| 设备验证流程 UI | `stores/matrix.ts:480-495` | 实现完整的设备验证界面 |
-| 设备列表显示 | `views/moreWindow/settings/Sessions.vue` | 扩展现有设备管理功能 |
+| 设备验证流程 UI | `components/e2ee/DeviceVerificationDialog.vue` | ✅ 已完成 |
+| 设备列表显示 | `views/moreWindow/settings/Sessions.vue` | ✅ 已完成 |
 
 ### 消息重试机制
-| 任务 | 文件 | 说明 |
+| 任务 | 文件 | 状态 |
 |------|------|------|
-| 失败消息重试 | `components/rightBox/renderMessage/index.vue:604` | 实现自动重试发送逻辑 |
+| 失败消息重试 | `components/rightBox/renderMessage/index.vue:603-664` | ✅ 已完成 |
 
 ---
 
@@ -106,21 +93,21 @@ export class MatrixRtcService {
 |------|------|------|
 | 私聊会话列表 | `views/private-chat/` | ✅ 已实现 |
 | 阅后即焚 | `stores/privateChat.ts` | ✅ 已实现 |
-| 会话数据源 | `adapters/matrix-private-chat-adapter.ts:647` | 📝 确认数据源 |
+| 会话数据源 | `adapters/matrix-private-chat-adapter.ts:647` | ✅ 已确认 (使用 m.direct) |
 
 ### 空间 (Spaces) 功能
 | 任务 | 文件 | 状态 |
 |------|------|------|
 | 空间列表 | `components/spaces/` | ✅ 已实现 |
 | 空间树状结构 | `layout/left/components/SpaceTree.vue` | ✅ 已实现 |
-| 空间管理 | `components/spaces/SpacesManager.vue:311-489` | 📝 集成 SDK API |
+| 空间管理 SDK | `services/matrixSpacesService.ts` | ✅ 已集成 |
 
 ### E2EE 加密
 | 任务 | 文件 | 状态 |
 |------|------|------|
 | 加密消息发送 | `services/e2eeService.ts` | ✅ 已实现 |
-| 设备验证 UI | 待创建 | 🔴 未实现 |
-| 交叉签名设置 | `views/e2ee/` | 📝 部分实现 |
+| 设备验证 UI | `components/e2ee/DeviceVerificationDialog.vue` | ✅ 已实现 |
+| 交叉签名设置 | `services/e2eeService.ts:159-183` | ✅ 已实现 |
 
 ---
 
@@ -167,23 +154,23 @@ export class MatrixRtcService {
 | 设置页面 | ✅ 95% | 通用、隐私、通知已实现 |
 | 私密聊天 | ✅ 85% | 列表、自毁定时器已实现 |
 
-### 移动端待完善功能
-| 功能 | 文件 | 优先级 |
-|------|------|--------|
-| 好友分类管理 | `mobile/components/friends/MobileFriendCategories.vue` | P1 |
-| 图片预览优化 | `mobile/components/ImagePreview.vue` | P2 |
-| E2EE 设备验证 | `mobile/components/security/` | P1 |
+### 移动端功能完善
+| 任务 | 文件 | 状态 |
+|------|------|------|
+| 好友分类管理 | `mobile/components/friends/MobileFriendCategories.vue` | ✅ 已实现 |
+| 图片预览优化 | `mobile/components/ImagePreview.vue` | ✅ 已实现 |
+| E2EE 设备验证 | `mobile/components/security/MobileEncryptionStatus.vue` | ✅ 已实现 |
 
 ---
 
 ## 🔧 技术债务
 
 ### 类型安全
-| 问题 | 数量 | 说明 |
+| 问题 | 数量 | 状态 |
 |------|------|------|
-| `@ts-ignore` | 1 | 需要添加说明注释 |
-| `@ts-expect-error` | 4 | 需要添加说明注释 |
-| `any` 类型 | 3 | 需要替换为具体类型 |
+| `@ts-ignore` | 1 (自动生成文件) | ✅ 可接受 |
+| `@ts-expect-error` | 1 (测试文件) | ✅ 有说明注释 |
+| `any` 类型 | 0 (非测试文件) | ✅ 已清理 |
 
 ### 测试覆盖
 | 模块 | 当前覆盖率 | 目标 |
