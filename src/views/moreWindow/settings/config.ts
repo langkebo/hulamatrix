@@ -44,6 +44,11 @@ const useSideOptions = () => {
       label: t('setting.theme.title'),
       icon: 'platte',
       versionStatus: 'setting.common.tag_new'
+    },
+    {
+      url: '/e2ee',
+      label: t('setting.e2ee.title'),
+      icon: 'lock'
     }
   ])
 }

@@ -294,6 +294,19 @@ export class AdminClient {
     }
   }
 
+  /**
+   * 删除用户
+   */
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      await this.authedRequest<void>('DELETE', `/_synapse/admin/v2/users/${encodeURIComponent(userId)}`)
+      this.logAudit('user.delete', userId, 'user', 'success')
+    } catch (error) {
+      this.logAudit('user.delete', userId, 'user', 'failure', { error: String(error) })
+      throw error
+    }
+  }
+
   // ==================== 房间管理 API ====================
 
   /**

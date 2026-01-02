@@ -3,10 +3,10 @@
   <n-drawer
     v-model:show="showDrawer"
     placement="bottom"
-    :height="'85vh'"
+    :height="'90vh'"
     :trap-focus="false"
     :block-scroll="false"
-  >
+    @after-leave="handleAfterLeave">
     <n-drawer-content :body-style="{ padding: '0' }" :native-scrollbar="false">
       <!-- Header -->
       <template #header>
@@ -20,11 +20,7 @@
             <span class="header-title">工作区详情</span>
           </div>
           <div class="header-right">
-            <n-dropdown
-              trigger="click"
-              :options="getMenuOptions()"
-              @select="handleMenuAction"
-            >
+            <n-dropdown trigger="click" :options="getMenuOptions()" @select="handleMenuAction">
               <n-button circle>
                 <template #icon>
                   <n-icon><DotsVertical /></n-icon>
@@ -39,7 +35,7 @@
         <!-- Space Info Card -->
         <div class="space-info-card">
           <div class="space-avatar-section">
-            <n-avatar :src="space.avatar" :size="64" round>
+            <n-avatar :src="space.avatar" :size="72" round>
               <template #fallback>
                 <span class="avatar-fallback">{{ space.name?.charAt(0)?.toUpperCase() || '?' }}</span>
               </template>
@@ -57,6 +53,12 @@
                 </template>
                 私有
               </n-tag>
+              <n-tag v-if="(space as any).encrypted" type="success" size="small" round>
+                <template #icon>
+                  <n-icon :size="12"><Lock /></n-icon>
+                </template>
+                加密
+              </n-tag>
             </div>
           </div>
 
@@ -67,40 +69,41 @@
             <div class="stat-item">
               <n-icon :size="16"><Users /></n-icon>
               <span>{{ space.memberCount ?? 0 }}</span>
+              <span class="stat-label">成员</span>
             </div>
             <div class="stat-item">
               <n-icon :size="16"><Hash /></n-icon>
               <span>{{ space.children?.length ?? 0 }}</span>
+              <span class="stat-label">房间</span>
             </div>
-            <div v-if="space.notifications" class="stat-item">
+            <div v-if="unreadCount > 0" class="stat-item unread">
               <n-icon :size="16"><Bell /></n-icon>
-              <span>{{ space.notifications.notificationCount ?? 0 }}</span>
+              <span>{{ unreadCount }}</span>
+              <span class="stat-label">未读</span>
             </div>
+          </div>
+
+          <!-- Space Address -->
+          <div v-if="space.canonicalAlias" class="space-address">
+            <n-text depth="3" style="font-size: 12px">
+              {{ space.canonicalAlias }}
+            </n-text>
+            <n-button text size="tiny" @click="copySpaceAddress">
+              <template #icon>
+                <n-icon :size="14"><Copy /></n-icon>
+              </template>
+            </n-button>
           </div>
 
           <!-- Join/Leave Button -->
           <div class="space-actions">
-            <n-button
-              v-if="!isJoined"
-              type="primary"
-              size="large"
-              block
-              :loading="isJoining"
-              @click="handleJoin"
-            >
+            <n-button v-if="!isJoined" type="primary" size="large" block :loading="isJoining" @click="handleJoin">
               <template #icon>
                 <n-icon><Login /></n-icon>
               </template>
               加入工作区
             </n-button>
-            <n-button
-              v-else
-              type="error"
-              size="large"
-              block
-              :loading="isLeaving"
-              @click="handleLeave"
-            >
+            <n-button v-else type="error" size="large" block :loading="isLeaving" @click="handleLeave">
               <template #icon>
                 <n-icon><Logout /></n-icon>
               </template>
@@ -110,17 +113,12 @@
         </div>
 
         <!-- Tabs -->
-        <n-tabs
-          v-model:value="activeTab"
-          type="line"
-          animated
-          :bar-padding="20"
-        >
+        <n-tabs v-model:value="activeTab" type="line" animated :bar-padding="20">
           <!-- Rooms Tab -->
           <n-tab-pane name="rooms" tab="房间">
             <div class="tab-content">
               <!-- Create Room Button -->
-              <div v-if="isJoined" class="tab-header">
+              <div v-if="isJoined && canManageRooms" class="tab-header">
                 <n-button type="primary" size="small" @click="showCreateDialog = true">
                   <template #icon>
                     <n-icon><Plus /></n-icon>
@@ -132,27 +130,27 @@
               <!-- Room List -->
               <div v-if="space.children && space.children.length > 0" class="room-list">
                 <div
-                  v-for="child in space.children"
+                  v-for="child in sortedChildren"
                   :key="child.roomId"
                   class="room-item"
-                  @click="openRoom(child.roomId)"
-                >
+                  @click="openRoom(child.roomId)">
                   <div class="room-avatar">
-                    <n-avatar :src="String(child.avatar ?? '')" :size="40" round>
+                    <n-avatar :src="String(child.avatar ?? '')" :size="44" round>
                       <template #fallback>
                         <span>{{ child.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                       </template>
                     </n-avatar>
-                    <div v-if="child.notifications?.notificationCount" class="unread-badge">
-                      {{ child.notifications.notificationCount > 99 ? '99+' : child.notifications.notificationCount }}
+                    <div v-if="getRoomUnread(child) > 0" class="unread-badge">
+                      {{ getRoomUnread(child) > 99 ? '99+' : getRoomUnread(child) }}
                     </div>
                   </div>
 
                   <div class="room-info">
                     <div class="room-name">{{ child.name }}</div>
                     <div class="room-meta">
-                      <span>{{ child.memberCount ?? 0 }} 成员</span>
+                      <span v-if="child.memberCount">{{ child.memberCount }} 成员</span>
                       <n-tag v-if="!child.isJoined" size="tiny" type="info">未加入</n-tag>
+                      <n-tag v-if="child.topic" size="tiny" type="default">{{ child.topic }}</n-tag>
                     </div>
                   </div>
 
@@ -162,44 +160,78 @@
                 </div>
               </div>
 
-              <n-empty v-else description="暂无房间" size="small" />
+              <n-empty v-else description="暂无房间" size="small">
+                <template #extra v-if="isJoined && canManageRooms">
+                  <n-button type="primary" size="small" @click="showCreateDialog = true">添加第一个房间</n-button>
+                </template>
+              </n-empty>
             </div>
           </n-tab-pane>
 
           <!-- Members Tab -->
           <n-tab-pane name="members" tab="成员">
             <div class="tab-content">
+              <!-- Search and Filter -->
               <div v-if="isJoined" class="tab-header">
-                <n-button type="primary" size="small" @click="showInviteDialog = true">
-                  <template #icon>
-                    <n-icon><UserPlus /></n-icon>
+                <n-input v-model:value="memberSearchQuery" placeholder="搜索成员..." clearable size="small">
+                  <template #prefix>
+                    <n-icon><Search /></n-icon>
                   </template>
-                  邀请成员
-                </n-button>
+                </n-input>
               </div>
 
               <!-- Member List -->
-              <div class="member-list">
-                <div v-for="i in Math.min((space.memberCount ?? 0), 10)" :key="i" class="member-item">
-                  <n-skeleton :width="40" :height="40" :sharp="false" circle />
+              <div v-if="isLoadingMembers" class="loading-container">
+                <n-spin size="medium" />
+                <n-text depth="3">加载成员中...</n-text>
+              </div>
+
+              <div v-else-if="filteredMembers.length > 0" class="member-list">
+                <div
+                  v-for="member in filteredMembers"
+                  :key="(member as any).userId"
+                  class="member-item"
+                  @click="handleMemberClick(member as any)">
+                  <n-avatar :src="(member as any).avatarUrl" :size="42" round>
+                    <template #fallback>
+                      <span>
+                        {{ (member as any).displayName?.charAt(0) || (member as any).userId?.charAt(0) || '?' }}
+                      </span>
+                    </template>
+                  </n-avatar>
+
                   <div class="member-info">
-                    <n-skeleton :width="120" :height="16" />
-                    <n-skeleton :width="80" :height="12" />
+                    <div class="member-name">{{ (member as any).displayName || (member as any).userId }}</div>
+                    <div class="member-role">
+                      <n-tag v-if="(member as any).isAdmin" size="tiny" type="warning">管理员</n-tag>
+                      <n-tag v-else-if="(member as any).isModerator" size="tiny" type="info">版主</n-tag>
+                      <n-text v-else depth="3" style="font-size: 12px">{{ (member as any).userId }}</n-text>
+                    </div>
+                  </div>
+
+                  <div class="member-status">
+                    <div v-if="(member as any).presence === 'online'" class="status-dot online" />
+                    <div v-else-if="(member as any).presence === 'unavailable'" class="status-dot away" />
+                    <div v-else class="status-dot offline" />
                   </div>
                 </div>
               </div>
 
-              <n-empty
-                v-if="!space.memberCount || space.memberCount === 0"
-                description="暂无成员"
-                size="small"
-              >
-                <template #extra>
-                  <n-text depth="3" style="font-size: 12px">
-                    加入工作区后可查看成员列表
-                  </n-text>
+              <n-empty v-else :description="memberSearchQuery ? '未找到匹配的成员' : '暂无成员'" size="small">
+                <template #extra v-if="isJoined && !memberSearchQuery">
+                  <n-button type="primary" size="small" @click="showInviteDialog = true">邀请成员</n-button>
                 </template>
               </n-empty>
+
+              <!-- Invite Button (only for admins) -->
+              <div v-if="isJoined && canManageMembers && !isLoadingMembers" class="invite-section">
+                <n-button type="primary" block @click="showInviteDialog = true">
+                  <template #icon>
+                    <n-icon><UserPlus /></n-icon>
+                  </template>
+                  邀请新成员
+                </n-button>
+              </div>
             </div>
           </n-tab-pane>
 
@@ -207,37 +239,84 @@
           <n-tab-pane name="settings" tab="设置">
             <div class="tab-content">
               <n-list v-if="isJoined" hoverable clickable>
-                <n-list-item @click="handleEditSpace">
+                <!-- Space Settings -->
+                <n-list-item>
                   <template #prefix>
-                    <n-icon :size="20"><Edit /></n-icon>
+                    <n-icon :size="20"><Settings /></n-icon>
                   </template>
-                  编辑工作区信息
+                  <div class="settings-item">
+                    <span>工作区设置</span>
+                    <n-text depth="3">名称、头像、描述等</n-text>
+                  </div>
                 </n-list-item>
+
+                <!-- Notifications -->
                 <n-list-item @click="handleNotifications">
                   <template #prefix>
                     <n-icon :size="20"><Bell /></n-icon>
                   </template>
-                  通知设置
+                  <div class="settings-item">
+                    <span>通知设置</span>
+                    <div class="setting-value">
+                      <n-tag size="tiny" :type="notificationEnabled ? 'success' : 'default'">
+                        {{ notificationEnabled ? '已启用' : '已禁用' }}
+                      </n-tag>
+                    </div>
+                  </div>
                 </n-list-item>
-                <n-list-item @click="handlePermissions">
+
+                <!-- Permissions -->
+                <n-list-item v-if="canAdmin" @click="handlePermissions">
                   <template #prefix>
                     <n-icon :size="20"><Shield /></n-icon>
                   </template>
-                  权限管理
+                  <div class="settings-item">
+                    <span>权限管理</span>
+                    <n-text depth="3">成员角色和权限</n-text>
+                  </div>
                 </n-list-item>
+
+                <!-- Security -->
+                <n-list-item>
+                  <template #prefix>
+                    <n-icon :size="20"><Lock /></n-icon>
+                  </template>
+                  <div class="settings-item">
+                    <span>安全设置</span>
+                    <div class="setting-value">
+                      <n-switch
+                        v-model:value="spaceEncrypted"
+                        :disabled="!canAdmin"
+                        @update:value="handleEncryptionToggle" />
+                    </div>
+                  </div>
+                </n-list-item>
+
+                <!-- Share -->
                 <n-list-item @click="handleExport" :disabled="!space.isPublic">
                   <template #prefix>
                     <n-icon :size="20"><Share /></n-icon>
                   </template>
-                  分享工作区
+                  <div class="settings-item">
+                    <span>分享工作区</span>
+                    <n-text depth="3">复制邀请链接</n-text>
+                  </div>
+                </n-list-item>
+
+                <!-- Leave -->
+                <n-list-item @click="handleLeave" class="danger-item">
+                  <template #prefix>
+                    <n-icon :size="20" color="#d03050"><Logout /></n-icon>
+                  </template>
+                  <div class="settings-item">
+                    <span style="color: #d03050">离开工作区</span>
+                  </div>
                 </n-list-item>
               </n-list>
 
               <n-empty v-else description="加入工作区后可访问设置" size="small">
                 <template #extra>
-                  <n-button type="primary" size="small" @click="handleJoin">
-                    立即加入
-                  </n-button>
+                  <n-button type="primary" size="small" @click="handleJoin">立即加入</n-button>
                 </template>
               </n-empty>
             </div>
@@ -253,6 +332,12 @@
           </n-form-item>
           <n-form-item label="房间描述">
             <n-input v-model:value="newRoom.description" type="textarea" placeholder="描述此房间的用途" />
+          </n-form-item>
+          <n-form-item label="房间类型">
+            <n-radio-group v-model:value="newRoom.isPublic">
+              <n-radio :value="false">私有房间</n-radio>
+              <n-radio :value="true">公开房间</n-radio>
+            </n-radio-group>
           </n-form-item>
         </n-form>
         <template #action>
@@ -273,12 +358,60 @@
           <n-button type="primary" :loading="isInviting" @click="handleInvite">邀请</n-button>
         </template>
       </n-modal>
+
+      <!-- Member Details Modal -->
+      <n-modal
+        v-model:show="showMemberModal"
+        preset="card"
+        :title="selectedMember?.displayName || '成员详情'"
+        style="width: 90%">
+        <div v-if="selectedMember" class="member-details">
+          <div class="member-avatar-section">
+            <n-avatar :src="selectedMember.avatarUrl" :size="80" round>
+              <template #fallback>
+                <span>{{ selectedMember.displayName?.charAt(0) || selectedMember.userId?.charAt(0) || '?' }}</span>
+              </template>
+            </n-avatar>
+            <n-tag v-if="selectedMember.isAdmin" type="warning">管理员</n-tag>
+            <n-tag v-else-if="selectedMember.isModerator" type="info">版主</n-tag>
+          </div>
+
+          <n-descriptions :column="1" bordered>
+            <n-descriptions-item label="用户 ID">
+              {{ selectedMember.userId }}
+            </n-descriptions-item>
+            <n-descriptions-item label="显示名称">
+              {{ selectedMember.displayName || '未设置' }}
+            </n-descriptions-item>
+            <n-descriptions-item label="在线状态">
+              <n-tag v-if="selectedMember.presence === 'online'" type="success">在线</n-tag>
+              <n-tag v-else-if="selectedMember.presence === 'unavailable'" type="warning">离开</n-tag>
+              <n-tag v-else type="default">离线</n-tag>
+            </n-descriptions-item>
+          </n-descriptions>
+
+          <div v-if="canAdmin && selectedMember.userId !== currentUserId" class="member-actions">
+            <n-button block @click="startChatWithMember">
+              <template #icon>
+                <n-icon><MessageCircle /></n-icon>
+              </template>
+              发送消息
+            </n-button>
+            <n-button block type="warning" @click="handleRemoveMember" :disabled="!canAdmin">
+              <template #icon>
+                <n-icon><UserMinus /></n-icon>
+              </template>
+              移除成员
+            </n-button>
+          </div>
+        </div>
+      </n-modal>
     </n-drawer-content>
   </n-drawer>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NDrawer,
@@ -292,13 +425,18 @@ import {
   NEmpty,
   NList,
   NListItem,
-  NSkeleton,
+  NSpin,
   NModal,
   NForm,
   NFormItem,
   NInput,
   NText,
   NDropdown,
+  NRadioGroup,
+  NRadio,
+  NDescriptions,
+  NDescriptionsItem,
+  NSwitch,
   useDialog,
   useMessage
 } from 'naive-ui'
@@ -315,12 +453,18 @@ import {
   Plus,
   ChevronRight,
   UserPlus,
-  Edit,
-  Shield,
-  Share
+  Share,
+  Settings,
+  Search,
+  Copy,
+  MessageCircle,
+  UserMinus,
+  AlertTriangle
 } from '@vicons/tabler'
 import { useMatrixSpaces, type Space as MatrixSpace } from '@/hooks/useMatrixSpaces'
 import { useHaptic } from '@/composables/useMobileGestures'
+import { logger } from '@/utils/logger'
+import { msg } from '@/utils/SafeUI'
 
 interface Props {
   show: boolean
@@ -332,6 +476,15 @@ interface Emits {
   (e: 'room-selected', roomId: string): void
 }
 
+interface SpaceMember {
+  userId: string
+  displayName?: string
+  avatarUrl?: string
+  presence?: 'online' | 'offline' | 'unavailable'
+  isAdmin?: boolean
+  isModerator?: boolean
+}
+
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
@@ -341,7 +494,8 @@ const message = useMessage()
 const { selection, success, error: hapticError, warning } = useHaptic()
 
 // Matrix Spaces hook
-const { joinSpace, leaveSpace, addChildToSpace, inviteToSpace } = useMatrixSpaces()
+const { joinSpace, leaveSpace, addChildToSpace, inviteToSpace, getSpaceMembers, removeFromSpace, canManageSpace } =
+  useMatrixSpaces()
 
 // State
 const activeTab = ref<'rooms' | 'members' | 'settings'>('rooms')
@@ -351,11 +505,24 @@ const showCreateDialog = ref(false)
 const showInviteDialog = ref(false)
 const isCreating = ref(false)
 const isInviting = ref(false)
+const showMemberModal = ref(false)
+const isLoadingMembers = ref(false)
+const memberSearchQuery = ref('')
+const members = ref<SpaceMember[]>([])
+const selectedMember = ref<SpaceMember | null>(null)
+
+// Settings state
+const notificationEnabled = ref(true)
+const spaceEncrypted = ref(false)
+
+// Current user ID (would come from auth store)
+const currentUserId = ref('')
 
 // New room form
 const newRoom = ref({
   name: '',
-  description: ''
+  description: '',
+  isPublic: false
 })
 
 // Invite form
@@ -383,10 +550,69 @@ const showDrawer = computed({
 })
 
 const isJoined = computed(() => {
-  return props.space?.children?.some((child: { isJoined?: boolean }) => child.isJoined) ?? false
+  return props.space?.joined ?? false
+})
+
+const unreadCount = computed(() => {
+  if (!props.space?.notifications) return 0
+  return (props.space.notifications.highlightCount ?? 0) + (props.space.notifications.notificationCount ?? 0)
+})
+
+const canManageRooms = computed(() => {
+  return props.space?.canAdmin || props.space?.permissions?.canManageRooms
+})
+
+const canManageMembers = computed(() => {
+  return props.space?.canAdmin || props.space?.permissions?.canInvite
+})
+
+const canAdmin = computed(() => {
+  return props.space?.canAdmin || props.space?.permissions?.canRemove
+})
+
+const sortedChildren = computed(() => {
+  if (!props.space?.children) return []
+  return [...props.space.children].sort((a, b) => {
+    // Sort by unread first, then by name
+    const aUnread = (a.notifications?.notificationCount ?? 0) + (a.notifications?.highlightCount ?? 0)
+    const bUnread = (b.notifications?.notificationCount ?? 0) + (b.notifications?.highlightCount ?? 0)
+    if (aUnread !== bUnread) return bUnread - aUnread
+    return (a.name || '').localeCompare(b.name || '')
+  })
+})
+
+const filteredMembers = computed(() => {
+  if (!memberSearchQuery.value) return members.value
+  const query = memberSearchQuery.value.toLowerCase()
+  return members.value.filter(
+    (m) => m.displayName?.toLowerCase().includes(query) || m.userId?.toLowerCase().includes(query)
+  )
 })
 
 // Methods
+const loadMembers = async () => {
+  if (!props.space || !isJoined.value) return
+
+  isLoadingMembers.value = true
+  try {
+    const memberList = await getSpaceMembers(props.space.id)
+    members.value = (memberList || []) as SpaceMember[]
+    logger.info('[MobileSpaceDrawer] Loaded members:', members.value.length)
+  } catch (error) {
+    logger.error('[MobileSpaceDrawer] Failed to load members:', error)
+  } finally {
+    isLoadingMembers.value = false
+  }
+}
+
+const handleAfterLeave = () => {
+  // Reset state when drawer closes
+  activeTab.value = 'rooms'
+  memberSearchQuery.value = ''
+  members.value = []
+  selectedMember.value = null
+}
+
 const handleClose = () => {
   emit('update:show', false)
   selection()
@@ -400,12 +626,12 @@ const getMenuOptions = () => {
       icon: () => 'Share'
     },
     {
-      label: '通知设置',
-      key: 'notifications',
-      icon: () => 'Bell'
+      label: '刷新',
+      key: 'refresh',
+      icon: () => 'Refresh'
     },
     {
-      label: '报告问题',
+      label: '举报',
       key: 'report',
       icon: () => 'AlertTriangle'
     }
@@ -417,8 +643,9 @@ const handleMenuAction = (key: string) => {
     case 'share':
       handleExport()
       break
-    case 'notifications':
-      handleNotifications()
+    case 'refresh':
+      loadMembers()
+      msg.success('已刷新')
       break
     case 'report':
       warning()
@@ -437,6 +664,8 @@ const handleJoin = async () => {
     if (result) {
       success()
       message.success('已加入工作区')
+      // Load members after joining
+      await loadMembers()
     } else {
       hapticError()
       message.error('加入工作区失败')
@@ -478,6 +707,11 @@ const openRoom = (roomId: string) => {
   selection()
 }
 
+const getRoomUnread = (child: any) => {
+  if (!child.notifications) return 0
+  return (child.notifications.notificationCount ?? 0) + (child.notifications.highlightCount ?? 0)
+}
+
 const handleCreateRoom = async () => {
   try {
     await createFormRef.value?.validate()
@@ -496,12 +730,12 @@ const handleCreateRoom = async () => {
 
     if (result) {
       success()
-      message.success('房间创建成功')
+      message.success('房间添加成功')
       showCreateDialog.value = false
-      newRoom.value = { name: '', description: '' }
+      newRoom.value = { name: '', description: '', isPublic: false }
     } else {
       hapticError()
-      message.error('创建房间失败')
+      message.error('添加房间失败')
     }
   } finally {
     isCreating.value = false
@@ -534,13 +768,23 @@ const handleInvite = async () => {
   }
 }
 
-const handleEditSpace = () => {
-  message.info('编辑功能开发中')
+const handleMemberClick = (member: SpaceMember) => {
+  selectedMember.value = member
+  showMemberModal.value = true
   selection()
 }
 
+const copySpaceAddress = () => {
+  if (props.space?.canonicalAlias) {
+    navigator.clipboard.writeText(props.space.canonicalAlias)
+    success()
+    message.success('地址已复制')
+  }
+}
+
 const handleNotifications = () => {
-  message.info('通知设置功能开发中')
+  notificationEnabled.value = !notificationEnabled.value
+  message.success(notificationEnabled.value ? '通知已启用' : '通知已禁用')
   selection()
 }
 
@@ -549,28 +793,94 @@ const handlePermissions = () => {
   selection()
 }
 
+const handleEncryptionToggle = (value: boolean) => {
+  dialog.info({
+    title: '加密设置',
+    content: value ? '启用加密后，新消息将被端到端加密' : '禁用加密后，新消息将不再加密',
+    positiveText: '确定',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      spaceEncrypted.value = value
+      success()
+      message.success(value ? '已启用加密' : '已禁用加密')
+    }
+  })
+}
+
 const handleExport = () => {
-  if (props.space?.isPublic) {
+  if (props.space?.canonicalAlias) {
     const shareUrl = `${window.location.origin}/#/space/${props.space.roomId || props.space.id}`
+    navigator.clipboard.writeText(shareUrl)
+    success()
+    message.success('工作区链接已复制')
+  } else if (props.space?.roomId) {
+    const shareUrl = `${window.location.origin}/#/room/${props.space.roomId}`
     navigator.clipboard.writeText(shareUrl)
     success()
     message.success('工作区链接已复制')
   } else {
     hapticError()
-    message.warning('私有工作区无法分享')
+    message.warning('无法分享此工作区')
   }
   selection()
 }
 
-// Watch for show changes to reset tab
+const startChatWithMember = () => {
+  if (selectedMember.value) {
+    showMemberModal.value = false
+    router.push({
+      path: '/mobile/chatRoom/chatMain',
+      query: { userId: selectedMember.value.userId }
+    })
+  }
+}
+
+const handleRemoveMember = () => {
+  if (!props.space || !selectedMember.value) return
+
+  dialog.warning({
+    title: '移除成员',
+    content: `确定要移除 "${selectedMember.value.displayName || selectedMember.value.userId}" 吗？`,
+    positiveText: '移除',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        await removeFromSpace(props.space!.id, selectedMember.value!.userId)
+        success()
+        message.success('成员已移除')
+        showMemberModal.value = false
+        // Reload members
+        await loadMembers()
+      } catch (error) {
+        hapticError()
+        message.error('移除成员失败')
+      }
+    }
+  })
+}
+
+// Watch for tab changes to load members when switching to members tab
+watch(activeTab, async (newTab) => {
+  if (newTab === 'members' && members.value.length === 0 && isJoined.value) {
+    await loadMembers()
+  }
+})
+
+// Watch for space changes
 watch(
-  () => props.show,
-  (newVal) => {
-    if (newVal) {
-      activeTab.value = 'rooms'
+  () => props.space,
+  async (newSpace) => {
+    if (newSpace && isJoined.value) {
+      spaceEncrypted.value = (newSpace as any).encrypted || false
     }
   }
 )
+
+// Lifecycle
+onMounted(() => {
+  // Load current user ID from auth store (TODO: implement)
+  currentUserId.value = '' // Would come from auth store
+})
 </script>
 
 <style scoped lang="scss">
@@ -593,7 +903,9 @@ watch(
 }
 
 .space-details {
-  padding: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .space-info-card {
@@ -606,33 +918,37 @@ watch(
     flex-direction: column;
     align-items: center;
     margin-bottom: 16px;
+    position: relative;
 
     .space-badges {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-top: 8px;
     }
 
     .avatar-fallback {
-      font-size: 24px;
+      font-size: 32px;
       font-weight: 600;
     }
   }
 
   .space-name {
     text-align: center;
-    font-size: 20px;
-    font-weight: 600;
     margin: 0 0 8px 0;
-    color: var(--text-color-1);
+    font-size: 22px;
+    font-weight: 600;
   }
 
   .space-topic {
     text-align: center;
+    margin: 0 0 16px 0;
     font-size: 14px;
     color: var(--text-color-2);
-    margin: 0 0 16px 0;
     line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .space-stats {
@@ -643,49 +959,65 @@ watch(
 
     .stat-item {
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 4px;
-      font-size: 14px;
-      color: var(--text-color-2);
+
+      &.unread {
+        color: var(--error-color);
+      }
+
+      .stat-label {
+        font-size: 11px;
+        color: var(--text-color-3);
+      }
     }
   }
 
+  .space-address {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    background: var(--body-color);
+    border-radius: 8px;
+  }
+
   .space-actions {
-    margin-top: 16px;
+    margin-top: 8px;
   }
 }
 
 .tab-content {
-  padding: 16px;
   min-height: 300px;
-
-  .tab-header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 12px;
-  }
 }
 
-.room-list,
-.member-list {
-  .room-item,
-  .member-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: var(--card-color);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
+.tab-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
 
-    &:active {
-      background: var(--item-hover-bg);
-    }
+.room-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--divider-color);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: var(--item-hover-bg);
   }
 
-  .room-avatar,
-  .member-avatar {
+  .room-avatar {
     position: relative;
     flex-shrink: 0;
 
@@ -693,13 +1025,13 @@ watch(
       position: absolute;
       top: -4px;
       right: -4px;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
       background: var(--error-color);
       color: white;
-      border-radius: 8px;
-      font-size: 10px;
+      border-radius: 9px;
+      font-size: 11px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -707,16 +1039,13 @@ watch(
     }
   }
 
-  .room-info,
-  .member-info {
+  .room-info {
     flex: 1;
     min-width: 0;
 
-    .room-name,
-    .member-name {
+    .room-name {
       font-size: 15px;
       font-weight: 500;
-      color: var(--text-color-1);
       margin-bottom: 4px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -725,24 +1054,129 @@ watch(
 
     .room-meta {
       display: flex;
-      align-items: center;
       gap: 8px;
+      align-items: center;
       font-size: 12px;
       color: var(--text-color-3);
     }
   }
 
-  .room-action,
-  .member-action {
+  .room-action {
     flex-shrink: 0;
     color: var(--text-color-3);
   }
 }
 
-// Safe area for mobile
-@supports (padding: env(safe-area-inset-bottom)) {
-  .space-details {
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 12px;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--divider-color);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: var(--item-hover-bg);
+  }
+
+  .member-info {
+    flex: 1;
+    min-width: 0;
+
+    .member-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .member-role {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+  }
+
+  .member-status {
+    flex-shrink: 0;
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+
+      &.online {
+        background: #52c41a;
+      }
+
+      &.away {
+        background: #faad14;
+      }
+
+      &.offline {
+        background: var(--text-color-3);
+      }
+    }
+  }
+}
+
+.invite-section {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.settings-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+
+  .setting-value {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.danger-item {
+  &:hover {
+    background: rgba(208, 48, 80, 0.1);
+  }
+}
+
+.member-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .member-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .member-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
   }
 }
 </style>

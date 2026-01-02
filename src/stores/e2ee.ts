@@ -1,258 +1,431 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { logger } from '@/utils/logger'
-import type { MatrixClient } from 'matrix-js-sdk'
-import type { Device, CrossSigningInfo, KeyBackupInfo } from '@/integrations/matrix/e2ee'
+
+// Matrix SDK 类型定义（兼容性处理）
+interface MatrixClientCompat {
+  getUserId?(): string
+  getUser?(userId: string): { userId: string } | null
+  getDeviceId?(): string
+  getDevice?(deviceId: string): { deviceId: string } | null
+  deleteDevice(deviceId: string): Promise<void>
+  getStoredDevicesForUser?(
+    userId: string
+  ): Array<{ deviceId: string; displayName?: string; verified?: boolean; blocked?: boolean; lastSeenTs?: number }>
+}
+
+interface CryptoApiCompat {
+  getCrossSigningId?(): { masterKey?: string; userSigningKey?: string; selfSigningKey?: string }
+  getCrossSigningKeyId?(): { masterKey?: string; userSigningKey?: string; selfSigningKey?: string }
+  checkKeyBackupAndEnable?():
+    | { version?: string; backupVersion?: string }
+    | PromiseLike<{ version?: string; backupVersion?: string }>
+  isKeyBackupTrusted?(backupInfo: {
+    version?: string
+  }): { usable?: boolean; trusted_locally?: boolean } | PromiseLike<{ usable?: boolean; trusted_locally?: boolean }>
+  getBackupKeyCount?(): number | PromiseLike<number>
+  resetKeyBackup?():
+    | { version?: string; backupVersion?: string; recoveryKey?: string; recovery_key?: string }
+    | PromiseLike<{ version?: string; backupVersion?: string; recoveryKey?: string; recovery_key?: string }>
+  restoreKeyBackupWithRecoveryKey?(
+    key: string
+  ): { imported?: number; total?: number } | PromiseLike<{ imported?: number; total?: number }>
+  setDeviceVerified?(userId: string, deviceId: string): void | PromiseLike<void>
+  setDeviceBlocked?(userId: string, deviceId: string, blocked: boolean): void | PromiseLike<void>
+}
+
+/**
+ * E2EE Store - 端到端加密状态管理
+ */
+
+interface CrossSigningInfo {
+  userMasterKey?: {
+    publicKey: string
+    trusted: boolean
+  }
+  userSigningKey?: {
+    publicKey: string
+    trusted: boolean
+  }
+  selfSigningKey?: {
+    publicKey: string
+    trusted: boolean
+  }
+}
+
+interface E2EEStats {
+  keyBackupEnabled: boolean
+  keyBackupVersion?: string
+  keyCount?: number
+  trustInfo?: {
+    usable: boolean
+    trusted: boolean
+  }
+}
+
+interface DeviceInfo {
+  deviceId: string
+  userId?: string
+  displayName?: string
+  verified: boolean
+  blocked?: boolean
+  lastSeenTs?: number
+}
 
 export const useE2EEStore = defineStore('e2ee', () => {
-  // 基础状态
-  const available = ref(false)
-  const enabled = ref(false)
   const initialized = ref(false)
-  const lastError = ref<string | null>(null)
-  const isLoading = ref(false)
-
-  // 设备相关
-  const devices = ref<Map<string, Device>>(new Map())
+  const enabled = ref(false)
   const crossSigningInfo = ref<CrossSigningInfo | null>(null)
-  const keyBackupInfo = ref<KeyBackupInfo | null>(null)
+  const stats = ref<E2EEStats>({ keyBackupEnabled: false })
+  const devices = ref<Map<string, DeviceInfo[]>>(new Map())
 
-  // 统计信息
-  const stats = ref({
-    totalDevices: 0,
-    verifiedDevices: 0,
-    blockedDevices: 0,
-    encryptedRooms: 0,
-    secureRooms: 0,
-    keyBackupEnabled: false
-  })
+  const isReady = computed(() => initialized.value && enabled.value)
+  const hasBackup = computed(() => stats.value.keyBackupEnabled)
+  const isCrossSigningReady = computed(() => crossSigningInfo.value?.userMasterKey?.trusted || false)
+  // Alias for compatibility
+  const available = computed(() => enabled.value)
 
-  // 计算属性
-  const deviceVerificationProgress = computed(() => {
-    if (stats.value.totalDevices === 0) return 0
-    return Math.round((stats.value.verifiedDevices / stats.value.totalDevices) * 100)
-  })
+  async function initialize(): Promise<void> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return
 
-  const isSecure = computed(() => {
-    return (
-      stats.value.verifiedDevices > 0 && stats.value.keyBackupEnabled && crossSigningInfo.value?.userMasterKey?.trusted
-    )
-  })
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      enabled.value = !!crypto
 
-  const securityLevel = computed(() => {
-    if (!isSecure.value) return 'low'
-    if (stats.value.verifiedDevices === stats.value.totalDevices && stats.value.keyBackupEnabled) return 'high'
-    return 'medium'
-  })
-
-  // 设置方法
-  const setAvailable = (v: boolean) => (available.value = v)
-  const setEnabled = (v: boolean) => (enabled.value = v)
-  const setInitialized = (v: boolean) => (initialized.value = v)
-  const setError = (e: string | null) => (lastError.value = e)
-  const setLoading = (v: boolean) => (isLoading.value = v)
-
-  // 更新设备列表
-  const updateDevices = (deviceList: Device[]) => {
-    devices.value.clear()
-    deviceList.forEach((device) => {
-      devices.value.set(device.deviceId, device)
-    })
-
-    // 更新统计
-    stats.value.totalDevices = deviceList.length
-    stats.value.verifiedDevices = deviceList.filter((d) => d.verified).length
-    stats.value.blockedDevices = deviceList.filter((d) => d.blocked).length
-  }
-
-  // 更新单个设备
-  const updateDevice = (deviceId: string, updates: Partial<Device>) => {
-    const device = devices.value.get(deviceId)
-    if (device) {
-      devices.value.set(deviceId, { ...device, ...updates })
-
-      // 重新计算统计
-      const deviceList = Array.from(devices.value.values())
-      stats.value.totalDevices = deviceList.length
-      stats.value.verifiedDevices = deviceList.filter((d) => d.verified).length
-      stats.value.blockedDevices = deviceList.filter((d) => d.blocked).length
+      if (crypto) {
+        await loadCrossSigningInfo()
+        await loadKeyBackupStatus()
+        await loadAllDevices()
+        initialized.value = true
+        logger.info('[E2EEStore] E2EE initialized')
+      }
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to initialize:', error)
     }
   }
 
-  // 更新交叉签名信息
-  const updateCrossSigningInfo = (info: CrossSigningInfo | null) => {
-    crossSigningInfo.value = info
+  async function loadCrossSigningInfo(): Promise<void> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return
+
+      // 尝试不同的 API
+      const crossSigning = crypto.getCrossSigningId?.() || crypto.getCrossSigningKeyId?.()
+      if (crossSigning) {
+        crossSigningInfo.value = {
+          userMasterKey: { publicKey: crossSigning.masterKey || '', trusted: true },
+          userSigningKey: { publicKey: crossSigning.userSigningKey || '', trusted: true },
+          selfSigningKey: { publicKey: crossSigning.selfSigningKey || '', trusted: true }
+        }
+      }
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to load cross-signing:', error)
+    }
   }
 
-  // 更新密钥备份信息
-  const updateKeyBackupInfo = (info: KeyBackupInfo | null) => {
-    keyBackupInfo.value = info
-    stats.value.keyBackupEnabled = !!info
+  async function loadKeyBackupStatus(): Promise<void> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return
+
+      const backupInfo = await crypto.checkKeyBackupAndEnable?.()
+      if (backupInfo) {
+        const backupTrust = await crypto.isKeyBackupTrusted?.({
+          version: backupInfo.version || backupInfo.backupVersion
+        })
+        const keyCount = await crypto.getBackupKeyCount?.()
+        stats.value = {
+          keyBackupEnabled: true,
+          keyBackupVersion: backupInfo.version || backupInfo.backupVersion,
+          keyCount,
+          trustInfo: {
+            usable: backupTrust?.usable ?? false,
+            trusted: backupTrust?.trusted_locally ?? false
+          }
+        }
+      }
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to load backup status:', error)
+    }
   }
 
-  // 更新房间加密统计
-  const updateRoomStats = (encryptedRooms: number, secureRooms: number) => {
-    stats.value.encryptedRooms = encryptedRooms
-    stats.value.secureRooms = secureRooms
+  async function loadAllDevices(): Promise<void> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return
+
+      const userId = client.getUserId?.()
+      if (!userId) return
+
+      const deviceList = client.getStoredDevicesForUser?.(userId) || []
+      const deviceInfos: DeviceInfo[] = deviceList.map(
+        (device: {
+          deviceId: string
+          displayName?: string
+          verified?: boolean
+          blocked?: boolean
+          lastSeenTs?: number
+        }) => ({
+          deviceId: device.deviceId,
+          userId,
+          displayName: device.displayName,
+          verified: device.verified || false,
+          blocked: device.blocked || false,
+          lastSeenTs: device.lastSeenTs
+        })
+      )
+      devices.value.set(userId, deviceInfos)
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to load devices:', error)
+    }
   }
 
-  // 获取设备
-  const getDevice = (deviceId: string): Device | undefined => {
-    return devices.value.get(deviceId)
+  async function createKeyBackup(): Promise<{ version: string; recoveryKey: string } | null> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return null
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return null
+
+      const result = await crypto.resetKeyBackup?.()
+      if (!result) return null
+
+      await loadKeyBackupStatus()
+      return {
+        version: result.version || result.backupVersion || '',
+        recoveryKey: result.recoveryKey || result.recovery_key || ''
+      }
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to create backup:', error)
+      return null
+    }
   }
 
-  // 获取所有设备
-  const getAllDevices = (): Device[] => {
-    return Array.from(devices.value.values())
+  async function restoreKeyBackup(recoveryKey: string): Promise<{ imported: number; total: number } | null> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return null
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return null
+
+      const result = await crypto.restoreKeyBackupWithRecoveryKey?.(recoveryKey)
+      if (!result) return null
+
+      await loadKeyBackupStatus()
+      return {
+        imported: result.imported ?? 0,
+        total: result.total ?? 0
+      }
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to restore backup:', error)
+      return null
+    }
   }
 
-  // 获取已验证设备
-  const getVerifiedDevices = (): Device[] => {
-    return getAllDevices().filter((d) => d.verified)
+  async function verifyDevice(deviceId: string): Promise<boolean> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return false
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return false
+
+      const userId = client.getUserId?.()
+      if (!userId) return false
+
+      await crypto.setDeviceVerified?.(userId, deviceId)
+      await loadAllDevices()
+      return true
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to verify device:', error)
+      return false
+    }
   }
 
-  // 获取未验证设备
-  const getUnverifiedDevices = (): Device[] => {
+  async function blockDevice(deviceId: string): Promise<boolean> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return false
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return false
+
+      const userId = client.getUserId?.()
+      if (!userId) return false
+
+      await crypto.setDeviceBlocked?.(userId, deviceId, true)
+      await loadAllDevices()
+      return true
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to block device:', error)
+      return false
+    }
+  }
+
+  async function unblockDevice(deviceId: string): Promise<boolean> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return false
+
+      const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
+      if (!crypto) return false
+
+      const userId = client.getUserId?.()
+      if (!userId) return false
+
+      await crypto.setDeviceBlocked?.(userId, deviceId, false)
+      await loadAllDevices()
+      return true
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to unblock device:', error)
+      return false
+    }
+  }
+
+  async function deleteDevice(deviceId: string): Promise<boolean> {
+    try {
+      const matrixClientService = (await import('@/services/matrixClientService')) as {
+        default: { getClient: () => MatrixClientCompat | null }
+      }
+      const client = matrixClientService.default.getClient()
+      if (!client) return false
+
+      const myDeviceId = client.getDeviceId?.()
+      if (deviceId === myDeviceId) return false
+
+      await client.deleteDevice(deviceId)
+      await loadAllDevices()
+      return true
+    } catch (error) {
+      logger.error('[E2EEStore] Failed to delete device:', error)
+      return false
+    }
+  }
+
+  function getAllDevices(): DeviceInfo[] {
+    const userId = Array.from(devices.value.keys())[0]
+    if (!userId) return []
+    return devices.value.get(userId) || []
+  }
+
+  function getUnverifiedDevices(): DeviceInfo[] {
     return getAllDevices().filter((d) => !d.verified && !d.blocked)
   }
 
-  // 获取被屏蔽设备
-  const getBlockedDevices = (): Device[] => {
-    return getAllDevices().filter((d) => d.blocked)
+  // Additional helper methods for compatibility
+  function setAvailable(value: boolean): void {
+    // Alias for compatibility
+    enabled.value = value
   }
 
-  // 检查设备是否已验证
-  const isDeviceVerified = (deviceId: string): boolean => {
-    const device = devices.value.get(deviceId)
+  function setEnabled(value: boolean): void {
+    enabled.value = value
+  }
+
+  function setInitialized(value: boolean): void {
+    initialized.value = value
+  }
+
+  function updateDevices(deviceList: DeviceInfo[]): void {
+    const userId = Array.from(devices.value.keys())[0]
+    if (userId) {
+      devices.value.set(userId, deviceList)
+    }
+  }
+
+  function updateDevice(deviceId: string, data: Partial<DeviceInfo>): void {
+    const userId = Array.from(devices.value.keys())[0]
+    if (!userId) return
+
+    const deviceList = devices.value.get(userId)
+    if (!deviceList) return
+
+    const index = deviceList.findIndex((d) => d.deviceId === deviceId)
+    if (index !== -1) {
+      deviceList[index] = { ...deviceList[index], ...data }
+    }
+  }
+
+  function isDeviceVerified(deviceId: string): boolean {
+    const device = getAllDevices().find((d) => d.deviceId === deviceId)
     return device?.verified || false
   }
 
-  // 检查设备是否被屏蔽
-  const isDeviceBlocked = (deviceId: string): boolean => {
-    const device = devices.value.get(deviceId)
+  function isDeviceBlocked(deviceId: string): boolean {
+    const device = getAllDevices().find((d) => d.deviceId === deviceId)
     return device?.blocked || false
   }
 
-  // 重置状态
-  const reset = () => {
-    available.value = false
-    enabled.value = false
-    initialized.value = false
-    lastError.value = null
-    isLoading.value = false
-    devices.value.clear()
-    crossSigningInfo.value = null
-    keyBackupInfo.value = null
-    stats.value = {
-      totalDevices: 0,
-      verifiedDevices: 0,
-      blockedDevices: 0,
-      encryptedRooms: 0,
-      secureRooms: 0,
-      keyBackupEnabled: false
-    }
-  }
-
-  // 初始化E2EE
-  const initialize = async (client: MatrixClient) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      // 动态导入E2EE管理器
-      const { createMatrixE2EEManager } = await import('@/integrations/matrix/e2ee')
-      const e2eeManager = createMatrixE2EEManager(client)
-
-      // 初始化E2EE
-      const success = await e2eeManager.initialize()
-      if (!success) {
-        throw new Error('Failed to initialize E2EE')
-      }
-
-      // 获取状态
-      const status = e2eeManager.getStatus()
-      setAvailable(true)
-      setEnabled(status.enabled)
-      setInitialized(true)
-
-      // 获取设备列表
-      const clientLike = client as unknown as { getUserId?: () => string }
-      const userId = clientLike.getUserId?.()
-      if (userId) {
-        const userDevices = await e2eeManager.getUserDevices(userId)
-        updateDevices(userDevices)
-      }
-
-      // 获取交叉签名信息
-      const _crossSigningEnabled = await e2eeManager.checkCrossSigning()
-      // 更新交叉签名信息到 store
-      const crossSigningStatus = e2eeManager.getCrossSigningStatus()
-      updateCrossSigningInfo(
-        crossSigningStatus.enabled
-          ? {
-              userMasterKey: crossSigningStatus.userMasterKey || { publicKey: '', trusted: false },
-              selfSigningKey: crossSigningStatus.selfSigningKey || { publicKey: '', trusted: false },
-              userSigningKey: crossSigningStatus.userSigningKey || { publicKey: '', trusted: false }
-            }
-          : null
-      )
-
-      // 获取加密统计
-      const encryptionStats = e2eeManager.getEncryptionStats()
-      updateRoomStats(encryptionStats.encryptedRooms, encryptionStats.secureRooms)
-
-      logger.info('[E2EE Store] Initialized successfully')
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      setError(errorMessage)
-      logger.error('[E2EE Store] Initialization failed:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const deviceVerificationProgress = ref(0)
+  const securityLevel = ref<'none' | 'basic' | 'advanced' | 'medium' | 'high'>('none')
 
   return {
-    // 状态
-    available,
-    enabled,
     initialized,
-    lastError,
-    isLoading,
-    devices,
+    enabled,
     crossSigningInfo,
-    keyBackupInfo,
     stats,
-
-    // 计算属性
-    deviceVerificationProgress,
-    isSecure,
-    securityLevel,
-
-    // 设置方法
+    devices,
+    isReady,
+    hasBackup,
+    isCrossSigningReady,
+    available,
+    initialize,
+    loadCrossSigningInfo,
+    loadKeyBackupStatus,
+    loadAllDevices,
+    createKeyBackup,
+    restoreKeyBackup,
+    verifyDevice,
+    blockDevice,
+    unblockDevice,
+    deleteDevice,
+    getAllDevices,
+    getUnverifiedDevices,
+    // Additional methods for compatibility
     setAvailable,
     setEnabled,
     setInitialized,
-    setError,
-    setLoading,
-
-    // 更新方法
     updateDevices,
     updateDevice,
-    updateCrossSigningInfo,
-    updateKeyBackupInfo,
-    updateRoomStats,
-
-    // 获取方法
-    getDevice,
-    getAllDevices,
-    getVerifiedDevices,
-    getUnverifiedDevices,
-    getBlockedDevices,
     isDeviceVerified,
     isDeviceBlocked,
-
-    // 操作方法
-    initialize,
-    reset
+    deviceVerificationProgress,
+    securityLevel
   }
 })

@@ -868,7 +868,7 @@ export class MatrixSpacesService {
       const powerLevelsContent = powerLevelsEvents?.[0]?.getContent?.() as Record<string, unknown> | undefined
 
       // Parse power levels
-      const usersDefault = (powerLevelsContent?.users_default as number) ?? 0
+      const _usersDefault = (powerLevelsContent?.users_default as number) ?? 0
       const eventsDefault = (powerLevelsContent?.events_default as number) ?? 0
       const stateDefault = (powerLevelsContent?.state_default as number) ?? 50
       const ban = (powerLevelsContent?.ban as number) ?? 50
@@ -930,15 +930,15 @@ export class MatrixSpacesService {
       // Build new power levels content
       const newContent: Record<string, unknown> = {
         ...currentContent,
-        users: currentContent?.users as Record<string, number> ?? {},
-        users_default: permissions.canSendEvents === false ? 0 : (currentContent?.users_default as number ?? 0),
-        events: currentContent?.events as Record<string, number> ?? {},
-        events_default: permissions.canSendEvents === false ? 0 : (currentContent?.events_default as number ?? 0),
-        state_default: permissions.canManageChildren === false ? 50 : (currentContent?.state_default as number ?? 50),
-        ban: permissions.canBan === false ? 100 : (currentContent?.ban as number ?? 50),
-        kick: permissions.canRemove === false ? 50 : (currentContent?.kick as number ?? 50),
-        redact: permissions.canRedact === false ? 50 : (currentContent?.redact as number ?? 50),
-        invite: permissions.canInvite === false ? 50 : (currentContent?.invite as number ?? 50)
+        users: (currentContent?.users as Record<string, number>) ?? {},
+        users_default: permissions.canSendEvents === false ? 0 : ((currentContent?.users_default as number) ?? 0),
+        events: (currentContent?.events as Record<string, number>) ?? {},
+        events_default: permissions.canSendEvents === false ? 0 : ((currentContent?.events_default as number) ?? 0),
+        state_default: permissions.canManageChildren === false ? 50 : ((currentContent?.state_default as number) ?? 50),
+        ban: permissions.canBan === false ? 100 : ((currentContent?.ban as number) ?? 50),
+        kick: permissions.canRemove === false ? 50 : ((currentContent?.kick as number) ?? 50),
+        redact: permissions.canRedact === false ? 50 : ((currentContent?.redact as number) ?? 50),
+        invite: permissions.canInvite === false ? 50 : ((currentContent?.invite as number) ?? 50)
       }
 
       // Send updated power levels

@@ -314,6 +314,12 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
       meta: { keepAlive: false }
     },
     {
+      path: '/mobile/settings/biometric',
+      name: 'mobileSettingsBiometric',
+      component: () => import('#/components/my/BiometricSettings.vue'),
+      meta: { keepAlive: false }
+    },
+    {
       path: '/mobile/mobileFriends',
       name: 'mobileFriendsLayout',
       component: () => import('#/layout/friends/FriendsLayout.vue'),
@@ -564,6 +570,11 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
         path: 'feedback',
         name: 'settingsFeedback',
         component: () => import('@/views/moreWindow/settings/Feedback.vue')
+      },
+      {
+        path: 'e2ee',
+        name: 'settingsE2EE',
+        component: () => import('@/views/moreWindow/settings/E2EE.vue')
       }
     ]
   },

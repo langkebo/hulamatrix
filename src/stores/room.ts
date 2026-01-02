@@ -150,6 +150,47 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
+  /**
+   * 获取消息已读回执列表
+   * @param roomId 房间ID
+   * @param eventId 事件ID
+   * @returns 已读用户列表
+   */
+  const getReadReceipts = (roomId: string, eventId: string) => {
+    const { client } = useMatrixClient()
+    if (!client.value) {
+      logger.warn('[RoomStore] Cannot get read receipts: Matrix client not available')
+      return []
+    }
+
+    try {
+      const matrixClient = client.value as unknown as {
+        getRoom?: (roomId: string) => {
+          getReceiptsForEvent?: (eventId: string) => Map<string, { data?: { ts?: number } }>
+        } | null
+      }
+
+      const room = matrixClient.getRoom?.(roomId)
+      if (!room) {
+        return []
+      }
+
+      const receipts = room.getReceiptsForEvent?.(eventId)
+      if (!receipts) {
+        return []
+      }
+
+      // 转换为数组格式
+      return Array.from(receipts.entries()).map(([userId, receipt]) => ({
+        userId,
+        timestamp: receipt.data?.ts || Date.now()
+      }))
+    } catch (error) {
+      logger.error('[RoomStore] Failed to get read receipts:', error)
+      return []
+    }
+  }
+
   return {
     // State
     rooms,
@@ -170,6 +211,7 @@ export const useRoomStore = defineStore('room', () => {
     setCurrentRoomId,
     clearRoomCache,
     getMember,
-    updateMember
+    updateMember,
+    getReadReceipts
   }
 })

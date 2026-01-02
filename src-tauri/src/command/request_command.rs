@@ -158,10 +158,10 @@ pub async fn im_request_command(
             Ok(data) => Ok(data),
             Err(e) => {
                 tracing::error!("Request error: {e}");
-                if e.to_string().contains("请重新登录") {
-                    if let Err(emit_err) = app_handle.emit_to("home", "relogin", ()) {
-                        tracing::error!("Failed to emit relogin event: {}", emit_err);
-                    }
+                if e.to_string().contains("请重新登录")
+                    && let Err(emit_err) = app_handle.emit_to("home", "relogin", ())
+                {
+                    tracing::error!("Failed to emit relogin event: {}", emit_err);
                 }
                 Err(e.to_string())
             }

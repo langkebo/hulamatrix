@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "title": "设置",
+    "section": {
+      "account": "账户",
+      "preferences": "偏好设置",
+      "privacy_security": "隐私与安全",
+      "advanced": "高级设置"
+    },
+    "menu": {
+      "profile": "个人资料",
+      "sessions": "活跃会话",
+      "notification": "通知设置",
+      "appearance": "外观主题",
+      "privacy": "隐私设置",
+      "biometric": "生物识别",
+      "encryption": "端到端加密",
+      "keyboard": "键盘快捷键",
+      "audio": "语音与音频",
+      "labs": "实验室功能",
+      "feedback": "反馈与建议"
+    }
+  }
+}

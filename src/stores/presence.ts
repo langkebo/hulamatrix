@@ -21,6 +21,12 @@ interface PresenceContent {
   last_active_ago?: number
 }
 
+/** Presence 数据结构（包含时间戳） */
+interface PresenceData {
+  state: PresenceState
+  lastActive?: number
+}
+
 /** Matrix 房间成员事件接口 */
 interface MatrixMemberEvent {
   userId?: string
@@ -82,6 +88,8 @@ function savePresenceToCache(map: Record<string, PresenceState>) {
 export const usePresenceStore = defineStore('presence', {
   state: () => ({
     map: loadPresenceFromCache() as Record<string, PresenceState>,
+    // 存储用户最后活跃时间戳
+    lastActiveMap: {} as Record<string, number>,
     initialized: false as boolean,
     setupAttempts: 0 as number,
     maxSetupAttempts: 5 as number,
@@ -99,6 +107,15 @@ export const usePresenceStore = defineStore('presence', {
       (state) =>
       (uid: string): PresenceState => {
         return state.map[uid] || 'unknown'
+      },
+
+    /**
+     * 获取用户最后活跃时间戳
+     */
+    getLastActive:
+      (state) =>
+      (uid: string): number | undefined => {
+        return state.lastActiveMap[uid]
       },
 
     /**
@@ -157,7 +174,7 @@ export const usePresenceStore = defineStore('presence', {
         client.on('Presence', (...args: unknown[]) => {
           const event = args[0] as {
             getSender?: () => string
-            getContent?: () => { presence?: string; status_msg?: string }
+            getContent?: () => { presence?: string; status_msg?: string; last_active_ago?: number }
           }
           const sender = event?.getSender?.()
           const content = event?.getContent?.()
@@ -165,6 +182,12 @@ export const usePresenceStore = defineStore('presence', {
 
           const p = content.presence as PresenceState
           this.map[sender] = p
+
+          // 计算最后活跃时间
+          if (content.last_active_ago !== undefined) {
+            this.lastActiveMap[sender] = Date.now() - content.last_active_ago
+          }
+
           logger.debug('[PresenceStore] Presence event', { userId: sender, presence: p })
           // 持久化缓存（防抖）
           this.debouncedSaveCache()
@@ -281,6 +304,7 @@ export const usePresenceStore = defineStore('presence', {
      */
     reset() {
       this.map = {}
+      this.lastActiveMap = {}
       this.initialized = false
       this.setupAttempts = 0
       this.myPresence = 'online'

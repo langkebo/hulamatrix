@@ -9,6 +9,7 @@
       "encryption": "加密",
       "appearance": "外观",
       "privacy": "隐私安全",
+      "biometric": "生物识别",
       "keyboard": "键盘快捷键",
       "audio": "语音与音频",
       "labs": "实验室"
@@ -361,5 +362,91 @@
     "reset_all_confirm_content": "确定要将所有设置重置为默认值吗？此操作不可撤销。",
     "labs_reset": "实验室功能已重置",
     "all_settings_reset": "所有设置已重置"
+  },
+  "e2ee": {
+    "title": "端到端加密",
+    "status": {
+      "enabled": "端到端加密已启用",
+      "disabled": "端到端加密未完全设置",
+      "enabled_desc": "您的消息已使用端到端加密保护",
+      "disabled_desc": "建议完成E2EE设置以保护您的消息隐私"
+    },
+    "cross_signing": {
+      "title": "交叉签名",
+      "status": "交叉签名状态",
+      "ready": "已设置，可以验证其他设备",
+      "not_ready": "未设置，建议设置以验证设备",
+      "setup_button": "设置交叉签名",
+      "master_key": "主密钥",
+      "user_signing_key": "用户签名密钥",
+      "self_signing_key": "设备签名密钥",
+      "set": "已设置",
+      "not_set": "未设置"
+    },
+    "key_backup": {
+      "title": "密钥备份",
+      "storage": "密钥存储",
+      "storage_ready": "已设置，可以备份密钥",
+      "storage_not_ready": "未设置，建议创建备份",
+      "manage_button": "管理备份",
+      "create_button": "创建备份",
+      "existing_backups": "现有备份",
+      "backups_count": "{count} 个备份可用",
+      "view_button": "查看"
+    },
+    "devices": {
+      "title": "设备验证",
+      "refresh_button": "刷新",
+      "no_devices": "暂无其他设备",
+      "unknown_device": "未知设备",
+      "verified": "已验证",
+      "unverified": "未验证",
+      "last_seen": "刚刚在线",
+      "minutes_ago": "{minutes} 分钟前",
+      "hours_ago": "{hours} 小时前",
+      "days_ago": "{days} 天前",
+      "verify": "验证",
+      "block": "阻止",
+      "unblock": "解除阻止",
+      "block_confirm_title": "确认阻止",
+      "block_confirm_content": "确定要阻止设备 {deviceName} 吗？",
+      "unblock_confirm_title": "解除阻止",
+      "unblock_confirm_content": "确定要解除阻止设备 {deviceName} 吗？",
+      "blocked": "设备已阻止",
+      "unblocked": "已解除阻止"
+    },
+    "security": {
+      "title": "安全设置",
+      "auto_verify": "自动验证设备",
+      "auto_verify_desc": "自动验证来自同一账户的设备",
+      "block_unverified": "加密黑名单",
+      "block_unverified_desc": "阻止未验证设备的加密消息",
+      "show_indicator": "显示加密指示器",
+      "show_indicator_desc": "在消息中显示加密状态"
+    },
+    "backups": {
+      "title": "密钥备份列表",
+      "no_backups": "暂无备份",
+      "method_backup": "{method}备份",
+      "valid": "有效",
+      "expired": "已过期",
+      "restore_button": "恢复",
+      "delete_button": "删除",
+      "restore_confirm_title": "恢复备份",
+      "restore_confirm_content": "确定要从 {method} 恢复密钥吗？",
+      "delete_confirm_title": "确认删除",
+      "delete_confirm_content": "确定要删除此备份吗？",
+      "restore_success": "密钥恢复成功",
+      "restore_failed": "密钥恢复失败",
+      "delete_success": "备份已删除",
+      "delete_failed": "删除备份失败"
+    },
+    "setup": {
+      "success": "交叉签名设置成功",
+      "failed": "交叉签名设置失败",
+      "device_refreshed": "设备列表已刷新",
+      "verification_success": "设备验证成功",
+      "backup_completed": "备份已完成"
+    }
   }
 }

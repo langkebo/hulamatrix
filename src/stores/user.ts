@@ -6,6 +6,7 @@ import * as PathUtil from '@/utils/PathUtil'
 import { useGlobalStore } from './global'
 import { computed, ref } from 'vue'
 import { logger } from '@/utils/logger'
+import { useMatrixClient } from '@/composables'
 
 /**
  * 默认用户信息（开发环境降级使用）
@@ -80,15 +81,82 @@ export const useUserStore = defineStore(
       isInitialized.value = true
     }
 
+    /**
+     * 获取用户显示名称
+     * 优先使用缓存，其次从 Matrix 客户端获取
+     */
+    const getDisplayName = (userId: string): string | undefined => {
+      if (userId === userInfo.value?.uid) {
+        return userInfo.value?.name
+      }
+
+      const { client } = useMatrixClient()
+      if (!client.value) {
+        logger.warn('[UserStore] Cannot get display name: Matrix client not available')
+        return undefined
+      }
+
+      try {
+        const matrixClient = client.value as unknown as {
+          getUser?: (userId: string) => { displayName?: string } | null
+        }
+        const user = matrixClient.getUser?.(userId)
+        return user?.displayName
+      } catch (error) {
+        logger.error('[UserStore] Failed to get display name:', error)
+        return undefined
+      }
+    }
+
+    /**
+     * 获取用户头像 URL
+     * 优先使用缓存，其次从 Matrix 客户端获取
+     */
+    const getUserAvatar = (userId: string): string | undefined => {
+      if (userId === userInfo.value?.uid) {
+        return userInfo.value?.avatar
+      }
+
+      const { client } = useMatrixClient()
+      if (!client.value) {
+        return undefined
+      }
+
+      try {
+        const matrixClient = client.value as unknown as {
+          getUser?: (userId: string) => { avatarUrl?: string } | null
+          mxcUrlToHttp?: (mxcUrl: string) => string
+        }
+        const user = matrixClient.getUser?.(userId)
+        const mxcUrl = user?.avatarUrl
+        if (mxcUrl && matrixClient.mxcUrlToHttp) {
+          return matrixClient.mxcUrlToHttp(mxcUrl)
+        }
+        return mxcUrl
+      } catch (error) {
+        logger.error('[UserStore] Failed to get avatar:', error)
+        return undefined
+      }
+    }
+
+    // 别名：为了兼容性添加 `user` 属性
+    const user = computed(() => ({
+      userId: userInfo.value?.uid,
+      ...userInfo.value
+    }))
+
     return {
       userInfo,
+      user,
       getUserDetailAction,
       isMe,
       getUserRoomDir,
       getUserRoomAbsoluteDir,
       reset,
       setUserInfo,
-      isInitialized
+      isInitialized,
+      getDisplayName,
+      getUserAvatar
     }
   },
   {

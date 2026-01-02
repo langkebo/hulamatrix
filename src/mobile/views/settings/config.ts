@@ -61,6 +61,13 @@ export const mainSettingsConfig: SettingsPageConfig = {
           route: '/mobile/settings/privacy'
         },
         {
+          key: 'biometric',
+          type: SettingsItemType.NAVIGATION,
+          label: 'settings.menu.biometric',
+          icon: 'fingerprint',
+          route: '/mobile/settings/biometric'
+        },
+        {
           key: 'encryption',
           type: SettingsItemType.NAVIGATION,
           label: 'settings.menu.encryption',
@@ -108,6 +115,7 @@ export const settingsRoutes = {
   appearance: '/mobile/settings/appearance',
   privacy: '/mobile/settings/privacy',
   privacyManage: '/mobile/settings/privacy/manage',
+  biometric: '/mobile/settings/biometric',
   keyboard: '/mobile/settings/keyboard',
   audio: '/mobile/settings/audio',
   labs: '/mobile/settings/labs',

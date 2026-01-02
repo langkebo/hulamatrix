@@ -1,4 +1,26 @@
 {
+  "presence": {
+    "online": "在线",
+    "offline": "离线",
+    "unavailable": "离开",
+    "unknown": "未知",
+    "last_seen_now": "刚刚",
+    "last_seen_minutes": "{minutes}分钟前",
+    "last_seen_hours": "{hours}小时前",
+    "last_seen_days": "{days}天前"
+  },
+  "typing": {
+    "single": "{name} 正在输入...",
+    "two": "{name1} 和 {name2} 正在输入...",
+    "many": "{count} 人正在输入..."
+  },
+  "read_receipt": {
+    "no_readers": "暂无人阅读",
+    "just_now": "刚刚",
+    "minutes_ago": "{minutes}分钟前",
+    "hours_ago": "{hours}小时前",
+    "date": "{date}"
+  },
   "profile": "个人资料",
   "settings": "设置",
   "save": "保存",

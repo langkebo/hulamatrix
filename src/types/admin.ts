@@ -162,6 +162,7 @@ export type AdminOperationType =
   | 'user.deactivate'
   | 'user.reset_password'
   | 'user.delete_tokens'
+  | 'user.delete'
   // 房间操作
   | 'room.get'
   | 'room.list'

@@ -1,576 +1,300 @@
 <template>
-  <div class="device-verification-container">
-    <!-- Verification Request Dialog -->
-    <n-modal
-      :show="showVerificationDialog"
-      :mask-closable="false"
-      @update:show="handleVerificationDialogClose"
-    >
-      <n-card
-        title="设备验证请求"
-        :bordered="false"
-        style="max-width: 500px"
-      >
-        <template #header-extra>
-          <n-button quaternary circle @click="handleVerificationDialogClose">
-            <template #icon>
-              <n-icon><X /></n-icon>
-            </template>
-          </n-button>
-        </template>
+  <n-modal :show="show" :mask-closable="false" @update:show="handleClose">
+    <n-card
+      style="width: 500px; max-width: 90vw"
+      :title="t('setting.e2ee.devices.verify_title')"
+      :bordered="false"
+      size="huge"
+      role="dialog"
+      aria-modal="true">
+      <n-spin :show="verifying">
+        <n-space vertical v-if="device">
+          <!-- 设备信息 -->
+          <n-alert type="info">
+            <n-space vertical>
+              <n-text strong>{{ device.displayName || device.deviceId }}</n-text>
+              <n-text code>{{ device.deviceId }}</n-text>
+            </n-space>
+          </n-alert>
 
-        <div v-if="pendingRequest" class="verification-request-content">
-          <div class="request-info">
-            <n-avatar :size="60" :src="getUserAvatar(pendingRequest.userId)">
-              <template #fallback>
-                <n-icon :size="30"><Devices /></n-icon>
+          <!-- 验证方式选择 -->
+          <n-divider>{{ t('setting.e2ee.devices.verify_method') }}</n-divider>
+
+          <n-space vertical>
+            <n-card
+              hoverable
+              @click="verifyMethod = 'emoji'"
+              :style="{ borderColor: verifyMethod === 'emoji' ? '#18a058' : undefined }">
+              <template #header>
+                <n-space align="center">
+                  <n-icon size="24">
+                    <MoodHappy />
+                  </n-icon>
+                  <n-text strong>{{ t('setting.e2ee.devices.verify_emoji') }}</n-text>
+                </n-space>
               </template>
-            </n-avatar>
-            <div class="user-info">
-              <div class="user-name">{{ getUserName(pendingRequest.userId) }}</div>
-              <div class="user-id">{{ pendingRequest.userId }}</div>
-            </div>
-          </div>
+              <n-text depth="3">
+                {{ t('setting.e2ee.devices.verify_emoji_desc') }}
+              </n-text>
+            </n-card>
 
-          <n-divider />
-
-          <div class="verification-steps">
-            <h4>验证步骤</h4>
-            <n-steps :current="currentStep" :status="verificationStatus">
-              <n-step title="等待确认" description="对方设备请求验证" />
-              <n-step title="验证密钥" description="比较设备密钥是否匹配" />
-              <n-step title="完成验证" description="设备已验证" />
-            </n-steps>
-          </div>
-
-          <div v-if="currentStep === 1 && verificationEmoji" class="emoji-verification">
-            <h4>验证表情符号</h4>
-            <div class="emoji-grid">
-              <div
-                v-for="(emoji, index) in verificationEmoji"
-                :key="index"
-                class="emoji-item"
-              >
-                <span class="emoji">{{ emoji.emoji }}</span>
-                <span class="number">{{ emoji.number }}</span>
-              </div>
-            </div>
-            <n-alert type="info" style="margin-top: 16px">
-              请确认对方设备显示的表情符号和数字与上面一致
-            </n-alert>
-          </div>
-
-          <div class="trust-level-info">
-            <h4>信任级别</h4>
-            <n-tag :type="getTrustType(currentTrustLevel)" size="large">
-              {{ getTrustLabel(currentTrustLevel) }}
-            </n-tag>
-            <p class="trust-description">{{ getTrustDescription(currentTrustLevel) }}</p>
-          </div>
-        </div>
-
-        <template #footer>
-          <n-space justify="end">
-            <n-button @click="handleRejectVerification" :disabled="verifying">
-              拒绝
-            </n-button>
-            <n-button
-              type="primary"
-              @click="handleAcceptVerification"
-              :loading="verifying"
-              :disabled="currentStep !== 1"
-            >
-              {{ verifying ? '验证中...' : '确认匹配' }}
-            </n-button>
+            <n-card
+              hoverable
+              @click="verifyMethod = 'key'"
+              :style="{ borderColor: verifyMethod === 'key' ? '#18a058' : undefined }">
+              <template #header>
+                <n-space align="center">
+                  <n-icon size="24">
+                    <Key />
+                  </n-icon>
+                  <n-text strong>{{ t('setting.e2ee.devices.verify_key') }}</n-text>
+                </n-space>
+              </template>
+              <n-text depth="3">
+                {{ t('setting.e2ee.devices.verify_key_desc') }}
+              </n-text>
+            </n-card>
           </n-space>
-        </template>
-      </n-card>
-    </n-modal>
 
-    <!-- Device Verification Success Notification -->
-    <n-modal
-      :show="showSuccessNotification"
-      :mask-closable="true"
-      @update:show="showSuccessNotification = false"
-    >
-      <n-card style="max-width: 400px; text-align: center">
-        <template #header>
-          <n-icon size="60" color="#18a058">
-            <CircleCheck />
-          </n-icon>
-        </template>
-        <h3>验证成功!</h3>
-        <p>{{ successMessage }}</p>
-        <template #footer>
-          <n-button type="primary" @click="showSuccessNotification = false">
-            确定
-          </n-button>
-        </template>
-      </n-card>
-    </n-modal>
+          <!-- Emoji 验证 -->
+          <template v-if="verifyMethod === 'emoji'">
+            <n-divider>{{ t('setting.e2ee.devices.compare_emoji') }}</n-divider>
 
-    <!-- Trust Indicator Badge (可以嵌入到其他组件中) -->
-    <div v-if="showTrustIndicator" class="trust-indicator" :class="`trust-${currentTrustLevel}`">
-      <n-icon :component="getTrustIcon(currentTrustLevel)" />
-      <span class="trust-label">{{ getTrustLabel(currentTrustLevel) }}</span>
-    </div>
-  </div>
+            <n-space vertical v-if="!emojiVerified">
+              <n-text>{{ t('setting.e2ee.devices.emoji_instruction') }}</n-text>
+
+              <n-grid :cols="7" :x-gap="12" :y-gap="12">
+                <n-gi v-for="(emoji, index) in emojiList" :key="index">
+                  <div class="emoji-item">
+                    <div class="emoji-char">{{ emoji.char }}</div>
+                    <div class="emoji-name">{{ emoji.name }}</div>
+                  </div>
+                </n-gi>
+              </n-grid>
+
+              <n-space>
+                <n-button type="success" @click="handleVerifyEmoji">
+                  {{ t('setting.e2ee.devices.emoji_match') }}
+                </n-button>
+                <n-button @click="handleNotMatch">
+                  {{ t('setting.e2ee.devices.not_match') }}
+                </n-button>
+              </n-space>
+            </n-space>
+
+            <n-result v-else status="success" :title="t('setting.e2ee.devices.verified')" />
+          </template>
+
+          <!-- 密钥验证 -->
+          <template v-if="verifyMethod === 'key'">
+            <n-divider>{{ t('setting.e2ee.devices.compare_key') }}</n-divider>
+
+            <n-space vertical v-if="!keyVerified">
+              <n-text>{{ t('setting.e2ee.devices.key_instruction') }}</n-text>
+
+              <n-card>
+                <n-text code style="font-size: 12px; word-break: break-all">
+                  {{ deviceKey }}
+                </n-text>
+              </n-card>
+
+              <n-space>
+                <n-button type="success" @click="handleVerifyKey">
+                  {{ t('setting.e2ee.devices.key_match') }}
+                </n-button>
+                <n-button @click="handleNotMatch">
+                  {{ t('setting.e2ee.devices.not_match') }}
+                </n-button>
+              </n-space>
+            </n-space>
+
+            <n-result v-else status="success" :title="t('setting.e2ee.devices.verified')" />
+          </template>
+        </n-space>
+      </n-spin>
+
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="handleClose">{{ t('common.close') }}</n-button>
+        </n-space>
+      </template>
+    </n-card>
+  </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NModal,
   NCard,
-  NButton,
-  NAvatar,
-  NIcon,
-  NDivider,
-  NSteps,
-  NStep,
-  NTag,
-  NAlert,
   NSpace,
+  NSpin,
+  NAlert,
+  NText,
+  NDivider,
+  NGrid,
+  NGi,
+  NButton,
+  NIcon,
   useMessage,
   useDialog
 } from 'naive-ui'
-import { X, Devices, CircleCheck, Shield, ShieldOff, ShieldX } from '@vicons/tabler'
-import { matrixClientService } from '@/integrations/matrix/client'
-import { useUserStore } from '@/stores/user'
+import { MoodHappy, Key } from '@vicons/tabler'
+import { useE2EEStore } from '@/stores/e2ee'
 import { logger } from '@/utils/logger'
 
-interface VerificationRequest {
-  requestId: string
-  userId: string
-  timestamp: number
+interface DeviceInfo {
+  deviceId: string
+  userId?: string
+  displayName?: string
+  verified: boolean
+  blocked?: boolean
+  lastSeenTs?: number
 }
 
-interface VerificationEmoji {
-  emoji: string
-  number: number
+interface Props {
+  show: boolean
+  device: DeviceInfo | null
 }
 
-type TrustLevel = 'verified' | 'blocked' | 'unknown'
+interface Emits {
+  (e: 'update:show', value: boolean): void
+  (e: 'verified'): void
+}
 
-const props = withDefaults(
-  defineProps<{
-    showTrustIndicator?: boolean
-  }>(),
-  {
-    showTrustIndicator: false
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const { t } = useI18n()
+const message = useMessage()
+const dialog = useDialog()
+const e2eeStore = useE2EEStore()
+
+const verifying = ref(false)
+const verifyMethod = ref<'emoji' | 'key'>('emoji')
+const emojiVerified = ref(false)
+const keyVerified = ref(false)
+
+// Emoji 列表（示例）
+const emojiList = ref([
+  { char: '🐱', name: 'Cat' },
+  { char: '🐶', name: 'Dog' },
+  { char: '🦁', name: 'Lion' },
+  { char: '🐸', name: 'Frog' },
+  { char: '🦊', name: 'Fox' },
+  { char: '🐼', name: 'Panda' },
+  { char: '🐨', name: 'Koala' }
+])
+
+// 设备密钥（示例）
+const deviceKey = computed(() => {
+  // 实际应该从设备信息中获取
+  return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+})
+
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      verifying.value = false
+      verifyMethod.value = 'emoji'
+      emojiVerified.value = false
+      keyVerified.value = false
+      // 生成新的 emoji 列表
+      generateEmojiList()
+    }
   }
 )
 
-const message = useMessage()
-const dialog = useDialog()
-const userStore = useUserStore()
-
-// State
-const showVerificationDialog = ref(false)
-const showSuccessNotification = ref(false)
-const pendingRequest = ref<VerificationRequest | null>(null)
-const currentStep = ref(0)
-const verificationStatus = ref<'process' | 'finish' | 'error' | 'wait'>('wait')
-const verifying = ref(false)
-const currentTrustLevel = ref<TrustLevel>('unknown')
-const verificationEmoji = ref<VerificationEmoji[] | null>(null)
-const successMessage = ref('')
-
-// Event handlers for E2EE events
-const handleVerificationRequest = (event: CustomEvent) => {
-  const detail = event.detail as VerificationRequest
-  pendingRequest.value = detail
-  currentStep.value = 1
-  verificationStatus.value = 'process'
-  showVerificationDialog.value = true
-
-  // Generate verification emoji (SAS - Short Authentication String)
-  generateVerificationEmoji()
-
-  logger.info('[DeviceVerificationDialog] Verification request received:', detail)
+function generateEmojiList() {
+  // 实际应该从设备密钥生成
+  const emojis = [
+    { char: '🐱', name: 'Cat' },
+    { char: '🐶', name: 'Dog' },
+    { char: '🦁', name: 'Lion' },
+    { char: '🐸', name: 'Frog' },
+    { char: '🦊', name: 'Fox' },
+    { char: '🐼', name: 'Panda' },
+    { char: '🐨', name: 'Koala' }
+  ]
+  emojiList.value = emojis
 }
 
-const handleVerificationStatusChanged = (event: CustomEvent) => {
-  const { requestId, status } = event.detail
-
-  if (pendingRequest.value?.requestId === requestId) {
-    if (status === 'verified') {
-      currentStep.value = 2
-      verificationStatus.value = 'finish'
-      currentTrustLevel.value = 'verified'
-      successMessage.value = '设备已成功验证'
-      showSuccessNotification.value = true
-      setTimeout(() => {
-        showVerificationDialog.value = false
-      }, 2000)
-    } else if (status === 'cancelled' || status === 'rejected') {
-      verificationStatus.value = 'error'
-      message.warning('验证已被取消或拒绝')
-      showVerificationDialog.value = false
-    } else {
-      verificationStatus.value = status as 'process' | 'finish' | 'error' | 'wait'
-    }
-  }
-
-  logger.info('[DeviceVerificationDialog] Verification status changed:', { requestId, status })
-}
-
-const handleUserTrustChanged = (event: CustomEvent) => {
-  const { userId, trustLevel } = event.detail
-
-  // Check if this is about the current user's device
-  const client = matrixClientService.getClient()
-  if (!client) return
-
-  const getUserIdMethod = client.getUserId as (() => string) | undefined
-  const currentUserId = getUserIdMethod?.()
-
-  if (userId === currentUserId) {
-    currentTrustLevel.value = trustLevel as TrustLevel
-  }
-
-  logger.info('[DeviceVerificationDialog] User trust changed:', { userId, trustLevel })
-}
-
-const handleDeviceVerificationChanged = (event: CustomEvent) => {
-  const { userId, deviceId, trustLevel } = event.detail
-
-  const client = matrixClientService.getClient()
-  if (!client) return
-
-  const getUserIdMethod = client.getUserId as (() => string) | undefined
-  const currentUserId = getUserIdMethod?.()
-
-  const getDeviceIdMethod = client.getDeviceId as (() => string) | undefined
-  const currentDeviceId = getDeviceIdMethod?.()
-
-  if (userId === currentUserId && deviceId === currentDeviceId) {
-    currentTrustLevel.value = trustLevel as TrustLevel
-  }
-
-  logger.info('[DeviceVerificationDialog] Device verification changed:', { userId, deviceId, trustLevel })
-}
-
-// Methods
-const generateVerificationEmoji = () => {
-  // Generate 7 emoji-number pairs for verification (Matrix SAS)
-  const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮']
-  const pairs: VerificationEmoji[] = []
-
-  for (let i = 0; i < 7; i++) {
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
-    const randomNumber = Math.floor(Math.random() * 10)
-    pairs.push({ emoji: randomEmoji, number: randomNumber })
-  }
-
-  verificationEmoji.value = pairs
-}
-
-const handleVerificationDialogClose = () => {
-  if (verifying.value) return
-
-  dialog.warning({
-    title: '取消验证',
-    content: '确定要取消设备验证吗？',
-    positiveText: '确定',
-    negativeText: '取消',
-    onPositiveClick: async () => {
-      await handleRejectVerification()
-    }
-  })
-}
-
-const handleAcceptVerification = async () => {
-  if (!pendingRequest.value) return
+async function handleVerifyEmoji() {
+  if (!props.device) return
 
   verifying.value = true
   try {
-    const client = matrixClientService.getClient()
-    if (!client) {
-      throw new Error('Matrix client not available')
-    }
-
-    // Accept verification request using Matrix SDK
-    const verifyMethod = client.verifyDevice as ((userId: string, deviceId: string) => Promise<void>) | undefined
-
-    if (verifyMethod) {
-      // For now, simulate successful verification
-      // In production, this would use the actual Matrix SDK verification flow
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      currentStep.value = 2
-      verificationStatus.value = 'finish'
-      currentTrustLevel.value = 'verified'
-      successMessage.value = '设备已成功验证'
-      showSuccessNotification.value = true
-
-      // Emit success event
-      window.dispatchEvent(
-        new CustomEvent('matrix:verification-complete', {
-          detail: {
-            requestId: pendingRequest.value.requestId,
-            status: 'verified'
-          }
-        })
-      )
-
-      setTimeout(() => {
-        showVerificationDialog.value = false
-      }, 2000)
-
-      message.success('设备验证成功')
+    const success = await e2eeStore.verifyDevice(props.device.deviceId)
+    if (success) {
+      emojiVerified.value = true
+      message.success(t('setting.e2ee.devices.verification_success'))
+      emit('verified')
     } else {
-      message.error('验证功能不可用')
+      message.error(t('setting.e2ee.devices.verification_failed'))
     }
   } catch (error) {
-    logger.error('[DeviceVerificationDialog] Failed to accept verification:', error)
-    message.error('验证失败：' + (error instanceof Error ? error.message : String(error)))
+    logger.error('[DeviceVerificationDialog] Failed to verify device:', error)
+    message.error(t('setting.e2ee.devices.verification_failed'))
   } finally {
     verifying.value = false
   }
 }
 
-const handleRejectVerification = async () => {
-  if (!pendingRequest.value) return
+async function handleVerifyKey() {
+  if (!props.device) return
 
+  verifying.value = true
   try {
-    const client = matrixClientService.getClient()
-    if (!client) {
-      throw new Error('Matrix client not available')
+    const success = await e2eeStore.verifyDevice(props.device.deviceId)
+    if (success) {
+      keyVerified.value = true
+      message.success(t('setting.e2ee.devices.verification_success'))
+      emit('verified')
+    } else {
+      message.error(t('setting.e2ee.devices.verification_failed'))
     }
-
-    // Reject verification request
-    const cancelMethod = client.cancelVerification as ((requestId: string) => Promise<void>) | undefined
-
-    if (cancelMethod) {
-      await cancelMethod(pendingRequest.value.requestId)
-    }
-
-    // Emit rejection event
-    window.dispatchEvent(
-      new CustomEvent('matrix:verification-complete', {
-        detail: {
-          requestId: pendingRequest.value.requestId,
-          status: 'rejected'
-        }
-      })
-    )
-
-    verificationStatus.value = 'error'
-    showVerificationDialog.value = false
-    message.info('已拒绝验证请求')
   } catch (error) {
-    logger.error('[DeviceVerificationDialog] Failed to reject verification:', error)
-    message.error('操作失败')
+    logger.error('[DeviceVerificationDialog] Failed to verify device:', error)
+    message.error(t('setting.e2ee.devices.verification_failed'))
+  } finally {
+    verifying.value = false
   }
 }
 
-const getUserAvatar = (userId: string): string => {
-  const client = matrixClientService.getClient()
-  if (!client) return ''
-
-  const getUserMethod = client.getUser as ((userId: string) => Record<string, unknown> | undefined) | undefined
-  const user = getUserMethod?.(userId)
-  if (!user) return ''
-
-  const baseUrlMethod = client.getHomeserverUrl as (() => string) | undefined
-  const baseUrl = baseUrlMethod?.() || ''
-
-  const getAvatarUrlMethod = user.getAvatarUrl as
-    | ((baseUrl: string, width: number, height: number, resizeMethod: string, allowDefault: boolean) => string)
-    | undefined
-
-  return getAvatarUrlMethod?.(baseUrl, 60, 60, 'scale', false) || ''
+function handleNotMatch() {
+  dialog.warning({
+    title: t('setting.e2ee.devices.not_match_title'),
+    content: t('setting.e2ee.devices.not_match_content'),
+    positiveText: t('common.confirm'),
+    negativeText: t('common.cancel'),
+    onPositiveClick: async () => {
+      message.warning(t('setting.e2ee.devices.verification_cancelled'))
+      handleClose()
+    }
+  })
 }
 
-const getUserName = (userId: string): string => {
-  const client = matrixClientService.getClient()
-  if (!client) return userId.split(':')[0].replace(/^@/, '')
-
-  const getUserMethod = client.getUser as ((userId: string) => Record<string, unknown> | undefined) | undefined
-  const user = getUserMethod?.(userId)
-
-  const displayName = user?.displayName as string | undefined
-  const rawDisplayName = user?.rawDisplayName as string | undefined
-
-  return displayName || rawDisplayName || userId.split(':')[0].replace(/^@/, '')
+function handleClose() {
+  emit('update:show', false)
 }
-
-const getTrustType = (level: TrustLevel): 'success' | 'error' | 'warning' | 'default' => {
-  switch (level) {
-    case 'verified':
-      return 'success'
-    case 'blocked':
-      return 'error'
-    default:
-      return 'warning'
-  }
-}
-
-const getTrustLabel = (level: TrustLevel): string => {
-  switch (level) {
-    case 'verified':
-      return '已验证'
-    case 'blocked':
-      return '已阻止'
-    default:
-      return '未验证'
-  }
-}
-
-const getTrustDescription = (level: TrustLevel): string => {
-  switch (level) {
-    case 'verified':
-      return '此设备已通过验证，可以安全地进行加密通信'
-    case 'blocked':
-      return '此设备已被阻止，不会进行加密通信'
-    default:
-      return '此设备尚未验证，建议在使用前进行验证'
-  }
-}
-
-const getTrustIcon = (level: TrustLevel) => {
-  switch (level) {
-    case 'verified':
-      return Shield
-    case 'blocked':
-      return ShieldX
-    default:
-      return ShieldOff
-  }
-}
-
-// Lifecycle
-onMounted(() => {
-  // Register event listeners
-  window.addEventListener('matrix:verification-request', handleVerificationRequest as EventListener)
-  window.addEventListener('matrix:verification-status-changed', handleVerificationStatusChanged as EventListener)
-  window.addEventListener('matrix:user-trust-changed', handleUserTrustChanged as EventListener)
-  window.addEventListener('matrix:device-verification-changed', handleDeviceVerificationChanged as EventListener)
-})
-
-onUnmounted(() => {
-  // Clean up event listeners
-  window.removeEventListener('matrix:verification-request', handleVerificationRequest as EventListener)
-  window.removeEventListener('matrix:verification-status-changed', handleVerificationStatusChanged as EventListener)
-  window.removeEventListener('matrix:user-trust-changed', handleUserTrustChanged as EventListener)
-  window.removeEventListener('matrix:device-verification-changed', handleDeviceVerificationChanged as EventListener)
-})
 </script>
 
-<style scoped>
-.device-verification-container {
-  /* Container for verification UI */
-}
-
-.verification-request-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.request-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.user-name {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.user-id {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.verification-steps {
-  h4 {
-    margin: 0 0 12px 0;
-  }
-}
-
-.emoji-verification {
-  h4 {
-    margin: 0 0 12px 0;
-  }
-}
-
-.emoji-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  text-align: center;
-}
-
+<style lang="scss" scoped>
 .emoji-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  text-align: center;
   padding: 8px;
-  border-radius: 8px;
-  background: var(--bg-color);
-}
 
-.emoji {
-  font-size: 24px;
-}
-
-.number {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.trust-level-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  h4 {
-    margin: 0;
+  .emoji-char {
+    font-size: 32px;
+    line-height: 1;
   }
-}
 
-.trust-description {
-  font-size: 12px;
-  opacity: 0.8;
-  margin: 0;
-}
-
-.trust-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.trust-indicator.trust-verified {
-  background: rgba(24, 160, 88, 0.1);
-  color: #18a058;
-}
-
-.trust-indicator.trust-blocked {
-  background: rgba(208, 48, 80, 0.1);
-  color: #d03050;
-}
-
-.trust-indicator.trust-unknown {
-  background: rgba(240, 160, 32, 0.1);
-  color: #f0a020;
-}
-
-.trust-label {
-  font-size: 12px;
+  .emoji-name {
+    font-size: 12px;
+    color: var(--text-color-3);
+    margin-top: 4px;
+  }
 }
 </style>

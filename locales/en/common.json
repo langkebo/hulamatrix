@@ -1,4 +1,26 @@
 {
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "unavailable": "Away",
+    "unknown": "Unknown",
+    "last_seen_now": "Just now",
+    "last_seen_minutes": "{minutes}m ago",
+    "last_seen_hours": "{hours}h ago",
+    "last_seen_days": "{days}d ago"
+  },
+  "typing": {
+    "single": "{name} is typing...",
+    "two": "{name1} and {name2} are typing...",
+    "many": "{count} people are typing..."
+  },
+  "read_receipt": {
+    "no_readers": "No one has read this yet",
+    "just_now": "Just now",
+    "minutes_ago": "{minutes}m ago",
+    "hours_ago": "{hours}h ago",
+    "date": "{date}"
+  },
   "profile": "Profile",
   "settings": "Settings",
   "save": "Save",
