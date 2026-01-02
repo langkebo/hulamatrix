@@ -55,9 +55,11 @@
 - [10. 搜索功能](./10-search.md) ✅ - 搜索消息、用户、房间
 
 ### 企业功能
-- [11. 好友系统](./11-friends-system.md) ✅ - 好友管理、好友请求、好友分类
-- [12. 私密聊天](./12-private-chat.md) ✅ - 阅后即焚、临时会话、私密消息
+- [11. 好友系统](./11-friends-system.md) ✅ v2.0.0 - 好友管理、好友请求、好友分类 (使用 `client.friendsV2`)
+- [12. 私密聊天](./12-private-chat.md) ✅ v2.0.0 - 阅后即焚、临时会话、私密消息 (使用 `client.privateChatV2`)
 - [15. 企业功能](./15-enterprise-features.md) ✅ - 企业功能完整参考
+
+> **重要更新 (v2.0.0)**: 好友系统和私聊系统已升级为 v2.0.0 API，提供更完善的类型定义、缓存机制、事件系统和错误处理。使用 `client.friendsV2` 和 `client.privateChatV2` 访问新 API。
 
 ### 验证报告
 - [01. 客户端基础验证](./01-client-basics-VERIFICATION.md) ✅ - 100% 完成
@@ -123,6 +125,84 @@ await client.sendMessage("!roomId:server", {
 });
 ```
 
+### 使用好友系统 (v2.0.0)
+
+```typescript
+import { MatrixClient } from "matrix-js-sdk";
+
+const client = new MatrixClient("https://matrix.cjystx.top");
+await client.login("m.login.password", {
+  user: "username",
+  password: "password"
+});
+
+// 获取好友客户端 v2.0.0
+const friends = client.friendsV2;
+
+// 获取好友列表
+const friendList = await friends.listFriends();
+console.log("好友列表:", friendList);
+
+// 搜索用户
+const results = await friends.searchUsers("alice");
+console.log("搜索结果:", results);
+
+// 发送好友请求
+const requestId = await friends.sendFriendRequest({
+  target_id: "@alice:matrix.org",
+  message: "请加我好友",
+  category_id: 1
+});
+
+// 监听好友请求
+friends.on("request.received", (request) => {
+  console.log("收到好友请求:", request);
+});
+
+// 接受好友请求
+await friends.acceptFriendRequest(requestId, 1);
+```
+
+### 使用私聊增强 (v2.0.0)
+
+```typescript
+// 获取私聊客户端 v2.0.0
+const privateChat = client.privateChatV2;
+
+// 获取会话列表
+const sessions = await privateChat.listSessions();
+
+// 创建新会话
+const session = await privateChat.createSession({
+  participants: ["@alice:matrix.org"],
+  session_name: "私聊",
+  ttl_seconds: 3600  // 1小时后过期
+});
+
+// 发送消息
+await privateChat.sendText(session.session_id, "你好！");
+
+// 订阅新消息
+const unsubscribe = privateChat.subscribeToMessages(
+  session.session_id,
+  (message) => {
+    console.log("收到新消息:", message.content);
+  }
+);
+
+// 获取消息历史
+const messages = await privateChat.getMessages({
+  session_id: session.session_id,
+  limit: 50
+});
+
+// 取消订阅
+unsubscribe();
+
+// 删除会话
+await privateChat.deleteSession(session.session_id);
+```
+
 ### 启用加密
 
 ```typescript
@@ -146,7 +226,20 @@ matrix-js-sdk-39.1.3/
 ├── src/
 │   ├── client.ts              # 核心客户端
 │   ├── matrix.ts              # 主要入口点
+│   ├── @types/                # TypeScript 类型定义
+│   │   ├── friends.ts         # 好友系统类型
+│   │   └── private-chat.ts    # 私聊系统类型
 │   ├── http-api/              # HTTP API 封装
+│   │   ├── friends.ts         # 好友系统 HTTP API
+│   │   └── private-chat.ts    # 私聊系统 HTTP API
+│   ├── friends/               # 好友系统模块 (v2.0.0)
+│   │   ├── FriendsClient.ts   # 好友系统客户端
+│   │   ├── errors.ts          # 错误类
+│   │   └── index.ts           # 导出
+│   ├── private-chat/          # 私聊增强模块 (v2.0.0)
+│   │   ├── PrivateChatClient.ts # 私聊系统客户端
+│   │   ├── errors.ts          # 错误类
+│   │   └── index.ts           # 导出
 │   ├── crypto-api/            # 加密 API
 │   ├── models/                # 数据模型
 │   ├── webrtc/                # WebRTC 通话
@@ -163,6 +256,8 @@ matrix-js-sdk-39.1.3/
 | 类/接口 | 描述 |
 |--------|------|
 | `MatrixClient` | 主客户端类，所有功能的核心入口 |
+| `FriendsClient` | 好友系统客户端 (通过 `client.friendsV2` 访问) |
+| `PrivateChatClient` | 私聊增强客户端 (通过 `client.privateChatV2` 访问) |
 | `Room` | 房间模型，包含房间状态和时间线 |
 | `RoomMember` | 房间成员模型 |
 | `RoomState` | 房间状态管理 |
@@ -176,6 +271,8 @@ matrix-js-sdk-39.1.3/
 
 SDK 使用 EventEmitter 模式，支持以下主要事件：
 
+### MatrixClient 核心事件
+
 | 事件 | 触发时机 |
 |------|----------|
 | `ClientEvent.Sync` | 同步状态变化 |
@@ -187,6 +284,24 @@ SDK 使用 EventEmitter 模式，支持以下主要事件：
 | `CryptoEvent.KeyVerification` | 密钥验证事件 |
 | `CallEvent.Invite` | 收到通话邀请 |
 | `CallEvent.Hangup` | 通话挂断 |
+
+### FriendsClient 事件 (v2.0.0)
+
+| 事件 | 触发时机 |
+|------|----------|
+| `friend.add` | 添加好友后触发 |
+| `friend.remove` | 删除好友后触发 |
+| `request.received` | 收到好友请求时触发 |
+| `request.accepted` | 接受好友请求后触发 |
+
+### PrivateChatClient 事件 (v2.0.0)
+
+| 事件 | 触发时机 |
+|------|----------|
+| `session.created` | 创建会话后触发 |
+| `session.deleted` | 删除会话后触发 |
+| `message.received` | 收到新消息时触发 |
+| `message.sent` | 发送消息后触发 |
 
 ## 最佳实践
 
@@ -291,7 +406,21 @@ Matrix JS SDK 使用 Apache 2.0 许可证。
 
 ---
 
-**文档版本**: 1.1.0
+**文档版本**: 2.0.1
 **SDK 版本**: 39.1.3
-**最后更新**: 2025-12-30
+**最后更新**: 2026-01-02
 **HuLaMatrix 版本**: 3.0.5
+
+**更新内容**:
+- ✅ 好友系统 API 升级到 v2.0.0 (`client.friendsV2`)
+- ✅ 私聊增强 API 升级到 v2.0.0 (`client.privateChatV2`)
+- ✅ 完整的 TypeScript 类型定义
+- ✅ 缓存机制和事件系统
+- ✅ 自定义错误类和错误处理
+- ✅ **RESTful API 端点** - 使用 `/_synapse/client/enhanced/` 路径
+
+**后端要求**:
+- Synapse 1.140.0 Enhanced Module v1.0.2+
+- 支持 v1 RESTful API 路径 (`/_synapse/client/enhanced/friends/*`, `/_synapse/client/enhanced/private/*`)
+
+**注意**: Nginx 简短路径（如 `/friends/list`）因端口 80 冲突暂未启用，但所有功能通过完整路径（如 `/_synapse/client/enhanced/friends/list`）均可正常访问，完全满足业务需求。

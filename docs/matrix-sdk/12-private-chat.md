@@ -1,52 +1,78 @@
-# 私密聊天功能文档
+# 私聊增强功能文档
 
-> Matrix JS SDK 39.1.3 企业功能 - 完整 API 参考
+> Matrix JS SDK 39.1.3 - PrivateChatClient API 完整参考
 
 ## 概述
 
-私密聊天 (Private Chat) 是 matrix-js-sdk 39.1.3 的企业功能之一，提供了端到端加密的临时会话能力，支持阅后即焚、消息自毁等增强隐私功能。
+私聊增强 (PrivateChatClient) 是 matrix-js-sdk 39.1.3 的核心功能之一，提供了临时会话能力，支持会话过期、消息管理、轮询订阅等增强功能。
 
 ## 功能特性
 
-- ✅ 创建临时私密会话
-- ✅ 阅后即焚消息
-- ✅ 消息自毁定时器
-- ✅ 端到端加密
+- ✅ 创建临时私聊会话
+- ✅ 会话列表管理（支持缓存）
+- ✅ 发送多种类型消息
+- ✅ 消息历史查询
 - ✅ 会话过期自动清理
-- ✅ 已读状态管理
-- ✅ 多种消息类型支持
+- ✅ 消息订阅轮询
+- ✅ 事件系统支持
 
-## 获取私密聊天管理器
+## 获取 PrivateChatClient
 
 ```typescript
-import * as sdk from "matrix-js-sdk";
+import { MatrixClient } from "matrix-js-sdk";
 
-const client = sdk.createClient({
-    baseUrl: "https://matrix.example.com",
-    accessToken: "your_access_token",
-    userId: "@user:example.com"
+const client = new MatrixClient("https://matrix.cjystx.top");
+await client.login("m.login.password", {
+    user: "username",
+    password: "password"
 });
 
-// 获取私密聊天管理器
-const privateChat = client.privateChat;
+// 获取私聊增强客户端
+const privateChat = client.privateChatV2;
 ```
 
 ## API 参考
 
-### 1. 创建私密会话
+### 1. 获取会话列表
 
-创建一个新的临时私密聊天会话。
+获取当前用户的所有私聊会话。
 
 ```typescript
-const session = await client.privateChat.createPrivateChat(
-    ["@alice:example.com", "@bob:example.com"],  // 参与者
-    {
-        session_name: "机密讨论",
-        ttl_seconds: 3600,       // 会话1小时后过期
-        auto_delete: true,        // 过期后自动删除
-        read_only: false
-    }
-);
+// 获取所有会话
+const sessions = await privateChat.listSessions();
+
+// 强制刷新缓存
+const freshSessions = await privateChat.listSessions();
+
+console.log(`活跃会话: ${sessions.length}个`);
+```
+
+**返回值:**
+```typescript
+type PrivateChatSession[] = Array<{
+    session_id: string;          // 会话唯一 ID
+    participants: string[];       // 参与者列表
+    session_name?: string;        // 会话名称
+    created_by: string;           // 创建者用户 ID
+    created_at: string;           // 创建时间 (ISO 8601)
+    ttl_seconds?: number;         // 会话生存时间（秒）
+    expires_at?: string;          // 过期时间 (ISO 8601)
+    updated_at?: string;          // 更新时间 (ISO 8601)
+}>;
+```
+
+---
+
+### 2. 创建私聊会话
+
+创建一个新的临时私聊会话。
+
+```typescript
+const session = await privateChat.createSession({
+    participants: ["@alice:matrix.org"],
+    session_name: "私聊讨论",
+    ttl_seconds: 3600
+});
 
 console.log("会话ID:", session.session_id);
 console.log("过期时间:", session.expires_at);
@@ -54,313 +80,293 @@ console.log("过期时间:", session.expires_at);
 
 **参数:**
 ```typescript
-interface PrivateChatOptions {
-    session_name?: string;   // 会话名称
-    ttl_seconds?: number;    // 会话生存时间（秒），默认86400（24小时）
-    auto_delete?: boolean;   // 过期后自动删除，默认false
-    read_only?: boolean;     // 是否只读，默认false
+interface CreateSessionOptions {
+    participants: string[];      // 参与者列表 (必需)
+    session_name?: string;       // 会话名称
+    ttl_seconds?: number;        // 会话生存时间（秒）
 }
 ```
 
 **返回值:**
 ```typescript
-interface CreatePrivateChatResponse {
-    session_id: string;          // 会话唯一ID
-    session_name: string;        // 会话名称
-    participants: string[];      // 参与者列表
-    created_at: number;          // 创建时间戳
-    expires_at: number;          // 过期时间戳
-    auto_delete: boolean;        // 是否自动删除
-    encryption_key_id: string;   // 加密密钥ID
-}
+Promise<PrivateChatSession>  // 返回创建的会话对象
 ```
 
-**TTL 推荐:**
-- `300` (5分钟) - 极敏感信息
-- `1800` (30分钟) - 敏感讨论
-- `3600` (1小时) - 一般私密对话
-- `86400` (24小时) - 长期私密会话
-- `604800` (7天) - 延迟敏感内容
+**注意**: 当前用户会自动添加到参与者列表中。
 
-### 2. 发送私密消息
+---
 
-向私密会话发送消息。
+### 3. 发送消息
+
+向私聊会话发送消息。
 
 ```typescript
-// 发送普通文本消息
-const msg1 = await client.privateChat.sendPrivateMessage(
-    "session_123",
-    "这是一条私密消息"
-);
+// 发送文本消息
+const messageId = await privateChat.sendMessage({
+    session_id: "session-123",
+    content: "这是一条私密消息",
+    type: "text"
+});
 
-// 发送带TTL的消息（1分钟后自毁）
-const msg2 = await client.privateChat.sendPrivateMessage(
-    "session_123",
-    "这条消息将在1分钟后自动销毁",
-    {
-        ttl_seconds: 60,
-        burn_after_reading: true  // 阅后即焚
-    }
-);
-
-// 发送文件
-const msg3 = await client.privateChat.sendPrivateMessage(
-    "session_123",
-    "文件内容",
-    {
-        message_type: "file",
-        file_url: "mxc://example.com/abc123",
-        file_size: 1024000,
-        ttl_seconds: 300
-    }
-);
+// 使用便捷方法
+const msgId = await privateChat.sendText("session-123", "快速发送文本");
 ```
 
 **参数:**
-| 参数 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| `sessionId` | `string` | 是 | 会话ID |
-| `content` | `string` | 是 | 消息内容 |
-| `options` | `PrivateMessageOptions` | 否 | 消息选项 |
-
-**消息选项:**
 ```typescript
-interface PrivateMessageOptions {
-    message_type?: "text" | "file" | "image" | "audio" | "video";  // 消息类型
-    ttl_seconds?: number;           // 消息生存时间（秒）
-    burn_after_reading?: boolean;   // 阅后即焚，默认false
-    file_url?: string;              // 文件URL (mxc://)
-    file_size?: number;             // 文件大小（字节）
+interface SendMessageOptions {
+    session_id: string;         // 会话 ID (必需)
+    content: string;            // 消息内容 (必需)
+    type?: "text" | "image" | "file" | "audio" | "video";  // 消息类型
 }
 ```
 
 **返回值:**
 ```typescript
-interface SendPrivateMessageResponse {
-    message_id: string;         // 消息ID
-    session_id: string;         // 会话ID
-    content: string;            // 消息内容
-    sent_at: number;            // 发送时间
-    expires_at?: number;        // 过期时间（如果设置了TTL）
-    burn_after_reading: boolean; // 是否阅后即焚
-}
+Promise<string>  // 返回消息 ID
 ```
 
-### 3. 获取私密消息
+---
+
+### 4. 获取消息
 
 获取会话中的消息列表。
 
 ```typescript
 // 获取最新消息
-const messages = await client.privateChat.getPrivateMessages("session_123");
-
-// 分页获取
-const page1 = await client.privateChat.getPrivateMessages("session_123", {
-    limit: 50,
-    before: "msg_456"  // 获取此消息之前的消息
+const messages = await privateChat.getMessages({
+    session_id: "session-123",
+    limit: 50
 });
 
-// 向前分页
-const page2 = await client.privateChat.getPrivateMessages("session_123", {
+// 分页获取
+const page1 = await privateChat.getMessages({
+    session_id: "session-123",
     limit: 50,
-    after: "msg_123"   // 获取此消息之后的消息
+    before: "msg-456"  // 获取此消息之前的消息
 });
 ```
 
 **参数:**
 ```typescript
 interface GetMessagesOptions {
-    limit?: number;      // 每页数量 (默认: 50)
-    before?: string;     // 获取此消息ID之前的消息
-    after?: string;      // 获取此消息ID之后的消息
+    session_id: string;      // 会话 ID (必需)
+    limit?: number;         // 每页数量 (默认: 10)
+    before?: string;        // 获取此消息 ID 之前的消息
 }
 ```
 
 **返回值:**
 ```typescript
-interface PrivateMessagesResponse {
-    messages: Array<{
-        message_id: string;
-        sender_id: string;
-        content: string;
-        message_type: string;
-        sent_at: number;
-        expires_at?: number;
-        burn_after_reading: boolean;
-        is_read: boolean;
-    }>;
-    total: number;           // 消息总数
-    has_more: boolean;       // 是否有更多消息
-    next_token?: string;     // 下一页标记
-    prev_token?: string;     // 上一页标记
+type PrivateChatMessage[] = Array<{
+    message_id: string;      // 消息 ID
+    session_id: string;      // 会话 ID
+    sender_id: string;       // 发送者用户 ID
+    content: string;         // 消息内容
+    type: "text" | "image" | "file" | "audio" | "video";  // 消息类型
+    created_at: string;      // 创建时间 (ISO 8601)
+}>;
+```
+
+---
+
+### 5. 删除会话
+
+删除私聊会话。
+
+```typescript
+await privateChat.deleteSession("session-123");
+console.log("会话已删除");
+```
+
+**参数:**
+| 参数 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| `sessionId` | `string` | 是 | 会话 ID |
+
+---
+
+### 6. 获取单个会话
+
+获取缓存的会话对象。
+
+```typescript
+const session = privateChat.getSession("session-123");
+
+if (session) {
+    console.log("会话名称:", session.session_name);
+} else {
+    console.log("会话不存在");
 }
 ```
 
-### 4. 获取用户会话列表
+---
 
-获取当前用户的所有私密会话。
+### 7. 检查会话存在
+
+检查指定会话是否存在。
 
 ```typescript
-const sessions = await client.privateChat.getUserSessions();
+const exists = await privateChat.hasSession("session-123");
 
-console.log(`活跃会话: ${sessions.sessions.length}个`);
+if (exists) {
+    console.log("会话存在");
+} else {
+    console.log("会话不存在");
+}
+```
 
-sessions.sessions.forEach(session => {
-    const expires = new Date(session.expires_at);
-    const remaining = Math.floor((expires.getTime() - Date.now()) / 1000 / 60);
-    console.log(`${session.session_name}: ${remaining}分钟后过期`);
+---
+
+### 8. 订阅消息
+
+订阅会话的新消息（自动轮询）。
+
+```typescript
+const unsubscribe = privateChat.subscribeToMessages(
+    "session-123",
+    (message) => {
+        console.log("收到新消息:", message.content);
+    }
+);
+
+// 取消订阅
+unsubscribe();
+```
+
+**参数:**
+| 参数 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| `sessionId` | `string` | 是 | 会话 ID |
+| `handler` | `(message: PrivateChatMessage) => void` | 是 | 消息处理函数 |
+
+**返回值:**
+```typescript
+() => void  // 取消订阅函数
+```
+
+**轮询机制**: PrivateChatClient 每 3 秒自动轮询新消息。
+
+---
+
+### 9. 清除缓存
+
+清除会话缓存。
+
+```typescript
+privateChat.invalidateCache();
+// 下次调用 listSessions 时将重新从服务器获取
+```
+
+---
+
+### 10. 清理资源
+
+清理所有轮询和缓存。
+
+```typescript
+privateChat.dispose();
+// 停止所有轮询
+// 清除所有缓存
+// 移除所有事件监听器
+```
+
+---
+
+## 事件系统
+
+PrivateChatClient 继承自 EventEmitter，支持监听私聊相关事件。
+
+```typescript
+import { PrivateChatClient } from "matrix-js-sdk";
+
+// 监听会话创建事件
+privateChat.on("session.created", (session) => {
+    console.log("会话已创建:", session.session_id);
+});
+
+// 监听会话删除事件
+privateChat.on("session.deleted", (data) => {
+    console.log("会话已删除:", data.sessionId);
+});
+
+// 监听消息接收事件
+privateChat.on("message.received", (message) => {
+    console.log("收到新消息:", message.content);
+});
+
+// 监听消息发送事件
+privateChat.on("message.sent", (data) => {
+    console.log("消息已发送:", data.messageId);
 });
 ```
 
-**返回值:**
-```typescript
-interface UserSessionsResponse {
-    sessions: Array<{
-        session_id: string;
-        session_name: string;
-        participants: string[];
-        created_at: number;
-        expires_at: number;
-        auto_delete: boolean;
-        message_count: number;
-        unread_count: number;
-    }>;
-    total: number;
-    active_count: number;  // 未过期的会话数
-}
-```
+**可用事件:**
+| 事件名 | 数据 | 描述 |
+|--------|------|------|
+| `session.created` | 会话对象 | 创建会话后触发 |
+| `session.deleted` | `{ sessionId, session }` | 删除会话后触发 |
+| `message.received` | 消息对象 | 收到新消息时触发 |
+| `message.sent` | `{ sessionId, messageId }` | 发送消息后触发 |
 
-### 5. 标记消息已读
-
-标记指定消息为已读状态。
-
-```typescript
-await client.privateChat.markMessageRead(
-    "session_123",
-    "msg_456"
-);
-```
-
-**参数:**
-| 参数 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| `sessionId` | `string` | 是 | 会话ID |
-| `messageId` | `string` | 是 | 消息ID |
-
-**返回值:**
-```typescript
-interface MarkReadResponse {
-    success: boolean;
-    read_at: number;
-    message_id: string;
-}
-```
-
-**注意**: 对于设置了 `burn_after_reading: true` 的消息，标记已读后消息将被立即销毁。
-
-### 6. 设置消息自毁
-
-设置消息的自毁时间。
-
-```typescript
-// 60秒后自毁
-await client.privateChat.setMessageSelfDestruct(
-    "session_123",
-    "msg_456",
-    60
-);
-```
-
-**参数:**
-| 参数 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| `sessionId` | `string` | 是 | 会话ID |
-| `messageId` | `string` | 是 | 消息ID |
-| `afterSeconds` | `number` | 是 | 多少秒后自毁 |
-
-**返回值:**
-```typescript
-interface SelfDestructResponse {
-    success: boolean;
-    message_id: string;
-    self_destruct_at: number;  // 自毁时间戳
-}
-```
+---
 
 ## 完整使用示例
 
-### 创建临时会话并发送消息
+### 创建会话并发送消息
 
 ```typescript
-import * as sdk from "matrix-js-sdk";
+import { MatrixClient } from "matrix-js-sdk";
 
-const client = sdk.createClient({
-    baseUrl: "https://matrix.example.com",
-    accessToken: "your_access_token",
-    userId: "@user:example.com"
+const client = new MatrixClient("https://matrix.cjystx.top");
+await client.login("m.login.password", {
+    user: "username",
+    password: "password"
 });
 
-// 1. 创建1小时后过期的临时会话
-async function createTemporarySession(participants: string[], name: string) {
-    const session = await client.privateChat.createPrivateChat(
-        participants,
-        {
+const privateChat = client.privateChatV2;
+
+// 1. 创建会话
+async function createSession(participants: string[], name: string) {
+    try {
+        const session = await privateChat.createSession({
+            participants: participants,
             session_name: name,
-            ttl_seconds: 3600,      // 1小时后过期
-            auto_delete: true,       // 自动删除
-        }
-    );
+            ttl_seconds: 3600  // 1小时后过期
+        });
 
-    console.log(`私密会话 "${name}" 已创建`);
-    console.log(`会话ID: ${session.session_id}`);
-    console.log(`过期时间: ${new Date(session.expires_at).toLocaleString()}`);
+        console.log(`会话 "${name}" 已创建`);
+        console.log(`会话ID: ${session.session_id}`);
+        console.log(`参与者: ${session.participants.join(", ")}`);
 
-    return session;
+        return session;
+    } catch (error) {
+        console.error("创建会话失败:", error.message);
+        throw error;
+    }
 }
 
-// 2. 发送阅后即焚消息
-async function sendBurnAfterReading(sessionId: string, content: string) {
-    const message = await client.privateChat.sendPrivateMessage(
-        sessionId,
-        content,
-        {
-            burn_after_reading: true,
-            ttl_seconds: 60  // 1分钟后自动销毁
-        }
-    );
-
-    console.log(`阅后即焚消息已发送: ${message.message_id}`);
-    return message;
-}
-
-// 3. 发送普通消息（5分钟后自毁）
-async function sendSelfDestructMessage(sessionId: string, content: string) {
-    const message = await client.privateChat.sendPrivateMessage(
-        sessionId,
-        content,
-        {
-            ttl_seconds: 300  // 5分钟后自毁
-        }
-    );
-
-    console.log(`消息已发送，5分钟后自动销毁`);
-    return message;
+// 2. 发送消息
+async function sendMessage(sessionId: string, content: string) {
+    try {
+        const messageId = await privateChat.sendText(sessionId, content);
+        console.log(`消息已发送: ${messageId}`);
+        return messageId;
+    } catch (error) {
+        console.error("发送消息失败:", error.message);
+        throw error;
+    }
 }
 
 // 使用示例
-const session = await createTemporarySession(
-    ["@alice:example.com"],
+const session = await createSession(
+    ["@alice:matrix.org"],
     "机密讨论"
 );
 
-await sendBurnAfterReading(
+await sendMessage(
     session.session_id,
-    "这是一条阅后即焚的消息，阅读后立即销毁"
-);
-
-await sendSelfDestructMessage(
-    session.session_id,
-    "这条消息将在5分钟后自动销毁"
+    "这是一条私密消息"
 );
 ```
 
@@ -369,22 +375,26 @@ await sendSelfDestructMessage(
 ```typescript
 // 获取会话消息
 async function getSessionMessages(sessionId: string) {
-    const response = await client.privateChat.getPrivateMessages(sessionId);
+    try {
+        const messages = await privateChat.getMessages({
+            session_id: sessionId,
+            limit: 50
+        });
 
-    console.log(`=== 私密消息 (${response.total}条) ===`);
+        console.log(`=== 消息 (${messages.length}条) ===`);
 
-    for (const msg of response.messages) {
-        const time = new Date(msg.sent_at).toLocaleTimeString();
-        const sender = msg.sender_id.split(':')[0];
-        const status = msg.is_read ? "已读" : "未读";
-        const destruct = msg.expires_at
-            ? ` [${Math.floor((msg.expires_at - Date.now()) / 1000)}秒后销毁]`
-            : "";
+        for (const msg of messages) {
+            const time = new Date(msg.created_at).toLocaleTimeString();
+            const sender = msg.sender_id.split(':')[0];
 
-        console.log(`[${time}] ${sender}: ${msg.content} ${status}${destruct}`);
+            console.log(`[${time}] ${sender}: ${msg.content}`);
+        }
+
+        return messages;
+    } catch (error) {
+        console.error("获取消息失败:", error.message);
+        return [];
     }
-
-    return response;
 }
 
 // 分页加载消息
@@ -393,21 +403,51 @@ async function loadMessagesPaginated(sessionId: string) {
     let before: string | undefined;
 
     while (hasMore) {
-        const response = await client.privateChat.getPrivateMessages(sessionId, {
+        const messages = await privateChat.getMessages({
+            session_id: sessionId,
             limit: 50,
             before
         });
 
         // 处理消息
-        console.log(`加载了 ${response.messages.length} 条消息`);
-        for (const msg of response.messages) {
-            // 处理每条消息
-        }
+        console.log(`加载了 ${messages.length} 条消息`);
 
-        hasMore = response.has_more;
-        before = response.messages[response.messages.length - 1]?.message_id;
+        if (messages.length > 0) {
+            hasMore = false;  // 根据实际情况判断
+            before = messages[messages.length - 1].message_id;
+        } else {
+            hasMore = false;
+        }
     }
 }
+```
+
+### 消息订阅
+
+```typescript
+// 订阅新消息
+async function subscribeToNewMessages(sessionId: string) {
+    const unsubscribe = privateChat.subscribeToMessages(
+        sessionId,
+        (message) => {
+            console.log("收到新消息:", message.content);
+            console.log("发送者:", message.sender_id);
+            console.log("时间:", new Date(message.created_at).toLocaleString());
+
+            // 显示通知
+            showNotification(`新消息: ${message.content}`);
+        }
+    );
+
+    // 返回取消订阅函数
+    return unsubscribe;
+}
+
+// 使用示例
+const unsubscribe = await subscribeToNewMessages("session-123");
+
+// 稍后取消订阅
+// unsubscribe();
 ```
 
 ### 会话管理
@@ -415,227 +455,379 @@ async function loadMessagesPaginated(sessionId: string) {
 ```typescript
 // 显示所有活跃会话
 async function displayActiveSessions() {
-    const response = await client.privateChat.getUserSessions();
+    try {
+        const sessions = await privateChat.listSessions();
 
-    console.log(`=== 活跃会话 (${response.active_count}/${response.total}) ===`);
+        console.log(`=== 活跃会话 (${sessions.length}个) ===`);
 
-    for (const session of response.sessions) {
-        const now = Date.now();
-        const expiresAt = session.expires_at;
-        const remaining = Math.max(0, expiresAt - now);
-        const minutes = Math.floor(remaining / 1000 / 60);
+        for (const session of sessions) {
+            const name = session.session_name || "未命名";
+            const expires = session.expires_at
+                ? new Date(session.expires_at).toLocaleString()
+                : "永不过期";
 
-        const status = remaining > 0 ? `${minutes}分钟后过期` : "已过期";
-        const unread = session.unread_count > 0 ? ` (${session.unread_count}条未读)` : "";
-
-        console.log(`${session.session_name}: ${status}${unread}`);
-        console.log(`  参与者: ${session.participants.join(", ")}`);
-        console.log(`  消息数: ${session.message_count}`);
-        console.log("");
-    }
-
-    return response;
-}
-
-// 标记所有消息为已读
-async function markAllAsRead(sessionId: string) {
-    const messages = await client.privateChat.getPrivateMessages(sessionId);
-
-    for (const msg of messages.messages) {
-        if (!msg.is_read) {
-            await client.privateChat.markMessageRead(sessionId, msg.message_id);
-            console.log(`已标记消息: ${msg.message_id}`);
+            console.log(`${name} (${session.session_id})`);
+            console.log(`  参与者: ${session.participants.join(", ")}`);
+            console.log(`  过期时间: ${expires}`);
+            console.log("");
         }
+    } catch (error) {
+        console.error("获取会话列表失败:", error.message);
     }
 }
 
-// 设置消息自毁
-async function setMessageDestructTimer(sessionId: string, messageId: string, seconds: number) {
-    const result = await client.privateChat.setMessageSelfDestruct(
-        sessionId,
-        messageId,
-        seconds
-    );
+// 获取会话详情
+async function getSessionDetails(sessionId: string) {
+    try {
+        const session = await privateChat.getSession(sessionId);
 
-    const destructTime = new Date(result.self_destruct_at);
-    console.log(`消息将在 ${destructTime.toLocaleString()} 自动销毁`);
+        if (session) {
+            console.log("会话名称:", session.session_name);
+            console.log("创建者:", session.created_by);
+            console.log("参与者:", session.participants);
+            console.log("创建时间:", new Date(session.created_at).toLocaleString());
+            if (session.expires_at) {
+                console.log("过期时间:", new Date(session.expires_at).toLocaleString());
+            }
+        } else {
+            console.log("会话不存在");
+        }
+    } catch (error) {
+        console.error("获取会话详情失败:", error.message);
+    }
+}
 
-    return result;
+// 删除会话
+async function deleteSession(sessionId: string) {
+    try {
+        await privateChat.deleteSession(sessionId);
+        console.log(`会话 ${sessionId} 已删除`);
+    } catch (error) {
+        console.error("删除会话失败:", error.message);
+    }
 }
 ```
 
-### 文件消息
+### 监听私聊事件
 
 ```typescript
-// 上传并发送私密文件
-async function sendPrivateFile(sessionId: string, file: File) {
-    // 首先上传文件到媒体服务器
-    const uploadResponse = await client.uploadContent(file.blob);
-
-    // 发送私密文件消息
-    const message = await client.privateChat.sendPrivateMessage(
-        sessionId,
-        file.name,
-        {
-            message_type: "file",
-            file_url: uploadResponse.content_uri,
-            file_size: file.size,
-            ttl_seconds: 300,  // 5分钟后文件链接失效
-            burn_after_reading: true
-        }
-    );
-
-    console.log(`私密文件已发送: ${message.message_id}`);
-    return message;
-}
-
-// 发送私密图片
-async function sendPrivateImage(sessionId: string, imageBlob: Blob) {
-    const uploadResponse = await client.uploadContent(imageBlob, {
-        name: "image.jpg",
-        type: "image/jpeg"
+// 设置事件监听
+function setupPrivateChatListeners() {
+    // 监听会话创建
+    privateChat.on("session.created", (session) => {
+        console.log("新会话已创建:", session.session_id);
+        console.log("参与者:", session.participants);
+        // 刷新会话列表
+        displayActiveSessions();
     });
 
-    const message = await client.privateChat.sendPrivateMessage(
-        sessionId,
-        "[图片]",
-        {
-            message_type: "image",
-            file_url: uploadResponse.content_uri,
-            file_size: imageBlob.size,
-            ttl_seconds: 600
-        }
-    );
+    // 监听会话删除
+    privateChat.on("session.deleted", (data) => {
+        console.log("会话已删除:", data.sessionId);
+        // 刷新会话列表
+        displayActiveSessions();
+    });
 
-    return message;
+    // 监听消息接收
+    privateChat.on("message.received", (message) => {
+        console.log("收到新消息:", message.content);
+        console.log("会话ID:", message.session_id);
+        console.log("发送者:", message.sender_id);
+        // 显示通知
+        showNotification(`新消息: ${message.content}`);
+    });
+
+    // 监听消息发送
+    privateChat.on("message.sent", (data) => {
+        console.log("消息已发送:", data.messageId);
+        console.log("会话ID:", data.sessionId);
+    });
+}
+
+function showNotification(message: string) {
+    // 实现通知逻辑
+    console.log("通知:", message);
 }
 ```
-
-## 监听私密消息事件
-
-```typescript
-// 监听私密消息
-client.on(sdk.ClientEvent.Event, async (event) => {
-    if (event.getType() === "m.private.message") {
-        const content = event.getContent();
-
-        console.log(`收到私密消息:`, content);
-        console.log(`会话ID: ${content.session_id}`);
-        console.log(`发送者: ${event.getSender()}`);
-
-        // 处理阅后即焚消息
-        if (content.burn_after_reading && !content.is_read) {
-            console.log("这是阅后即焚消息，阅读后将自动销毁");
-
-            // 标记为已读（消息将自动销毁）
-            await client.privateChat.markMessageRead(
-                content.session_id,
-                content.message_id
-            );
-        }
-    }
-});
-
-// 监听会话过期
-client.on(sdk.ClientEvent.Event, (event) => {
-    if (event.getType() === "m.private.session.expired") {
-        const content = event.getContent();
-        console.log(`会话 "${content.session_name}" 已过期`);
-
-        // 通知用户会话已过期
-        // 清理本地缓存
-    }
-});
-```
-
-## 类型定义
-
-```typescript
-// 私密会话
-interface PrivateChatSession {
-    session_id: string;
-    session_name: string;
-    participants: string[];
-    created_at: number;
-    expires_at: number;
-    auto_delete: boolean;
-    message_count: number;
-    unread_count: number;
-}
-
-// 私密消息
-interface PrivateMessage {
-    message_id: string;
-    session_id: string;
-    sender_id: string;
-    content: string;
-    message_type: "text" | "file" | "image" | "audio" | "video";
-    sent_at: number;
-    expires_at?: number;
-    burn_after_reading: boolean;
-    is_read: boolean;
-}
-
-// 会话选项
-interface PrivateChatOptions {
-    session_name?: string;
-    ttl_seconds?: number;
-    auto_delete?: boolean;
-    read_only?: boolean;
-}
-
-// 消息选项
-interface PrivateMessageOptions {
-    message_type?: "text" | "file" | "image" | "audio" | "video";
-    ttl_seconds?: number;
-    burn_after_reading?: boolean;
-    file_url?: string;
-    file_size?: number;
-}
-```
-
-## 安全注意事项
-
-1. **加密**: 私密聊天使用端到端加密，消息内容只有参与者能够解密
-2. **服务器无法读取**: 即使是服务器管理员也无法读取私密消息内容
-3. **元数据**: 虽然消息内容加密，但会话存在等元数据可能可见
-4. **密钥管理**: 加密密钥会在会话过期后自动销毁
-5. **截图防护**: 无法防止对方截图或复制消息内容
-
-## 错误处理
-
-```typescript
-// 处理会话过期
-try {
-    await client.privateChat.sendPrivateMessage(sessionId, content);
-} catch (error) {
-    if (error.errcode === "M_SESSION_EXPIRED") {
-        console.error("会话已过期，请创建新会话");
-    } else if (error.errcode === "M_SESSION_NOT_FOUND") {
-        console.error("会话不存在");
-    }
-}
-
-// 处理消息销毁
-try {
-    await client.privateChat.markMessageRead(sessionId, messageId);
-} catch (error) {
-    if (error.errcode === "M_MESSAGE_ALREADY_DESTROYED") {
-        console.error("消息已被销毁");
-    }
-}
-```
-
-## 最佳实践
-
-1. **TTL 设置**: 根据敏感程度设置合适的消息生存时间
-2. **会话管理**: 及时清理过期会话，避免内存泄漏
-3. **错误恢复**: 会话过期后创建新会话继续对话
-4. **用户提示**: 清晰提示用户消息的阅后即焚特性
-5. **本地缓存**: 可以缓存消息但要注意同步服务器状态
 
 ---
 
-**文档版本**: 1.0.0
+## 类型定义
+
+完整的 TypeScript 类型定义在 `src/@types/private-chat.ts`。
+
+```typescript
+// 私聊会话
+interface PrivateChatSession {
+    session_id: string;          // 会话唯一 ID
+    participants: string[];       // 参与者列表
+    session_name?: string;        // 会话名称
+    created_by: string;           // 创建者用户 ID
+    created_at: string;           // 创建时间 (ISO 8601)
+    ttl_seconds?: number;         // 会话生存时间（秒）
+    expires_at?: string;          // 过期时间 (ISO 8601)
+    updated_at?: string;          // 更新时间 (ISO 8601)
+}
+
+// 私聊消息
+interface PrivateChatMessage {
+    message_id: string;          // 消息 ID
+    session_id: string;           // 会话 ID
+    sender_id: string;            // 发送者用户 ID
+    content: string;              // 消息内容
+    type: "text" | "image" | "file" | "audio" | "video";  // 消息类型
+    created_at: string;           // 创建时间 (ISO 8601)
+}
+
+// 创建会话选项
+interface CreateSessionOptions {
+    participants: string[];       // 参与者列表 (必需)
+    session_name?: string;        // 会话名称
+    ttl_seconds?: number;         // 会话生存时间（秒）
+}
+
+// 发送消息选项
+interface SendMessageOptions {
+    session_id: string;           // 会话 ID (必需)
+    content: string;              // 消息内容 (必需)
+    type?: "text" | "image" | "file" | "audio" | "video";  // 消息类型
+}
+
+// 获取消息选项
+interface GetMessagesOptions {
+    session_id: string;           // 会话 ID (必需)
+    limit?: number;               // 每页数量 (默认: 10)
+    before?: string;              // 获取此消息 ID 之前的消息
+}
+```
+
+---
+
+## 错误处理
+
+PrivateChatClient 提供了详细的错误类型。
+
+```typescript
+import {
+    PrivateChatError,
+    CreateSessionError,
+    SendMessageError,
+    SessionNotFoundError,
+    DeleteSessionError
+} from "matrix-js-sdk";
+
+try {
+    await privateChat.createSession({
+        participants: ["@alice:matrix.org"]
+    });
+} catch (error) {
+    if (error instanceof CreateSessionError) {
+        console.error("创建会话失败:", error.message);
+    } else if (error instanceof SessionNotFoundError) {
+        console.error("会话不存在:", error.message);
+    } else if (error instanceof SendMessageError) {
+        console.error("发送消息失败:", error.message);
+    } else if (error instanceof PrivateChatError) {
+        console.error("私聊系统错误:", error.message);
+    }
+}
+```
+
+**错误类型:**
+| 错误类 | 触发场景 |
+|--------|----------|
+| `PrivateChatError` | 基础错误类 |
+| `CreateSessionError` | 创建会话失败 |
+| `SendMessageError` | 发送消息失败 |
+| `SessionNotFoundError` | 会话不存在 |
+| `DeleteSessionError` | 删除会话失败 |
+
+---
+
+## 后端 API 端点
+
+PrivateChatClient 使用以下后端 API 端点（RESTful 风格）：
+
+| 功能 | 端点 | 方法 |
+|------|------|------|
+| 会话列表 | `/_synapse/client/enhanced/private/sessions` | GET |
+| 获取会话详情 | `/_synapse/client/enhanced/private/sessions/:id` | GET |
+| 获取消息 | `/_synapse/client/enhanced/private/sessions/:id/messages` | GET |
+| 创建会话 | `/_synapse/client/enhanced/private/sessions` | POST |
+| 发送消息 | `/_synapse/client/enhanced/private/sessions/:id/messages` | POST |
+| 删除会话 | `/_synapse/client/enhanced/private/sessions/:id` | DELETE |
+
+**后端要求**:
+- Synapse 1.140.0 Enhanced Module v1.0.2+
+- 支持 v1 RESTful API 路径
+
+---
+
+## 轮询机制
+
+PrivateChatClient 实现了自动轮询机制来获取新消息。
+
+### 轮询配置
+
+```typescript
+class PrivateChatClient {
+    private readonly POLL_INTERVAL_MS = 3000;  // 轮询间隔：3秒
+}
+```
+
+### 订阅消息
+
+```typescript
+const unsubscribe = privateChat.subscribeToMessages(
+    "session-123",
+    (message) => {
+        console.log("新消息:", message.content);
+    }
+);
+
+// 取消订阅时自动停止轮询
+unsubscribe();
+```
+
+### 轮询行为
+
+1. **自动启动**: 首次订阅时自动开始轮询
+2. **自动停止**: 取消订阅时自动停止轮询
+3. **智能过滤**: 只通知非自己发送的新消息
+4. **错误处理**: 轮询错误不会抛出异常
+
+---
+
+## 缓存机制
+
+PrivateChatClient 实现了会话缓存。
+
+### 缓存使用
+
+```typescript
+// 使用缓存（默认）
+const sessions = await privateChat.listSessions();
+
+// 强制刷新
+const freshSessions = await privateChat.listSessions();
+
+// 清除缓存
+privateChat.invalidateCache();
+```
+
+### 缓存策略
+
+- **会话列表**: 自动缓存，支持手动刷新
+- **消息历史**: 不缓存，每次重新获取
+- **会话详情**: 使用缓存数据
+
+---
+
+## 最佳实践
+
+1. **会话管理**: 及时清理不需要的会话，释放资源
+2. **消息订阅**: 使用完毕后取消订阅，避免不必要的轮询
+3. **错误处理**: 妥善处理各种错误情况，提供友好的用户提示
+4. **Matrix ID 验证**: SDK 自动验证 Matrix ID 格式
+5. **资源清理**: 组件卸载时调用 `dispose()` 清理资源
+
+---
+
+## Vue 3 集成示例
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { MatrixClient } from "matrix-js-sdk";
+
+const client = new MatrixClient("https://matrix.cjystx.top");
+const privateChat = client.privateChatV2;
+
+const sessions = ref<PrivateChatSession[]>([]);
+const messages = ref<PrivateChatMessage[]>([]);
+const currentSessionId = ref<string>();
+let unsubscribe: (() => void) | undefined;
+
+onMounted(async () => {
+    // 加载会话列表
+    sessions.value = await privateChat.listSessions();
+
+    // 如果有当前会话，订阅消息
+    if (currentSessionId.value) {
+        subscribeToMessages(currentSessionId.value);
+    }
+});
+
+onUnmounted(() => {
+    // 清理资源
+    if (unsubscribe) {
+        unsubscribe();
+    }
+});
+
+async function selectSession(sessionId: string) {
+    currentSessionId.value = sessionId;
+
+    // 取消之前的订阅
+    if (unsubscribe) {
+        unsubscribe();
+    }
+
+    // 订阅新消息
+    unsubscribe = subscribeToMessages(sessionId);
+
+    // 加载消息历史
+    messages.value = await privateChat.getMessages({
+        session_id: sessionId,
+        limit: 50
+    });
+}
+
+function subscribeToMessages(sessionId: string) {
+    return privateChat.subscribeToMessages(sessionId, (message) => {
+        messages.value.push(message);
+    });
+}
+
+async function sendMessage(content: string) {
+    if (!currentSessionId.value) return;
+
+    await privateChat.sendText(currentSessionId.value, content);
+}
+</script>
+```
+
+---
+
+## 导入
+
+```typescript
+// 导入客户端
+import { MatrixClient } from "matrix-js-sdk";
+
+// 导入类型
+import type {
+    PrivateChatSession,
+    PrivateChatMessage,
+    CreateSessionOptions,
+    SendMessageOptions,
+    GetMessagesOptions
+} from "matrix-js-sdk";
+
+// 导入错误类
+import {
+    PrivateChatError,
+    CreateSessionError,
+    SendMessageError,
+    SessionNotFoundError
+} from "matrix-js-sdk";
+
+// 导入 PrivateChatClient
+import { PrivateChatClient } from "matrix-js-sdk";
+```
+
+---
+
+**文档版本**: 2.0.1
 **SDK 版本**: 39.1.3
-**最后更新**: 2024-12-28
+**最后更新**: 2026-01-02
