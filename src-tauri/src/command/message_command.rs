@@ -164,7 +164,7 @@ pub async fn page_msg(
 }
 
 /// 将数据库消息模型转换为响应模型
-#[must_use] 
+#[must_use]
 pub fn convert_message_to_resp(
     record: MessageWithThumbnail,
     old_msg_id: Option<String>,
@@ -275,7 +275,9 @@ pub async fn check_user_init_and_fetch_messages(
         }
     }
 
-    let guard = if let Ok(g) = MESSAGE_SYNC_LOCK.try_lock() { g } else {
+    let guard = if let Ok(g) = MESSAGE_SYNC_LOCK.try_lock() {
+        g
+    } else {
         info!(
             "Skip message sync because another sync is in progress, uid={}",
             uid
@@ -331,7 +333,11 @@ pub async fn fetch_all_messages(
         uid, async_data
     );
     // 调用后端接口 /chat/msg/list 获取所有消息，传递 async_data 参数
-    let body = if async_data { Some(serde_json::json!({ "async": async_data })) } else { None };
+    let body = if async_data {
+        Some(serde_json::json!({ "async": async_data }))
+    } else {
+        None
+    };
 
     let messages: Option<Vec<MessageResp>> = client
         .im_request(ImUrl::GetMsgList, body, None::<serde_json::Value>)
@@ -361,7 +367,9 @@ pub async fn fetch_all_messages(
             };
 
             // 获取该房间的上一条 send_time（优先使用批次内最新值，否则从 DB 取一次）
-            let prev_send_time = if let Some(value) = last_send_time_map.get(&room_id) { *value } else {
+            let prev_send_time = if let Some(value) = last_send_time_map.get(&room_id) {
+                *value
+            } else {
                 let last_time = im_message::Entity::find()
                     .filter(im_message::Column::RoomId.eq(&room_id))
                     .filter(im_message::Column::LoginUid.eq(uid))
@@ -440,8 +448,6 @@ pub async fn sync_messages(
     param: Option<SyncMessagesParam>,
     state: State<'_, AppData>,
 ) -> Result<(), String> {
-    
-
     let async_data = param.as_ref().and_then(|p| p.async_data).unwrap_or(true);
     let full_sync = param.as_ref().and_then(|p| p.full_sync).unwrap_or(false);
     let uid = match param.as_ref().and_then(|p| p.uid.clone()) {
@@ -450,15 +456,9 @@ pub async fn sync_messages(
     };
 
     let mut client = state.rc.lock().await;
-    check_user_init_and_fetch_messages(
-        &mut client,
-        &state.db_conn,
-        &uid,
-        async_data,
-        full_sync,
-    )
-    .await
-    .map_err(|e| e.to_string())?;
+    check_user_init_and_fetch_messages(&mut client, &state.db_conn, &uid, async_data, full_sync)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -528,18 +528,19 @@ fn inject_thumbnail_path(body: &mut Option<serde_json::Value>, path: Option<&str
     }
 
     if let Some(val) = body
-        && let Some(map) = val.as_object_mut() {
-            let exists = map
-                .get("thumbnailPath")
-                .and_then(|v| v.as_str())
-                .is_some_and(|s| !s.is_empty());
-            if !exists {
-                map.insert(
-                    "thumbnailPath".to_string(),
-                    serde_json::Value::String(path.to_string()),
-                );
-            }
+        && let Some(map) = val.as_object_mut()
+    {
+        let exists = map
+            .get("thumbnailPath")
+            .and_then(|v| v.as_str())
+            .is_some_and(|s| !s.is_empty());
+        if !exists {
+            map.insert(
+                "thumbnailPath".to_string(),
+                serde_json::Value::String(path.to_string()),
+            );
         }
+    }
 }
 
 #[tauri::command]
@@ -549,8 +550,6 @@ pub async fn send_msg(
     success_channel: Channel<MessageResp>,
     error_channel: Channel<String>,
 ) -> Result<(), String> {
-    
-
     // 获取当前登录用户信息
     let (login_uid, nickname) = {
         let user_info = state.user_info.lock().await;
@@ -671,7 +670,10 @@ pub async fn send_msg(
             Err(e) => {
                 error!("{:?}", e);
                 if let Err(send_err) = error_channel.send(msg_id.clone()) {
-                    error!("Failed to send error response: {:?}, original error: {:?}", send_err, e);
+                    error!(
+                        "Failed to send error response: {:?}, original error: {:?}",
+                        send_err, e
+                    );
                 }
             }
         }
@@ -732,14 +734,10 @@ pub async fn delete_message(
     let resolved_room_id = if let Some(room) = room_id {
         room
     } else {
-        im_message_repository::get_room_id_by_message_id(
-            &state.db_conn,
-            &message_id,
-            &login_uid,
-        )
-        .await
-        .map_err(|e| e.to_string())?
-        .ok_or_else(|| "消息不存在或房间信息缺失".to_string())?
+        im_message_repository::get_room_id_by_message_id(&state.db_conn, &message_id, &login_uid)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "消息不存在或房间信息缺失".to_string())?
     };
 
     im_message_repository::delete_message_by_id(&state.db_conn, &message_id, &login_uid)
@@ -798,20 +796,15 @@ pub async fn delete_room_messages(
                 e.to_string()
             })?;
 
-    im_message_repository::record_room_clear(
-        &state.db_conn,
-        &room_id,
-        &login_uid,
-        last_msg_id,
-    )
-    .await
-    .map_err(|e| {
-        error!(
-            "Failed to record room clear for room {} (user {}): {}",
-            room_id, login_uid, e
-        );
-        e.to_string()
-    })?;
+    im_message_repository::record_room_clear(&state.db_conn, &room_id, &login_uid, last_msg_id)
+        .await
+        .map_err(|e| {
+            error!(
+                "Failed to record room clear for room {} (user {}): {}",
+                room_id, login_uid, e
+            );
+            e.to_string()
+        })?;
 
     info!(
         "Deleted {} messages for room {} (user {})",

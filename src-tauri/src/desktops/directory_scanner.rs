@@ -47,7 +47,10 @@ async fn get_directory_size_with_progress(
         timeout_duration,
         scan_directory_internal(directory_path, handle),
     )
-    .await { result } else {
+    .await
+    {
+        result
+    } else {
         tracing::warn!("Directory scan timeout, automatically cancelled");
         Err("目录扫描超时，请尝试扫描较小的目录".to_string())
     }

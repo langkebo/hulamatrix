@@ -3,7 +3,7 @@
 use crate::{error::AppError, state::AppState};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tauri::{command, Manager, State};
+use tauri::{Manager, State, command};
 use tokio::fs;
 use tracing::info;
 
@@ -48,16 +48,19 @@ fn parse_mxc_uri(mxc_uri: &str) -> Result<(String, String), AppError> {
         return Err(AppError::InvalidUri("Invalid MXC URI format".to_string()));
     }
 
-    let parts = mxc_uri.strip_prefix("mxc://")
+    let parts = mxc_uri
+        .strip_prefix("mxc://")
         .ok_or_else(|| AppError::InvalidUri("Invalid MXC URI prefix".to_string()))?;
 
     let mut split = parts.splitn(2, '/');
 
-    let server_name = split.next()
+    let server_name = split
+        .next()
         .ok_or_else(|| AppError::InvalidUri("Missing server name in MXC URI".to_string()))?
         .to_string();
 
-    let media_id = split.next()
+    let media_id = split
+        .next()
         .ok_or_else(|| AppError::InvalidUri("Missing media ID in MXC URI".to_string()))?
         .to_string();
 
@@ -66,7 +69,8 @@ fn parse_mxc_uri(mxc_uri: &str) -> Result<(String, String), AppError> {
 
 /// Get media cache directory
 async fn get_cache_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, AppError> {
-    let app_dir = app_handle.path()
+    let app_dir = app_handle
+        .path()
         .app_data_dir()
         .map_err(|e| AppError::Io(e.to_string()))?;
 
@@ -107,7 +111,8 @@ pub async fn download_media(
 
     // Check if file exists in cache
     if !options.force && local_path.exists() {
-        let metadata = fs::metadata(&local_path).await
+        let metadata = fs::metadata(&local_path)
+            .await
             .map_err(|e| AppError::Io(e.to_string()))?;
 
         let size = metadata.len();
@@ -134,7 +139,8 @@ pub async fn download_media(
     );
 
     // Download file
-    let response = state.http_client
+    let response = state
+        .http_client
         .get(&download_url)
         .send()
         .await
@@ -143,11 +149,12 @@ pub async fn download_media(
     // Check content length
     if let Some(content_length) = response.content_length()
         && let Some(max_size) = options.max_size
-            && content_length > max_size as u64 {
-                return Err(AppError::FileTooLarge(
-                    format!("File size {content_length} exceeds maximum {max_size}")
-                ));
-            }
+        && content_length > max_size as u64
+    {
+        return Err(AppError::FileTooLarge(format!(
+            "File size {content_length} exceeds maximum {max_size}"
+        )));
+    }
 
     // Get MIME type from response
     let mime_type = response
@@ -165,11 +172,13 @@ pub async fn download_media(
 
     // Check file size
     if let Some(max_size) = options.max_size
-        && bytes.len() > max_size {
-            return Err(AppError::FileTooLarge(
-                format!("File size {} exceeds maximum {max_size}", bytes.len())
-            ));
-        }
+        && bytes.len() > max_size
+    {
+        return Err(AppError::FileTooLarge(format!(
+            "File size {} exceeds maximum {max_size}",
+            bytes.len()
+        )));
+    }
 
     // Save to cache
     fs::write(&local_path, &bytes)
@@ -234,10 +243,13 @@ pub async fn clear_media_cache(app_handle: tauri::AppHandle) -> Result<CacheStat
         let mut oldest_ts = u64::MAX;
         let mut newest_ts = 0;
 
-        while let Some(entry) = entries.next_entry().await
+        while let Some(entry) = entries
+            .next_entry()
+            .await
             .map_err(|e| AppError::Io(e.to_string()))?
         {
-            let metadata = entry.metadata()
+            let metadata = entry
+                .metadata()
                 .await
                 .map_err(|e| AppError::Io(e.to_string()))?;
 
@@ -245,7 +257,8 @@ pub async fn clear_media_cache(app_handle: tauri::AppHandle) -> Result<CacheStat
                 stats.count += 1;
                 stats.total_size += metadata.len();
 
-                let modified = metadata.modified()
+                let modified = metadata
+                    .modified()
                     .ok()
                     .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
                     .map(|d| d.as_secs());
@@ -270,7 +283,10 @@ pub async fn clear_media_cache(app_handle: tauri::AppHandle) -> Result<CacheStat
         }
     }
 
-    info!("Media cache cleared: {} files, {} bytes", stats.count, stats.total_size);
+    info!(
+        "Media cache cleared: {} files, {} bytes",
+        stats.count, stats.total_size
+    );
 
     Ok(stats)
 }
@@ -294,10 +310,13 @@ pub async fn get_media_cache_stats(app_handle: tauri::AppHandle) -> Result<Cache
         let mut oldest_ts = u64::MAX;
         let mut newest_ts = 0;
 
-        while let Some(entry) = entries.next_entry().await
+        while let Some(entry) = entries
+            .next_entry()
+            .await
             .map_err(|e| AppError::Io(e.to_string()))?
         {
-            let metadata = entry.metadata()
+            let metadata = entry
+                .metadata()
                 .await
                 .map_err(|e| AppError::Io(e.to_string()))?;
 
@@ -305,7 +324,8 @@ pub async fn get_media_cache_stats(app_handle: tauri::AppHandle) -> Result<Cache
                 stats.count += 1;
                 stats.total_size += metadata.len();
 
-                let modified = metadata.modified()
+                let modified = metadata
+                    .modified()
                     .ok()
                     .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
                     .map(|d| d.as_secs());
@@ -346,12 +366,19 @@ pub async fn preload_media(
             max_size: Some(50 * 1024 * 1024), // 50MB limit for preload
         };
 
-        if download_media(options, app_handle.clone(), state.clone()).await.is_ok() {
+        if download_media(options, app_handle.clone(), state.clone())
+            .await
+            .is_ok()
+        {
             success_count += 1;
         }
     }
 
-    info!("Media preload completed: {}/{} files", success_count, mxc_uris.len());
+    info!(
+        "Media preload completed: {}/{} files",
+        success_count,
+        mxc_uris.len()
+    );
 
     Ok(success_count)
 }

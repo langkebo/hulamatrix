@@ -57,13 +57,8 @@ pub async fn hide_contact_command(
 
         if resp.is_some() {
             // 更新本地数据库
-            update_contact_hide(
-                &state.db_conn,
-                &data.room_id.clone(),
-                data.hide,
-                &login_uid,
-            )
-            .await?;
+            update_contact_hide(&state.db_conn, &data.room_id.clone(), data.hide, &login_uid)
+                .await?;
             Ok(())
         } else {
             Err(CommonError::UnexpectedError(anyhow::anyhow!(

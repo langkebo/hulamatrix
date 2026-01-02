@@ -10,7 +10,7 @@ pub struct MessageProcessor {
 }
 
 impl MessageProcessor {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             message_handlers: HashMap::new(),
@@ -55,7 +55,7 @@ impl MessageProcessor {
     }
 
     /// 验证消息格式
-    #[must_use] 
+    #[must_use]
     pub fn validate_message(&self, message: &Value) -> ValidationResult {
         // 基本结构验证
         if !message.is_object() {
@@ -71,7 +71,7 @@ impl MessageProcessor {
     }
 
     /// 过滤敏感信息
-    #[must_use] 
+    #[must_use]
     pub fn sanitize_message(&self, mut message: Value) -> Value {
         // 移除可能的敏感字段
         if let Some(obj) = message.as_object_mut() {

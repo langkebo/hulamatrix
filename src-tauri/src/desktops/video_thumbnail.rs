@@ -110,10 +110,12 @@ async fn generate_thumbnail_macos(
     if let Ok(entries) = fs::read_dir(&temp_dir) {
         for entry in entries.flatten() {
             if let Some(name) = entry.file_name().to_str()
-                && name.contains(video_file_stem) && name.ends_with(".png") {
-                    generated_thumbnail = Some(entry.path());
-                    break;
-                }
+                && name.contains(video_file_stem)
+                && name.ends_with(".png")
+            {
+                generated_thumbnail = Some(entry.path());
+                break;
+            }
         }
     }
 

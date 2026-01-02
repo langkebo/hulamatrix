@@ -2,7 +2,7 @@ use crate::AppData;
 use crate::command::message_command::{SyncMessagesParam, sync_messages};
 use crate::websocket::commands::get_websocket_client_container;
 
-use super::types::{WebSocketConfig, ConnectionState, ConnectionHealth, WsMessage, WebSocketEvent};
+use super::types::{ConnectionHealth, ConnectionState, WebSocketConfig, WebSocketEvent, WsMessage};
 use anyhow::Result;
 use chrono::Utc;
 use futures_util::{sink::SinkExt, stream::StreamExt};
@@ -26,7 +26,7 @@ pub struct AckMessage {
 }
 
 impl AckMessage {
-    #[must_use] 
+    #[must_use]
     pub fn new(msg_id: String) -> Self {
         Self {
             msg_id,
@@ -77,7 +77,7 @@ pub struct WebSocketClient {
 }
 
 impl WebSocketClient {
-    #[must_use] 
+    #[must_use]
     pub fn new(app_handle: AppHandle) -> Self {
         Self {
             config: Arc::new(RwLock::new(WebSocketConfig::default())),
@@ -681,22 +681,22 @@ impl WebSocketClient {
                         .get("message")
                         .and_then(|m| m.get("id"))
                         .and_then(|id| id.as_str())
-                    {
-                        info!("回执 ACK: {}", message_id);
+                {
+                    info!("回执 ACK: {}", message_id);
 
-                        if let Some(client) = client_guard.as_ref() {
-                            match client.send_ack(message_id).await {
-                                Ok(()) => {
-                                    info!("ACK sent successfully for message {}", message_id);
-                                }
-                                Err(e) => {
-                                    error!(" Failed to send ACK for message {}: {}", message_id, e);
-                                }
+                    if let Some(client) = client_guard.as_ref() {
+                        match client.send_ack(message_id).await {
+                            Ok(()) => {
+                                info!("ACK sent successfully for message {}", message_id);
                             }
-                        } else {
-                            error!(" 回执失败");
+                            Err(e) => {
+                                error!(" Failed to send ACK for message {}: {}", message_id, e);
+                            }
                         }
+                    } else {
+                        error!(" 回执失败");
                     }
+                }
 
                 let _ = app_handle.emit_to("home", "ws-receive-message", data);
             }
@@ -1150,13 +1150,13 @@ impl WebSocketClient {
     }
 
     /// 获取应用后台状态
-    #[must_use] 
+    #[must_use]
     pub fn is_app_in_background(&self) -> bool {
         self.is_app_in_background.load(Ordering::SeqCst)
     }
 
     /// 检查 WebSocket 是否已连接
-    #[must_use] 
+    #[must_use]
     pub fn is_connected(&self) -> bool {
         self.is_ws_connected.load(Ordering::SeqCst)
     }

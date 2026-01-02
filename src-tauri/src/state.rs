@@ -41,7 +41,7 @@ impl Default for AppState {
 
 impl AppState {
     /// Create a new application state
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             http_client: reqwest::Client::new(),

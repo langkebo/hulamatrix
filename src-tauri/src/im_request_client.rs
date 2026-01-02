@@ -126,13 +126,12 @@ impl ImRequestClient {
                 let url = format!("{}/{}", self.base_url, path);
 
                 // 尝试读取错误响应体以提供更好的调试信息
-                let error_body = response.text().await
+                let error_body = response
+                    .text()
+                    .await
                     .unwrap_or_else(|_| format!("HTTP {}", status.as_u16()));
 
-                error!(
-                    "Request failed: {} {}; body: {}",
-                    url, status, error_body
-                );
+                error!("Request failed: {} {}; body: {}", url, status, error_body);
 
                 return Err(anyhow::anyhow!(
                     "请求失败 (HTTP {}): {}。如果持续出现此错误，请检查服务器配置或联系管理员。",
@@ -248,7 +247,9 @@ impl ImRequestClient {
         info!("Starting token refresh");
         let url = format!("{}/{}", self.base_url, ImUrl::RefreshToken.get_url().1);
 
-        let refresh_token = self.refresh_token.clone()
+        let refresh_token = self
+            .refresh_token
+            .clone()
             .ok_or_else(|| anyhow::anyhow!("No refresh token available"))?;
 
         let body = json!({
@@ -637,24 +638,9 @@ impl ImUrl {
             "scanQRCode" => Ok(ImUrl::ScanQRCode),
             "confirmQRCode" => Ok(ImUrl::ConfirmQRCode),
 
-
-
-
-
             // ================ API 密钥 ================
 
             // ================ 平台配置 ================
-
-
-
-
-
-
-
-
-
-
-
 
             // 未匹配的字符串
             _ => Err(anyhow::anyhow!("未知的URL类型: {s}")),

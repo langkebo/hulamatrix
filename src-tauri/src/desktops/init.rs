@@ -65,10 +65,12 @@ impl<R: Runtime> DesktopCustomInit for tauri::Builder<R> {
                         let _ = tray_window.hide();
                     }
                 }
-                if window.label().eq("tray") && !flag
-                    && let Err(e) = window.hide() {
-                        tracing::warn!("Failed to hide tray window: {}", e);
-                    }
+                if window.label().eq("tray")
+                    && !flag
+                    && let Err(e) = window.hide()
+                {
+                    tracing::warn!("Failed to hide tray window: {}", e);
+                }
                 #[cfg(target_os = "windows")]
                 if !window.label().eq("notify") && *flag {
                     if let Some(notify_window) = window.app_handle().get_webview_window("notify") {

@@ -183,7 +183,9 @@ async fn initialize_app_data(
         Ok(client) => client,
         Err(e) => {
             eprintln!("Failed to create ImRequestClient: {e}");
-            return Err(CommonError::UnexpectedError(anyhow::anyhow!("Failed to create request client: {e}")));
+            return Err(CommonError::UnexpectedError(anyhow::anyhow!(
+                "Failed to create request client: {e}"
+            )));
         }
     };
 
@@ -388,7 +390,7 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 // 公共的命令处理器函数
 fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static
 {
-        #[cfg(mobile)]
+    #[cfg(mobile)]
     use crate::command::set_complete;
     use crate::command::user_command::{
         get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
@@ -479,7 +481,7 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         im_request_command,
         get_settings,
         update_settings,
-                // 媒体相关命令
+        // 媒体相关命令
         download_media,
         delete_cached_media,
         clear_media_cache,

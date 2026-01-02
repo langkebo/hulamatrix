@@ -72,13 +72,12 @@ pub async fn query_chat_history(
     };
 
     // 查询数据库
-    let messages =
-        im_message_repository::query_chat_history(&state.db_conn, query_condition)
-            .await
-            .map_err(|e| {
-                error!("查询聊天历史记录失败: {}", e);
-                e.to_string()
-            })?;
+    let messages = im_message_repository::query_chat_history(&state.db_conn, query_condition)
+        .await
+        .map_err(|e| {
+            error!("查询聊天历史记录失败: {}", e);
+            e.to_string()
+        })?;
 
     // 转换为响应格式
     let message_resps: Vec<MessageResp> = messages

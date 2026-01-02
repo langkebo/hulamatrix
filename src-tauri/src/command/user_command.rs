@@ -148,13 +148,8 @@ pub async fn update_token(
         rc.token = Some(req.token.clone());
         rc.refresh_token = Some(req.refresh_token.clone());
     }
-    im_user_repository::save_user_tokens(
-        &*state.db_conn,
-        &req.uid,
-        &req.token,
-        &req.refresh_token,
-    )
-    .await
-    .map_err(|e| e.to_string())?;
+    im_user_repository::save_user_tokens(&*state.db_conn, &req.uid, &req.token, &req.refresh_token)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }

@@ -97,7 +97,9 @@ pub async fn get_room_members(
     _room_id: String,
     _state: State<'_, AppData>,
 ) -> Result<Vec<RoomMemberResponse>, String> {
-    warn!("[DEPRECATED] get_room_members is deprecated. Frontend should use Matrix SDK (matrixClientService.getRoomMembers() or useGroupStore).");
+    warn!(
+        "[DEPRECATED] get_room_members is deprecated. Frontend should use Matrix SDK (matrixClientService.getRoomMembers() or useGroupStore)."
+    );
     // Return empty list for backward compatibility
     Ok(vec![])
 }
@@ -142,7 +144,9 @@ pub async fn page_room(
     _page_param: PageParam,
     _state: State<'_, AppData>,
 ) -> Result<Page<im_room::Model>, String> {
-    warn!("[DEPRECATED] page_room is deprecated. Frontend should use Matrix SDK (matrixClientService.getRooms() or useRoomStore).");
+    warn!(
+        "[DEPRECATED] page_room is deprecated. Frontend should use Matrix SDK (matrixClientService.getRooms() or useRoomStore)."
+    );
     // Return empty page for backward compatibility
     Ok(Page {
         total: "0".to_string(),

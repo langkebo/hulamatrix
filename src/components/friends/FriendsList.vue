@@ -32,52 +32,57 @@
       </n-space>
     </n-flex>
 
+    <!-- 统计信息 (v2 新增) -->
+    <n-space :size="16" class="stats-bar">
+      <n-statistic label="好友总数" :value="friendsStore.totalFriendsCount" />
+      <n-statistic label="在线好友" :value="friendsStore.onlineFriendsCount" />
+      <n-statistic label="待处理" :value="friendsStore.pendingCount" />
+    </n-space>
+
     <!-- 分类标签 -->
     <n-scrollbar x-scrollable class="category-tabs">
       <n-space :size="8">
         <n-tag
-          v-for="category in categories"
-          :key="category.categoryId"
-          :type="selectedCategoryId === category.categoryId ? 'primary' : 'default'"
-          :color="selectedCategoryId === category.categoryId ? ((category.color || undefined) as never) : undefined"
+          v-for="category in friendsStore.categories"
+          :key="category.id"
+          :type="selectedCategoryId === category.id ? 'primary' : 'default'"
+          :color="selectedCategoryId === category.id ? (category.color as never) : undefined"
           :bordered="false"
           size="small"
-          closable
-          @close="handleDeleteCategory(category.categoryId)"
-          @click="handleSelectCategory(category.categoryId)">
-          {{ category.name }} ({{ category.count || 0 }})
+          @click="handleSelectCategory(category.id)">
+          {{ category.name }} ({{ getCategoryFriendCount(category.id) }})
         </n-tag>
         <n-tag
-          v-if="categories.length > 0"
           :type="selectedCategoryId === null ? 'primary' : 'default'"
           :bordered="false"
           size="small"
           @click="handleSelectCategory(null)">
-          {{ t('friends.list.all_friends', { count: friends.length }) }}
+          {{ t('friends.list.all_friends', { count: friendsStore.friends.length }) }}
         </n-tag>
       </n-space>
     </n-scrollbar>
 
     <!-- 待处理的好友请求 -->
-    <n-collapse v-if="pendingRequests.length > 0" class="pending-requests">
+    <n-collapse v-if="friendsStore.pending.length > 0" class="pending-requests">
       <n-collapse-item :title="t('friends.requests.pending_title')" name="pending">
         <n-flex vertical :size="12">
-          <div
-            v-for="request in pendingRequests"
-            :key="request.requestId"
-            class="pending-request-item">
+          <div v-for="request in friendsStore.pending" :key="request.id" class="pending-request-item">
             <n-flex align="center" :size="12" class="flex-1">
-              <n-avatar v-bind="request.fromAvatarUrl !== undefined ? { src: request.fromAvatarUrl } : {}" :size="40" round>
+              <n-avatar :size="40" round>
                 <svg class="size-20px"><use href="#user"></use></svg>
               </n-avatar>
               <n-flex vertical :size="4">
-                <span class="text-14px font-600">{{ request.fromDisplayName }}</span>
+                <span class="text-14px font-600">{{ request.requester_display_name || request.requester_id }}</span>
                 <span v-if="request.message" class="text-(12px #909090)">{{ request.message }}</span>
               </n-flex>
             </n-flex>
             <n-space>
-              <n-button size="small" type="primary" @click="handleAcceptRequest(request)">{{ t('friends.requests.accept') }}</n-button>
-              <n-button size="small" secondary @click="handleRejectRequest(request)">{{ t('friends.requests.reject') }}</n-button>
+              <n-button size="small" type="primary" @click="handleAcceptRequest(request)">
+                {{ t('friends.requests.accept') }}
+              </n-button>
+              <n-button size="small" secondary @click="handleRejectRequest(request)">
+                {{ t('friends.requests.reject') }}
+              </n-button>
             </n-space>
           </div>
         </n-flex>
@@ -87,7 +92,7 @@
     <!-- 好友列表 -->
     <n-flex class="friends-container" vertical :size="8">
       <!-- 加载状态 -->
-      <div v-if="isLoading" class="loading-container">
+      <div v-if="friendsStore.loading" class="loading-container">
         <n-spin size="medium" />
       </div>
 
@@ -105,30 +110,27 @@
 
       <!-- 好友列表 -->
       <template v-else>
-        <n-virtual-list
-          v-if="filteredFriends.length > 100"
-          :items="filteredFriends"
-          :item-size="76">
+        <n-virtual-list v-if="filteredFriends.length > 100" :items="filteredFriends" :item-size="76">
           <template #default="{ item: friend }">
             <div
-              :key="friend.userId"
+              :key="friend.user_id"
               class="friend-item"
-              :class="{ 'is-offline': friend.status === 'offline' }"
+              :class="{ 'is-offline': friend.presence === 'offline' }"
               @click="handleFriendClick(friend)">
               <n-flex align="center" :size="12">
                 <div class="friend-avatar-wrapper">
-                  <n-avatar v-bind="friend.avatarUrl !== undefined ? { src: friend.avatarUrl } : {}" :size="48" round>
+                  <n-avatar :size="48" round>
                     <svg class="size-24px"><use href="#user"></use></svg>
                   </n-avatar>
-                  <span class="status-indicator" :class="`status-${friend.status || 'offline'}`"></span>
+                  <span class="status-indicator" :class="`status-${friend.presence || 'offline'}`"></span>
                 </div>
                 <n-flex vertical :size="4" class="flex-1">
                   <n-flex align="center" :space="8">
-                    <span class="text-14px font-600">{{ friend.displayName }}</span>
-                    <n-tag v-if="friend.remark" size="tiny" type="info">{{ friend.remark }}</n-tag>
+                    <span class="text-14px font-600">{{ friend.display_name || friend.user_id }}</span>
                   </n-flex>
-                  <span class="text-(12px #909090)">{{ getPresenceText(friend.status) }}</span>
+                  <span class="text-(12px #909090)">{{ getPresenceText(friend.presence) }}</span>
                 </n-flex>
+
                 <n-dropdown :options="getFriendActions(friend)" @select="(key) => handleFriendAction(key, friend)">
                   <n-button circle size="small" quaternary>
                     <svg class="size-14px"><use href="#more"></use></svg>
@@ -141,24 +143,23 @@
         <template v-else>
           <div
             v-for="friend in filteredFriends"
-            :key="friend.userId"
+            :key="friend.user_id"
             class="friend-item"
-            :class="{ 'is-offline': friend.status === 'offline' }"
+            :class="{ 'is-offline': friend.presence === 'offline' }"
             @click="handleFriendClick(friend)">
             <n-flex align="center" :size="12">
               <div class="friend-avatar-wrapper">
-                <n-avatar v-bind="friend.avatarUrl !== undefined ? { src: friend.avatarUrl } : {}" :size="48" round>
+                <n-avatar :size="48" round>
                   <svg class="size-24px"><use href="#user"></use></svg>
                 </n-avatar>
-                <span class="status-indicator" :class="`status-${friend.status || 'offline'}`"></span>
+                <span class="status-indicator" :class="`status-${friend.presence || 'offline'}`"></span>
               </div>
 
               <n-flex vertical :size="4" class="flex-1">
                 <n-flex align="center" :space="8">
-                  <span class="text-14px font-600">{{ friend.displayName }}</span>
-                  <n-tag v-if="friend.remark" size="tiny" type="info">{{ friend.remark }}</n-tag>
+                  <span class="text-14px font-600">{{ friend.display_name || friend.user_id }}</span>
                 </n-flex>
-                <span class="text-(12px #909090)">{{ getPresenceText(friend.status) }}</span>
+                <span class="text-(12px #909090)">{{ getPresenceText(friend.presence) }}</span>
               </n-flex>
 
               <n-dropdown :options="getFriendActions(friend)" @select="(key) => handleFriendAction(key, friend)">
@@ -173,8 +174,17 @@
     </n-flex>
 
     <!-- 添加好友对话框 -->
-    <n-modal v-model:show="showAddFriendDialog" preset="card" :title="t('friends.list.add_friend')" :style="{ width: '400px' }">
-      <n-form ref="addFriendFormRef" :model="addFriendForm" :rules="addFriendRules" label-placement="left" label-width="80">
+    <n-modal
+      v-model:show="showAddFriendDialog"
+      preset="card"
+      :title="t('friends.list.add_friend')"
+      :style="{ width: '400px' }">
+      <n-form
+        ref="addFriendFormRef"
+        :model="addFriendForm"
+        :rules="addFriendRules"
+        label-placement="left"
+        label-width="80">
         <n-form-item :label="t('friends.dialogs.user_id_label')" path="userId">
           <n-input v-model:value="addFriendForm.userId" :placeholder="t('friends.dialogs.user_id_placeholder')" />
         </n-form-item>
@@ -195,28 +205,9 @@
       <template #footer>
         <n-space justify="end">
           <n-button @click="showAddFriendDialog = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" @click="handleSendFriendRequest" :loading="isSendingRequest">{{ t('friends.requests.send_request') }}</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-
-    <!-- 创建分类对话框 -->
-    <n-modal v-model:show="showCreateCategoryDialog" preset="card" :title="t('friends.category.create_title')" :style="{ width: '400px' }">
-      <n-form ref="categoryFormRef" :model="categoryForm" :rules="categoryRules" label-placement="left" label-width="80">
-        <n-form-item :label="t('friends.category.name')" path="name">
-          <n-input v-model:value="categoryForm.name" :placeholder="t('friends.category.name_placeholder')" />
-        </n-form-item>
-        <n-form-item :label="t('friends.category.description')" path="description">
-          <n-input v-model:value="categoryForm.description" :placeholder="t('friends.category.description_placeholder')" />
-        </n-form-item>
-        <n-form-item :label="t('friends.category.color')" path="color">
-          <n-color-picker v-model:value="categoryForm.color" :modes="['hex']" />
-        </n-form-item>
-      </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showCreateCategoryDialog = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" @click="handleCreateCategory" :loading="isCreatingCategory">{{ t('friends.category.create') }}</n-button>
+          <n-button type="primary" @click="handleSendFriendRequest" :loading="isSendingRequest">
+            {{ t('friends.requests.send_request') }}
+          </n-button>
         </n-space>
       </template>
     </n-modal>
@@ -241,18 +232,18 @@ import {
   NForm,
   NFormItem,
   NSelect,
-  NColorPicker,
   NSpin,
   NEmpty,
   NDropdown,
   NVirtualList,
+  NStatistic,
   useDialog,
   useMessage,
   type FormRules,
   type FormInst
 } from 'naive-ui'
-import { matrixFriendAdapter } from '@/adapters'
-import type { Friend, FriendCategory, FriendRequest, FriendStatus } from '@/adapters/service-adapter'
+import { useFriendsStoreV2 } from '@/stores/friendsV2'
+import type { FriendItem, FriendCategoryItem, PendingRequestItem } from '@/types/matrix-sdk-v2'
 import { logger } from '@/utils/logger'
 
 const router = useRouter()
@@ -260,61 +251,44 @@ const { t } = useI18n()
 const dialog = useDialog()
 const message = useMessage()
 
+// 使用 v2 Store
+const friendsStore = useFriendsStoreV2()
+
 // 状态
 const searchQuery = ref('')
-const isLoading = ref(false)
-const selectedCategoryId = ref<string | null>(null)
-const friends = ref<Friend[]>([])
-const categories = ref<FriendCategory[]>([])
-const pendingRequests = ref<FriendRequest[]>([])
+const selectedCategoryId = ref<number | null>(null)
 
 // 对话框状态
 const showAddFriendDialog = ref(false)
-const showCreateCategoryDialog = ref(false)
 const isSendingRequest = ref(false)
-const isCreatingCategory = ref(false)
 
 // 表单
 const addFriendFormRef = ref<FormInst>()
 const addFriendForm = ref({
   userId: '',
   message: '',
-  categoryId: 'no-category' as string | null
+  categoryId: null as number | null
 })
 
-const categoryFormRef = ref<FormInst>()
-const categoryForm = ref({
-  name: '',
-  description: '',
-  color: '#13987f'
-})
-
-// 表单验证规则 - 使用 i18n 翻译
+// 表单验证规则
 const addFriendRules: FormRules = {
   userId: [{ required: true, message: t('friends.dialogs.user_id_required'), trigger: 'blur' }]
 }
 
-const categoryRules: FormRules = {
-  name: [{ required: true, message: t('friends.validation.category_name_required'), trigger: 'blur' }]
-}
-
 // 计算属性
 const filteredFriends = computed(() => {
-  let result = friends.value
+  let result = friendsStore.friends
 
   // 按分类过滤
   if (selectedCategoryId.value !== null) {
-    result = result.filter((f) => f.categoryId === selectedCategoryId.value)
+    result = result.filter((f: FriendItem) => f.category_id === selectedCategoryId.value)
   }
 
   // 按搜索关键词过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(
-      (f) =>
-        f.displayName.toLowerCase().includes(query) ||
-        f.remark?.toLowerCase().includes(query) ||
-        f.userId.toLowerCase().includes(query)
+      (f: FriendItem) => (f.display_name || '').toLowerCase().includes(query) || f.user_id.toLowerCase().includes(query)
     )
   }
 
@@ -322,8 +296,8 @@ const filteredFriends = computed(() => {
 })
 
 const categoryOptions = computed(() => [
-  { label: t('friends.category.no_category'), value: 'no-category' },
-  ...categories.value.map((cat) => ({ label: cat.name, value: cat.categoryId }))
+  { label: '无分类', value: null } as any,
+  ...friendsStore.categories.map((cat: FriendCategoryItem) => ({ label: cat.name, value: cat.id }))
 ])
 
 const categoryMenuOptions = computed(() => [
@@ -334,145 +308,47 @@ const categoryMenuOptions = computed(() => [
 ])
 
 // 方法
-
-const loadFriends = async () => {
-  isLoading.value = true
-  try {
-    friends.value = await matrixFriendAdapter.listFriends({ includePresence: true })
-  } catch (error) {
-    message.error(t('friends.errors.load_failed'))
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const loadCategories = async () => {
-  try {
-    categories.value = await matrixFriendAdapter.listCategories()
-  } catch (error) {
-    message.error(t('friends.category.delete_failed'))
-  }
-}
-
-const loadPendingRequests = async () => {
-  try {
-    pendingRequests.value = await matrixFriendAdapter.getPendingRequests()
-  } catch (error) {
-    logger.error('加载待处理请求失败:', error)
-  }
+const getCategoryFriendCount = (categoryId: number) => {
+  return friendsStore.friends.filter((f: FriendItem) => f.category_id === categoryId).length
 }
 
 const handleSearch = () => {
   // 搜索由计算属性自动处理
 }
 
-const handleSelectCategory = (categoryId: string | null) => {
+const handleSelectCategory = (categoryId: number | null) => {
   selectedCategoryId.value = categoryId
-}
-
-const handleDeleteCategory = (categoryId: string) => {
-  dialog.warning({
-    title: t('friends.category.delete_confirm_title'),
-    content: t('friends.category.delete_confirm_content'),
-    positiveText: t('common.confirm'),
-    negativeText: t('common.cancel'),
-    onPositiveClick: async () => {
-      try {
-        await matrixFriendAdapter.deleteCategory(categoryId)
-        await loadCategories()
-        message.success(t('friends.category.delete_success'))
-      } catch (error) {
-        message.error(t('friends.category.delete_failed'))
-      }
-    }
-  })
 }
 
 const handleCategoryAction = async (key: string) => {
   if (key === 'create') {
-    showCreateCategoryDialog.value = true
+    dialog.warning({
+      title: '创建分类',
+      content: '分类创建功能待实现',
+      positiveText: t('common.confirm')
+    })
   }
 }
 
-const handleFriendClick = (friend: Friend) => {
+const handleFriendClick = (friend: FriendItem) => {
   // 打开与该好友的私密聊天
-  router.push({ path: '/private-chat', query: { userId: friend.userId } })
+  router.push({ path: '/private-chat', query: { userId: friend.user_id } })
 }
 
-const handleFriendAction = async (key: string, friend: Friend) => {
+const handleFriendAction = async (key: string, friend: FriendItem) => {
   switch (key) {
     case 'chat':
-      router.push({ path: '/private-chat', query: { userId: friend.userId } })
+      router.push({ path: '/private-chat', query: { userId: friend.user_id } })
       break
-    case 'setRemark': {
-      const remark = ref(friend.remark || '')
-      dialog.create({
-        title: t('friends.remark.title'),
-        content: () => {
-          return h('div', { class: 'p-16px' }, [
-            h(NInput, {
-              value: remark.value,
-              placeholder: t('friends.remark.placeholder'),
-              onUpdateValue: (v: string) => {
-                remark.value = v
-              }
-            })
-          ])
-        },
-        positiveText: t('friends.remark.save'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          try {
-            await matrixFriendAdapter.updateFriendRemark(friend.userId, remark.value || '')
-            await loadFriends()
-            message.success(t('friends.remark.update_success'))
-          } catch (error) {
-            message.error(t('friends.remark.update_failed'))
-          }
-        }
-      })
-      break
-    }
-    case 'setCategory': {
-      const categoryId = ref(friend.categoryId || 'no-category')
-      dialog.create({
-        title: t('friends.actions.set_category'),
-        content: () => {
-          return h('div', { class: 'p-16px' }, [
-            h(NSelect, {
-              value: categoryId.value,
-              options: categoryOptions.value,
-              onUpdateValue: (v: string) => {
-                categoryId.value = v
-              }
-            })
-          ])
-        },
-        positiveText: t('friends.remark.save'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          try {
-            const finalCategoryId = categoryId.value === 'no-category' ? null : categoryId.value
-            await matrixFriendAdapter.setFriendCategory(friend.userId, finalCategoryId)
-            await loadFriends()
-            message.success(t('friends.category.set_success'))
-          } catch (error) {
-            message.error(t('friends.category.set_failed'))
-          }
-        }
-      })
-      break
-    }
     case 'remove':
       dialog.warning({
         title: t('friends.remove.confirm_title'),
-        content: t('friends.remove.confirm_content', { name: friend.displayName }),
+        content: t('friends.remove.confirm_content', { name: friend.display_name || friend.user_id }),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
           try {
-            await matrixFriendAdapter.removeFriend(friend.userId)
-            await loadFriends()
+            await friendsStore.removeFriend(friend.user_id)
             message.success(t('friends.remove.success'))
           } catch (error) {
             message.error(t('friends.remove.failed'))
@@ -483,34 +359,31 @@ const handleFriendAction = async (key: string, friend: Friend) => {
   }
 }
 
-const getFriendActions = (_friend: Friend) => {
+const getFriendActions = (_friend: FriendItem) => {
   return [
     { label: t('friends.actions.chat'), key: 'chat' },
-    { label: t('friends.actions.set_remark'), key: 'setRemark' },
-    { label: t('friends.actions.set_category'), key: 'setCategory' },
     { type: 'divider', key: 'd1' },
     { label: t('friends.actions.remove'), key: 'remove' }
   ]
 }
 
-const handleAcceptRequest = async (request: FriendRequest) => {
+const handleAcceptRequest = async (request: PendingRequestItem) => {
   try {
-    await matrixFriendAdapter.acceptFriendRequest(request.requestId)
-    await loadPendingRequests()
-    await loadFriends()
+    await friendsStore.acceptRequest(request.id, 1) // 默认分类 ID 为 1
     message.success(t('friends.requests.accepted'))
   } catch (error) {
     message.error(t('friends.requests.error'))
+    logger.error('Failed to accept friend request:', error)
   }
 }
 
-const handleRejectRequest = async (request: FriendRequest) => {
+const handleRejectRequest = async (request: PendingRequestItem) => {
   try {
-    await matrixFriendAdapter.rejectFriendRequest(request.requestId)
-    await loadPendingRequests()
+    await friendsStore.rejectRequest(request.id)
     message.success(t('friends.requests.rejected'))
   } catch (error) {
     message.error(t('friends.requests.error'))
+    logger.error('Failed to reject friend request:', error)
   }
 }
 
@@ -519,42 +392,25 @@ const handleSendFriendRequest = async () => {
     await addFriendFormRef.value?.validate()
     isSendingRequest.value = true
 
-    await matrixFriendAdapter.sendFriendRequest(addFriendForm.value.userId, addFriendForm.value.message)
+    await friendsStore.sendRequest(
+      addFriendForm.value.userId,
+      addFriendForm.value.message,
+      addFriendForm.value.categoryId || undefined
+    )
 
     message.success(t('friends.requests.sent'))
     showAddFriendDialog.value = false
-    addFriendForm.value = { userId: '', message: '', categoryId: 'no-category' }
+    addFriendForm.value = { userId: '', message: '', categoryId: null }
   } catch (error) {
     message.error(t('friends.requests.send_failed'))
+    logger.error('Failed to send friend request:', error)
   } finally {
     isSendingRequest.value = false
   }
 }
 
-const handleCreateCategory = async () => {
-  try {
-    await categoryFormRef.value?.validate()
-    isCreatingCategory.value = true
-
-    await matrixFriendAdapter.createCategory(
-      categoryForm.value.name,
-      categoryForm.value.description,
-      categoryForm.value.color
-    )
-
-    message.success(t('friends.category.create_success'))
-    showCreateCategoryDialog.value = false
-    await loadCategories()
-    categoryForm.value = { name: '', description: '', color: '#13987f' }
-  } catch (error) {
-    message.error(t('friends.category.create_failed'))
-  } finally {
-    isCreatingCategory.value = false
-  }
-}
-
-const getPresenceText = (status?: FriendStatus): string => {
-  switch (status) {
+const getPresenceText = (presence?: string): string => {
+  switch (presence) {
     case 'online':
       return t('friends.status.online')
     case 'offline':
@@ -570,12 +426,18 @@ const getPresenceText = (status?: FriendStatus): string => {
 
 // 生命周期
 onMounted(async () => {
-  await Promise.all([loadFriends(), loadCategories(), loadPendingRequests()])
+  try {
+    await friendsStore.initialize()
+    logger.info('[FriendsListV2] Initialized successfully')
+  } catch (error) {
+    logger.error('[FriendsListV2] Initialization failed:', error)
+    message.error('加载好友列表失败')
+  }
 })
 
 // 导出刷新方法供父组件调用
 defineExpose({
-  refresh: loadFriends
+  refresh: () => friendsStore.refreshAll()
 })
 </script>
 
@@ -586,6 +448,13 @@ defineExpose({
 }
 
 .header {
+  padding: 12px;
+  background: var(--bg-setting-item);
+  border-radius: 12px;
+  border: 1px solid var(--line-color);
+}
+
+.stats-bar {
   padding: 12px;
   background: var(--bg-setting-item);
   border-radius: 12px;
@@ -667,7 +536,7 @@ defineExpose({
   border: 2px solid var(--bg-setting-item);
 
   &.status-online {
-    background: #52c41a;
+    background: #4caf50;
   }
 
   &.status-offline {

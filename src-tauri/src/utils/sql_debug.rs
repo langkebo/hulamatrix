@@ -79,9 +79,10 @@ impl SqlDebug {
     pub fn log_simple(sql: &str, values: Option<&sea_orm::Values>, label: &str) {
         info!("[{}] {}", label, sql);
         if let Some(values) = values
-            && !values.0.is_empty() {
-                info!("[{}] Parameters: {:?}", label, values);
-            }
+            && !values.0.is_empty()
+        {
+            info!("[{}] Parameters: {:?}", label, values);
+        }
     }
 }
 

@@ -14,13 +14,13 @@
       <!-- 会话列表 -->
       <div class="sessions-list">
         <!-- 加载状态 -->
-        <div v-if="privateChatStore.loading" class="loading-state">
+        <div v-if="isLoading" class="loading-state">
           <n-spin size="medium" />
         </div>
 
         <!-- 空状态 -->
         <n-empty
-          v-else-if="privateChatStore.sessions.length === 0"
+          v-else-if="sessions.length === 0"
           :description="t('privateChat.sessions.no_sessions')"
           size="small">
           <template #extra>
@@ -32,29 +32,26 @@
 
         <!-- 会话列表 -->
         <div
-          v-for="session in privateChatStore.sessions"
-          :key="session.session_id"
+          v-for="session in sessions"
+          :key="session.sessionId"
           class="session-item"
-          :class="{ 'is-active': privateChatStore.currentSessionId === session.session_id }"
+          :class="{ 'is-active': activeSessionId === session.sessionId }"
           @click="handleSelectSession(session)">
           <div class="session-avatar">
-            <n-avatar round :size="48" :src="session.avatar_url || ''">
+            <n-avatar round :size="48" :src="session.avatarUrl || ''">
               <svg class="size-24px"><use href="#user"></use></svg>
             </n-avatar>
           </div>
           <div class="session-content">
             <div class="session-header-row">
-              <span class="session-name">{{ session.display_name || getParticipantId(session) }}</span>
-              <n-badge
-                v-if="session.unread_count && session.unread_count > 0"
-                :value="session.unread_count"
-                :max="99" />
+              <span class="session-name">{{ session.displayName }}</span>
+              <n-badge v-if="session.unreadCount > 0" :value="session.unreadCount" :max="99" />
             </div>
             <div class="session-preview">
-              {{ session.last_message?.content || t('privateChat.sessions.no_sessions') }}
+              {{ session.lastMessage?.content || t('privateChat.sessions.no_sessions') }}
             </div>
             <div class="session-time">
-              {{ formatTime(session.last_message?.timestamp) }}
+              {{ formatTime(session.lastMessage?.timestamp) }}
             </div>
           </div>
         </div>
@@ -64,7 +61,7 @@
     <!-- 聊天区域 -->
     <main class="chat-area">
       <!-- 未选择会话 -->
-      <div v-if="!privateChatStore.currentSessionId" class="empty-state">
+      <div v-if="!activeSessionId" class="empty-state">
         <n-empty :description="t('privateChat.sessions.select_session')" size="large">
           <template #extra>
             <n-button size="medium" type="primary" @click="showNewChatDialog = true">
@@ -79,11 +76,11 @@
         <!-- 聊天头部 -->
         <header class="chat-header">
           <n-flex align="center" :space="12">
-            <n-avatar round :size="40" :src="(currentSession?.avatar_url as string) || ''">
+            <n-avatar round :size="40" :src="(currentSession?.avatarUrl as string) || ''">
               <svg class="size-20px"><use href="#user"></use></svg>
             </n-avatar>
             <n-flex vertical :space="4">
-              <span class="chat-name">{{ currentSession?.display_name || getParticipantId(currentSession) }}</span>
+              <span class="chat-name">{{ currentSession?.displayName }}</span>
               <span class="chat-status">{{ getPresenceText(currentPresence) }}</span>
             </n-flex>
           </n-flex>
@@ -104,21 +101,18 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-else-if="privateChatStore.currentMessages.length === 0" class="empty-messages">
+          <div v-else-if="messages.length === 0" class="empty-messages">
             <span class="text-(12px #909090)">{{ t('privateChat.chat.empty_state') }}</span>
           </div>
 
           <!-- 消息列表 -->
           <div v-else class="messages-list">
             <div
-              v-for="message in privateChatStore.currentMessages"
-              :key="message.message_id"
+              v-for="message in messages"
+              :key="message.messageId"
               class="message-item"
-              :class="{ 'is-self': message.is_own }">
-              <n-avatar
-                round
-                :size="32"
-                :src="message.is_own ? userAvatar || '' : (currentSession?.avatar_url as string) || ''">
+              :class="{ 'is-self': message.isSelf }">
+              <n-avatar round :size="32" :src="message.isSelf ? (userAvatar || '') : ((currentSession?.avatarUrl as string) || '')">
                 <svg class="size-16px"><use href="#user"></use></svg>
               </n-avatar>
               <div class="message-content">
@@ -127,12 +121,8 @@
                   <span class="message-time">{{ formatTime(message.timestamp) }}</span>
                 </div>
                 <div class="message-status">
-                  <span v-if="message.is_destroyed" class="destroyed-badge">
-                    {{ t('privateChat.message.destroyed') }}
-                  </span>
-                  <span v-else-if="message.is_own && message.status" class="status-text">
-                    {{ getStatusText(message.status) }}
-                  </span>
+                  <span v-if="message.isDestroyed" class="destroyed-badge">{{ t('privateChat.message.destroyed') }}</span>
+                  <span v-else-if="message.isSelf" class="status-text">{{ getStatusText(message.status) }}</span>
                 </div>
               </div>
             </div>
@@ -185,11 +175,7 @@
     </main>
 
     <!-- 新建聊天对话框 -->
-    <n-modal
-      v-model:show="showNewChatDialog"
-      preset="card"
-      :title="t('privateChat.dialogs.new_chat_title')"
-      :style="{ width: '400px' }">
+    <n-modal v-model:show="showNewChatDialog" preset="card" :title="t('privateChat.dialogs.new_chat_title')" :style="{ width: '400px' }">
       <n-form label-placement="left" label-width="80">
         <n-form-item :label="t('privateChat.dialogs.user_id_label')">
           <n-input v-model:value="newChatUserId" :placeholder="t('privateChat.dialogs.user_id_placeholder')" />
@@ -198,9 +184,7 @@
       <template #footer>
         <n-space justify="end">
           <n-button @click="showNewChatDialog = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" @click="handleCreateSession" :loading="isCreatingSession">
-            {{ t('privateChat.dialogs.start_button') }}
-          </n-button>
+          <n-button type="primary" @click="handleCreateSession" :loading="isCreatingSession">{{ t('privateChat.dialogs.start_button') }}</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -208,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   NButton,
@@ -230,8 +214,8 @@ import {
   useDialog,
   useMessage
 } from 'naive-ui'
-import { usePrivateChatStoreV2 } from '@/stores/privateChatV2'
-import type { PrivateChatSessionItem, PrivateChatMessageItem } from '@/types/matrix-sdk-v2'
+import { matrixPrivateChatAdapter, matrixFriendAdapter } from '@/adapters'
+import type { PrivateChatSession, PrivateChatMessage, FriendStatus } from '@/adapters/service-adapter'
 import { useUserStore } from '@/stores/user'
 import { logger } from '@/utils/logger'
 
@@ -240,19 +224,20 @@ const dialog = useDialog()
 const message = useMessage()
 const userStore = useUserStore()
 
-// 使用 v2 Store
-const privateChatStore = usePrivateChatStoreV2()
-
 // 状态
+const isLoading = ref(false)
 const isLoadingMessages = ref(false)
 const isSending = ref(false)
 const isCreatingSession = ref(false)
+const sessions = ref<PrivateChatSession[]>([])
+const messages = ref<PrivateChatMessage[]>([])
+const activeSessionId = ref<string>()
 const inputMessage = ref('')
 const newChatUserId = ref('')
 const showNewChatDialog = ref(false)
 const showMessageTTL = ref(false)
 const selectedTTL = ref('0')
-const currentPresence = ref<'online' | 'offline' | 'unavailable' | 'away'>('offline')
+const currentPresence = ref<FriendStatus>('offline')
 const messagesContainerRef = ref<HTMLElement>()
 const messageInputRef = ref()
 
@@ -260,7 +245,7 @@ const messageInputRef = ref()
 const userAvatar = computed(() => userStore.userInfo?.avatar || '')
 
 // 当前会话
-const currentSession = computed(() => privateChatStore.currentSession)
+const currentSession = computed(() => sessions.value.find((s) => s.sessionId === activeSessionId.value))
 
 // 聊天菜单选项
 const chatMenuOptions = computed(() => [
@@ -271,31 +256,40 @@ const chatMenuOptions = computed(() => [
 
 // 方法
 
-const getParticipantId = (session?: PrivateChatSessionItem | null): string => {
-  if (!session || !session.participant_ids || session.participant_ids.length === 0) {
-    return ''
+const loadSessions = async () => {
+  isLoading.value = true
+  try {
+    sessions.value = await matrixPrivateChatAdapter.listSessions()
+  } catch (error) {
+    message.error(t('privateChat.errors.load_sessions_failed'))
+  } finally {
+    isLoading.value = false
   }
-  // 返回第一个非自己的用户ID
-  const myId = userStore.userInfo?.uid
-  return session.participant_ids.find((id) => id !== myId) || session.participant_ids[0]
 }
 
-const handleSelectSession = async (session: PrivateChatSessionItem) => {
+const loadMessages = async (sessionId: string) => {
+  isLoadingMessages.value = true
   try {
-    await privateChatStore.selectSession(session.session_id)
-    isLoadingMessages.value = true
-    await privateChatStore.loadMessages(session.session_id, 50)
+    messages.value = await matrixPrivateChatAdapter.getMessages(sessionId, 50)
     await nextTick()
     scrollToBottom()
   } catch (error) {
     message.error(t('privateChat.errors.load_messages_failed'))
-    logger.error('[PrivateChatViewV2] Failed to select session:', error)
   } finally {
     isLoadingMessages.value = false
   }
+}
 
-  // 获取对方在线状态（暂时使用 offline，v2 暂未提供 presence API）
-  currentPresence.value = 'offline'
+const handleSelectSession = async (session: PrivateChatSession) => {
+  activeSessionId.value = session.sessionId
+  await loadMessages(session.sessionId)
+
+  // 获取对方在线状态
+  try {
+    currentPresence.value = await matrixFriendAdapter.getPresence(session.userId)
+  } catch (error) {
+    logger.error('获取Presence失败:', error)
+  }
 }
 
 const handleCreateSession = async () => {
@@ -306,21 +300,14 @@ const handleCreateSession = async () => {
 
   isCreatingSession.value = true
   try {
-    const newSession = await privateChatStore.createSession({
-      participants: [newChatUserId.value],
-      session_name: undefined,
-      ttl_seconds: undefined
-    })
-
-    await privateChatStore.refreshSessions()
-    await handleSelectSession(newSession)
-
+    const sessionId = await matrixPrivateChatAdapter.createSession(newChatUserId.value)
+    await loadSessions()
+    await handleSelectSession({ sessionId, userId: newChatUserId.value } as PrivateChatSession)
     showNewChatDialog.value = false
     newChatUserId.value = ''
     message.success(t('privateChat.dialogs.create_success'))
   } catch (error) {
     message.error(t('privateChat.dialogs.create_failed'))
-    logger.error('[PrivateChatViewV2] Failed to create session:', error)
   } finally {
     isCreatingSession.value = false
   }
@@ -328,24 +315,35 @@ const handleCreateSession = async () => {
 
 const handleSendMessage = async () => {
   const content = inputMessage.value.trim()
-  if (!content || !privateChatStore.currentSessionId) return
+  if (!content || !activeSessionId.value) return
 
   isSending.value = true
   try {
     const ttl = showMessageTTL.value ? parseInt(selectedTTL.value, 10) : undefined
-    await privateChatStore.sendMessage(content)
+    const messageId = await matrixPrivateChatAdapter.sendMessage(activeSessionId.value, content, 'text', ttl)
+
+    // 添加到消息列表
+    messages.value.push({
+      messageId,
+      sessionId: activeSessionId.value,
+      senderId: userStore.userInfo.uid,
+      content,
+      type: 'text',
+      timestamp: Date.now(),
+      isSelf: true,
+      status: 'sent'
+    })
+
+    inputMessage.value = ''
+    await nextTick()
+    scrollToBottom()
 
     // 如果设置了 TTL，隐藏 TTL 设置面板
     if (ttl) {
       showMessageTTL.value = false
     }
-
-    inputMessage.value = ''
-    await nextTick()
-    scrollToBottom()
   } catch (error) {
     message.error(t('privateChat.errors.send_failed'))
-    logger.error('[PrivateChatViewV2] Failed to send message:', error)
   } finally {
     isSending.value = false
   }
@@ -359,7 +357,7 @@ const handleInputKeyDown = (e: KeyboardEvent) => {
 }
 
 const handleTTLChange = () => {
-  // TTL 变化处理（v2 SDK 暂未支持 TTL）
+  // TTL 变化处理
 }
 
 const handleChatMenuAction = async (key: string) => {
@@ -372,14 +370,13 @@ const handleChatMenuAction = async (key: string) => {
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
           try {
-            if (privateChatStore.currentSessionId) {
-              // v2 SDK 暂未提供清空历史功能，暂时清空本地状态
-              await privateChatStore.selectSession(privateChatStore.currentSessionId)
+            if (activeSessionId.value) {
+              await matrixPrivateChatAdapter.clearHistory(activeSessionId.value)
+              messages.value = []
               message.success(t('privateChat.confirm.clear_success'))
             }
           } catch (error) {
             message.error(t('privateChat.confirm.clear_failed'))
-            logger.error('[PrivateChatViewV2] Failed to clear history:', error)
           }
         }
       })
@@ -392,14 +389,14 @@ const handleChatMenuAction = async (key: string) => {
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
           try {
-            if (privateChatStore.currentSessionId) {
-              await privateChatStore.deleteSession(privateChatStore.currentSessionId)
-              await privateChatStore.refreshSessions()
+            if (activeSessionId.value) {
+              await matrixPrivateChatAdapter.deleteSession(activeSessionId.value)
+              await loadSessions()
+              activeSessionId.value = undefined
               message.success(t('privateChat.confirm.delete_success'))
             }
           } catch (error) {
             message.error(t('privateChat.confirm.delete_failed'))
-            logger.error('[PrivateChatViewV2] Failed to delete session:', error)
           }
         }
       })
@@ -444,7 +441,7 @@ const formatTime = (timestamp?: number): string => {
   return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
 }
 
-const getPresenceText = (status?: 'online' | 'offline' | 'unavailable' | 'away'): string => {
+const getPresenceText = (status?: FriendStatus): string => {
   switch (status) {
     case 'online':
       return t('privateChat.chat.online')
@@ -459,7 +456,7 @@ const getPresenceText = (status?: 'online' | 'offline' | 'unavailable' | 'away')
   }
 }
 
-const getStatusText = (status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'): string => {
+const getStatusText = (status: PrivateChatMessage['status']): string => {
   switch (status) {
     case 'sending':
       return t('privateChat.message.status_sending')
@@ -476,26 +473,9 @@ const getStatusText = (status?: 'sending' | 'sent' | 'delivered' | 'read' | 'fai
   }
 }
 
-// 生命周期
+// 订阅消息更新（待实现）
 onMounted(async () => {
-  try {
-    await privateChatStore.initialize()
-    await privateChatStore.refreshSessions()
-    logger.info('[PrivateChatViewV2] Initialized successfully')
-  } catch (error) {
-    logger.error('[PrivateChatViewV2] Initialization failed:', error)
-    message.error('加载私聊会话失败')
-  }
-})
-
-onUnmounted(() => {
-  // 清理资源
-  privateChatStore.dispose()
-})
-
-// 导出刷新方法供父组件调用
-defineExpose({
-  refresh: () => privateChatStore.refreshSessions()
+  await loadSessions()
 })
 </script>
 

@@ -122,7 +122,7 @@ impl Environment {
     ///
     /// # 返回值
     /// * `&'static str` - 对应的环境字符串
-    #[must_use] 
+    #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Local => "local",

@@ -1,6 +1,9 @@
 use crate::AppData;
 
-use super::{client::WebSocketClient, types::{WebSocketConfig, ConnectionState, ConnectionHealth}};
+use super::{
+    client::WebSocketClient,
+    types::{ConnectionHealth, ConnectionState, WebSocketConfig},
+};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, OnceLock};
 use tauri::{AppHandle, State};
@@ -49,7 +52,7 @@ pub struct SuccessResponse {
 }
 
 impl SuccessResponse {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             success: true,

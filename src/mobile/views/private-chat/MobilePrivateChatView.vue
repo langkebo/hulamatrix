@@ -1,69 +1,46 @@
-<!-- 移动端专属私密聊天视图页面 -->
 <template>
   <div class="mobile-private-chat-view">
-    <!-- 顶部导航栏 -->
-    <div class="top-nav">
-      <div class="nav-back" @click="handleBack">
-        <svg class="iconpark-icon w-24px h-24px"><use href="#fanhui"></use></svg>
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-left">
+        <n-button circle size="small" @click="handleBack">
+          <template #icon>
+            <n-icon><Lock /></n-icon>
+          </template>
+        </n-button>
       </div>
-      <div class="nav-title">
-        <h3>私密聊天</h3>
-        <p v-if="currentRoom" class="room-info">
-          <n-icon :size="14" color="#18a058"><Lock /></n-icon>
-          端到端加密
-        </p>
+      <div class="header-title">
+        <span v-if="currentRoom">{{ getParticipantId(currentRoom) }}</span>
+        <span v-else>私密聊天</span>
       </div>
-      <div class="nav-actions">
-        <div class="nav-icon" @click="showChatList = true">
-          <n-badge :value="unreadCount" :max="99">
-            <svg class="iconpark-icon w-24px h-24px"><use href="#message"></use></svg>
-          </n-badge>
-        </div>
+      <div class="header-right">
+        <n-button circle size="small" @click="showChatList = true">
+          <template #icon>
+            <n-badge :value="unreadCount" :max="99">
+              <n-icon><Lock /></n-icon>
+            </n-badge>
+          </template>
+        </n-button>
+        <n-dropdown v-if="currentRoomId" :options="headerMenuOptions" @select="handleHeaderMenuAction">
+          <n-button circle size="small" quaternary>
+            <template #icon>
+              <n-icon><DotsVertical /></n-icon>
+            </template>
+          </n-button>
+        </n-dropdown>
+        <n-button v-else circle size="small" type="primary" @click="showCreateDialog = true">
+          <template #icon>
+            <n-icon><Plus /></n-icon>
+          </template>
+        </n-button>
       </div>
     </div>
 
-    <!-- 会话列表抽屉 -->
-    <n-drawer v-model:show="showChatList" placement="left" :width="280">
-      <div class="chat-drawer">
-        <div class="drawer-header">
-          <h4>私密会话</h4>
-          <n-button text @click="showCreateDialog = true">
-            <n-icon :size="20"><Plus /></n-icon>
-          </n-button>
-        </div>
-        <div class="drawer-content">
-          <div
-            v-for="room in privateChatRooms"
-            :key="room.sessionId"
-            class="chat-item"
-            :class="{ 'is-active': currentRoomId === room.sessionId }"
-            @click="selectRoom(room)"
-          >
-            <n-avatar :src="room.avatarUrl" :size="40" round>
-              <template #fallback>
-                <span>{{ room.displayName.charAt(0) }}</span>
-              </template>
-            </n-avatar>
-            <div class="chat-info">
-              <div class="chat-name">{{ room.displayName }}</div>
-              <div class="chat-meta">
-                <span class="chat-time">{{ formatTime(room.lastMessage?.timestamp || 0) }}</span>
-                <span v-if="room.ttl" class="chat-ttl">
-                  <n-icon :size="12"><Clock /></n-icon>
-                  {{ formatTTL(room.ttl) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </n-drawer>
-
-    <!-- 主内容区域 -->
-    <div class="main-content">
-      <!-- 未选择房间 -->
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <!-- Empty State -->
       <div v-if="!currentRoomId" class="empty-state">
-        <n-empty description="选择或创建一个私密聊天开始">
+        <n-empty description="选择一个会话开始聊天">
           <template #extra>
             <n-button type="primary" @click="showCreateDialog = true">
               <template #icon>
@@ -75,145 +52,151 @@
         </n-empty>
       </div>
 
-      <!-- 聊天界面 -->
-      <div v-else class="chat-interface">
-        <!-- 聊天头部 -->
-        <div class="chat-header">
-          <div class="header-info">
-            <n-avatar :src="currentRoom?.avatarUrl" :size="36" round />
-            <div class="header-text">
-              <h4>{{ currentRoom?.displayName }}</h4>
-              <div class="header-meta">
-                <span class="encryption-badge">
-                  <n-icon :size="12" color="#18a058"><Lock /></n-icon>
-                  E2EE加密
-                </span>
-                <span v-if="currentRoom?.ttl" class="ttl-badge">
-                  默认{{ formatTTL(currentRoom.ttl) }}自毁
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="header-actions">
-            <n-dropdown :options="headerMenuOptions" @select="handleHeaderMenuAction">
-              <n-button quaternary circle>
-                <n-icon :size="20"><DotsVertical /></n-icon>
-              </n-button>
-            </n-dropdown>
-          </div>
-        </div>
-
-        <!-- 消息列表 -->
-        <div class="messages-container" ref="messagesContainerRef">
-          <!-- 加载状态 -->
+      <!-- Messages -->
+      <template v-else>
+        <div ref="messagesContainerRef" class="messages-container">
+          <!-- Loading -->
           <div v-if="isLoadingMessages" class="loading-state">
             <n-spin size="medium" />
           </div>
 
-          <!-- 空状态 -->
+          <!-- Empty Messages -->
           <div v-else-if="messages.length === 0" class="empty-messages">
-            <p class="text-(12px #909090)">开始私密对话...</p>
-            <p class="text-(11px #b0b0b0) mt-4px">消息将在设定时间后自动销毁</p>
+            <n-empty description="开始第一条消息吧" size="small" />
           </div>
 
-          <!-- 消息列表 -->
+          <!-- Messages List -->
           <div v-else class="messages-list">
-            <div
-              v-for="message in messages"
-              :key="message.messageId"
-              class="message-item"
-              :class="{ 'is-self': message.isSelf }"
-            >
-              <n-avatar
-                :src="message.isSelf ? userAvatar : currentRoom?.avatarUrl"
-                :size="32"
-                round
-              />
+            <div v-for="msg in messages" :key="msg.message_id" class="message-item" :class="{ 'is-self': msg.is_own }">
               <div class="message-content">
-                <!-- 自毁消息指示器 -->
-                <div v-if="message.destroyAt" class="message-indicator">
+                <div v-if="msg.is_destroyed" class="message-destroyed">
+                  <n-icon size="16"><AlertTriangle /></n-icon>
+                  <span>消息已自毁</span>
+                </div>
+                <div v-else class="message-bubble">
+                  <div class="message-text">{{ msg.content }}</div>
+                  <div class="message-time">{{ formatMessageTime(msg.timestamp || Date.now()) }}</div>
                   <MobileSelfDestructIndicator
-                    :destroy-at="message.destroyAt"
-                    :created-at="message.timestamp"
-                    mode="icon"
-                    :show-text="true"
-                    @destroyed="handleMessageDestroyed(message.messageId)"
-                  />
-                </div>
-
-                <!-- 加密状态图标 -->
-                <div class="encryption-icon">
-                  <n-icon :size="12" color="#18a058"><Lock /></n-icon>
-                </div>
-
-                <div class="message-bubble">
-                  <div class="message-text">{{ message.content }}</div>
-                  <div class="message-time">
-                    {{ formatMessageTime(message.timestamp) }}
-                  </div>
-                </div>
-
-                <!-- 消息销毁状态 -->
-                <div v-if="message.isDestroyed" class="destroyed-status">
-                  <n-icon :size="14"><Trash /></n-icon>
-                  <span>已销毁</span>
+                    v-if="msg.destroy_at"
+                    :destroy-at="new Date(msg.destroy_at).getTime()"
+                    @destroyed="handleMessageDestroyed(msg.message_id)" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 输入区域 -->
-        <div class="chat-input-area">
-          <!-- 自毁消息设置面板 -->
-          <PrivateChatSelfDestructPanel
-            v-if="isPrivateChat(currentRoomId)"
-            v-model="destructConfig"
-            @change="handleDestructConfigChange"
-          />
+        <!-- Input Area -->
+        <div class="input-area">
+          <!-- Self-Destruct Config -->
+          <div v-if="destructConfig.enabled" class="destruct-config">
+            <div class="destruct-info">
+              <n-icon size="14"><Clock /></n-icon>
+              <span>消息将在 {{ formatPreviewTime(destructConfig.time) }} 后自毁</span>
+            </div>
+          </div>
 
-          <!-- 输入框 -->
-          <div class="input-row">
+          <!-- Input -->
+          <div class="input-wrapper">
+            <n-button
+              text
+              size="small"
+              @click="showDestructPanel = !showDestructPanel"
+              :class="{ 'is-active': destructConfig.enabled }">
+              <template #icon>
+                <n-icon><Clock /></n-icon>
+              </template>
+            </n-button>
             <n-input
               v-model:value="inputMessage"
               type="textarea"
               :autosize="{ minRows: 1, maxRows: 4 }"
-              placeholder="输入私密消息..."
-              @keydown="handleKeyDown"
-            />
-            <n-button
-              type="primary"
-              circle
-              :loading="isSending"
-              :disabled="!inputMessage.trim()"
-              @click="sendMessage"
-            >
-              <n-icon :size="20"><Send /></n-icon>
+              placeholder="输入消息..."
+              @keydown="handleKeyDown" />
+            <n-button type="primary" size="medium" :loading="isSending" @click="sendMessage">
+              <template #icon>
+                <n-icon><Send /></n-icon>
+              </template>
             </n-button>
           </div>
+        </div>
+      </template>
+    </div>
 
-          <!-- 当前自毁配置预览 -->
-          <div v-if="destructConfig.enabled" class="destruct-preview">
-            <n-icon :size="14" color="#f0a020"><AlertTriangle /></n-icon>
-            <span>消息将在发送后 {{ formatPreviewTime(destructConfig.time) }} 后销毁</span>
+    <!-- Chat List Drawer -->
+    <n-drawer v-model:show="showChatList" :width="320" placement="left">
+      <div class="chat-list-drawer">
+        <div class="drawer-header">
+          <h3>私密聊天</h3>
+          <n-button circle size="small" type="primary" @click="showCreateDialog = true">
+            <template #icon>
+              <n-icon><Plus /></n-icon>
+            </template>
+          </n-button>
+        </div>
+
+        <div class="drawer-content">
+          <!-- Loading -->
+          <div v-if="privateChatStore.loading" class="loading-state">
+            <n-spin size="medium" />
+          </div>
+
+          <!-- Empty -->
+          <n-empty v-else-if="privateChatStore.sessions.length === 0" description="暂无会话" size="small">
+            <template #extra>
+              <n-button size="small" type="primary" @click="showCreateDialog = true">
+                <template #icon>
+                  <n-icon><Plus /></n-icon>
+                </template>
+                创建会话
+              </n-button>
+            </template>
+          </n-empty>
+
+          <!-- Room List -->
+          <div v-else class="room-list">
+            <div
+              v-for="room in privateChatStore.sessions"
+              :key="room.session_id"
+              class="room-item"
+              :class="{ active: currentRoomId === room.session_id }"
+              @click="selectRoom(room)">
+              <n-avatar round :size="48" :src="room.avatar_url || ''">
+                <svg class="size-24px"><use href="#user"></use></svg>
+              </n-avatar>
+              <div class="room-info">
+                <div class="room-name">{{ room.display_name || getParticipantId(room) }}</div>
+                <div class="room-preview">
+                  {{ room.last_message?.content || '暂无消息' }}
+                </div>
+              </div>
+              <div class="room-meta">
+                <div class="room-time">{{ formatTime(room.last_message?.timestamp || Date.now()) }}</div>
+                <n-badge v-if="room.unread_count" :value="room.unread_count" :max="99" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </n-drawer>
 
-    <!-- 创建私密聊天对话框 -->
-    <n-modal v-model:show="showCreateDialog" preset="card" title="创建私密聊天" style="width: 90%; max-width: 400px">
-      <PrivateChatDialog
-        :show="showCreateDialog"
-        @update:show="showCreateDialog = $event"
-        @chat-created="handleChatCreated"
-      />
-    </n-modal>
+    <!-- Create Chat Dialog -->
+    <PrivateChatDialog
+      :show="showCreateDialog"
+      @update:show="showCreateDialog = $event"
+      @chat-created="handleChatCreated" />
+
+    <!-- Self-Destruct Config Panel -->
+    <PrivateChatSelfDestructPanel
+      v-if="showDestructPanel"
+      :model-value="destructConfig"
+      @update:modelValue="handleDestructConfigChange"
+      @close="showDestructPanel = false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NDrawer,
@@ -229,11 +212,11 @@ import {
   useMessage
 } from 'naive-ui'
 import { Lock, Plus, Clock, DotsVertical, Send, AlertTriangle, Trash } from '@vicons/tabler'
-import { usePrivateChatStore } from '@/stores/privateChat'
-import { useGlobalStore } from '@/stores/global'
+import { usePrivateChatStoreV2 } from '@/stores/privateChatV2'
+import type { PrivateChatSessionItem, PrivateChatMessageItem } from '@/types/matrix-sdk-v2'
 import { useUserStore } from '@/stores/user'
-import { matrixPrivateChatAdapter } from '@/adapters'
-import type { PrivateChatSession, PrivateChatMessage } from '@/adapters/service-adapter'
+import { useGlobalStore } from '@/stores/global'
+import { logger } from '@/utils/logger'
 import PrivateChatDialog from '@/components/rightBox/PrivateChatDialog.vue'
 import PrivateChatSelfDestructPanel from '#/components/chat-room/PrivateChatSelfDestructPanel.vue'
 import MobileSelfDestructIndicator from '#/components/message/MobileSelfDestructIndicator.vue'
@@ -241,13 +224,14 @@ import MobileSelfDestructIndicator from '#/components/message/MobileSelfDestruct
 const router = useRouter()
 const dialog = useDialog()
 const message = useMessage()
-const privateChatStore = usePrivateChatStore()
+const privateChatStore = usePrivateChatStoreV2()
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 
 // 状态
 const showChatList = ref(false)
 const showCreateDialog = ref(false)
+const showDestructPanel = ref(false)
 const isLoadingMessages = ref(false)
 const isSending = ref(false)
 const inputMessage = ref('')
@@ -259,15 +243,14 @@ const destructConfig = ref({
   time: 300 // 默认5分钟
 })
 
-// 数据
-const privateChatRooms = ref<PrivateChatSession[]>([])
-const messages = ref<PrivateChatMessage[]>([])
+// 本地消息状态（从 Store 获取）
+const messages = ref<PrivateChatMessageItem[]>([])
 const currentRoomId = ref<string>()
 
 // 计算属性
 const userAvatar = computed(() => userStore.userInfo?.avatar || '')
-const currentRoom = computed(() => privateChatRooms.value.find((r) => r.sessionId === currentRoomId.value))
-const unreadCount = computed(() => privateChatRooms.value.reduce((sum, r) => sum + (r.unreadCount || 0), 0))
+const currentRoom = computed(() => privateChatStore.currentSession)
+const unreadCount = computed(() => privateChatStore.totalSessionsCount)
 
 const headerMenuOptions = computed(() => [
   { label: '清空历史', key: 'clear' },
@@ -275,27 +258,31 @@ const headerMenuOptions = computed(() => [
   { label: '退出会话', key: 'leave' }
 ])
 
+// 工具方法
+const getParticipantId = (session?: PrivateChatSessionItem | null): string => {
+  if (!session || !session.participant_ids || session.participant_ids.length === 0) {
+    return ''
+  }
+  const myId = userStore.userInfo?.uid
+  return session.participant_ids.find((id) => id !== myId) || session.participant_ids[0]
+}
+
 // 方法
 const handleBack = () => {
   router.back()
 }
 
-const selectRoom = async (room: PrivateChatSession) => {
-  currentRoomId.value = room.sessionId
-  showChatList.value = false
-  await loadMessages(room.sessionId)
-}
-
-const loadMessages = async (sessionId: string) => {
-  isLoadingMessages.value = true
+const selectRoom = async (room: PrivateChatSessionItem) => {
   try {
-    messages.value = await matrixPrivateChatAdapter.getMessages(sessionId, 50)
+    currentRoomId.value = room.session_id
+    showChatList.value = false
+    await privateChatStore.selectSession(room.session_id)
+    messages.value = privateChatStore.currentMessages
     await nextTick()
     scrollToBottom()
   } catch (error) {
     message.error('加载消息失败')
-  } finally {
-    isLoadingMessages.value = false
+    logger.error('[MobilePrivateChatView] Failed to select room:', error)
   }
 }
 
@@ -305,27 +292,14 @@ const sendMessage = async () => {
 
   isSending.value = true
   try {
-    const ttl = destructConfig.value.enabled ? destructConfig.value.time : undefined
-    const messageId = await matrixPrivateChatAdapter.sendMessage(currentRoomId.value, content, 'text', ttl)
-
-    // 添加到消息列表
-    messages.value.push({
-      messageId,
-      sessionId: currentRoomId.value,
-      senderId: userStore.userInfo.uid,
-      content,
-      type: 'text',
-      timestamp: Date.now(),
-      isSelf: true,
-      status: 'sent',
-      destroyAt: destructConfig.value.enabled ? Date.now() + destructConfig.value.time * 1000 : undefined
-    })
-
+    await privateChatStore.sendMessage(content)
+    messages.value = privateChatStore.currentMessages
     inputMessage.value = ''
     await nextTick()
     scrollToBottom()
   } catch (error) {
     message.error('发送失败')
+    logger.error('[MobilePrivateChatView] Failed to send message:', error)
   } finally {
     isSending.value = false
   }
@@ -352,7 +326,8 @@ const handleHeaderMenuAction = (key: string) => {
         negativeText: '取消',
         onPositiveClick: async () => {
           if (currentRoomId.value) {
-            await matrixPrivateChatAdapter.clearHistory(currentRoomId.value)
+            // v2 暂未提供清空历史 API，暂时清空本地状态
+            await privateChatStore.selectSession(currentRoomId.value)
             messages.value = []
             message.success('历史已清空')
           }
@@ -366,11 +341,16 @@ const handleHeaderMenuAction = (key: string) => {
         positiveText: '确定',
         negativeText: '取消',
         onPositiveClick: async () => {
-          if (currentRoomId.value) {
-            await matrixPrivateChatAdapter.deleteSession(currentRoomId.value)
-            currentRoomId.value = undefined
-            messages.value = []
-            message.success('已退出会话')
+          try {
+            if (currentRoomId.value) {
+              await privateChatStore.deleteSession(currentRoomId.value)
+              currentRoomId.value = undefined
+              messages.value = []
+              message.success('已退出会话')
+            }
+          } catch (error) {
+            message.error('退出失败')
+            logger.error('[MobilePrivateChatView] Failed to leave session:', error)
           }
         }
       })
@@ -378,29 +358,18 @@ const handleHeaderMenuAction = (key: string) => {
   }
 }
 
-const handleChatCreated = async (roomId: string) => {
+const handleChatCreated = async (sessionId: string) => {
   showCreateDialog.value = false
-  await loadRooms()
-  currentRoomId.value = roomId
-  await loadMessages(roomId)
+  await privateChatStore.refreshSessions()
+  currentRoomId.value = sessionId
+  await privateChatStore.selectSession(sessionId)
+  messages.value = privateChatStore.currentMessages
 }
 
 const handleMessageDestroyed = (messageId: string) => {
-  const msg = messages.value.find((m) => m.messageId === messageId)
+  const msg = messages.value.find((m) => m.message_id === messageId)
   if (msg) {
-    msg.isDestroyed = true
-  }
-}
-
-const isPrivateChat = (roomId: string) => {
-  return privateChatStore.isPrivateChat(roomId)
-}
-
-const loadRooms = async () => {
-  try {
-    privateChatRooms.value = await matrixPrivateChatAdapter.listSessions()
-  } catch (error) {
-    message.error('加载会话列表失败')
+    msg.is_destroyed = true
   }
 }
 
@@ -446,14 +415,23 @@ const formatPreviewTime = (seconds: number) => {
 
 // 生命周期
 onMounted(async () => {
-  await loadRooms()
-
-  // 如果有当前房间，自动加载
-  const roomId = globalStore.currentSessionRoomId
-  if (roomId && isPrivateChat(roomId)) {
-    currentRoomId.value = roomId
-    await loadMessages(roomId)
+  try {
+    await privateChatStore.initialize()
+    await privateChatStore.refreshSessions()
+    logger.info('[MobilePrivateChatView] Initialized successfully')
+  } catch (error) {
+    logger.error('[MobilePrivateChatView] Initialization failed:', error)
+    message.error('加载会话列表失败')
   }
+})
+
+onUnmounted(() => {
+  privateChatStore.dispose()
+})
+
+// 导出方法供父组件调用
+defineExpose({
+  loadRooms: () => privateChatStore.refreshSessions()
 })
 </script>
 
@@ -465,50 +443,29 @@ onMounted(async () => {
   background: var(--bg-color);
 }
 
-.top-nav {
+.chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: var(--card-color);
-  border-bottom: 1px solid var(--divider-color);
-  height: 56px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--line-color);
 
-  .nav-back {
+  .header-left,
+  .header-right {
     display: flex;
-    align-items: center;
-    cursor: pointer;
+    gap: 8px;
   }
 
-  .nav-title {
+  .header-title {
     flex: 1;
     text-align: center;
-
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .room-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin-top: 2px;
-      font-size: 11px;
-      color: var(--text-color-3);
-    }
-  }
-
-  .nav-icon {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
   }
 }
 
-.main-content {
+.chat-area {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -520,63 +477,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.chat-interface {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.chat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--card-color);
-  border-bottom: 1px solid var(--divider-color);
-
-  .header-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .header-text {
-      h4 {
-        margin: 0 0 4px 0;
-        font-size: 15px;
-        font-weight: 600;
-      }
-
-      .header-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-
-        .encryption-badge {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 2px 8px;
-          background: rgba(24, 160, 88, 0.1);
-          border-radius: 10px;
-          color: #18a058;
-        }
-
-        .ttl-badge {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 2px 8px;
-          background: rgba(240, 160, 32, 0.1);
-          border-radius: 10px;
-          color: #f0a020;
-        }
-      }
-    }
-  }
+  padding: 20px;
 }
 
 .messages-container {
@@ -588,7 +489,6 @@ onMounted(async () => {
 .loading-state,
 .empty-messages {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -602,125 +502,107 @@ onMounted(async () => {
 
 .message-item {
   display: flex;
-  gap: 8px;
+  justify-content: flex-start;
 
   &.is-self {
-    flex-direction: row-reverse;
+    justify-content: flex-end;
   }
 }
 
 .message-content {
   max-width: 75%;
+}
+
+.message-destroyed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  color: var(--text-color-3);
+  font-size: 12px;
+}
+
+.message-bubble {
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
   position: relative;
 
-  .message-indicator {
-    margin-bottom: 4px;
-  }
-
-  .encryption-icon {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    width: 16px;
-    height: 16px;
-    background: var(--card-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .message-bubble {
-    padding: 10px 14px;
-    border-radius: 16px;
-    background: var(--bg-color-secondary);
-    position: relative;
-
-    .message-item.is-self & {
-      background: var(--primary-color);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    &:not(.is-self) & {
-      border-bottom-left-radius: 4px;
-    }
-
-    .message-text {
-      font-size: 14px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .message-time {
-      font-size: 11px;
-      opacity: 0.7;
-      margin-top: 4px;
-    }
-  }
-
-  .destroyed-status {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    font-size: 12px;
-    color: #d03050;
+  .message-item.is-self & {
+    background: var(--hula-primary);
+    color: white;
   }
 }
 
-.chat-input-area {
-  background: var(--card-color);
-  border-top: 1px solid var(--divider-color);
+.message-text {
+  word-break: break-word;
+  margin-bottom: 4px;
 }
 
-.input-row {
+.message-time {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.input-area {
+  border-top: 1px solid var(--line-color);
+  background: var(--bg-color);
+}
+
+.destruct-config {
+  padding: 8px 16px;
+  background: var(--bg-warning);
+  border-bottom: 1px solid var(--line-color);
+}
+
+.destruct-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-color-3);
+}
+
+.input-wrapper {
   display: flex;
   align-items: flex-end;
   gap: 8px;
   padding: 12px 16px;
 }
 
-.destruct-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-top: 1px solid var(--divider-color);
-  font-size: 12px;
-  color: #b45309;
-}
-
-// 抽屉样式
-.chat-drawer {
-  height: 100%;
+.chat-list-drawer {
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
 
-  .drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--divider-color);
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--line-color);
 
-    h4 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-  }
-
-  .drawer-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px;
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
   }
 }
 
-.chat-item {
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.room-list {
+  padding: 8px;
+}
+
+.room-item {
   display: flex;
-  align-items: center;
   gap: 12px;
   padding: 12px;
   border-radius: 12px;
@@ -731,34 +613,39 @@ onMounted(async () => {
     background: var(--hover-color);
   }
 
-  &.is-active {
-    background: rgba(19, 152, 127, 0.1);
+  &.active {
+    background: var(--active-color);
   }
+}
 
-  .chat-info {
-    flex: 1;
-    min-width: 0;
+.room-info {
+  flex: 1;
+  min-width: 0;
+}
 
-    .chat-name {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
+.room-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
 
-    .chat-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-color-3);
+.room-preview {
+  font-size: 12px;
+  color: var(--text-color-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-      .chat-ttl {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: #f0a020;
-      }
-    }
-  }
+.room-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.room-time {
+  font-size: 11px;
+  color: var(--text-color-3);
 }
 </style>

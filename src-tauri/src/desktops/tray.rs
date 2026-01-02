@@ -37,7 +37,9 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
             .build()?;
 
         let tray_handler = app.clone();
-        let default_icon = if let Some(icon) = app.default_window_icon() { icon.clone() } else {
+        let default_icon = if let Some(icon) = app.default_window_icon() {
+            icon.clone()
+        } else {
             tracing::error!("Default window icon not found");
             return Err(tauri::Error::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
@@ -78,20 +80,22 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
                     button,
                     button_state,
                 } = event
-                    && matches!(button, MouseButton::Left) && MouseButtonState::Up == button_state {
-                        // 左键点击直接打开主面板
-                        let windows = tray.app_handle().webview_windows();
+                    && matches!(button, MouseButton::Left)
+                    && MouseButtonState::Up == button_state
+                {
+                    // 左键点击直接打开主面板
+                    let windows = tray.app_handle().webview_windows();
 
-                        // 优先显示已存在的home窗口
-                        for (name, window) in windows {
-                            if name == "home" {
-                                let _ = window.show();
-                                let _ = window.unminimize();
-                                let _ = window.set_focus();
-                                break;
-                            }
+                    // 优先显示已存在的home窗口
+                    for (name, window) in windows {
+                        if name == "home" {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                            break;
                         }
                     }
+                }
             })
             .build(app)?;
     }

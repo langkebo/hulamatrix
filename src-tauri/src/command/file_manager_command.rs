@@ -304,9 +304,11 @@ fn convert_message_to_file_info(record: MessageWithThumbnail) -> Option<FileInfo
                         .map(std::string::ToString::to_string),
                     is_downloaded: Some(false),
                     status: "completed".to_string(),
-                    thumbnail_url: thumbnail_path
-                        .clone()
-                        .or_else(|| file_data["thumbnailUrl"].as_str().map(std::string::ToString::to_string)),
+                    thumbnail_url: thumbnail_path.clone().or_else(|| {
+                        file_data["thumbnailUrl"]
+                            .as_str()
+                            .map(std::string::ToString::to_string)
+                    }),
                 };
 
                 return Some(file_info);
