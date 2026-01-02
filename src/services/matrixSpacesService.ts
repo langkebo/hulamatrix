@@ -68,6 +68,11 @@ interface MatrixMemberLike {
     allowDefault: boolean,
     allowDirectLinks: boolean
   ): string
+  events?: {
+    member?: {
+      getTs?(): number
+    }
+  }
 }
 
 interface CreateRoomResultLike {
@@ -93,6 +98,11 @@ export interface SpaceInfo {
   spaceType: 'space' | 'room' | 'dm'
   created?: number
   creator?: string
+  notifications?: {
+    notificationCount: number
+    highlightCount: number
+  }
+  lastActivity?: number
 }
 
 export interface SpaceParent {
@@ -133,6 +143,62 @@ export interface CreateSpaceOptions {
   preset?: 'public_chat' | 'private_chat' | 'trusted_private_chat'
   invite?: string[]
   powerLevelContentOverride?: number
+}
+
+/**
+ * Space Permissions
+ */
+export interface SpacePermissions {
+  canEdit: boolean
+  canInvite: boolean
+  canRemove: boolean
+  canBan: boolean
+  canRedact: boolean
+  canSendEvents: boolean
+  canUpload: boolean
+  canManageChildren: boolean
+  canChangePermissions: boolean
+}
+
+/**
+ * Space Statistics
+ */
+export interface SpaceStats {
+  memberCount: number
+  roomCount: number
+  activeMembers: number
+  onlineMembers: number
+  notificationCount: number
+  highlightCount: number
+  created: number
+  lastActivity: number
+}
+
+/**
+ * Space Activity
+ */
+export interface Activity {
+  type: 'member_joined' | 'member_left' | 'room_created' | 'message_sent' | 'permission_changed'
+  userId: string
+  timestamp: number
+  data?: Record<string, unknown>
+}
+
+/**
+ * Import Space Data
+ */
+export interface ImportSpaceData {
+  id?: string
+  name: string
+  topic?: string
+  avatar?: string
+  type?: 'space' | 'room'
+  joinRule?: string
+  guestAccess?: string
+  historyVisibility?: string
+  memberCount?: number
+  children?: SpaceChild[]
+  members?: SpaceMember[]
 }
 
 /**
@@ -772,6 +838,287 @@ export class MatrixSpacesService {
       await inviteMethod?.(roomId, userId)
     } catch (error) {
       logger.error('[MatrixSpacesService] Failed to invite user to space:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get space permissions
+   */
+  async getSpacePermissions(roomId: string): Promise<SpacePermissions> {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client not available')
+    }
+
+    try {
+      logger.info('[MatrixSpacesService] Getting space permissions', { roomId })
+
+      const getRoomMethod = client.getRoom as ((roomId: string) => MatrixRoomLike | null) | undefined
+      const room = getRoomMethod?.(roomId)
+      if (!room) {
+        throw new Error('Room not found')
+      }
+
+      // Get power levels event
+      const getStateEventsMethod = room.currentState?.getStateEvents as
+        | ((eventType: string) => MatrixEventLike[])
+        | undefined
+      const powerLevelsEvents = getStateEventsMethod?.('m.room.power_levels')
+      const powerLevelsContent = powerLevelsEvents?.[0]?.getContent?.() as Record<string, unknown> | undefined
+
+      // Parse power levels
+      const usersDefault = (powerLevelsContent?.users_default as number) ?? 0
+      const eventsDefault = (powerLevelsContent?.events_default as number) ?? 0
+      const stateDefault = (powerLevelsContent?.state_default as number) ?? 50
+      const ban = (powerLevelsContent?.ban as number) ?? 50
+      const kick = (powerLevelsContent?.kick as number) ?? 50
+      const redact = (powerLevelsContent?.redact as number) ?? 50
+      const invite = (powerLevelsContent?.invite as number) ?? 50
+
+      // Get current user's power level
+      const getUserIdMethod = client.getUserId as (() => string) | undefined
+      const currentUserId = getUserIdMethod?.() || ''
+      const userPowerLevels = powerLevelsContent?.users as Record<string, number> | undefined
+      const currentUserPowerLevel = userPowerLevels?.[currentUserId] ?? 0
+
+      const permissions: SpacePermissions = {
+        canEdit: currentUserPowerLevel >= stateDefault,
+        canInvite: currentUserPowerLevel >= invite,
+        canRemove: currentUserPowerLevel >= kick,
+        canBan: currentUserPowerLevel >= ban,
+        canRedact: currentUserPowerLevel >= redact,
+        canSendEvents: currentUserPowerLevel >= eventsDefault,
+        canUpload: true, // Matrix doesn't have specific upload permission
+        canManageChildren: currentUserPowerLevel >= stateDefault,
+        canChangePermissions: currentUserPowerLevel >= stateDefault
+      }
+
+      logger.info('[MatrixSpacesService] Got space permissions', { roomId, permissions })
+      return permissions
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to get space permissions:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update space permissions
+   */
+  async updateSpacePermissions(roomId: string, permissions: Partial<SpacePermissions>): Promise<void> {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client not available')
+    }
+
+    try {
+      logger.info('[MatrixSpacesService] Updating space permissions', { roomId, permissions })
+
+      const getRoomMethod = client.getRoom as ((roomId: string) => MatrixRoomLike | null) | undefined
+      const room = getRoomMethod?.(roomId)
+      if (!room) {
+        throw new Error('Room not found')
+      }
+
+      // Get current power levels
+      const getStateEventsMethod = room.currentState?.getStateEvents as
+        | ((eventType: string) => MatrixEventLike[])
+        | undefined
+      const powerLevelsEvents = getStateEventsMethod?.('m.room.power_levels')
+      const currentContent = powerLevelsEvents?.[0]?.getContent?.() as Record<string, unknown> | undefined
+
+      // Build new power levels content
+      const newContent: Record<string, unknown> = {
+        ...currentContent,
+        users: currentContent?.users as Record<string, number> ?? {},
+        users_default: permissions.canSendEvents === false ? 0 : (currentContent?.users_default as number ?? 0),
+        events: currentContent?.events as Record<string, number> ?? {},
+        events_default: permissions.canSendEvents === false ? 0 : (currentContent?.events_default as number ?? 0),
+        state_default: permissions.canManageChildren === false ? 50 : (currentContent?.state_default as number ?? 50),
+        ban: permissions.canBan === false ? 100 : (currentContent?.ban as number ?? 50),
+        kick: permissions.canRemove === false ? 50 : (currentContent?.kick as number ?? 50),
+        redact: permissions.canRedact === false ? 50 : (currentContent?.redact as number ?? 50),
+        invite: permissions.canInvite === false ? 50 : (currentContent?.invite as number ?? 50)
+      }
+
+      // Send updated power levels
+      const sendStateEventMethod = client.sendStateEvent as
+        | ((roomId: string, eventType: string, content: Record<string, unknown>, stateKey: string) => Promise<unknown>)
+        | undefined
+      await sendStateEventMethod?.(roomId, 'm.room.power_levels', newContent, '')
+
+      logger.info('[MatrixSpacesService] Space permissions updated', { roomId })
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to update space permissions:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get space statistics
+   */
+  async getSpaceStats(roomId: string): Promise<SpaceStats> {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client not available')
+    }
+
+    try {
+      logger.info('[MatrixSpacesService] Getting space stats', { roomId })
+
+      const space = await this.loadSpace(roomId)
+      if (!space) {
+        throw new Error('Space not found')
+      }
+
+      // Calculate statistics
+      const stats: SpaceStats = {
+        memberCount: space.memberCount ?? 0,
+        roomCount: space.children.length ?? 0,
+        activeMembers: space.members?.filter((m: SpaceMember) => m.membership === 'join').length ?? 0,
+        onlineMembers: space.members?.filter((m: SpaceMember) => m.membership === 'join').length ?? 0, // TODO: Track presence
+        notificationCount: space.notifications?.notificationCount ?? 0,
+        highlightCount: space.notifications?.highlightCount ?? 0,
+        created: space.created ?? Date.now(),
+        lastActivity: space.lastActivity ?? Date.now()
+      }
+
+      logger.info('[MatrixSpacesService] Got space stats', { roomId, stats })
+      return stats
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to get space stats:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get space activity
+   */
+  async getSpaceActivity(
+    roomId: string,
+    options: {
+      limit?: number
+      from?: number
+      to?: number
+    } = {}
+  ): Promise<Activity[]> {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client not available')
+    }
+
+    try {
+      logger.info('[MatrixSpacesService] Getting space activity', { roomId, options })
+
+      const getRoomMethod = client.getRoom as ((roomId: string) => MatrixRoomLike | null) | undefined
+      const room = getRoomMethod?.(roomId)
+      if (!room) {
+        throw new Error('Room not found')
+      }
+
+      // Get recent events from timeline
+      const activities: Activity[] = []
+
+      // Get joined members activity
+      const members = room.getJoinedMembers?.() ?? []
+      for (const member of members.slice(0, options.limit ?? 20)) {
+        activities.push({
+          type: 'member_joined',
+          userId: member.userId,
+          timestamp: member.events?.member?.getTs?.() ?? Date.now(),
+          data: {
+            displayName: member.name,
+            avatarUrl: member.getAvatarUrl?.('', 64, 64, 'crop', true, true)
+          }
+        })
+      }
+
+      // Sort by timestamp descending
+      activities.sort((a, b) => b.timestamp - a.timestamp)
+
+      logger.info('[MatrixSpacesService] Got space activity', { roomId, count: activities.length })
+      return activities.slice(0, options.limit ?? 20)
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to get space activity:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Export space data
+   */
+  async exportSpaceData(roomId: string): Promise<Blob> {
+    try {
+      logger.info('[MatrixSpacesService] Exporting space data', { roomId })
+
+      const space = await this.loadSpace(roomId)
+      if (!space) {
+        throw new Error('Space not found')
+      }
+
+      const exportData = {
+        id: space.roomId,
+        name: space.name,
+        topic: space.topic,
+        avatar: space.avatar,
+        type: space.spaceType,
+        joinRule: space.joinRule,
+        guestAccess: space.guestAccess,
+        historyVisibility: space.historyVisibility,
+        memberCount: space.memberCount,
+        children: space.children,
+        members: space.members,
+        permissions: await this.getSpacePermissions(roomId),
+        stats: await this.getSpaceStats(roomId),
+        exportedAt: new Date().toISOString()
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+
+      logger.info('[MatrixSpacesService] Space data exported', { roomId, size: blob.size })
+      return blob
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to export space data:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Import space data (for backup/restore)
+   */
+  async importSpaceData(data: Blob): Promise<{ roomId: string; imported: boolean }> {
+    try {
+      logger.info('[MatrixSpacesService] Importing space data')
+
+      const text = await data.text()
+      const importData = JSON.parse(text) as ImportSpaceData
+
+      // Validate import data
+      if (!importData.name) {
+        throw new Error('Invalid import data: missing name')
+      }
+
+      // Create new space from import data
+      const options: CreateSpaceOptions = {
+        name: importData.name,
+        topic: importData.topic,
+        visibility: importData.type === 'space' ? 'private' : 'public',
+        invite: []
+      }
+
+      const roomId = await this.createSpace(options)
+
+      // Restore children
+      if (importData.children && importData.children.length > 0) {
+        for (const child of importData.children) {
+          await this.addChildToSpace(roomId, child.roomId)
+        }
+      }
+
+      logger.info('[MatrixSpacesService] Space data imported', { roomId })
+      return { roomId, imported: true }
+    } catch (error) {
+      logger.error('[MatrixSpacesService] Failed to import space data:', error)
       throw error
     }
   }
