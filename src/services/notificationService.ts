@@ -325,6 +325,198 @@ class NotificationService {
     const notificationStore = useNotificationStore()
     notificationStore.clearNotifications()
   }
+
+  /* ==========================================================================
+     Web Push Subscription Methods
+     ========================================================================== */
+
+  /**
+   * Subscribe to Web Push notifications
+   */
+  async subscribeToPush(vapidPublicKey?: string): Promise<PushSubscription | null> {
+    // Skip in Tauri environment
+    if (this.isTauri) {
+      logger.warn('[NotificationService] Push subscriptions not supported in Tauri')
+      return null
+    }
+
+    // Check if service worker is supported
+    if (!('serviceWorker' in navigator)) {
+      logger.warn('[NotificationService] Service workers not supported')
+      return null
+    }
+
+    try {
+      const { getServiceWorker } = await import('@/utils/serviceWorker')
+      const sw = getServiceWorker()
+
+      // Use provided VAPID key or default
+      const publicKey = vapidPublicKey || (await import('@/config/vapid')).getVapidPublicKey()
+
+      // Subscribe to push
+      const subscription = await sw.subscribeToPush(publicKey)
+
+      if (subscription) {
+        logger.info('[NotificationService] Push subscription successful')
+
+        // Send subscription to server for storage
+        await this.sendPushSubscriptionToServer(subscription)
+      }
+
+      return subscription
+    } catch (error) {
+      logger.error('[NotificationService] Push subscription failed:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get current push subscription
+   */
+  async getPushSubscription(): Promise<PushSubscription | null> {
+    if (this.isTauri || !('serviceWorker' in navigator)) {
+      return null
+    }
+
+    try {
+      const { getServiceWorker } = await import('@/utils/serviceWorker')
+      return await getServiceWorker().getPushSubscription()
+    } catch (error) {
+      logger.error('[NotificationService] Failed to get push subscription:', error)
+      return null
+    }
+  }
+
+  /**
+   * Unsubscribe from push notifications
+   */
+  async unsubscribeFromPush(): Promise<boolean> {
+    if (this.isTauri || !('serviceWorker' in navigator)) {
+      return false
+    }
+
+    try {
+      const { getServiceWorker } = await import('@/utils/serviceWorker')
+      const sw = getServiceWorker()
+
+      // Get subscription before unsubscribing
+      const subscription = await sw.getPushSubscription()
+
+      if (subscription) {
+        // Notify server to remove subscription
+        await this.removePushSubscriptionFromServer(subscription)
+      }
+
+      // Unsubscribe locally
+      const unsubscribed = await sw.unsubscribeFromPush()
+
+      if (unsubscribed) {
+        logger.info('[NotificationService] Push unsubscribe successful')
+      }
+
+      return unsubscribed
+    } catch (error) {
+      logger.error('[NotificationService] Push unsubscribe failed:', error)
+      return false
+    }
+  }
+
+  /**
+   * Get push subscription data for sending to server
+   */
+  async getPushSubscriptionData() {
+    if (this.isTauri || !('serviceWorker' in navigator)) {
+      return null
+    }
+
+    try {
+      const { getServiceWorker } = await import('@/utils/serviceWorker')
+      return await getServiceWorker().getSubscriptionData()
+    } catch (error) {
+      logger.error('[NotificationService] Failed to get subscription data:', error)
+      return null
+    }
+  }
+
+  /**
+   * Check if push notifications are supported
+   */
+  isPushSupported(): boolean {
+    if (this.isTauri) return false
+    return 'serviceWorker' in navigator && 'PushManager' in window
+  }
+
+  /**
+   * Check if currently subscribed to push notifications
+   */
+  async isPushSubscribed(): Promise<boolean> {
+    const subscription = await this.getPushSubscription()
+    return subscription !== null
+  }
+
+  /**
+   * Send push subscription to server
+   */
+  private async sendPushSubscriptionToServer(subscription: PushSubscription): Promise<void> {
+    try {
+      const subscriptionData = subscription.toJSON()
+
+      // Get current user info
+      const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
+      const auth = useMatrixAuthStore()
+
+      // Send to your server endpoint
+      const response = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth.accessToken}`
+        },
+        body: JSON.stringify({
+          subscription: subscriptionData,
+          userId: auth.userId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      logger.info('[NotificationService] Push subscription sent to server')
+    } catch (error) {
+      logger.error('[NotificationService] Failed to send subscription to server:', error)
+      // Don't throw - subscription is still valid locally
+    }
+  }
+
+  /**
+   * Remove push subscription from server
+   */
+  private async removePushSubscriptionFromServer(subscription: PushSubscription): Promise<void> {
+    try {
+      const subscriptionData = subscription.toJSON()
+
+      const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
+      const auth = useMatrixAuthStore()
+
+      await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth.accessToken}`
+        },
+        body: JSON.stringify({
+          endpoint: subscriptionData.endpoint,
+          userId: auth.userId
+        })
+      })
+
+      logger.info('[NotificationService] Push subscription removed from server')
+    } catch (error) {
+      logger.error('[NotificationService] Failed to remove subscription from server:', error)
+      // Don't throw - local unsubscribe is still valid
+    }
+  }
 }
 
 // 导出单例

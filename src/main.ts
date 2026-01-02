@@ -457,3 +457,28 @@ if (flags.matrixEnabled) {
 if (flags.matrixEnabled && import.meta.env.VITE_MATRIX_DEV_SYNC === 'true') {
   import('@/hooks/useMatrixDevSync').then((m) => m.useMatrixDevSync())
 }
+// Register service worker (web-only, not in Tauri)
+;(async () => {
+  if (typeof window !== 'undefined' && !('__TAURI__' in window) && 'serviceWorker' in navigator) {
+    try {
+      const { registerServiceWorker: registerSW, getServiceWorker } = await import('@/utils/serviceWorker')
+      const registration = await registerSW()
+
+      if (registration) {
+        logger.info('[Main] Service worker registered successfully')
+
+        // Set up update handler
+        const sw = getServiceWorker()
+
+        sw.onUpdate((reg) => {
+          logger.info('[Main] New service worker available')
+          // Could show update notification to user
+          // For now, just activate the new version
+          reg.waiting?.postMessage({ action: 'skip-waiting' })
+        })
+      }
+    } catch (error) {
+      logger.warn('[Main] Service worker registration failed:', error)
+    }
+  }
+})()
