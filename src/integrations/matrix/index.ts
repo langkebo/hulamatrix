@@ -7,6 +7,7 @@ import { setupMatrixRtcBridge } from './rtc'
 import { usePresenceStore } from '@/stores/presence'
 import { setupMatrixTypingBridge } from './typing'
 import { setupMatrixEventBus } from './event-bus'
+import { setupEnhancedV2Features } from './enhanced-v2'
 
 /**
  * 设置 Presence 初始化，支持自动重试
@@ -53,5 +54,11 @@ export function setupMatrixBridges() {
   setupMatrixEventBus()
   setupMatrixRtcBridge((_type, _content, _roomId) => {
     // 占位：事件已通过 messages 桥接映射为系统消息进行展示
+  })
+
+  // Initialize enhanced v2 features (friendsV2, privateChatV2)
+  // These use the new RESTful API endpoints
+  setupEnhancedV2Features().catch((error) => {
+    console.error('[Matrix Bridges] Failed to setup enhanced v2 features:', error)
   })
 }
