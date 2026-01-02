@@ -1,5 +1,17 @@
 {
   "css.customData": [".vscode/tailwindcss.json"],
   "java.configuration.updateBuildConfiguration": "disabled",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "kiroAgent.configureMCP": "Disabled",
+
+  // Rust 配置
+  "rust-analyzer.server.path": null,
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+  "rust-analyzer.procMacro.enable": true,
+
+  // 禁用自动下载，使用系统 rust-analyzer
+  "rust-analyzer.updates.askBeforeDownload": false,
+  "rust-analyzer.raLspServerPath": ""
 }

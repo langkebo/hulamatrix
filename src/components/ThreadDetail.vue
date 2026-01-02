@@ -112,9 +112,20 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { NButton, NInput, NSpace, NAvatar, NSpin, NEmpty, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
-import { matrixClientService } from '@/services/matrixClientService'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { useGlobalStore } from '@/stores/global'
 import { logger } from '@/utils/logger'
+import { getRoom, sendMessage } from '@/utils/matrixClientUtils'
+import type { MatrixEventLike } from '@/types/matrix'
+
+/** Extended Matrix event type with raw properties */
+interface MatrixEventExtended extends MatrixEventLike {
+  sender?: string
+  origin_server_ts?: number
+  event_id?: string
+  type?: string
+  content?: { body?: string }
+}
 
 interface Message {
   eventId: string
@@ -136,6 +147,8 @@ const threadRoot = ref<Message | null>(null)
 const replies = ref<Message[]>([])
 const replyText = ref('')
 const hasMore = ref(false)
+const currentThread = ref<unknown>(null)
+const paginated = ref(false)
 
 // Computed
 const threadId = computed(() => route.query.threadId as string)
@@ -163,7 +176,9 @@ async function loadThread() {
       throw new Error('Matrix client not initialized')
     }
 
-    const room = client.getRoom(roomId)
+    const room = getRoom(client, roomId) as {
+      getThread?: () => { findThreadForEvent?: (eventId: string) => unknown }
+    } | null
     if (!room) {
       throw new Error(`Room not found: ${roomId}`)
     }
@@ -171,21 +186,31 @@ async function loadThread() {
     logger.info('[ThreadDetail] Loading thread:', { roomId, eventId })
 
     // Use SDK's native getThread() method
-    const thread = room.getThread()?.findThreadForEvent(eventId)
+    const thread = room.getThread?.()?.findThreadForEvent?.(eventId) as
+      | { rootEvent?: unknown; liveTimeline?: { getEvents?: () => unknown[]; paginate?: () => Promise<unknown> } }
+      | undefined
 
     if (!thread) {
       logger.warn('[ThreadDetail] Thread not found:', eventId)
       return
     }
 
+    // Store thread reference for pagination
+    currentThread.value = thread
+    paginated.value = false
+
     // Get thread root
-    const rootEvent = thread.rootEvent
+    const rootEvent = thread.rootEvent as Record<string, unknown> | undefined
     if (rootEvent) {
+      const getIdMethod = rootEvent.getId as (() => string) | undefined
+      const getSenderMethod = rootEvent.getSender as (() => string) | undefined
+      const getTsMethod = rootEvent.getTs as (() => number) | undefined
+
       threadRoot.value = {
-        eventId: rootEvent.getId ? rootEvent.getId() : rootEvent.event_id,
-        sender: rootEvent.getSender ? rootEvent.getSender() : rootEvent.sender,
+        eventId: getIdMethod ? getIdMethod() : (rootEvent.event_id as string),
+        sender: getSenderMethod ? getSenderMethod() : (rootEvent.sender as string),
         content: extractContent(rootEvent),
-        timestamp: rootEvent.getTs ? rootEvent.getTs() : rootEvent.origin_server_ts || Date.now()
+        timestamp: getTsMethod ? getTsMethod() : (rootEvent.origin_server_ts as number | undefined) || Date.now()
       }
     }
 
@@ -195,20 +220,28 @@ async function loadThread() {
       const events = timeline.getEvents ? timeline.getEvents() : []
 
       replies.value = events
-        .filter((event: any) => {
-          const type = event.getType ? event.getType() : event.type
+        .filter((event: unknown): event is MatrixEventExtended => {
+          const evt = event as MatrixEventExtended
+          const type = evt.getType ? evt.getType() : evt.type
           return type === 'm.room.message'
         })
-        .map((event: any) => ({
-          eventId: event.getId ? event.getId() : event.event_id,
-          sender: event.getSender ? event.getSender() : event.sender,
-          content: extractContent(event),
-          timestamp: event.getTs ? event.getTs() : event.origin_server_ts || Date.now()
-        }))
+        .map((event: MatrixEventExtended): Message => {
+          const eventId = event.getId ? event.getId() : event.event_id
+          const sender = event.getSender ? event.getSender() : event.sender
+          const ts = event.getTs ? event.getTs() : event.origin_server_ts
+
+          return {
+            eventId: eventId || '',
+            sender: sender || '',
+            content: extractContent(event),
+            timestamp: ts || Date.now()
+          }
+        })
 
       // Check if there are more events (pagination)
-      // For now, we assume all events are loaded
-      hasMore.value = false
+      // If timeline has a paginate method, we can load more
+      const timelineWithPaginate = timeline as unknown as { paginate?: () => Promise<unknown> }
+      hasMore.value = !!timelineWithPaginate.paginate && !paginated.value
     }
 
     logger.info('[ThreadDetail] Thread loaded:', {
@@ -225,7 +258,7 @@ async function loadThread() {
 /**
  * Extract message content from event
  */
-function extractContent(event: any): string {
+function extractContent(event: MatrixEventExtended): string {
   const content = event.getContent ? event.getContent() : event.content
   return content?.body || '*Empty message*'
 }
@@ -247,13 +280,24 @@ function getAvatarUrl(userId: string): string {
   const client = matrixClientService.getClient()
   if (!client) return ''
 
-  const room = client.getRoom(roomId)
+  const room = getRoom(client, roomId) as {
+    getMember?: (userId: string) => {
+      getAvatarUrl?: (
+        baseUrl: string,
+        w: number,
+        h: number,
+        method: string,
+        allowDirectLinks: boolean,
+        fallback: boolean
+      ) => string
+    } | null
+  } | null
   if (!room) return ''
 
   const member = room.getMember?.(userId)
   if (!member) return ''
 
-  return member.getAvatarUrl?.(client.baseUrl, 40, 40, 'scale', false, true) || ''
+  return member.getAvatarUrl?.(client.baseUrl as string, 40, 40, 'scale', false, true) || ''
 }
 
 /**
@@ -284,8 +328,83 @@ function formatTimestamp(timestamp: number): string {
  * Load more replies (pagination)
  */
 async function loadMoreReplies() {
-  // TODO: Implement pagination when SDK supports it
-  message.info('Pagination not yet implemented')
+  const roomId = currentRoomId.value
+  if (!roomId || loadingMore.value || !currentThread.value) return
+
+  loadingMore.value = true
+
+  try {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client not initialized')
+    }
+
+    const thread = currentThread.value as {
+      liveTimeline?: { paginate?: () => Promise<unknown>; getEvents?: () => unknown[] }
+    }
+
+    if (!thread.liveTimeline) {
+      message.warning('Thread timeline not available')
+      return
+    }
+
+    logger.info('[ThreadDetail] Paginating thread for more replies')
+
+    // Try to paginate using SDK's paginate method
+    const paginateMethod = thread.liveTimeline.paginate
+    if (paginateMethod) {
+      await paginateMethod()
+      paginated.value = true
+
+      // Get the updated events list after pagination
+      const events = thread.liveTimeline.getEvents ? thread.liveTimeline.getEvents() : []
+
+      // Filter and map new events (get all events to ensure we have them all)
+      const newReplies = events
+        .filter((event: unknown): event is MatrixEventExtended => {
+          const evt = event as MatrixEventExtended
+          const type = evt.getType ? evt.getType() : evt.type
+          return type === 'm.room.message'
+        })
+        .map((event: MatrixEventExtended): Message => {
+          const eventId = event.getId ? event.getId() : event.event_id
+          const sender = event.getSender ? event.getSender() : event.sender
+          const ts = event.getTs ? event.getTs() : event.origin_server_ts
+
+          return {
+            eventId: eventId || '',
+            sender: sender || '',
+            content: extractContent(event),
+            timestamp: ts || Date.now()
+          }
+        })
+
+      // Merge replies, removing duplicates based on eventId
+      const existingEventIds = new Set(replies.value.map((r) => r.eventId))
+      const uniqueNewReplies = newReplies.filter((r) => !existingEventIds.has(r.eventId))
+
+      replies.value = [...replies.value, ...uniqueNewReplies]
+
+      // Update hasMore - if we successfully paginated once, there might be more
+      // For now, assume one page of pagination
+      hasMore.value = false
+
+      logger.info('[ThreadDetail] Loaded more replies:', {
+        newCount: uniqueNewReplies.length,
+        total: replies.value.length
+      })
+
+      message.success(`Loaded ${uniqueNewReplies.length} more ${uniqueNewReplies.length === 1 ? 'reply' : 'replies'}`)
+    } else {
+      message.info('No more replies to load')
+      hasMore.value = false
+    }
+  } catch (error) {
+    logger.error('[ThreadDetail] Failed to load more replies:', error)
+    message.error('Failed to load more replies')
+  } finally {
+    loadingMore.value = false
+  }
 }
 
 /**
@@ -310,7 +429,7 @@ async function sendReply() {
     logger.info('[ThreadDetail] Sending thread reply:', { roomId, eventId, content: replyText.value })
 
     // Send message with thread relation
-    await client.sendMessage(roomId, {
+    await sendMessage(client, roomId, {
       msgtype: 'm.text',
       body: replyText.value,
       'm.relates_to': {

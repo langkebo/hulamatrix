@@ -49,19 +49,19 @@
             <div class="flex flex-col gap-15px">
               <ContextMenu
                 v-for="file in timeGroup.files"
-                :key="file.id"
+                :key="(file as FileType).id"
                 :menu="fileContextMenu"
-                :content="file"
+                :content="file as Record<string, unknown>"
                 class="flex flex-col gap-8px"
-                @select="handleFileMenuSelect($event, file)">
+                @select="handleFileMenuSelect($event, file as FileType)">
                 <File :body="convertToFileBody(file)" :search-keyword="fileSearchKeyword" />
                 <!-- 文件元信息 -->
                 <div class="file-meta-info">
                   <div class="flex-center gap-4px">
                     <p>{{ t('fileManager.list.meta.from') }}</p>
-                    <p class="file-sender">{{ getUserDisplayName(file.sender?.id) }}</p>
+                    <p class="file-sender">{{ getUserDisplayName(String((file as FileType).sender?.id || '')) }}</p>
                   </div>
-                  <p class="opacity-80">{{ file.uploadTime }}</p>
+                  <p class="opacity-80">{{ (file as FileType).uploadTime }}</p>
                 </div>
               </ContextMenu>
             </div>
@@ -86,19 +86,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed, inject, type Ref } from 'vue'
 import { sumBy } from 'es-toolkit'
 import { useI18n } from 'vue-i18n'
 import ContextMenu from '@/components/common/ContextMenu.vue'
-import { useDownload } from '@/hooks/useDownload'
+import { fileService } from '@/services/file-service'
+import { writeFile, BaseDirectory } from '@tauri-apps/plugin-fs'
 import type { FileBody } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
 import { saveFileAttachmentAs, saveVideoAttachmentAs } from '@/utils/AttachmentSaver'
+import type { SaveAttachmentOptions } from '@/utils/AttachmentSaver'
 import EmptyState from './EmptyState.vue'
+import { logger } from '@/utils/logger'
 
 type TimeGroup = {
   date: string
   displayDate: string
-  files: any[]
+  files: unknown[]
 }
 
 type User = {
@@ -137,7 +141,19 @@ const normalizedFileSearchKeyword = computed(() => fileSearchKeyword.value.trim(
 const hasActiveSearch = computed(() => normalizedFileSearchKeyword.value.length > 0)
 
 // 检查文件是否匹配搜索关键词
-const matchesFileByKeyword = (file: any, keyword: string) => {
+interface FileItem {
+  fileName?: string
+  name?: string
+  originalName?: string
+  title?: string
+  sender?: { name?: string }
+  fileType?: string
+  downloadUrl?: string
+  url?: string
+  [key: string]: unknown
+}
+
+const matchesFileByKeyword = (file: FileItem, keyword: string) => {
   if (!keyword) {
     return true
   }
@@ -170,7 +186,7 @@ const displayedTimeGroupedFiles = computed(() => {
 
   return timeGroupedFiles.value
     .map((group) => {
-      const matchedFiles = group.files.filter((file: any) => matchesFileByKeyword(file, keyword))
+      const matchedFiles = (group.files as FileItem[]).filter((file) => matchesFileByKeyword(file, keyword) === true)
       if (matchedFiles.length === 0) {
         return null
       }
@@ -188,27 +204,53 @@ const displayedTimeGroupedFiles = computed(() => {
 // 计算过滤后的文件总数
 const totalDisplayedFiles = computed(() => sumBy(displayedTimeGroupedFiles.value, (group) => group.files.length))
 
-const { downloadFile } = useDownload()
+const downloadFile = async (url: string, savePath: string, baseDir: BaseDirectory = BaseDirectory.AppData) => {
+  const res = await fileService.downloadWithResume(url)
+  const blob = res.blob as Blob
+  const buffer = await blob.arrayBuffer()
+  const data = new Uint8Array(buffer)
+  await writeFile(savePath, data, { baseDir })
+}
 
-const fileContextMenu = computed<OPT.RightMenu[]>(() => [
+// Local MenuItem interface for ContextMenu
+interface MenuItem {
+  visible?: (content?: Record<string, unknown>) => boolean
+  click?: (content?: Record<string, unknown>) => void | Promise<void>
+  children?: MenuItem[] | ((content?: Record<string, unknown>) => MenuItem[])
+  icon?: string | ((content?: Record<string, unknown>) => string)
+  label?: string | ((content?: Record<string, unknown>) => string)
+  disabled?: boolean
+  [key: string]: unknown
+}
+
+const fileContextMenu = computed((): MenuItem[] => [
   {
     label: t('menu.save_as'),
     icon: 'Importing',
-    click: async (targetFile: any) => {
+    click: async (content?: Record<string, unknown>) => {
+      const targetFile = content as FileType
       const downloadUrl = targetFile.downloadUrl || targetFile.url
       const defaultName = targetFile.fileName ? String(targetFile.fileName) : undefined
       const isVideo = targetFile.fileType === 'video'
-      const saveParams = {
-        url: downloadUrl,
-        downloadFile,
-        defaultFileName: defaultName,
-        successMessage: isVideo
-          ? t('fileManager.notifications.saveVideoSuccess')
-          : t('fileManager.notifications.saveFileSuccess'),
-        errorMessage: isVideo
-          ? t('fileManager.notifications.saveVideoFail')
-          : t('fileManager.notifications.saveFileFail')
+      const saveParams: SaveAttachmentOptions = {
+        downloadFile
       }
+
+      // 只有在有 downloadUrl 时才添加 url 属性
+      if (downloadUrl) {
+        saveParams.url = downloadUrl
+      }
+
+      if (defaultName) {
+        saveParams.defaultFileName = defaultName
+      }
+
+      saveParams.successMessage = isVideo
+        ? t('fileManager.notifications.saveVideoSuccess')
+        : t('fileManager.notifications.saveFileSuccess')
+      saveParams.errorMessage = isVideo
+        ? t('fileManager.notifications.saveVideoFail')
+        : t('fileManager.notifications.saveFileFail')
       try {
         if (isVideo) {
           await saveVideoAttachmentAs(saveParams)
@@ -216,21 +258,21 @@ const fileContextMenu = computed<OPT.RightMenu[]>(() => [
           await saveFileAttachmentAs(saveParams)
         }
       } catch (error) {
-        console.error('文件另存为失败:', error)
+        logger.error('文件另存为失败:', error)
       }
     }
   }
 ])
 
-const handleFileMenuSelect = async (menuItem: OPT.RightMenu | null, file: any) => {
+const handleFileMenuSelect = async (menuItem: MenuItem, file: FileType) => {
   if (!menuItem || typeof menuItem.click !== 'function') {
     return
   }
 
   try {
-    await menuItem.click(file)
+    await menuItem.click(file as Record<string, unknown>)
   } catch (error) {
-    console.error('执行文件菜单操作失败:', error)
+    logger.error('执行文件菜单操作失败:', error)
   }
 }
 
@@ -335,12 +377,28 @@ const clearUserFilter = () => {
   setSelectedUser('')
 }
 
+// 定义文件类型
+interface FileType {
+  id: string | number
+  fileName?: string
+  fileSize?: number
+  url?: string
+  downloadUrl?: string
+  sender?: {
+    id: string | number
+    name?: string
+  }
+  uploadTime?: string
+  [key: string]: unknown
+}
+
 // 转换文件数据为 FileBody 格式
-const convertToFileBody = (file: any): FileBody => {
+const convertToFileBody = (file: unknown): FileBody => {
+  const f = file as FileType
   return {
-    fileName: file.fileName || '',
-    size: file.fileSize || 0,
-    url: file.url || file.downloadUrl || ''
+    fileName: f.fileName || '',
+    size: f.fileSize || 0,
+    url: f.url || f.downloadUrl || ''
   }
 }
 </script>

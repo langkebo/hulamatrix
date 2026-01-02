@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger'
+
 <template>
   <div class="voice-recorder-container">
     <!-- 录音状态显示 -->
@@ -97,15 +99,31 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
 import { useVoiceRecordRust } from '@/hooks/useVoiceRecordRust'
+import { logger } from '@/utils/logger'
+
+import { msg } from '@/utils/SafeUI' // 定义组件名称以避免命名冲突
+defineOptions({
+  name: 'DesktopVoiceRecorder'
+})
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
+// 语音数据接口
+interface VoiceData {
+  localPath: string
+  size: number
+  duration: number
+  filename: string
+  type: string
+}
+
 // 事件定义
 const emit = defineEmits<{
   cancel: []
-  send: [voiceData: any]
+  send: [voiceData: VoiceData]
 }>()
 
 // 录音状态
@@ -129,10 +147,9 @@ const {
   formatTime
 } = useVoiceRecordRust({
   onStart: () => {
-    console.log('开始录音')
+    logger.debug('开始录音')
   },
   onStop: (blob, duration, localPath) => {
-    console.log('录音结束', duration, '本地路径:', localPath)
     audioBlob.value = blob
     recordingDuration.value = duration
     localAudioPath.value = localPath
@@ -140,7 +157,7 @@ const {
     createAudioElement()
   },
   onError: () => {
-    window.$message?.error(t('message.voice_recorder.error'))
+    msg.error(t('message.voice_recorder.error'))
     isProcessing.value = false
   }
 })
@@ -217,7 +234,7 @@ const togglePlayback = () => {
 // 发送语音
 const handleSend = async () => {
   if (!audioBlob.value || !localAudioPath.value) {
-    console.log('🎤 缺少音频数据，退出发送')
+    logger.debug('🎤 缺少音频数据，退出发送')
     return
   }
 
@@ -234,13 +251,13 @@ const handleSend = async () => {
       type: 'audio/mp3'
     }
 
-    console.log('🎤 发送语音数据:', voiceData)
+    logger.debug('🎤 发送语音数据:', voiceData)
     emit('send', voiceData)
 
     // 发送后立即重置状态，避免下次打开时还显示这条录音
     resetRecordingState()
   } catch (error) {
-    console.error('🎤 发送语音失败:', error)
+    logger.error('🎤 发送语音失败:', error)
   } finally {
     sending.value = false
   }

@@ -87,18 +87,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed, nextTick, onMounted, ref, reactive } from 'vue'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { dirname, join } from '@tauri-apps/api/path'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { readDir } from '@tauri-apps/plugin-fs'
 import ActionBar from '@/components/windows/ActionBar.vue'
 import { useTauriListener } from '@/hooks/useTauriListener'
-import { useVideoViewer } from '@/stores/videoViewer.ts'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 const { t } = useI18n()
 const { addListener } = useTauriListener()
-const videoViewerStore = useVideoViewer()
+const videoViewerStore = reactive({ currentVideoIndex: 0, videoList: [] as string[] })
 const appWindow = WebviewWindow.getCurrent()
 // 支持的视频文件扩展名
 const supportedVideoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v']
@@ -189,7 +190,7 @@ const getVideosFromCurrentFolder = async (currentVideoPath: string) => {
 
     return videoFiles.sort() // 按文件名排序
   } catch (error) {
-    console.warn('获取文件夹视频文件失败:', error)
+    logger.warn('获取文件夹视频文件失败:', error)
     return []
   }
 }
@@ -204,7 +205,7 @@ const playPause = () => {
           isPlaying.value = true
         })
         .catch((error) => {
-          console.warn('视频播放失败:', error)
+          logger.warn('视频播放失败:', error)
           isPlaying.value = false
         })
     } else {
@@ -235,7 +236,7 @@ const onVideoLoaded = () => {
         isPlaying.value = true
       })
       .catch((error) => {
-        console.warn('自动播放失败，可能需要用户交互:', error)
+        logger.warn('自动播放失败，可能需要用户交互:', error)
         isPlaying.value = false
       })
   }
@@ -272,7 +273,7 @@ const previousVideo = async () => {
       const currentVideoIndex = folderVideos.indexOf(currentVideoPath)
       if (currentVideoIndex > 0) {
         const previousVideoPath = folderVideos[currentVideoIndex - 1]
-        videoList.value[currentIndex.value] = previousVideoPath
+        videoList.value[currentIndex.value] = previousVideoPath ?? ''
         showVideoTip(t('message.video_viewer.tip_playing_previous'))
       } else {
         showVideoTip(t('message.video_viewer.tip_first'))
@@ -294,7 +295,7 @@ const previousVideo = async () => {
           isPlaying.value = true
         })
         .catch((error) => {
-          console.warn('视频播放失败:', error)
+          logger.warn('视频播放失败:', error)
           isPlaying.value = false
         })
     }
@@ -317,7 +318,7 @@ const nextVideo = async () => {
       const currentVideoIndex = folderVideos.indexOf(currentVideoPath)
       if (currentVideoIndex < folderVideos.length - 1) {
         const nextVideoPath = folderVideos[currentVideoIndex + 1]
-        videoList.value[currentIndex.value] = nextVideoPath
+        videoList.value[currentIndex.value] = nextVideoPath ?? ''
         showVideoTip(t('message.video_viewer.tip_playing_next'))
       } else {
         showVideoTip(t('message.video_viewer.tip_last'))
@@ -339,7 +340,7 @@ const nextVideo = async () => {
           isPlaying.value = true
         })
         .catch((error) => {
-          console.warn('视频播放失败:', error)
+          logger.warn('视频播放失败:', error)
           isPlaying.value = false
         })
     }
@@ -360,15 +361,15 @@ onMounted(async () => {
 
   // 修改事件名称与发送端保持一致
   await addListener(
-    appWindow.listen('video-updated', (event: any) => {
+    appWindow.listen('video-updated', (event: { payload: { list: unknown[]; index: number } }) => {
       const { list, index } = event.payload
-      videoList.value = list
+      videoList.value = list as string[]
       currentIndex.value = index
       nextTick(() => {
         if (videoRef.value) {
           videoRef.value.load()
           videoRef.value.play().catch((error) => {
-            console.warn('视频播放失败:', error)
+            logger.warn('视频播放失败:', error)
             isPlaying.value = false
           })
         }

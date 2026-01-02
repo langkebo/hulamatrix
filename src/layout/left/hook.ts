@@ -1,20 +1,42 @@
+import { ref, computed, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
 import { info } from '@tauri-apps/plugin-log'
 import { useTimeoutFn } from '@vueuse/core'
 import { IsYesEnum, MittEnum, ThemeEnum } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useMitt } from '@/hooks/useMitt'
+import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
-import type { BadgeType, UserInfoType } from '@/services/types.ts'
+import type { BadgeType, UserInfoType } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
-import { useLoginHistoriesStore } from '@/stores/loginHistory.ts'
-import { useMenuTopStore } from '@/stores/menuTop.ts'
-import { useSettingStore } from '@/stores/setting.ts'
-import { useUserStore } from '@/stores/user.ts'
-import { useUserStatusStore } from '@/stores/userStatus.ts'
+import { useLoginHistoriesStore } from '@/stores/loginHistory'
+// 迁移: useMenuTopStore → useMenuTopStoreCompat (兼容层)
+import { useMenuTopStoreCompat as useMenuTopStore } from '@/stores/compatibility'
+import { useSettingStore } from '@/stores/setting'
+import { useUserStore } from '@/stores/user'
+import { useUserStatusStore } from '@/stores/userStatus'
 import { ModifyUserInfo, setUserBadge } from '@/utils/ImRequestUtils'
+
+import { msg } from '@/utils/SafeUI'
 import { storeToRefs } from 'pinia'
+import { logger } from '@/utils/logger'
+
+// Type definitions for Mitt events
+interface ToSendMsgEvent {
+  url: string
+}
 
 export const leftHook = () => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  const logInfo = (...args: unknown[]) => {
+    if (isTauri) {
+      try {
+        const msg = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+        info(msg)
+      } catch {}
+    } else {
+      const msgStr = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+      logger.info(msgStr)
+    }
+  }
   const prefers = matchMedia('(prefers-color-scheme: dark)')
   const { createWebviewWindow } = useWindow()
   const settingStore = useSettingStore()
@@ -68,7 +90,7 @@ export const leftHook = () => {
   })
 
   /** 更新缓存里面的用户信息 */
-  const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: any) => {
+  const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: string) => {
     const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
     if (currentUser) {
       currentUser[key] = value // 更新缓存里面的用户信息
@@ -76,23 +98,23 @@ export const leftHook = () => {
   }
 
   /** 保存用户信息 */
-  const saveEditInfo = (localUserInfo: any) => {
+  const saveEditInfo = (localUserInfo: Partial<UserInfoType>) => {
     if (!localUserInfo.name || localUserInfo.name.trim() === '') {
-      window.$message.error('昵称不能为空')
+      msg.error?.('昵称不能为空')
       return
     }
     if (localUserInfo.modifyNameChance === 0) {
-      window.$message.error('改名次数不足')
+      msg.error?.('改名次数不足')
       return
     }
-    ModifyUserInfo(localUserInfo).then(() => {
+    ModifyUserInfo(localUserInfo as UserInfoType).then(() => {
       // 更新本地缓存的用户信息
       userStore.userInfo!.name = localUserInfo.name!
       loginHistoriesStore.updateLoginHistory(<UserInfoType>userStore.userInfo) // 更新登录历史记录
-      updateCurrentUserCache('name', localUserInfo.name) // 更新缓存里面的用户信息
+      updateCurrentUserCache('name', localUserInfo.name!) // 更新缓存里面的用户信息
       if (!editInfo.value.content.modifyNameChance) return
       editInfo.value.content.modifyNameChance -= 1
-      window.$message.success('保存成功')
+      msg.success?.('保存成功')
     })
   }
 
@@ -117,17 +139,20 @@ export const leftHook = () => {
       }
       // 确保在状态更新后再显示成功消息
       nextTick(() => {
-        window.$message.success('佩戴成功')
+        msg.success('佩戴成功')
       })
     } catch (_error) {
-      window.$message.error('佩戴失败，请稍后重试')
+      msg.error('佩戴失败，请稍后重试')
     }
   }
 
   /* 打开并且创建modal */
   const handleEditing = () => {
-    // TODO 暂时使用mitt传递参数，不然会导致子组件的响应式丢失 (nyh -> 2024-06-25 09:53:43)
-    useMitt.emit(MittEnum.OPEN_EDIT_INFO)
+    // 使用 mitt 事件来触发编辑弹窗，避免直接传递响应式数据
+    // 组件内部通过 watch 或 store 获取最新数据，确保响应式正常
+    useMitt.emit(MittEnum.OPEN_EDIT_INFO, {
+      timestamp: Date.now() // 添加时间戳确保事件能被触发
+    })
   }
 
   /**
@@ -143,9 +168,9 @@ export const leftHook = () => {
     size?: { width: number; height: number; minWidth?: number },
     window?: { resizable: boolean }
   ) => {
-    if (window) {
+    if (window && isTauri) {
       useTimeoutFn(async () => {
-        info(`打开窗口: ${title}`)
+        logInfo(`打开窗口: ${title}`)
         const webview = await createWebviewWindow(
           title!,
           url,
@@ -156,11 +181,12 @@ export const leftHook = () => {
           <number>size?.minWidth
         )
         openWindowsList.value.add(url)
-
-        const unlisten = await webview?.onCloseRequested(() => {
-          openWindowsList.value.delete(url)
-          if (unlisten) unlisten()
-        })
+        if (webview) {
+          const unlisten = await webview.onCloseRequested(() => {
+            openWindowsList.value.delete(url)
+            if (unlisten) unlisten()
+          })
+        }
       }, 300)
     } else {
       activeUrl.value = url
@@ -177,13 +203,18 @@ export const leftHook = () => {
    * */
   const openContent = (title: string, label: string, w = 840, h = 600) => {
     useTimeoutFn(async () => {
-      await createWebviewWindow(title, label, w, h)
+      if (isTauri) {
+        await createWebviewWindow(title, label, w, h)
+      } else {
+        router.push(`/${label}`)
+      }
     }, 300)
     infoShow.value = false
   }
 
-  const closeMenu = (event: any) => {
-    if (!event.target.matches('.setting-item, .more, .more *')) {
+  const closeMenu = (event: Event) => {
+    const target = event.target as Element
+    if (target && !target.matches('.setting-item, .more, .more *')) {
       settingShow.value = false
     }
   }
@@ -193,14 +224,15 @@ export const leftHook = () => {
     pageJumps(activeUrl.value)
     window.addEventListener('click', closeMenu, true)
 
-    useMitt.on(MittEnum.SHRINK_WINDOW, (event: any) => {
+    useMitt.on(MittEnum.SHRINK_WINDOW, (event: unknown) => {
       shrinkStatus.value = event as boolean
     })
     useMitt.on(MittEnum.CLOSE_INFO_SHOW, () => {
       infoShow.value = false
     })
-    useMitt.on(MittEnum.TO_SEND_MSG, (event: any) => {
-      activeUrl.value = event.url
+    useMitt.on(MittEnum.TO_SEND_MSG, (event: unknown) => {
+      const msgEvent = event as ToSendMsgEvent
+      activeUrl.value = msgEvent.url
     })
   })
 

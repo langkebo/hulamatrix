@@ -82,6 +82,38 @@
           @blur="passwordPH = t('login.input.pass.placeholder')"
           clearable />
 
+        <!-- 账户状态提示 -->
+        <n-flex
+          v-if="accountCheckStatus.checking || accountCheckStatus.reason"
+          :size="8"
+          align="center"
+          justify="center"
+          class="text-12px px-8px py-4px rounded-4px"
+          :class="{
+            'bg-#e8f4fd! dark:bg-#1a3a4a!': accountCheckStatus.suggestedAction === 'login',
+            'bg-#fff7e8! dark:bg-#4a3a1a!': accountCheckStatus.suggestedAction === 'register',
+            'bg-#f0f0f0! dark:bg-#3a3a3a!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
+          }">
+          <n-spin v-if="accountCheckStatus.checking" :size="12" />
+          <span
+            v-if="accountCheckStatus.reason"
+            :class="{
+              'color-#13987f!': accountCheckStatus.suggestedAction === 'login',
+              'color-#d97706!': accountCheckStatus.suggestedAction === 'register',
+              'color-#909090!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
+            }">
+            {{ accountCheckStatus.reason }}
+          </span>
+          <n-button
+            v-if="accountCheckStatus.suggestedAction === 'register'"
+            text
+            size="tiny"
+            class="color-#13987f! ml-4px"
+            @click="createWebviewWindow('注册', 'register', 600, 600)">
+            去注册
+          </n-button>
+        </n-flex>
+
         <!-- 协议 -->
         <n-flex align="center" justify="center" :size="6">
           <n-checkbox v-model:checked="protocol" />
@@ -220,6 +252,10 @@ import { clearListener } from '@/utils/ReadCountQueue'
 import { useLogin } from '@/hooks/useLogin'
 import { formatBottomText } from '@/utils/Formatting'
 import { ThemeEnum } from '@/enums'
+import { useMatrixAuthStore } from '@/stores/matrixAuth'
+import { suggestActionForLogin } from '@/services/matrixAccountCheck'
+import { useDebounceFn } from '@vueuse/core'
+import { logger } from '@/utils/logger'
 
 const { t } = useI18n()
 
@@ -243,6 +279,61 @@ const moreShow = ref(false)
 const { createWebviewWindow, createModalWindow, getWindowPayload } = useWindow()
 const { checkUpdate, CHECK_UPDATE_LOGIN_TIME } = useCheckUpdate()
 const { normalLogin, loading, loginText, loginDisabled, info, uiState } = useLogin()
+const matrixAuthStore = useMatrixAuthStore()
+const { baseUrl: matrixBaseUrl } = storeToRefs(matrixAuthStore)
+
+// 账户检查状态
+const accountCheckStatus = ref<{
+  checking: boolean
+  exists: boolean | null
+  suggestedAction: 'login' | 'register' | 'none' | null
+  reason: string | null
+}>({
+  checking: false,
+  exists: null,
+  suggestedAction: null,
+  reason: null
+})
+
+/**
+ * 检查 Matrix 账户状态（防抖）
+ */
+const checkMatrixAccount = useDebounceFn(async (username: string) => {
+  // 如果输入为空或太短，不进行检查
+  if (!username || username.length < 3) {
+    accountCheckStatus.value = {
+      checking: false,
+      exists: null,
+      suggestedAction: null,
+      reason: null
+    }
+    return
+  }
+
+  // 如果 Matrix 未启用，不检查
+  if (!matrixBaseUrl.value) {
+    return
+  }
+
+  accountCheckStatus.value.checking = true
+
+  try {
+    const result = await suggestActionForLogin(matrixBaseUrl.value, username)
+    accountCheckStatus.value = {
+      checking: false,
+      exists: result.exists,
+      suggestedAction: result.suggestedAction,
+      reason: result.reason || null
+    }
+  } catch (error) {
+    accountCheckStatus.value = {
+      checking: false,
+      exists: null,
+      suggestedAction: 'none',
+      reason: '账户状态检查失败'
+    }
+  }
+}, 800) // 800ms 防抖延迟
 
 const driverSteps = computed<DriverStepConfig[]>(() => [
   {
@@ -327,7 +418,7 @@ const timerWorker = new Worker(new URL('../../workers/timer.worker.ts', import.m
 
 // 添加错误处理
 timerWorker.onerror = (error) => {
-  console.error('[Worker Error]', error)
+  logger.error('[Worker Error]', error)
 }
 
 // 监听 Worker 消息
@@ -353,6 +444,12 @@ watch(
   (newAccount) => {
     if (!newAccount) {
       info.value.avatar = '/logoD.png'
+      accountCheckStatus.value = {
+        checking: false,
+        exists: null,
+        suggestedAction: null,
+        reason: null
+      }
       return
     }
 
@@ -365,6 +462,9 @@ watch(
     } else {
       info.value.avatar = '/logoD.png'
     }
+
+    // 检查 Matrix 账户状态（防抖）
+    checkMatrixAccount(newAccount)
   }
 )
 
@@ -399,7 +499,7 @@ const handlePendingRemoteLoginPayload = async () => {
       openRemoteLoginModal(payload.remoteLogin.ip)
     }
   } catch (error) {
-    console.error('处理异地登录载荷失败:', error)
+    logger.error('处理异地登录载荷失败:', error)
   }
 }
 
@@ -435,7 +535,7 @@ const giveAccount = (item: UserInfoType) => {
 const removeToken = () => {
   localStorage.removeItem('TOKEN')
   localStorage.removeItem('REFRESH_TOKEN')
-  userStore.userInfo = undefined
+  userStore.reset()
 }
 
 /** 打开服务协议窗口 */

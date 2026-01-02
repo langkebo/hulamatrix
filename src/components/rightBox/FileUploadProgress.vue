@@ -29,15 +29,15 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
 import { ThemeEnum } from '@/enums'
 import { globalFileUploadQueue } from '@/hooks/useFileUploadQueue'
 import { useSettingStore } from '@/stores/setting'
 import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 
 // 队列状态
 const { queue, progress, isUploading } = globalFileUploadQueue

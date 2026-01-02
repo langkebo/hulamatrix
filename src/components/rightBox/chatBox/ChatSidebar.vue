@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger'
+
 <template>
   <!--! 这里最好不要使用n-flex,滚动高度会有问题  -->
   <main
@@ -116,7 +118,7 @@
         :items="displayedUserList">
         <template #default="{ item }">
           <n-popover
-            :ref="(el: any) => (infoPopoverRefs[item.uid] = el)"
+            :ref="(el: unknown) => (infoPopoverRefs[item.uid] = el)"
             @update:show="handlePopoverUpdate(item.uid, $event)"
             trigger="click"
             placement="left"
@@ -126,8 +128,8 @@
               <ContextMenu
                 :content="item"
                 @select="$event.click(item, 'Sidebar')"
-                :menu="optionsList"
-                :special-menu="report">
+                :menu="(optionsList as unknown as ContextMenuItem[])"
+                :special-menu="(report as unknown as ContextMenuItem[])">
                 <n-flex
                   @click="onClickMember(item)"
                   :key="item.uid"
@@ -189,42 +191,70 @@
   </main>
 </template>
 <script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, provide } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useDebounceFn } from '@vueuse/core'
 import type { InputInst } from 'naive-ui'
-import { storeToRefs } from 'pinia'
 import { MittEnum, OnlineEnum, RoleEnum, ThemeEnum, RoomTypeEnum } from '@/enums'
-import { useChatMain } from '@/hooks/useChatMain.ts'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { usePopover } from '@/hooks/usePopover.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useChatMain } from '@/hooks/useChatMain'
+import { useMitt } from '@/hooks/useMitt'
+import { usePopover } from '@/hooks/usePopover'
+import { useWindow } from '@/hooks/useWindow'
 import { useLinkSegments } from '@/hooks/useLinkSegments'
 import type { UserItem } from '@/services/types'
-import { WsResponseMessageType } from '@/services/wsType.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useGroupStore } from '@/stores/group.ts'
+import { WsResponseMessageType } from '@/services/wsType'
+import { useGlobalStore } from '@/stores/global'
+
+// Tauri WebviewWindow 扩展接口
+interface WebviewWindowWithListen {
+  listen?: (event: string, handler: (event: unknown) => void) => Promise<UnlistenFn>
+  [key: string]: unknown
+}
+
+// UnlistenFn 类型
+type UnlistenFn = () => Promise<void>
+
+// 事件接口定义
+interface AnnouncementUpdatedEvent {
+  payload?: {
+    hasAnnouncements?: boolean
+  }
+}
+
+interface InfoPopoverEvent {
+  uid: string
+}
+import { useRoomStore } from '@/stores/room'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { getUserByIds } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { logger } from '@/utils/logger'
 import { useAnnouncementStore } from '@/stores/announcement'
 
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const appWindow = isTauri ? WebviewWindow.getCurrent() : { label: 'web' }
 const emit = defineEmits<(e: 'ready') => void>()
 const { createWebviewWindow } = useWindow()
-const groupStore = useGroupStore()
 const globalStore = useGlobalStore()
+const roomStore = useRoomStore()
 const settingStore = useSettingStore()
 const announcementStore = useAnnouncementStore()
 const { clearAnnouncements } = announcementStore
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 // 当前加载的群聊ID
-const onlineCountDisplay = computed(() => groupStore.countInfo?.onlineNum ?? 0)
+const onlineCountDisplay = computed(() => {
+  // 临时使用成员总数，后续接入Presence
+  return roomStore.currentRoom?.memberCount || 0
+})
 const isGroup = computed(() => globalStore.currentSession?.type === RoomTypeEnum.GROUP)
 // 公告相关计算属性
-const { announcementContent, announNum, announError, isAddAnnoun } = storeToRefs(announcementStore)
+const announcementContent = computed(() => announcementStore.announcementContent)
+const announNum = computed(() => announcementStore.announNum)
+const announError = computed(() => announcementStore.announError)
+const isAddAnnoun = computed(() => announcementStore.isAddAnnoun)
 const { segments: announcementSegments, openLink: openAnnouncementLink } = useLinkSegments(announcementContent)
 
 /** 是否是搜索模式 */
@@ -232,10 +262,21 @@ const isSearch = ref(false)
 const searchRef = ref('')
 const searchRequestId = ref(0)
 /** List中的Popover组件实例 */
-const infoPopoverRefs = ref<Record<string, any>>([])
+const infoPopoverRefs = ref<Record<string, unknown>>({})
 const inputInstRef = ref<InputInst | null>(null)
 const isCollapsed = ref(false)
 const { optionsList, report, selectKey } = useChatMain()
+
+// Type for ContextMenu menu items
+interface ContextMenuItem {
+  label?: string | (() => string)
+  icon?: string
+  action?: (item: unknown) => void | Promise<void>
+  visible?: (item: unknown) => boolean
+  children?: ContextMenuItem[]
+  key?: string
+  [key: string]: unknown
+}
 const { handlePopoverUpdate, enableScroll } = usePopover(selectKey, 'image-chat-sidebar')
 provide('popoverControls', { enableScroll })
 
@@ -243,6 +284,20 @@ provide('popoverControls', { enableScroll })
 const displayedUserList = ref<UserItem[]>([])
 /** 用户信息加载状态 */
 const userLoadedMap = ref<Record<string, boolean>>({})
+
+// 当前群组成员列表（适配 UserItem 类型）
+const currentMembers = computed<UserItem[]>(() => {
+  return (roomStore.currentMembers || []).map((m) => ({
+    uid: m.userId,
+    account: m.userId,
+    name: m.displayName || m.userId,
+    myName: m.displayName, // RoomStore currently stores displayname in both
+    avatar: m.avatarUrl || '',
+    roleId: m.role === 'owner' ? RoleEnum.LORD : m.role === 'admin' ? RoleEnum.ADMIN : RoleEnum.NORMAL,
+    activeStatus: OnlineEnum.OFFLINE, // 暂不支持在线状态
+    lastOptTime: 0
+  }))
+})
 
 watch(
   () => [globalStore.currentSessionRoomId, isGroup.value] as const,
@@ -260,27 +315,41 @@ watch(
     try {
       await announcementStore.loadGroupAnnouncements(roomId)
     } catch (error) {
-      console.error('刷新群公告失败:', error)
+      logger.error('刷新群公告失败:', error instanceof Error ? error : new Error(String(error)))
     }
   },
   { immediate: true }
 )
 
 const onClickMember = async (item: UserItem) => {
-  console.log('点击用户', item)
+  logger.debug('点击用户', item)
   selectKey.value = item.uid
 
   // 获取用户的最新数据，并更新 pinia
-  getUserByIds([item.uid]).then((users) => {
-    if (users && users.length > 0) {
-      groupStore.updateUserItem(item.uid, users[0])
+  requestWithFallback({
+    url: 'get_user_by_ids',
+    params: { uids: [item.uid] }
+  }).then((users) => {
+    const userList = users as { name?: string; avatar?: string }[] | undefined
+    if (userList && userList.length > 0) {
+      const firstUser = userList[0]
+      if (!firstUser) return
+      // Build update object with only defined properties
+      const updateData: { displayName?: string; avatarUrl?: string } = {}
+      if (firstUser.name !== undefined) {
+        updateData.displayName = firstUser.name
+      }
+      if (firstUser.avatar !== undefined) {
+        updateData.avatarUrl = firstUser.avatar
+      }
+      roomStore.updateMember(globalStore.currentSessionRoomId, item.uid, updateData)
     }
   })
 }
 
 // 监听成员源列表变化
 watch(
-  () => groupStore.userList,
+  () => currentMembers.value,
   (newList) => {
     if (searchRef.value.trim()) {
       return
@@ -301,12 +370,12 @@ const handleSearch = useDebounceFn((value: string) => {
 
   // 如果没有搜索关键字,显示全部成员
   if (!keyword) {
-    displayedUserList.value = Array.isArray(groupStore.userList) ? [...groupStore.userList] : []
+    displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
     return
   }
 
   // 前端本地过滤成员列表
-  const filteredList = groupStore.userList.filter((member) => {
+  const filteredList = currentMembers.value.filter((member: UserItem) => {
     const matchName = member.name?.toLowerCase().includes(keyword)
     const matchMyName = member.myName?.toLowerCase().includes(keyword)
     return matchName || matchMyName
@@ -319,7 +388,7 @@ const handleBlur = () => {
   if (searchRef.value) return
   isSearch.value = false
   searchRequestId.value++
-  displayedUserList.value = Array.isArray(groupStore.userList) ? [...groupStore.userList] : []
+  displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
 }
 
 /**
@@ -334,8 +403,8 @@ const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement
   const isBottom = target.scrollHeight - target.scrollTop === target.clientHeight
 
-  if (isBottom && !groupStore.userListOptions.loading) {
-    groupStore.loadMoreGroupMembers()
+  if (isBottom) {
+    roomStore.loadRoomMembers(globalStore.currentSessionRoomId)
   }
 }
 
@@ -352,7 +421,7 @@ const handleSelect = () => {
   } else {
     searchRequestId.value++
     searchRef.value = ''
-    displayedUserList.value = Array.isArray(groupStore.userList) ? [...groupStore.userList] : []
+    displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
   }
 }
 
@@ -372,7 +441,7 @@ const handleOpenAnnoun = (isAdd: boolean) => {
 }
 
 const userStatusStore = useUserStatusStore()
-const { stateList } = storeToRefs(userStatusStore)
+const stateList = computed(() => userStatusStore.stateList)
 
 const getUserState = (stateId: string) => {
   return stateList.value.find((state: { id: string }) => state.id === stateId)
@@ -385,41 +454,54 @@ const translateStateTitle = (title?: string) => {
   return translated === key ? title : translated
 }
 
-appWindow.listen('announcementUpdated', async (event: any) => {
-  if (event.payload) {
-    const { hasAnnouncements } = event.payload
-    if (hasAnnouncements) {
-      // 初始化群公告
-      await announcementStore.loadGroupAnnouncements()
-      await nextTick()
-    }
+if (isTauri && appWindow) {
+  const windowWithListen = appWindow as unknown as WebviewWindowWithListen
+  if (windowWithListen.listen) {
+    windowWithListen.listen('announcementUpdated', async (event: unknown) => {
+      const announcementEvent = event as AnnouncementUpdatedEvent
+      if (announcementEvent.payload) {
+        const { hasAnnouncements } = announcementEvent.payload
+        if (hasAnnouncements) {
+          // 初始化群公告
+          await announcementStore.loadGroupAnnouncements()
+          await nextTick()
+        }
+      }
+    })
   }
-})
+}
 
 onMounted(async () => {
   // 通知父级：Sidebar 已挂载，可移除占位
   emit('ready')
 
-  useMitt.on(`${MittEnum.INFO_POPOVER}-Sidebar`, (event: any) => {
-    selectKey.value = event.uid
-    infoPopoverRefs.value[event.uid].setShow(true)
-    handlePopoverUpdate(event.uid)
+  useMitt.on(`${MittEnum.INFO_POPOVER}-Sidebar`, (event: unknown) => {
+    const popoverEvent = event as InfoPopoverEvent
+    selectKey.value = popoverEvent.uid
+    const popoverRef = infoPopoverRefs.value[popoverEvent.uid] as { setShow: (show: boolean) => void } | undefined
+    popoverRef?.setShow(true)
+    handlePopoverUpdate(popoverEvent.uid)
   })
 
-  appWindow.listen('announcementClear', async () => {
-    clearAnnouncements()
-  })
+  if (isTauri && appWindow) {
+    const windowWithListen = appWindow as unknown as WebviewWindowWithListen
+    if (windowWithListen.listen) {
+      windowWithListen.listen('announcementClear', async () => {
+        clearAnnouncements()
+      })
+    }
+  }
 
   // 初始化时获取当前群组用户的信息
-  if (groupStore.userList.length > 0) {
+  if (currentMembers.value.length > 0) {
     // 初始展示当前列表
-    displayedUserList.value = [...groupStore.userList]
-    const currentRoom = globalStore.currentSessionRoomId
-    if (currentRoom) {
-      groupStore.updateMemberCache(currentRoom, displayedUserList.value)
-    }
+    displayedUserList.value = [...currentMembers.value]
+    // const currentRoom = globalStore.currentSessionRoomId
+    // if (currentRoom) {
+    //   groupStore.updateMemberCache(currentRoom, displayedUserList.value)
+    // }
     const handleAnnounInitOnEvent = (shouldReload: boolean) => {
-      return async (event: any) => {
+      return async (event: unknown) => {
         if (shouldReload || event) {
           await announcementStore.loadGroupAnnouncements()
         }
@@ -432,7 +514,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  groupStore.cleanupSession()
+  // groupStore.cleanupSession()
 })
 </script>
 

@@ -51,9 +51,7 @@ impl<R: Runtime> CustomInit for tauri::Builder<R> {
 impl<R: Runtime> DesktopCustomInit for tauri::Builder<R> {
     // 初始化web窗口事件
     fn init_webwindow_event(self) -> Self {
-        self.on_webview_event(|_, event| match event {
-            _ => (),
-        })
+        self.on_webview_event(|_, _event| ())
     }
 
     // 初始化系统窗口事件
@@ -67,11 +65,10 @@ impl<R: Runtime> DesktopCustomInit for tauri::Builder<R> {
                         let _ = tray_window.hide();
                     }
                 }
-                if window.label().eq("tray") && !flag {
-                    if let Err(e) = window.hide() {
+                if window.label().eq("tray") && !flag
+                    && let Err(e) = window.hide() {
                         tracing::warn!("Failed to hide tray window: {}", e);
                     }
-                }
                 #[cfg(target_os = "windows")]
                 if !window.label().eq("notify") && *flag {
                     if let Some(notify_window) = window.app_handle().get_webview_window("notify") {

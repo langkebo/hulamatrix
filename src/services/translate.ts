@@ -1,8 +1,10 @@
 import { fetch } from '@tauri-apps/plugin-http'
 import CryptoJS from 'crypto-js'
-import { AppException } from '@/common/exception.ts'
-import { getSettings, type Settings } from '@/services/tauriCommand.ts'
-import type { TranslateProvider } from './types.ts'
+import { AppException } from '@/common/exception'
+import { getSettings, type Settings } from '@/services/tauriCommand'
+
+import { msg } from '@/utils/SafeUI'
+import type { TranslateProvider } from './types'
 
 // 有道云翻译接口响应类型
 interface YoudaoResponse {
@@ -57,7 +59,8 @@ const signUtils = {
   getTencentSign(text: string, secretId: string, secretKey: string, timestamp: string): string {
     // 根据时间戳生成UTC日期字符串
     const date = new Date(parseInt(timestamp, 10) * 1000)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStrPart = date.toISOString().split('T')[0]
+    const dateStr = dateStrPart ?? date.toISOString().substring(0, 10)
     const service = 'tmt' // 服务名称
 
     // 1. 拼接规范请求串
@@ -89,13 +92,32 @@ const signUtils = {
     const stringToSign = ['TC3-HMAC-SHA256', timestamp, credentialScope, hashedCanonicalRequest].join('\n')
 
     // 3. 计算签名，使用派生密钥计算最终签名
-    const kDate = CryptoJS.HmacSHA256(dateStr, 'TC3' + secretKey)
-    const kService = CryptoJS.HmacSHA256(service, kDate)
-    const kSigning = CryptoJS.HmacSHA256('tc3_request', kService)
-    const signature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString()
+    const secretKeyStr = 'TC3' + secretKey
+    const secretKeyWordArray = CryptoJS.enc.Utf8.parse(secretKeyStr)
+    if (!secretKeyWordArray) {
+      throw new Error('Failed to parse secret key')
+    }
+    const kDate = CryptoJS.HmacSHA256(dateStr, secretKeyWordArray)
+    if (!kDate) {
+      throw new Error('Failed to calculate kDate')
+    }
+    // CryptoJS WordArray can be used as input to HmacSHA256, but types don't match perfectly
+    const kService = CryptoJS.HmacSHA256(service, kDate as unknown as string)
+    if (!kService) {
+      throw new Error('Failed to calculate kService')
+    }
+    const kSigning = CryptoJS.HmacSHA256('tc3_request', kService as unknown as string)
+    if (!kSigning) {
+      throw new Error('Failed to calculate kSigning')
+    }
+    const signature = CryptoJS.HmacSHA256(stringToSign, kSigning as unknown as string)
+    if (!signature) {
+      throw new Error('Failed to calculate signature')
+    }
+    const signatureStr = signature.toString()
 
     // 4. 拼接 Authorization 头部值
-    return `TC3-HMAC-SHA256 Credential=${secretId}/${credentialScope}, SignedHeaders=content-type;host, Signature=${signature}`
+    return `TC3-HMAC-SHA256 Credential=${secretId}/${credentialScope}, SignedHeaders=content-type;host, Signature=${signatureStr}`
   }
 }
 
@@ -119,10 +141,11 @@ export const translateText = async (text: string, provider: TranslateProvider = 
       case 'tencent':
         return await tencentTranslate(text)
       default:
-        throw window.$message?.error('不支持的翻译服务提供商')
+        msg.error('不支持的翻译服务提供商')
+        throw new AppException('不支持的翻译服务提供商')
     }
   } catch (error) {
-    window.$message?.error('翻译失败: ' + (error as Error).message)
+    msg.error('翻译失败: ' + (error as Error).message)
     throw error
   }
 }
@@ -138,7 +161,8 @@ const youdaoTranslate = async (text: string): Promise<TranslateResult> => {
 
   // 检查密钥是否为空
   if (!settings.youdao.app_key || !settings.youdao.app_secret) {
-    throw window.$message?.error('有道翻译API密钥未配置')
+    msg.error('有道翻译API密钥未配置')
+    throw new AppException('有道翻译API密钥未配置')
   }
 
   const salt = new Date().getTime() // 随机数，使用时间戳
@@ -169,7 +193,8 @@ const youdaoTranslate = async (text: string): Promise<TranslateResult> => {
 
   // 处理错误响应
   if (data.errorCode !== '0') {
-    throw window.$message?.error(`翻译失败，错误码：${data.errorCode}`)
+    msg.error(`翻译失败，错误码：${data.errorCode}`)
+    throw new AppException(`翻译失败，错误码：${data.errorCode}`)
   }
 
   // 检查翻译结果
@@ -191,12 +216,13 @@ const youdaoTranslate = async (text: string): Promise<TranslateResult> => {
 const tencentTranslate = async (text: string): Promise<TranslateResult> => {
   // 从环境变量获取密钥信息
   const settings: Settings = await getSettings()
-  const secretId = settings.tencent.secret_id
-  const secretKey = settings.tencent.api_key
+  const secretId = settings.tencent.secret_id || ''
+  const secretKey = settings.tencent.api_key || ''
 
   // 检查密钥是否为空
   if (!secretId || !secretKey) {
-    throw window.$message?.error('腾讯云翻译API密钥未配置')
+    msg.error('腾讯云翻译API密钥未配置')
+    throw new AppException('腾讯云翻译API密钥未配置')
   }
 
   const timestamp = Math.floor(Date.now() / 1000).toString()
@@ -228,7 +254,8 @@ const tencentTranslate = async (text: string): Promise<TranslateResult> => {
 
   // 处理错误响应
   if (data.Response.Error) {
-    throw window.$message?.error(`翻译失败，错误码：${data.Response.Error.Message}`)
+    msg.error(`翻译失败，错误码：${data.Response.Error.Message}`)
+    throw new AppException(`翻译失败，错误码：${data.Response.Error.Message}`)
   }
 
   // 检查翻译结果

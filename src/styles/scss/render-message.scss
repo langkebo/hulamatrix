@@ -1,6 +1,6 @@
 /** 气泡样式 */
 @mixin bubble {
-  @apply w-fit min-h-1em p-[8px_12px] line-height-22px bg-[--bg-bubble] rounded-[2px_18px_18px] custom-shadow;
+  @apply w-fit min-h-1em p-[var(--sz-chat-bubble-pad-y)_var(--sz-chat-bubble-pad-x)] line-height-[var(--sz-chat-bubble-line-h)] bg-[--bg-bubble] rounded-[2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] custom-shadow;
   max-width: var(--bubble-max-width, 32vw); /** 默认为群聊宽度 */
   white-space: pre-wrap; /** 保留空白符号并正常换行，支持特殊字符 */
   word-break: break-word; /** 优先在单词边界换行，必要时在单词内换行 */
@@ -29,7 +29,7 @@
 }
 .bubble-oneself {
   @include bubble;
-  @apply rounded-[18px_2px_18px_18px] color-#fff;
+  @apply rounded-[var(--sz-chat-bubble-radius)_2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] color-#fff;
   background-color: var(--bg-active-msg);
 }
 
@@ -128,10 +128,10 @@
 /** 翻译气泡的样式 */
 .translated-text {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: var(--sz-chat-bubble-pad-y) var(--sz-chat-bubble-pad-x);
+  border-radius: var(--sz-chat-bubble-radius);
   background-color: var(--bg-translate-bubble);
-  line-height: 22px;
+  line-height: var(--sz-chat-bubble-line-h);
   margin-top: 6px;
   max-width: var(--bubble-max-width);
   width: fit-content;

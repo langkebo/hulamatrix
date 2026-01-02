@@ -41,6 +41,8 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useFileStore } from '@/stores/file'
 import { useGlobalStore } from '@/stores/global'
 import { isMobile } from '@/utils/PlatformConstants'

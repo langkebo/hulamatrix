@@ -1,7 +1,30 @@
 <template>
   <main class="size-full flex select-none">
+    <!-- 移动端菜单遮罩 -->
+    <Transition name="fade">
+      <div
+        v-if="showMobileMenu"
+        class="mobile-overlay"
+        @click="showMobileMenu = false">
+      </div>
+    </Transition>
+
+    <!-- 移动端菜单按钮 -->
+    <button
+      v-if="isMobile"
+      class="mobile-menu-button"
+      @click="showMobileMenu = !showMobileMenu"
+      :class="{ 'is-open': showMobileMenu }">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
     <!-- 侧边栏选项 -->
-    <section class="left-bar" data-tauri-drag-region>
+    <section
+      class="left-bar"
+      :class="{ 'is-mobile-open': showMobileMenu && isMobile }"
+      data-tauri-drag-region>
       <div class="menu-list relative">
         <div v-for="(item, index) in sideOptions" :key="index">
           <div class="menu-item" :class="{ active: activeItem === item.url }" @click="pageJumps(item.url)">
@@ -44,13 +67,13 @@
         style="max-height: calc(100vh / var(--page-scale, 1) - 70px)"
         :class="{ 'shadow-inner': page.shadow }"
         data-tauri-drag-region>
-        <n-flex vertical class="p-24px" :size="12" justify="center" v-if="skeleton">
+        <n-flex vertical class="p-16px md:p-24px" :space="12" justify="center" v-if="skeleton">
           <n-skeleton class="rounded-8px" height="26px" text style="width: 30%" />
           <n-skeleton class="rounded-8px" height="26px" text :repeat="5" />
           <n-skeleton class="rounded-8px" height="26px" text style="width: 60%" />
         </n-flex>
         <template v-else>
-          <div class="flex-1 p-24px"><router-view /></div>
+          <div class="flex-1 p-16px md:p-24px"><router-view /></div>
 
           <Foot />
         </template>
@@ -61,29 +84,47 @@
 <script setup lang="ts">
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import router from '@/router'
-import { useScannerStore } from '@/stores/scanner.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useScannerStore } from '@/stores/scanner'
+import { useSettingStore } from '@/stores/setting'
 import Foot from '@/views/moreWindow/settings/Foot.vue'
-import { useSideOptions } from './config.ts'
+import { useSideOptions } from './config'
+import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const settingStore = useSettingStore()
 const scannerStore = useScannerStore()
 const skeleton = ref(true)
-const { page } = storeToRefs(settingStore)
+const page = computed(() => settingStore.page)
 const sideOptions = useSideOptions()
 const { t } = useI18n()
 /**当前选中的元素 默认选中itemsTop的第一项*/
 const activeItem = ref<string>('/general')
 const title = ref<string>('')
 
+// 移动端状态
+const showMobileMenu = ref(false)
+const isMobile = ref(false)
+
+// 检测是否为移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+  if (!isMobile.value) {
+    showMobileMenu.value = false
+  }
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  checkMobile()
+}
+
 watch(
   sideOptions,
   (options) => {
     if (!options.length) return
     const current = options.find((item) => item.url === activeItem.value) ?? options[0]
-    activeItem.value = current.url
-    title.value = current.label
+    activeItem.value = current?.url || ''
+    title.value = current?.label || ''
   },
   { immediate: true }
 )
@@ -100,6 +141,10 @@ const pageJumps = (url: string) => {
     title.value = matched.label
   }
   router.push(url)
+  // 移动端跳转后关闭菜单
+  if (isMobile.value) {
+    showMobileMenu.value = false
+  }
 }
 
 onMounted(async () => {
@@ -108,10 +153,18 @@ onMounted(async () => {
   // 重置扫描器状态
   scannerStore.resetState()
 
+  // 检测移动端
+  checkMobile()
+  window.addEventListener('resize', handleResize)
+
   setTimeout(() => {
     skeleton.value = false
   }, 300)
   pageJumps(activeItem.value)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
 })
 
 // 设置窗口关闭时清理扫描器资源
@@ -122,23 +175,92 @@ onUnmounted(async () => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/global/variable' as *;
+
+// 移动端菜单按钮
+.mobile-menu-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-color);
+  border: 1px solid var(--line-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+
+  span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text-color);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  &.is-open {
+    span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+    }
+    span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+  }
+
+  &:hover {
+    background: var(--hover-color);
+  }
+}
+
+// 移动端遮罩
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+// 遮罩过渡动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .left-bar {
   @include menu-list();
   background: var(--bg-left-menu);
-  width: 200px;
-  padding: 24px 12px;
+  width: clamp(160px, 22vw, 240px);
+  padding: 16px 8px;
   box-sizing: border-box;
   color: var(--text-color);
+  transition: transform 0.3s ease;
   .menu-item {
-    padding: 8px 10px;
+    padding: 8px 8px;
     border-radius: 10px;
     margin-top: 6px;
-    font-size: 14px;
+    font-size: clamp(12px, 2vw, 14px);
     display: flex;
     justify-content: space-between;
     svg {
-      width: 18px;
-      height: 18px;
+      width: clamp(16px, 2vw, 18px);
+      height: clamp(16px, 2vw, 18px);
     }
     &:not(.active):hover {
       background-color: var(--bg-left-menu-hover);
@@ -150,6 +272,22 @@ onUnmounted(async () => {
       }
     }
   }
+
+  // 移动端样式
+  @media (max-width: 767px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 999;
+    width: 260px;
+    transform: translateX(-100%);
+    border-right: 1px solid var(--line-color);
+
+    &.is-mobile-open {
+      transform: translateX(0);
+    }
+  }
 }
 
 .active {
@@ -157,7 +295,15 @@ onUnmounted(async () => {
 }
 
 .header {
-  @apply w-full h-42px flex items-center pl-40px select-none text-18px color-[--text-color] border-b-(1px solid [--line-color]);
+  @apply w-full flex items-center select-none color-[--text-color] border-b-(1px solid [--line-color]);
+  height: clamp(36px, 6vh, 42px);
+  padding-left: clamp(16px, 3vw, 40px);
+  font-size: clamp(16px, 2.4vw, 18px);
+
+  // 移动端适配
+  @media (max-width: 767px) {
+    padding-left: 60px; // 为汉堡按钮留出空间
+  }
 }
 
 .v-enter-active,

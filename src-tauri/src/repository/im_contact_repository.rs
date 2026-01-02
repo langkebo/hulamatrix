@@ -37,15 +37,14 @@ pub async fn save_contact_batch(
         .filter(im_contact::Column::LoginUid.eq(login_uid))
         .exec(&txn)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to delete existing contact data: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to delete existing contact data: {e}"))?;
 
     // 批量插入新的会话数据
     let active_models: Vec<im_contact::ActiveModel> = contacts
         .into_iter()
         .map(|mut contact| {
             contact.login_uid = login_uid.to_string();
-            let active_model = contact.into_active_model();
-            active_model
+            contact.into_active_model()
         })
         .collect();
 
@@ -53,7 +52,7 @@ pub async fn save_contact_batch(
         im_contact::Entity::insert_many(active_models)
             .exec(&txn)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to batch insert contact data: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to batch insert contact data: {e}"))?;
     }
 
     // 提交事务
@@ -79,7 +78,7 @@ pub async fn update_contact_hide(
         .filter(im_contact::Column::LoginUid.eq(login_uid))
         .one(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to find contact record: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to find contact record: {e}"))?;
 
     if let Some(contact) = contact {
         let mut active_model: im_contact::ActiveModel = contact.into_active_model();
@@ -88,7 +87,7 @@ pub async fn update_contact_hide(
         active_model
             .update(db)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to update contact hide status: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to update contact hide status: {e}"))?;
 
         info!("Successfully updated contact hide status");
     }

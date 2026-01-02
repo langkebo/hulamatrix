@@ -1,5 +1,7 @@
+import { ref, computed } from 'vue'
 import { transformCoordinates } from '@/services/mapApi'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 type GeolocationState = {
   loading: boolean
@@ -39,7 +41,7 @@ export const useGeolocation = () => {
         state.value.permission = permission.state
         return permission.state
       } catch (error) {
-        console.warn(t('message.location.hook.permission_check_failed'), error)
+        logger.warn(t('message.location.hook.permission_check_failed'), error)
       }
     }
     return 'prompt'

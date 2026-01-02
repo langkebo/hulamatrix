@@ -1,3 +1,4 @@
+import { logger, toError } from '@/utils/logger'
 /**
  * 全局音频管理器
  * 确保同时只有一个音频在播放
@@ -42,7 +43,7 @@ class AudioManager {
     try {
       await audio.play()
     } catch (error) {
-      console.error('音频播放失败:', error)
+      logger.error('音频播放失败:', toError(error))
       this.currentAudio = null
       this.currentAudioId = null
       throw error
@@ -60,7 +61,7 @@ class AudioManager {
         }
       } catch (error) {
         // 忽略音频元素已被销毁或状态异常的错误
-        console.warn('暂停音频时出现错误:', error)
+        logger.warn('暂停音频时出现错误:', toError(error))
         this.currentAudio = null
         this.currentAudioId = null
       }
@@ -79,7 +80,7 @@ class AudioManager {
         this.currentAudio.currentTime = 0
       } catch (error) {
         // 忽略音频元素已被销毁或状态异常的错误
-        console.warn('停止音频时出现错误:', error)
+        logger.warn('停止音频时出现错误:', toError(error))
       } finally {
         this.currentAudio = null
         this.currentAudioId = null
@@ -104,7 +105,7 @@ class AudioManager {
         }
       } catch (error) {
         // 忽略音频元素已被销毁或状态异常的错误
-        console.warn('停止页面音频时出现错误:', error)
+        logger.warn('停止页面音频时出现错误:', error)
       }
     })
 

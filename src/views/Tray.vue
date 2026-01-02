@@ -4,7 +4,7 @@
       <n-flex
         v-for="item in stateList.slice(0, 6)"
         :key="item.id"
-        v-memo="[item.id, item.title, item.url, stateId]"
+        v-memo="[item.id, item.title, item.url, userStatusStore.stateId]"
         align="center"
         :size="10"
         @click="toggleStatus(item)"
@@ -69,18 +69,20 @@
   </n-flex>
 </template>
 <script setup lang="tsx">
+import { nextTick, onMounted, onUnmounted, ref, watchEffect, computed } from 'vue'
 import { TrayIcon } from '@tauri-apps/api/tray'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { exit } from '@tauri-apps/plugin-process'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useWindow } from '@/hooks/useWindow'
 import type { UserState } from '@/services/types'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useGlobalStore } from '@/stores/global'
+import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
-import { changeUserState } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 const appWindow = WebviewWindow.getCurrent()
 const { checkWinExist, createWebviewWindow, resizeWindow } = useWindow()
@@ -88,9 +90,11 @@ const userStatusStore = useUserStatusStore()
 const userStore = useUserStore()
 const settingStore = useSettingStore()
 const globalStore = useGlobalStore()
-const { lockScreen } = storeToRefs(settingStore)
-const { stateList, stateId } = storeToRefs(userStatusStore)
-const { tipVisible, isTrayMenuShow } = storeToRefs(globalStore)
+const lockScreen = computed(() => settingStore.lockScreen)
+const stateList = computed(() => userStatusStore.stateList)
+// 使用 userStatusStore.stateId 直接进行赋值，无需声明本地变量
+const tipVisible = computed(() => globalStore.tipVisible)
+const isTrayMenuShow = globalStore.isTrayMenuShow
 const { t } = useI18n()
 const isFocused = ref(false)
 // 状态栏图标是否显示
@@ -100,7 +104,10 @@ const iconVisible = ref(false)
 const messageSound = computed({
   get: () => settingStore.notification.messageSound,
   set: (value: boolean) => {
-    settingStore.setMessageSoundEnabled(value)
+    const storeWithMethod = settingStore as typeof settingStore & {
+      setMessageSoundEnabled?: (value: boolean) => void
+    }
+    storeWithMethod.setMessageSoundEnabled?.(value)
   }
 })
 
@@ -126,13 +133,16 @@ const handleExit = () => {
 
 const toggleStatus = async (item: UserState) => {
   try {
-    await changeUserState({ id: item.id })
+    await requestWithFallback({
+      url: 'change_user_state',
+      body: { id: item.id }
+    })
 
-    stateId.value = item.id
-    userStore.userInfo!.userStateId = item.id
+    userStatusStore.setStateId(item.id)
+    userStore.userInfo!.userStateId = item.id.toString()
     appWindow.hide()
   } catch (error) {
-    console.error('更新状态失败:', error)
+    logger.error('更新状态失败:', toError(error))
     appWindow.hide()
   }
 }
@@ -144,17 +154,17 @@ const toggleMessageSound = () => {
   })
 }
 
-let blinkTask: NodeJS.Timeout | null = null
+let blinkTask: number | null = null
 let homeFocusUnlisten: (() => void) | null = null
 let homeBlurUnlisten: (() => void) | null = null
 
 const startBlinkTask = () => {
-  blinkTask = setInterval(async () => {
+  blinkTask = window.setInterval(async () => {
     // 定时器触发时，切换图标状态
     const tray = await TrayIcon.getById('tray')
     tray?.setIcon(iconVisible.value ? 'tray/icon.png' : null)
     iconVisible.value = !iconVisible.value
-  }, 500)
+  }, 500) as unknown as number
 }
 
 const stopBlinkTask = async () => {
@@ -167,7 +177,7 @@ const stopBlinkTask = async () => {
       const tray = await TrayIcon.getById('tray')
       await tray?.setIcon('tray/icon.png')
     } catch (e) {
-      console.warn('[Tray] 恢复托盘图标失败:', e)
+      logger.warn('[Tray] 恢复托盘图标失败:', e)
     }
     iconVisible.value = false
   }

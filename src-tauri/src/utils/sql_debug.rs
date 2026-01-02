@@ -41,7 +41,7 @@ impl SqlDebug {
     fn format_sql_with_values(sql: &str, values: &sea_orm::Values) -> String {
         let mut formatted_sql = sql.to_string();
 
-        for value in values.0.iter() {
+        for value in &values.0 {
             let value_str = match value {
                 sea_orm::Value::TinyInt(Some(v)) => v.to_string(),
                 sea_orm::Value::SmallInt(Some(v)) => v.to_string(),
@@ -53,8 +53,8 @@ impl SqlDebug {
                 sea_orm::Value::BigUnsigned(Some(v)) => v.to_string(),
                 sea_orm::Value::Float(Some(v)) => v.to_string(),
                 sea_orm::Value::Double(Some(v)) => v.to_string(),
-                sea_orm::Value::String(Some(v)) => format!("'{}'", v.replace("'", "''")),
-                sea_orm::Value::Char(Some(v)) => format!("'{}'", v),
+                sea_orm::Value::String(Some(v)) => format!("'{}'", v.replace('\'', "''")),
+                sea_orm::Value::Char(Some(v)) => format!("'{v}'"),
                 sea_orm::Value::Bytes(Some(v)) => format!("'{}'", String::from_utf8_lossy(v)),
                 sea_orm::Value::Bool(Some(v)) => {
                     if *v {
@@ -63,12 +63,12 @@ impl SqlDebug {
                         "0".to_string()
                     }
                 }
-                sea_orm::Value::Json(Some(v)) => format!("'{}'", v.to_string().replace("'", "''")),
+                sea_orm::Value::Json(Some(v)) => format!("'{}'", v.to_string().replace('\'', "''")),
                 _ => "NULL".to_string(),
             };
 
             if let Some(pos) = formatted_sql.find('?') {
-                formatted_sql.replace_range(pos..pos + 1, &value_str);
+                formatted_sql.replace_range(pos..=pos, &value_str);
             }
         }
 
@@ -78,11 +78,10 @@ impl SqlDebug {
     /// 简化的SQL日志记录
     pub fn log_simple(sql: &str, values: Option<&sea_orm::Values>, label: &str) {
         info!("[{}] {}", label, sql);
-        if let Some(values) = values {
-            if !values.0.is_empty() {
+        if let Some(values) = values
+            && !values.0.is_empty() {
                 info!("[{}] Parameters: {:?}", label, values);
             }
-        }
     }
 }
 

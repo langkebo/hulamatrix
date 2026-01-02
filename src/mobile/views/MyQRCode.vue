@@ -1,6 +1,6 @@
 <template>
   <div class="h-100vh flex flex-col bg-gray-100">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 z-1" alt="hula" />
+    <img :src="bgImage" class="w-100% absolute top-0 z-1" alt="hula" />
 
     <HeaderBar
       :isOfficial="false"
@@ -47,8 +47,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useUserStore } from '@/stores/user'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 const qrCodeBgColor = ref('#FFFFFF')
 const qrCodeType = ref('canvas' as const)

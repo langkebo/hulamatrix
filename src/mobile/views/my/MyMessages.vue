@@ -28,8 +28,11 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { reactive } from 'vue'
+
 const onUpdate = (newTab: string) => {
-  console.log('已更新：', newTab)
+  logger.debug('已更新：:', { data: newTab, component: 'MyMessages' })
 }
 
 const tabOptions = reactive([

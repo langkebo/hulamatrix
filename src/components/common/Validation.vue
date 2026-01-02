@@ -1,6 +1,6 @@
 <template>
   <n-flex align="center" :size="6">
-    <svg class="size-14px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 48 48">
+    <svg class="size-14px" xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 48 48">
       <path
         :data-follow-stroke="isValid ? '#13987f' : '#909090'"
         :data-follow-fill="isValid ? '#AFDBD2' : '#fefefe'"
@@ -28,6 +28,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 const props = defineProps<{
   value: string
   message?: string

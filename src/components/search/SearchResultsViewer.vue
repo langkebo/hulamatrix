@@ -24,8 +24,32 @@ import {
   NThing,
   useMessage
 } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
+import { searchRoomMessages } from '@/utils/matrixClientUtils'
+import { sanitizeHtml } from '@/utils/htmlSanitizer'
+
+// Type definitions for Matrix search results
+interface MatrixSearchEvent {
+  event_id: string
+  room_id: string
+  origin_server_ts?: number
+  sender?: string
+  user_id?: string
+  content?: {
+    body?: string
+    [key: string]: unknown
+  }
+}
+
+interface MatrixSearchResultItem {
+  result: MatrixSearchEvent
+  context?: {
+    events_before?: MatrixSearchEvent[]
+    events_after?: MatrixSearchEvent[]
+  }
+  highlights?: string[]
+}
 
 interface MessageSearchResult {
   eventId: string
@@ -100,7 +124,25 @@ async function performSearch() {
     })
 
     // Use SDK's searchRoomMessages
-    const response = await client.searchRoomMessages({
+    const response = await (
+      client.searchRoomMessages as (opts: { search_term: string; room_id?: string; limit?: number }) => Promise<{
+        search_categories?: {
+          room_events?: {
+            results?: Array<{
+              result: {
+                event_id: string
+                room_id: string
+                origin_server_ts?: number
+                sender?: string
+                content?: Record<string, unknown>
+              }
+              context?: Record<string, unknown>
+            }>
+            next_batch?: string
+          }
+        }
+      }>
+    )({
       search_term: searchQuery.value,
       room_id: props.roomId,
       limit: 20
@@ -108,7 +150,7 @@ async function performSearch() {
 
     const searchResults = response.search_categories?.room_events?.results || []
 
-    results.value = searchResults.map((item: any) => {
+    results.value = searchResults.map((item: MatrixSearchResultItem) => {
       const event = item.result
       const context = item.context
 
@@ -116,7 +158,7 @@ async function performSearch() {
         eventId: event.event_id,
         roomId: event.room_id,
         timestamp: event.origin_server_ts || Date.now(),
-        sender: event.sender || event.user_id,
+        sender: event.sender || event.user_id || '',
         content: extractMessageContent(event),
         highlights: item.highlights || [],
         context: {
@@ -156,7 +198,24 @@ async function loadMore() {
     const client = matrixClientService.getClient()
     if (!client) return
 
-    const response = await client.searchRoomMessages({
+    const response = await (
+      client.searchRoomMessages as (opts: {
+        search_term: string
+        room_id?: string
+        limit?: number
+        next_batch?: string
+      }) => Promise<{
+        search_categories?: {
+          room_events?: {
+            results?: Array<{
+              result: { event_id: string; room_id: string; origin_server_ts?: number }
+              context?: Record<string, unknown>
+            }>
+            next_batch?: string
+          }
+        }
+      }>
+    )({
       search_term: searchQuery.value,
       room_id: props.roomId,
       limit: 20,
@@ -165,11 +224,11 @@ async function loadMore() {
 
     const searchResults = response.search_categories?.room_events?.results || []
 
-    const newResults = searchResults.map((item: any) => ({
+    const newResults = searchResults.map((item: MatrixSearchResultItem) => ({
       eventId: item.result.event_id,
       roomId: item.result.room_id,
       timestamp: item.result.origin_server_ts || Date.now(),
-      sender: item.result.sender || item.result.user_id,
+      sender: item.result.sender || item.result.user_id || '',
       content: extractMessageContent(item.result),
       highlights: item.highlights || []
     }))
@@ -236,7 +295,7 @@ function getSenderName(sender: string): string {
  * Highlight search term in text
  */
 function highlightText(text: string, highlights?: string[]): string {
-  if (!highlights || highlights.length === 0) return text
+  if (!highlights || highlights.length === 0) return sanitizeHtml(text)
 
   let highlighted = text
   highlights.forEach((hl) => {
@@ -244,13 +303,14 @@ function highlightText(text: string, highlights?: string[]): string {
     highlighted = highlighted.replace(regex, '<mark>$1</mark>')
   })
 
-  return highlighted
+  // Sanitize the highlighted HTML to prevent XSS attacks
+  return sanitizeHtml(highlighted)
 }
 
 /**
  * Extract message content from event
  */
-function extractMessageContent(event: any): string {
+function extractMessageContent(event: MatrixSearchEvent): string {
   const content = event.content || {}
   return content.body || ''
 }
@@ -258,11 +318,11 @@ function extractMessageContent(event: any): string {
 /**
  * Transform context events
  */
-function transformContextEvents(events: any[]): any[] {
+function transformContextEvents(events: MatrixSearchEvent[]): MessageContext[] {
   return events.map((event) => ({
     eventId: event.event_id,
     content: extractMessageContent(event),
-    sender: event.sender || event.user_id,
+    sender: event.sender || event.user_id || '',
     timestamp: event.origin_server_ts || Date.now()
   }))
 }

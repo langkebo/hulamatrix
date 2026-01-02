@@ -27,30 +27,29 @@ pub async fn cursor_page_room_members(
         .filter(im_room_member::Column::LoginUid.eq(login_uid))
         .count(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room member count: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room member count: {e}"))?;
 
     let mut query = im_room_member::Entity::find()
         .filter(im_room_member::Column::RoomId.eq(room_id))
         .filter(im_room_member::Column::LoginUid.eq(login_uid))
         .order_by_desc(im_room_member::Column::LastOptTime)
-        .limit(cursor_page_param.page_size as u64);
+        .limit(u64::from(cursor_page_param.page_size));
 
     // 如果提供了游标，解析游标值并添加过滤条件
     if !cursor_page_param.cursor.is_empty() {
         // 从 cursor 中根据'_'分割最后一个字符串转为 i64
         let cursor_parts: Vec<&str> = cursor_page_param.cursor.split('_').collect();
-        if let Some(last_part) = cursor_parts.last() {
-            if let Ok(cursor_value) = last_part.parse::<i64>() {
+        if let Some(last_part) = cursor_parts.last()
+            && let Ok(cursor_value) = last_part.parse::<i64>() {
                 // 使用游标值过滤，获取小于该值的记录（因为是降序排列）
                 query = query.filter(im_room_member::Column::LastOptTime.lt(cursor_value));
             }
-        }
     }
 
     let members = query
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room members: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room members: {e}"))?;
 
     // 构建下一页游标和判断是否为最后一页
     let (next_cursor, is_last) = if members.len() < cursor_page_param.page_size as usize {
@@ -58,7 +57,7 @@ pub async fn cursor_page_room_members(
         (String::new(), true)
     } else if let Some(last_member) = members.last() {
         // 使用最后一条记录的 last_opt_time 构建下一页游标
-        let next_cursor = format!("{}", last_member.last_opt_time);
+        let next_cursor = last_member.last_opt_time.to_string();
         (next_cursor, false)
     } else {
         (String::new(), true)
@@ -85,16 +84,16 @@ pub async fn get_room_page(
         .filter(im_room::Column::LoginUid.eq(login_uid))
         .count(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room count: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room count: {e}"))?;
 
     // 分页查询数据
     let records = im_room::Entity::find()
         .filter(im_room::Column::LoginUid.eq(login_uid))
-        .offset(offset as u64)
-        .limit(page_param.size as u64)
+        .offset(u64::from(offset))
+        .limit(u64::from(page_param.size))
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room data: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room data: {e}"))?;
 
     Ok(Page {
         records,
@@ -132,7 +131,7 @@ pub async fn save_room_batch(
                 member_active
                     .insert(&txn)
                     .await
-                    .map_err(|e| anyhow::anyhow!("Failed to insert room record: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to insert room record: {e}"))?;
             }
             // 如果记录已存在，跳过插入
         }
@@ -140,7 +139,7 @@ pub async fn save_room_batch(
         // 提交事务
         txn.commit()
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to commit room batch transaction: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to commit room batch transaction: {e}"))?;
 
         Ok(())
     };
@@ -164,7 +163,7 @@ pub async fn get_room_members_by_room_id(
         .filter(im_room_member::Column::LoginUid.eq(login_uid))
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room members: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room members: {e}"))?;
 
     Ok(members)
 }
@@ -200,8 +199,7 @@ pub async fn save_room_member_batch(
                 // 如果删除失败，回滚事务
                 let _ = txn.rollback().await;
                 return Err(anyhow::anyhow!(
-                    "Failed to delete existing room members: {}",
-                    e
+                    "Failed to delete existing room members: {e}"
                 ));
             }
         }
@@ -233,7 +231,7 @@ pub async fn save_room_member_batch(
                 Err(e) => {
                     // 如果插入失败，回滚事务
                     let _ = txn.rollback().await;
-                    return Err(anyhow::anyhow!("Failed to insert room members: {}", e));
+                    return Err(anyhow::anyhow!("Failed to insert room members: {e}"));
                 }
             }
         }
@@ -241,7 +239,7 @@ pub async fn save_room_member_batch(
         // 提交事务
         txn.commit()
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to commit transaction: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to commit transaction: {e}"))?;
 
         Ok(())
     };
@@ -269,7 +267,7 @@ pub async fn update_my_room_info(
         .filter(im_room_member::Column::LoginUid.eq(login_uid))
         .one(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query room member record: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query room member record: {e}"))?;
 
     if let Some(member) = member {
         debug!("Found room member record: {:?}", member);
@@ -280,7 +278,7 @@ pub async fn update_my_room_info(
         member_active
             .update(db)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to update room member record: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to update room member record: {e}"))?;
         info!("Successfully updated member room member information");
         Ok(())
     } else {
@@ -291,7 +289,7 @@ pub async fn update_my_room_info(
         );
 
         let new_member = im_room_member::ActiveModel {
-            id: Set(format!("{}_{}", room_id, uid)), // 使用 room_id + uid 作为主键
+            id: Set(format!("{room_id}_{uid}")),
             room_id: Set(Some(room_id.to_string())),
             uid: Set(Some(uid.to_string())),
             my_name: Set(Some(my_name.to_string())),
@@ -304,7 +302,7 @@ pub async fn update_my_room_info(
         new_member
             .insert(db)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to insert new room member record: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to insert new room member record: {e}"))?;
 
         info!("Successfully created new room member record with my_name");
         Ok(())

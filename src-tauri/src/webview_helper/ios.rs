@@ -535,7 +535,7 @@ impl KeyboardLockDelegate {
         let delegate = Self::alloc(mtm).set_ivars(KeyboardLockDelegateState {
             scroll_view,
             webview,
-            locked_offset: offset,
+            locked_offset,
         });
 
         unsafe { msg_send![super(delegate), init] }

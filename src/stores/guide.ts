@@ -32,5 +32,6 @@ export const useGuideStore = defineStore(
       enable: true,
       initialize: true
     }
-  }
+  } as { share: { enable: boolean; initialize: boolean } }
 )
+import { ref } from 'vue'

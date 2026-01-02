@@ -67,7 +67,7 @@ async fn generate_thumbnail_macos(
     if !Path::new(video_path).exists() {
         return Err(tauri::Error::Io(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            format!("视频文件不存在: {}", video_path),
+            format!("视频文件不存在: {video_path}"),
         )));
     }
 
@@ -76,7 +76,7 @@ async fn generate_thumbnail_macos(
 
     // 使用 qlmanage 生成缩略图
     let output = Command::new("qlmanage")
-        .args(&[
+        .args([
             "-t",
             "-s",
             "300", // 缩略图大小
@@ -90,21 +90,13 @@ async fn generate_thumbnail_macos(
             video_path,
         ])
         .output()
-        .map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("执行 qlmanage 失败: {}", e),
-            ))
-        })?;
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("执行 qlmanage 失败: {e}"))))?;
 
     if !output.status.success() {
-        return Err(tauri::Error::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!(
-                "qlmanage 执行失败: {}",
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        )));
+        return Err(tauri::Error::Io(std::io::Error::other(format!(
+            "qlmanage 执行失败: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ))));
     }
 
     // 寻找生成的缩略图文件
@@ -116,15 +108,12 @@ async fn generate_thumbnail_macos(
     // 列出临时目录中的所有文件来找缩略图
     let mut generated_thumbnail = None;
     if let Ok(entries) = fs::read_dir(&temp_dir) {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                if let Some(name) = entry.file_name().to_str() {
-                    if name.contains(&video_file_stem) && name.ends_with(".png") {
-                        generated_thumbnail = Some(entry.path());
-                        break;
-                    }
+        for entry in entries.flatten() {
+            if let Some(name) = entry.file_name().to_str()
+                && name.contains(video_file_stem) && name.ends_with(".png") {
+                    generated_thumbnail = Some(entry.path());
+                    break;
                 }
-            }
         }
     }
 
@@ -132,44 +121,28 @@ async fn generate_thumbnail_macos(
         path
     } else {
         // 如果没找到，尝试默认路径
-        let default_path = temp_dir.join(format!("{}.png", video_file_stem));
+        let default_path = temp_dir.join(format!("{video_file_stem}.png"));
         if default_path.exists() {
             default_path
         } else {
             return Err(tauri::Error::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                format!(
-                    "找不到生成的缩略图文件，video_file_stem: {}",
-                    video_file_stem
-                ),
+                format!("找不到生成的缩略图文件，video_file_stem: {video_file_stem}"),
             )));
         }
     };
 
     // 读取生成的缩略图
-    let thumbnail_data = tokio::fs::read(&thumbnail_path).await.map_err(|e| {
-        tauri::Error::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("读取缩略图失败: {}", e),
-        ))
-    })?;
+    let thumbnail_data = tokio::fs::read(&thumbnail_path)
+        .await
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("读取缩略图失败: {e}"))))?;
 
     // 获取图像尺寸
     let img = ImageReader::new(std::io::Cursor::new(&thumbnail_data))
         .with_guessed_format()
-        .map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("读取图像格式失败: {}", e),
-            ))
-        })?
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("读取图像格式失败: {e}"))))?
         .decode()
-        .map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("解码图像失败: {}", e),
-            ))
-        })?;
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("解码图像失败: {e}"))))?;
 
     let width = img.width();
     let height = img.height();
@@ -180,12 +153,7 @@ async fn generate_thumbnail_macos(
 
     image::DynamicImage::ImageRgb8(rgb_img)
         .write_to(&mut std::io::Cursor::new(&mut jpeg_data), ImageFormat::Jpeg)
-        .map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("转换为 JPEG 失败: {}", e),
-            ))
-        })?;
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("转换为 JPEG 失败: {e}"))))?;
 
     // 转换为 base64
     let base64_string = general_purpose::STANDARD.encode(&jpeg_data);
@@ -208,7 +176,7 @@ async fn generate_thumbnail_macos(
 #[cfg(target_os = "macos")]
 async fn get_video_duration_macos(video_path: &str) -> Option<f64> {
     let output = Command::new("mdls")
-        .args(&["-name", "kMDItemDurationSeconds", video_path])
+        .args(["-name", "kMDItemDurationSeconds", video_path])
         .output()
         .ok()?;
 
@@ -242,10 +210,7 @@ unsafe fn convert_hbitmap_to_image_data(
         );
 
         if result == 0 {
-            return Err(tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "获取位图信息失败",
-            )));
+            return Err(tauri::Error::Io(std::io::Error::other("获取位图信息失败")));
         }
 
         let width = bitmap.bmWidth as u32;
@@ -254,8 +219,7 @@ unsafe fn convert_hbitmap_to_image_data(
         // 创建设备上下文
         let hdc = GetDC(Some(HWND::default()));
         if hdc.is_invalid() {
-            return Err(tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
+            return Err(tauri::Error::Io(std::io::Error::other(
                 "创建设备上下文失败",
             )));
         }
@@ -263,8 +227,7 @@ unsafe fn convert_hbitmap_to_image_data(
         let mem_dc = CreateCompatibleDC(Some(hdc));
         if mem_dc.is_invalid() {
             ReleaseDC(Some(HWND::default()), hdc);
-            return Err(tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
+            return Err(tauri::Error::Io(std::io::Error::other(
                 "创建兼容设备上下文失败",
             )));
         }
@@ -312,10 +275,7 @@ unsafe fn convert_hbitmap_to_image_data(
         ReleaseDC(Some(HWND::default()), hdc);
 
         if result == 0 {
-            return Err(tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "获取位图数据失败",
-            )));
+            return Err(tauri::Error::Io(std::io::Error::other("获取位图数据失败")));
         }
 
         // 转换 BGR 到 RGB 并去除填充
@@ -356,10 +316,7 @@ async fn generate_thumbnail_windows(
         CoInitializeEx(None, COINIT_APARTMENTTHREADED)
             .ok()
             .map_err(|e| {
-                tauri::Error::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("初始化 COM 失败: {:?}", e),
-                ))
+                tauri::Error::Io(std::io::Error::other(format!("初始化 COM 失败: {:?}", e)))
             })?;
     }
 
@@ -374,18 +331,15 @@ async fn generate_thumbnail_windows(
         // 创建 ShellItem
         let shell_item: IShellItem =
             SHCreateItemFromParsingName(video_path_pcwstr, None).map_err(|e| {
-                tauri::Error::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("创建 ShellItem 失败: {:?}", e),
-                ))
+                tauri::Error::Io(std::io::Error::other(format!(
+                    "创建 ShellItem 失败: {:?}",
+                    e
+                )))
             })?;
 
         // 获取缩略图
         let image_factory: IShellItemImageFactory = shell_item.cast().map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("获取图像工厂失败: {:?}", e),
-            ))
+            tauri::Error::Io(std::io::Error::other(format!("获取图像工厂失败: {:?}", e)))
         })?;
 
         // 设置缩略图大小
@@ -395,10 +349,10 @@ async fn generate_thumbnail_windows(
         let hbitmap = image_factory
             .GetImage(size, SIIGBF_RESIZETOFIT)
             .map_err(|e| {
-                tauri::Error::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("获取缩略图失败，可能是视频格式不支持: {:?}", e),
-                ))
+                tauri::Error::Io(std::io::Error::other(format!(
+                    "获取缩略图失败，可能是视频格式不支持: {:?}",
+                    e
+                )))
             })?;
 
         // 将 HBITMAP 转换为图像数据
@@ -413,22 +367,13 @@ async fn generate_thumbnail_windows(
     let (width, height, image_data) = result?;
 
     // 创建图像并转换为 JPEG
-    let img = image::RgbImage::from_raw(width, height, image_data).ok_or_else(|| {
-        tauri::Error::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "创建图像失败",
-        ))
-    })?;
+    let img = image::RgbImage::from_raw(width, height, image_data)
+        .ok_or_else(|| tauri::Error::Io(std::io::Error::other("创建图像失败")))?;
 
     let mut jpeg_data = Vec::new();
     image::DynamicImage::ImageRgb8(img)
         .write_to(&mut std::io::Cursor::new(&mut jpeg_data), ImageFormat::Jpeg)
-        .map_err(|e| {
-            tauri::Error::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("转换为 JPEG 失败: {}", e),
-            ))
-        })?;
+        .map_err(|e| tauri::Error::Io(std::io::Error::other(format!("转换为 JPEG 失败: {}", e))))?;
 
     // 转换为 base64
     let base64_string = general_purpose::STANDARD.encode(&jpeg_data);

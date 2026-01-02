@@ -8,12 +8,10 @@ use crate::vo::vo::ChatMessageReq;
 
 use entity::im_user::Entity as ImUserEntity;
 use entity::{im_message, im_user};
-use once_cell::sync::Lazy;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::ops::Deref;
 use std::sync::atomic::{AtomicI64, Ordering};
 use tauri::{State, ipc::Channel};
 use tracing::{debug, error, info};
@@ -95,6 +93,16 @@ pub struct CursorPageMessageParam {
 }
 
 #[tauri::command]
+pub async fn get_conflict_total() -> Result<usize, String> {
+    Ok(im_message_repository::get_insert_conflict_total().await)
+}
+
+#[tauri::command]
+pub async fn get_conflict_by_room() -> Result<std::collections::HashMap<String, usize>, String> {
+    Ok(im_message_repository::get_insert_conflict_by_room().await)
+}
+
+#[tauri::command]
 pub async fn page_msg(
     param: CursorPageMessageParam,
     state: State<'_, AppData>,
@@ -107,7 +115,7 @@ pub async fn page_msg(
 
     // 从数据库查询消息
     let db_result = im_message_repository::cursor_page_messages(
-        state.db_conn.deref(),
+        &state.db_conn,
         param.room_id,
         param.cursor_page_param,
         &login_uid,
@@ -134,7 +142,7 @@ pub async fn page_msg(
         } else if let Some(send_time) = msg.message.send_time {
             // 使用统一的 time_block 计算函数
             resp.time_block = im_message_repository::calculate_time_block(
-                state.db_conn.deref(),
+                &*state.db_conn,
                 &msg.message.room_id,
                 &msg.message.id,
                 send_time,
@@ -156,6 +164,7 @@ pub async fn page_msg(
 }
 
 /// 将数据库消息模型转换为响应模型
+#[must_use] 
 pub fn convert_message_to_resp(
     record: MessageWithThumbnail,
     old_msg_id: Option<String>,
@@ -230,7 +239,7 @@ pub fn convert_message_to_resp(
             message_marks,
             send_time: msg.send_time,
         },
-        old_msg_id: old_msg_id,
+        old_msg_id,
         time_block: msg.time_block,
     }
 }
@@ -244,8 +253,8 @@ pub async fn check_user_init_and_fetch_messages(
     force_full: bool,
 ) -> Result<(), CommonError> {
     // 防止高频同步，10秒内只允许一次同步(比如弱网、网络不好情况下会重复重连)
-    static MESSAGE_SYNC_LOCK: Lazy<tokio::sync::Mutex<()>> =
-        Lazy::new(|| tokio::sync::Mutex::new(()));
+    static MESSAGE_SYNC_LOCK: std::sync::LazyLock<tokio::sync::Mutex<()>> =
+        std::sync::LazyLock::new(|| tokio::sync::Mutex::new(()));
     static LAST_MESSAGE_SYNC_MS: AtomicI64 = AtomicI64::new(0);
     const MESSAGE_SYNC_COOLDOWN_MS: i64 = 10_000;
 
@@ -266,48 +275,43 @@ pub async fn check_user_init_and_fetch_messages(
         }
     }
 
-    let guard = match MESSAGE_SYNC_LOCK.try_lock() {
-        Ok(g) => g,
-        Err(_) => {
-            info!(
-                "Skip message sync because another sync is in progress, uid={}",
-                uid
-            );
-            return Ok(());
-        }
+    let guard = if let Ok(g) = MESSAGE_SYNC_LOCK.try_lock() { g } else {
+        info!(
+            "Skip message sync because another sync is in progress, uid={}",
+            uid
+        );
+        return Ok(());
     };
 
     // 检查用户的 is_init 状态
-    if let Ok(user) = ImUserEntity::find()
+    if let Ok(Some(user_model)) = ImUserEntity::find()
         .filter(im_user::Column::Id.eq(uid))
         .one(db_conn)
         .await
     {
-        if let Some(user_model) = user {
-            let should_full_sync = force_full || user_model.is_init;
-            // 如果 is_init 为 true，调用后端接口获取所有消息；否则按增量模式同步
-            if should_full_sync {
-                info!(
-                    "User {} needs initialization, starting to fetch all messages",
-                    uid
-                );
-                // 传递用户的 async_data 参数
-                if let Err(e) = fetch_all_messages(client, db_conn, uid, async_data).await {
-                    error!("Failed to fetch all messages: {}", e);
-                    return Err(e);
-                }
-            } else {
-                info!(
-                    "User {} incremental/offline message update, async_data: {:?}",
-                    uid, async_data
-                );
-                fetch_all_messages(client, db_conn, uid, async_data)
-                    .await
-                    .map_err(|e| {
-                        error!("Failed to update offline messages: {}", e);
-                        e
-                    })?;
+        let should_full_sync = force_full || user_model.is_init;
+        // 如果 is_init 为 true，调用后端接口获取所有消息；否则按增量模式同步
+        if should_full_sync {
+            info!(
+                "User {} needs initialization, starting to fetch all messages",
+                uid
+            );
+            // 传递用户的 async_data 参数
+            if let Err(e) = fetch_all_messages(client, db_conn, uid, async_data).await {
+                error!("Failed to fetch all messages: {}", e);
+                return Err(e);
             }
+        } else {
+            info!(
+                "User {} incremental/offline message update, async_data: {:?}",
+                uid, async_data
+            );
+            fetch_all_messages(client, db_conn, uid, async_data)
+                .await
+                .map_err(|e| {
+                    error!("Failed to update offline messages: {}", e);
+                    e
+                })?;
         }
     }
     LAST_MESSAGE_SYNC_MS.store(now_ms, Ordering::Relaxed);
@@ -327,10 +331,7 @@ pub async fn fetch_all_messages(
         uid, async_data
     );
     // 调用后端接口 /chat/msg/list 获取所有消息，传递 async_data 参数
-    let body = match async_data {
-        true => Some(serde_json::json!({ "async": async_data })),
-        false => None,
-    };
+    let body = if async_data { Some(serde_json::json!({ "async": async_data })) } else { None };
 
     let messages: Option<Vec<MessageResp>> = client
         .im_request(ImUrl::GetMsgList, body, None::<serde_json::Value>)
@@ -349,7 +350,7 @@ pub async fn fetch_all_messages(
         const TIME_BLOCK_THRESHOLD_MS: i64 = 1000 * 60 * 10;
         let mut last_send_time_map: HashMap<String, Option<i64>> = HashMap::new();
 
-        for (index, msg_resp) in messages.iter_mut().enumerate() {
+        for msg_resp in &mut messages {
             let room_id = match &msg_resp.message.room_id {
                 Some(v) => v.clone(),
                 None => continue,
@@ -360,23 +361,20 @@ pub async fn fetch_all_messages(
             };
 
             // 获取该房间的上一条 send_time（优先使用批次内最新值，否则从 DB 取一次）
-            let prev_send_time = match last_send_time_map.get(&room_id) {
-                Some(value) => *value,
-                None => {
-                    let last_time = im_message::Entity::find()
-                        .filter(im_message::Column::RoomId.eq(&room_id))
-                        .filter(im_message::Column::LoginUid.eq(uid))
-                        .order_by_desc(im_message::Column::SendTime)
-                        .select_only()
-                        .column(im_message::Column::SendTime)
-                        .into_tuple::<Option<i64>>()
-                        .one(db_conn)
-                        .await
-                        .map_err(|e| anyhow::anyhow!("Failed to query last send_time: {}", e))?
-                        .flatten();
-                    last_send_time_map.insert(room_id.clone(), last_time);
-                    last_time
-                }
+            let prev_send_time = if let Some(value) = last_send_time_map.get(&room_id) { *value } else {
+                let last_time = im_message::Entity::find()
+                    .filter(im_message::Column::RoomId.eq(&room_id))
+                    .filter(im_message::Column::LoginUid.eq(uid))
+                    .order_by_desc(im_message::Column::SendTime)
+                    .select_only()
+                    .column(im_message::Column::SendTime)
+                    .into_tuple::<Option<i64>>()
+                    .one(db_conn)
+                    .await
+                    .map_err(|e| anyhow::anyhow!("Failed to query last send_time: {e}"))?
+                    .flatten();
+                last_send_time_map.insert(room_id.clone(), last_time);
+                last_time
             };
 
             msg_resp.time_block = if let Some(prev) = prev_send_time {
@@ -405,7 +403,7 @@ pub async fn fetch_all_messages(
             .collect();
         // 保存到本地数据库
         match im_message_repository::save_all(&tx, db_messages).await {
-            Ok(_) => {
+            Ok(()) => {
                 info!("Messages saved to database successfully");
             }
             Err(e) => {
@@ -413,14 +411,14 @@ pub async fn fetch_all_messages(
                     "Failed to save messages to database, detailed error: {:?}",
                     e
                 );
-                return Err(e.into());
+                return Err(e);
             }
         }
 
         // 消息保存完成后，将用户的 is_init 状态设置为 false
         im_user_repository::update_user_init_status(&tx, uid, false)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to update user is_init status: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to update user is_init status: {e}"))?;
 
         // 提交事务
         tx.commit().await?;
@@ -442,7 +440,7 @@ pub async fn sync_messages(
     param: Option<SyncMessagesParam>,
     state: State<'_, AppData>,
 ) -> Result<(), String> {
-    use std::ops::Deref;
+    
 
     let async_data = param.as_ref().and_then(|p| p.async_data).unwrap_or(true);
     let full_sync = param.as_ref().and_then(|p| p.full_sync).unwrap_or(false);
@@ -454,7 +452,7 @@ pub async fn sync_messages(
     let mut client = state.rc.lock().await;
     check_user_init_and_fetch_messages(
         &mut client,
-        state.db_conn.deref(),
+        &state.db_conn,
         &uid,
         async_data,
         full_sync,
@@ -464,7 +462,7 @@ pub async fn sync_messages(
     Ok(())
 }
 
-/// 将 MessageResp 转换为数据库模型（用于 fetch_all_messages）
+/// 将 `MessageResp` 转换为数据库模型（用于 `fetch_all_messages`）
 fn convert_resp_to_record_for_fetch(msg_resp: MessageResp, uid: String) -> MessageWithThumbnail {
     use serde_json;
 
@@ -482,9 +480,13 @@ fn convert_resp_to_record_for_fetch(msg_resp: MessageResp, uid: String) -> Messa
         .as_ref()
         .and_then(|marks| serde_json::to_string(marks).ok());
 
+    let event_id_opt = msg_resp.message.id.clone();
+    let id_str = event_id_opt.clone().unwrap_or_default();
+    let from_uid = msg_resp.from_user.uid.clone();
+
     let model = im_message::Model {
-        id: msg_resp.message.id.unwrap_or_default(),
-        uid: msg_resp.from_user.uid,
+        id: id_str,
+        uid: from_uid.clone(),
         nickname: msg_resp.from_user.nickname,
         room_id: msg_resp.message.room_id.unwrap_or_default(),
         message_type: msg_resp.message.message_type,
@@ -493,9 +495,13 @@ fn convert_resp_to_record_for_fetch(msg_resp: MessageResp, uid: String) -> Messa
         send_time: msg_resp.message.send_time,
         create_time: msg_resp.create_time,
         update_time: msg_resp.update_time,
-        login_uid: uid.to_string(),
+        login_uid: uid.clone(),
         send_status: "success".to_string(),
         time_block: msg_resp.time_block,
+        event_id: event_id_opt,
+        mxc_url: extract_mxc_url_from_body(&msg_resp.message.body),
+        sender: Some(from_uid),
+        origin_server_ts: msg_resp.message.send_time,
     };
 
     let thumbnail_path = extract_thumbnail_path_from_body(&msg_resp.message.body);
@@ -507,7 +513,7 @@ fn extract_thumbnail_path_from_body(body: &Option<serde_json::Value>) -> Option<
         value.as_object().and_then(|obj| {
             obj.get("thumbnailPath")
                 .or_else(|| obj.get("thumbnail_path"))
-                .and_then(|v| v.as_str().map(|s| s.to_string()))
+                .and_then(|v| v.as_str().map(std::string::ToString::to_string))
         })
     })
 }
@@ -521,13 +527,12 @@ fn inject_thumbnail_path(body: &mut Option<serde_json::Value>, path: Option<&str
         return;
     }
 
-    if let Some(val) = body {
-        if let Some(map) = val.as_object_mut() {
+    if let Some(val) = body
+        && let Some(map) = val.as_object_mut() {
             let exists = map
                 .get("thumbnailPath")
                 .and_then(|v| v.as_str())
-                .map(|s| !s.is_empty())
-                .unwrap_or(false);
+                .is_some_and(|s| !s.is_empty());
             if !exists {
                 map.insert(
                     "thumbnailPath".to_string(),
@@ -535,7 +540,6 @@ fn inject_thumbnail_path(body: &mut Option<serde_json::Value>, path: Option<&str
                 );
             }
         }
-    }
 }
 
 #[tauri::command]
@@ -545,7 +549,7 @@ pub async fn send_msg(
     success_channel: Channel<MessageResp>,
     error_channel: Channel<String>,
 ) -> Result<(), String> {
-    use std::ops::Deref;
+    
 
     // 获取当前登录用户信息
     let (login_uid, nickname) = {
@@ -581,6 +585,10 @@ pub async fn send_msg(
         login_uid: login_uid.clone(),
         send_status: "pending".to_string(), // 初始状态为pending
         time_block: None,
+        event_id: Some(data.id.clone()),
+        mxc_url: extract_mxc_url_from_body(&data.body),
+        sender: Some(login_uid.clone()),
+        origin_server_ts: Some(current_time),
     };
 
     let mut message_record = MessageWithThumbnail::new(message_model, thumbnail_path);
@@ -589,7 +597,7 @@ pub async fn send_msg(
         .db_conn
         .begin()
         .await
-        .map_err(|e| CommonError::DatabaseError(e))?;
+        .map_err(CommonError::DatabaseError)?;
     // 先保存到本地数据库
     message_record = match im_message_repository::save_message(&tx, message_record).await {
         Ok(record) => record,
@@ -598,9 +606,7 @@ pub async fn send_msg(
             return Err(e.to_string());
         }
     };
-    tx.commit()
-        .await
-        .map_err(|e| CommonError::DatabaseError(e))?;
+    tx.commit().await.map_err(CommonError::DatabaseError)?;
 
     info!(
         "Message saved to local database, ID: {}",
@@ -647,7 +653,7 @@ pub async fn send_msg(
 
         // 更新消息状态
         let model = im_message_repository::update_message_status(
-            db_conn.deref(),
+            &db_conn,
             record_for_send,
             status,
             id,
@@ -658,11 +664,15 @@ pub async fn send_msg(
         match model {
             Ok(model) => {
                 let resp = convert_message_to_resp(model, Some(msg_id));
-                success_channel.send(resp).unwrap();
+                if let Err(e) = success_channel.send(resp) {
+                    error!("Failed to send success response: {:?}", e);
+                }
             }
             Err(e) => {
                 error!("{:?}", e);
-                error_channel.send(msg_id.clone()).unwrap();
+                if let Err(send_err) = error_channel.send(msg_id.clone()) {
+                    error!("Failed to send error response: {:?}, original error: {:?}", send_err, e);
+                }
             }
         }
     });
@@ -697,7 +707,7 @@ pub async fn update_message_recall_status(
     let login_uid = state.user_info.lock().await.uid.clone();
 
     im_message_repository::update_message_recall_status(
-        state.db_conn.deref(),
+        &state.db_conn,
         &message_id,
         message_type,
         &message_body,
@@ -723,7 +733,7 @@ pub async fn delete_message(
         room
     } else {
         im_message_repository::get_room_id_by_message_id(
-            state.db_conn.deref(),
+            &state.db_conn,
             &message_id,
             &login_uid,
         )
@@ -732,7 +742,7 @@ pub async fn delete_message(
         .ok_or_else(|| "消息不存在或房间信息缺失".to_string())?
     };
 
-    im_message_repository::delete_message_by_id(state.db_conn.deref(), &message_id, &login_uid)
+    im_message_repository::delete_message_by_id(&state.db_conn, &message_id, &login_uid)
         .await
         .map_err(|e| {
             error!("Failed to delete message {}: {}", message_id, e);
@@ -740,7 +750,7 @@ pub async fn delete_message(
         })?;
 
     im_message_repository::record_deleted_message(
-        state.db_conn.deref(),
+        &state.db_conn,
         &message_id,
         &resolved_room_id,
         &login_uid,
@@ -770,7 +780,7 @@ pub async fn delete_room_messages(
     let login_uid = state.user_info.lock().await.uid.clone();
 
     let last_msg_id =
-        im_message_repository::get_room_max_message_id(state.db_conn.deref(), &room_id, &login_uid)
+        im_message_repository::get_room_max_message_id(&state.db_conn, &room_id, &login_uid)
             .await
             .map_err(|e| {
                 error!(
@@ -781,7 +791,7 @@ pub async fn delete_room_messages(
             })?;
 
     let affected_rows =
-        im_message_repository::delete_messages_by_room(state.db_conn.deref(), &room_id, &login_uid)
+        im_message_repository::delete_messages_by_room(&state.db_conn, &room_id, &login_uid)
             .await
             .map_err(|e| {
                 error!("Failed to delete messages for room {}: {}", room_id, e);
@@ -789,7 +799,7 @@ pub async fn delete_room_messages(
             })?;
 
     im_message_repository::record_room_clear(
-        state.db_conn.deref(),
+        &state.db_conn,
         &room_id,
         &login_uid,
         last_msg_id,
@@ -809,4 +819,13 @@ pub async fn delete_room_messages(
     );
 
     Ok(affected_rows)
+}
+fn extract_mxc_url_from_body(body: &Option<serde_json::Value>) -> Option<String> {
+    body.as_ref().and_then(|value| {
+        value.as_object().and_then(|obj| {
+            obj.get("url")
+                .or_else(|| obj.get("mxc_url"))
+                .and_then(|v| v.as_str().map(std::string::ToString::to_string))
+        })
+    })
 }

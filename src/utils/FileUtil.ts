@@ -78,7 +78,7 @@ class FileUtil {
         const fileType = fileMeta?.mime_type || fileMeta?.file_type
 
         // 最后手动传入blob中，因为blob无法自动判断文件类型
-        return new File([blob], fileName, { type: fileType })
+        return new File([blob], fileName, { type: fileType || '' })
       })
     )
   }

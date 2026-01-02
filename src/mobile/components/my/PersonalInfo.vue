@@ -6,7 +6,9 @@
       <!-- 头像 -->
       <div
         class="self-center h-auto transition-transform duration-300 ease-in-out origin-top"
-        :style="{ transform: props.isShow ? 'scale(1) translateY(0)' : 'scale(0.62) translateY(0px)' }">
+        :class="{ 'cursor-pointer': props.isMyPage }"
+        :style="{ transform: props.isShow ? 'scale(1) translateY(0)' : 'scale(0.62) translateY(0px)' }"
+        @click="handleAvatarClick">
         <n-avatar :size="86" :src="AvatarUtils.getAvatarUrl(userDetailInfo!.avatar)" fallback-src="/logo.png" round />
       </div>
 
@@ -34,7 +36,7 @@
         <div class="flex flex-warp gap-2 items-center">
           <span class="text-bold-style">账号:{{ userDetailInfo!.account }}</span>
           <span v-if="isMyPage" @click="toMyQRCode" class="pe-15px">
-            <img class="w-14px h-14px" src="@/assets/mobile/my/qr-code.webp" alt="" />
+            <img class="w-14px h-14px" :src="qrCodeImage" alt="" />
           </span>
         </div>
         <Transition name="medal-fade">
@@ -43,7 +45,7 @@
             ref="medalBox"
             style="transform: translateZ(0)"
             class="relative w-118px overflow-hidden">
-            <img class="block w-full" src="@/assets/mobile/my/my-medal.webp" alt="" />
+            <img class="block w-full" :src="medalImage" alt="" />
             <div class="text-10px absolute inset-0 flex ps-2 items-center justify-around text-white font-medium">
               <span class="flex items-center">
                 <div v-if="(userStore.userInfo?.itemIds?.length ?? 0) > 0">
@@ -128,23 +130,50 @@
       </div>
     </div>
   </Transition>
+
+  <!-- Avatar Menu -->
+  <MobileUserAvatarMenu
+    :visible="showAvatarMenu"
+    @update:visible="showAvatarMenu = $event"
+    @select="handleAvatarMenuSelect" />
 </template>
 
 <script setup lang="ts">
-import { showDialog } from 'vant'
+import { ref, onMounted, computed, watch } from 'vue'
+// replaced Vant dialog with Naive dialog
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import 'vant/es/dialog/style'
 import { OnlineEnum, UserType } from '@/enums'
-import { useMessage } from '@/hooks/useMessage.ts'
 import type { UserInfoType, UserItem } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
-import { useContactStore } from '@/stores/contacts'
+import { useFriendsStore } from '@/stores/friends'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { getSessionDetailWithFriends } from '@/utils/ImRequestUtils'
+import { getSessionDetailWithFriends, deleteFriend } from '@/utils/ImRequestUtils'
+import qrCodeImage from '/src/assets/mobile/my/qr-code.webp'
+import medalImage from '/src/assets/mobile/my/my-medal.webp'
+import { msg, dlg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import MobileUserAvatarMenu from '#/components/settings/MobileUserAvatarMenu.vue'
+
+// Type definitions
+interface Friend {
+  user_id: string | number
+  name?: string
+  avatar?: string
+}
+
+interface UserState {
+  title: string
+  url: string
+  createBy: string
+  createTime: number
+  id: string
+  updateBy: null
+  updateTime: null
+}
 
 const props = defineProps({
   isShow: {
@@ -168,11 +197,11 @@ const userStore = useUserStore()
 const userStatusStore = useUserStatusStore()
 const groupStore = useGroupStore()
 const route = useRoute()
-const contactStore = useContactStore() // 联系人
+const friendsStore = useFriendsStore()
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()
 
-const { preloadChatRoom } = useMessage()
+const preloadChatRoom = async (_roomId: string) => {}
 const uid = route.params.uid as string
 const isMyFriend = ref(props.isMyFriend)
 
@@ -180,19 +209,19 @@ const isBotUser = (uid: string) => groupStore.getUserInfo(uid)?.account === User
 
 const toChatRoom = async () => {
   try {
-    const res = await getSessionDetailWithFriends({ id: uid, roomType: 2 })
+    const res = (await getSessionDetailWithFriends({ id: uid, roomType: 2 })) as { roomId: string }
     // 先检查会话是否已存在
     const existingSession = chatStore.getSession(res.roomId)
     if (!existingSession) {
       // 只有当会话不存在时才更新会话列表顺序
       chatStore.updateSessionLastActiveTime(res.roomId)
       // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
-      await chatStore.getSessionList(true)
+      await chatStore.getSessionList()
     }
     await preloadChatRoom(res.roomId)
     router.push(`/mobile/chatRoom/chatMain`)
   } catch (error) {
-    console.error('私聊尝试进入聊天室失败:', error)
+    logger.error('私聊尝试进入聊天室失败:', error)
   }
 }
 
@@ -213,29 +242,38 @@ const userDetailInfo = ref<UserItem | UserInfoType | undefined>({
 })
 
 // 这个值只有在查看好友详细信息时才用
-const friendUserState = ref<any>({
+const friendUserState = ref<UserState>({
   title: '',
-  url: ''
+  url: '',
+  createBy: '',
+  createTime: 0,
+  id: '',
+  updateBy: null,
+  updateTime: null
 })
 
 // 是否存在用户在线状态
 const hasUserOnlineState = ref(false)
 
-const { stateList } = storeToRefs(userStatusStore)
+const stateList = computed(() => userStatusStore.stateList)
 
-const getUserState = (
-  stateId: string
-): {
-  createBy: string
-  createTime: number
-  id: string
-  title: string
-  updateBy: null
-  updateTime: null
-  url: string
-} => {
-  // 不直接return，不然不好debug
-  const foundedState = stateList.value.find((state: { id: string }) => state.id === stateId)
+const getUserState = (stateId: string): UserState => {
+  // Type assertion for stateList items
+  const foundedState = stateList.value.find((state): state is UserState => {
+    return typeof state === 'object' && state !== null && 'id' in state && state.id === stateId
+  })
+  if (!foundedState) {
+    // Return default UserState object matching the interface
+    return {
+      title: '',
+      url: '',
+      createBy: '',
+      createTime: 0,
+      id: '',
+      updateBy: null,
+      updateTime: null
+    }
+  }
   return foundedState
 }
 
@@ -257,7 +295,7 @@ onMounted(() => {
     hasUserOnlineState.value = true
   }
 
-  const foundedFriend = contactStore.contactsList.find((item) => item.uid === uid)
+  const foundedFriend = (friendsStore.friends || []).find((f: Friend) => String(f.user_id) === String(uid))
 
   if (foundedFriend) {
     isMyFriend.value = true
@@ -271,35 +309,39 @@ const animatedBox = ref<HTMLElement | null>(null)
 const loading = ref(false)
 
 const handleDelete = () => {
-  showDialog({
-    title: '删除好友',
-    message: '确定删除该好友吗？',
-    showCancelButton: true,
-    confirmButtonText: '确定',
-    cancelButtonText: '取消'
-  })
+  const confirm = () =>
+    new Promise<void>((resolve, reject) => {
+      dlg.warning({
+        title: '删除好友',
+        content: '确定删除该好友吗？',
+        positiveText: '确定',
+        negativeText: '取消',
+        onPositiveClick: () => resolve(),
+        onNegativeClick: () => reject()
+      })
+    })
+  confirm()
     .then(async () => {
       if (userDetailInfo.value?.uid) {
         try {
           loading.value = true
-          await contactStore.onDeleteFriend(userDetailInfo.value.uid)
+          await deleteFriend({ targetUid: userDetailInfo.value!.uid })
+          await friendsStore.refreshAll()
           isMyFriend.value = false
-          chatStore.getSessionList(true)
-          window.$message.success('已删除好友')
+          chatStore.getSessionList()
+          msg.success('已删除好友')
           router.back()
         } catch (error) {
-          window.$message.warning('删除失败')
-          console.error('删除好友失败：', error)
+          msg.warning('删除失败')
+          logger.error('删除好友失败：', error)
         } finally {
           loading.value = false
         }
       } else {
-        window.$message.warning('没有找到好友哦')
+        msg.warning('没有找到好友哦')
       }
     })
-    .catch(() => {
-      // 用户点击取消，不做任何操作
-    })
+    .catch(() => {})
 }
 
 const toEditProfile = () => {
@@ -408,6 +450,21 @@ watch(
     }
   }
 )
+
+// Avatar menu state
+const showAvatarMenu = ref(false)
+
+// Handle avatar click (only for own profile)
+const handleAvatarClick = () => {
+  if (props.isMyPage) {
+    showAvatarMenu.value = true
+  }
+}
+
+// Handle avatar menu item selection
+const handleAvatarMenuSelect = (key: string) => {
+  logger.debug('Avatar menu selected:', key)
+}
 </script>
 <style lang="scss" scoped>
 $text-font-size-base: 14px;
@@ -507,5 +564,9 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 .avatar-collapsible {
   transition: all 0.3s ease;
   transform-origin: top;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

@@ -172,7 +172,7 @@
       </n-flex>
 
       <!-- 输入框区域 -->
-      <div :class="[isMobile() ? '' : 'pl-20px ']" class="flex flex-1 min-h-0">
+      <div :class="[isMobile() ? '' : 'px-20px ']" class="flex flex-1 min-h-0">
         <MsgInput
           ref="MsgInputRef"
           @clickMore="handleMoreClick"
@@ -209,27 +209,31 @@
 </template>
 
 <script setup lang="ts">
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
 import { FOOTER_HEIGHT, MAX_FOOTER_HEIGHT, MIN_FOOTER_HEIGHT } from '@/common/constants'
 import LocationModal from '@/components/rightBox/location/LocationModal.vue'
 import { MittEnum, MobilePanelStateEnum, MsgEnum, RoomTypeEnum } from '@/enums'
 import { useChatLayoutGlobal } from '@/hooks/useChatLayout'
-import { type SelectionRange, useCommon } from '@/hooks/useCommon.ts'
-import { useGlobalShortcut } from '@/hooks/useGlobalShortcut.ts'
+import { type SelectionRange, useCommon } from '@/hooks/useCommon'
+import { useGlobalShortcut } from '@/hooks/useGlobalShortcut'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
-import type { FriendItem, SessionItem } from '@/services/types'
+import type { SessionItem } from '@/services/types'
+import type { FriendItem } from '@/stores/friends'
 import { useChatStore } from '@/stores/chat'
-import { useContactStore } from '@/stores/contacts'
-import { useGlobalStore } from '@/stores/global.ts'
+import { useGlobalStore } from '@/stores/global'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingStore } from '@/stores/setting'
 import FileUtil from '@/utils/FileUtil'
 import { extractFileName, getMimeTypeFromExtension } from '@/utils/Formatting'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
+
+import { msg } from '@/utils/SafeUI'
 import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 const { t } = useI18n()
 // 移动端组件条件导入
@@ -240,7 +244,7 @@ const VoicePanel = isMobile()
 
 const props = withDefaults(
   defineProps<{
-    detailId?: SessionItem['detailId']
+    detailId?: SessionItem['detailId'] | undefined
   }>(),
   {
     detailId: ''
@@ -248,7 +252,7 @@ const props = withDefaults(
 )
 const detailId = computed(() => props.detailId || '')
 const globalStore = useGlobalStore()
-const contactStore = useContactStore()
+// const contactStore = useContactStore()
 const historyStore = useHistoryStore()
 const chatStore = useChatStore()
 const settingStore = useSettingStore()
@@ -259,8 +263,8 @@ const emojiShow = ref(false)
 const recentlyTip = ref(false)
 const showLocationModal = ref(false)
 const isConceal = computed({
-  get: () => settingStore.screenshot.isConceal,
-  set: (value: boolean) => settingStore.setScreenshotConceal(value)
+  get: () => settingStore.screenshot?.isConceal ?? false,
+  set: (value: boolean) => settingStore.setScreenshotConceal?.(value)
 })
 const recentEmojis = computed(() => {
   return historyStore.emoji.slice(0, 15)
@@ -345,7 +349,21 @@ const isFriend = computed(() => {
   if (!isSingleChat.value) return true
   const target = detailId.value
   if (!target) return false
-  return contactStore.contactsList.some((contact: FriendItem) => contact.uid === target)
+  try {
+    const friendsStore = require('@/stores/friends').useFriendsStore()
+    const friends = friendsStore.friends || []
+    // 调试日志
+    logger.info('[ChatFooter] isFriend check', {
+      target,
+      friendsCount: friends.length,
+      friends: friends.map((f: FriendItem) => f.user_id),
+      found: friends.some((f: FriendItem) => String(f.user_id) === String(target))
+    })
+    return friends.some((f: FriendItem) => String(f.user_id) === String(target))
+  } catch (error) {
+    logger.error('[ChatFooter] isFriend check error:', error)
+    return false
+  }
 })
 
 // 监听emojiShow的变化，当emojiShow为true时关闭recentlyTip
@@ -400,15 +418,15 @@ const sendEmojiWithDebounce = useDebounceFn((item: string) => {
   try {
     // 不等待发送完成，立即返回（避免卡顿）
     MsgInputRef.value?.sendEmojiDirect(item).catch((error: unknown) => {
-      console.error('[ChatFooter] 发送表情包失败:', error)
-      window.$message?.error?.('发送表情包失败')
+      logger.error('[ChatFooter] 发送表情包失败:', error instanceof Error ? error : new Error(String(error)))
+      msg.error?.('发送表情包失败')
     })
 
     // 添加到最近使用表情列表
     updateRecentEmojis(item)
   } catch (error) {
-    console.error('[ChatFooter] 发送表情包失败:', error)
-    window.$message?.error?.('发送表情包失败')
+    logger.error('[ChatFooter] 发送表情包失败:', error instanceof Error ? error : new Error(String(error)))
+    msg.error?.('发送表情包失败')
   }
 }, 200)
 
@@ -554,12 +572,12 @@ const handleVoiceRecord = () => {
 }
 
 // 处理位置选择
-const handleLocationSelected = async (locationData: any) => {
+const handleLocationSelected = async (locationData: unknown) => {
   try {
     await MsgInputRef.value.handleLocationSelected(locationData)
     showLocationModal.value = false
   } catch (error) {
-    console.error('发送位置消息失败:', error)
+    logger.error('发送位置消息失败:', error instanceof Error ? error : new Error(String(error)))
   }
 }
 
@@ -625,11 +643,11 @@ const handleMobileVoiceCancel = () => {
 }
 
 /** 发送语音消息 */
-const handleMobileVoiceSend = async (voiceData: any) => {
+const handleMobileVoiceSend = async (voiceData: unknown) => {
   try {
     await MsgInputRef.value?.sendVoiceDirect(voiceData)
   } catch (error) {
-    console.error('发送语音失败', error)
+    logger.error('发送语音失败', error instanceof Error ? error : new Error(String(error)))
   }
   // 发送后关闭面板
   handleMobileVoiceCancel()
@@ -640,8 +658,8 @@ const handleMoreSendFiles = async (files: File[]) => {
   try {
     await MsgInputRef.value?.sendFilesDirect(files)
   } catch (error) {
-    console.error('移动端发送文件失败:', error)
-    window.$message?.error?.('发送文件失败')
+    logger.error('移动端发送文件失败:', error instanceof Error ? error : new Error(String(error)))
+    msg.error?.('发送文件失败')
   }
 }
 
@@ -690,6 +708,32 @@ onMounted(async () => {
 
   if (MsgInputRef.value) {
     msgInputDom.value = MsgInputRef.value.messageInputDom
+  }
+
+  // 开发环境：添加全局调试函数
+  if (import.meta.env.DEV) {
+    ;(window as unknown as Record<string, unknown>).__debugChatFooter = {
+      refreshFriends: async () => {
+        try {
+          const friendsStore = require('@/stores/friends').useFriendsStore()
+          await friendsStore.refreshAll()
+          logger.info('[Debug] Friends list refreshed')
+        } catch (error) {
+          logger.error('[Debug] Failed to refresh friends:', error)
+        }
+      },
+      getFriends: () => {
+        try {
+          const friendsStore = require('@/stores/friends').useFriendsStore()
+          return friendsStore.friends
+        } catch {
+          return []
+        }
+      },
+      getCurrentTarget: () => detailId.value,
+      isFriendStatus: () => isFriend.value
+    }
+    logger.info('[ChatFooter] Debug functions available at window.__debugChatFooter')
   }
 })
 

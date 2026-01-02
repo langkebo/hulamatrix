@@ -150,11 +150,15 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { open } from '@tauri-apps/plugin-dialog'
-import { useScannerStore } from '@/stores/scanner.ts'
-import { formatBytes } from '@/utils/Formatting.ts'
+import { useScannerStore } from '@/stores/scanner'
+import { formatBytes } from '@/utils/Formatting'
 
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 const { t } = useI18n()
 
 const scannerStore = useScannerStore()
@@ -193,8 +197,8 @@ const selectCustomDirectory = async () => {
       scannerStore.setCustomDirectory(result)
     }
   } catch (error) {
-    console.error('选择目录失败:', error)
-    window.$message?.error('选择目录失败')
+    logger.error('选择目录失败:', error instanceof Error ? error : new Error(String(error)))
+    msg.error('选择目录失败')
   }
 }
 
@@ -209,8 +213,8 @@ onMounted(async () => {
 })
 
 // 路径类型改变处理
-watch(pathType, (newType) => {
-  scannerStore.setPathType(newType)
+watch(pathType, (newType: string) => {
+  scannerStore.setPathType(newType as 'default' | 'custom')
 })
 </script>
 

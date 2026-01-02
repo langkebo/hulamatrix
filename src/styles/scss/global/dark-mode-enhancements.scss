@@ -1,0 +1,432 @@
+/* ==========================================================================
+   暗色模式增强样式
+   ========================================================================== */
+
+/* 暗色模式基础优化 */
+html[data-theme='dark'] {
+  /* 深化背景色，提供更好的对比度 */
+  --app-bg-color: #0a0a0a;
+  --center-bg-color: #141414;
+  --right-bg-color: #0f0f0f;
+  --left-bg-color: #1a1a1a;
+
+  /* 微调文字颜色，提高可读性 */
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+
+  /* 更细腻的边框色 */
+  --border-color: #2a2a2a;
+  --border-light: #1f1f1f;
+
+  /* 优化交互状态 */
+  --bg-hover: rgba(255, 255, 255, 0.03);
+  --bg-selected: rgba(19, 152, 127, 0.12);
+  --bg-active: rgba(19, 152, 127, 0.18);
+
+  /* 更柔和的阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5);
+
+  /* 优化组件背景 */
+  --input-bg: #1f1f1f;
+  --input-bg-disabled: #1a1a1a;
+  --popover-bg: #1a1a1a;
+  --modal-bg: rgba(0, 0, 0, 0.8);
+
+  /* 聊天相关优化 */
+  --chat-reply-color: #1f1f1f;
+  --chat-left-bg: #1e3a36;
+  --chat-right-bg: #13987f;
+  --chat-text-color: #e0e0e0;
+
+  /* 消息列表优化 */
+  --msg-list-bg: #141414;
+  --msg-hover: #1a1a1a;
+  --msg-active: rgba(19, 152, 127, 0.5);
+
+  /* 菜单优化 */
+  --menu-bg: linear-gradient(45deg, rgba(26, 26, 26, 0.95) 60%, rgba(26, 26, 26, 0.98) 90%);
+  --menu-hover: #2a2a2a;
+
+  /* 滚动条优化 */
+  scrollbar-color: #3a3a3a transparent;
+}
+
+/* 暗色模式下的特殊效果 */
+html[data-theme='dark'] {
+  /* 玻璃态效果增强 */
+  .glass-effect {
+    background: rgba(26, 26, 26, 0.7);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* 暗色模式下的卡片优化 */
+  .card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* 输入框增强 */
+  input, textarea, select {
+    background: #1f1f1f;
+    color: var(--text-primary);
+    border-color: #2a2a2a;
+
+    &:focus {
+      border-color: var(--primary-color);
+      box-shadow:
+        0 0 0 2px rgba(19, 152, 127, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    &::placeholder {
+      color: #606060;
+    }
+  }
+
+  /* 暗色模式下的代码块 */
+  code {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+  }
+
+  pre {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  /* 暗色模式下的表格 */
+  table {
+    color: var(--text-primary);
+
+    th {
+      background: #1f1f1f;
+      border-color: #2a2a2a;
+    }
+
+    td {
+      border-color: #1f1f1f;
+    }
+
+    tr:hover {
+      background: #1a1a1a;
+    }
+  }
+
+  /* 暗色模式下的分割线 */
+  hr {
+    border-color: #2a2a2a;
+    border-top: none;
+    height: 1px;
+  }
+
+  /* 暗色模式下的引用 */
+  blockquote {
+    border-left-color: var(--primary-color);
+    background: rgba(19, 152, 127, 0.05);
+    color: var(--text-secondary);
+  }
+
+  /* 暗色模式下的选中状态 */
+  ::selection {
+    background: rgba(19, 152, 127, 0.3);
+    color: #fff;
+  }
+
+  /* 暗色模式下的滚动条 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0f0f0f;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 4px;
+
+    &:hover {
+      background: #4a4a4a;
+    }
+  }
+
+  /* 暗色模式下的图片暗化处理 */
+  img:not([src*=".svg"]):not([src*="logo"]) {
+    filter: brightness(0.9) contrast(1.1);
+    transition: filter var(--transition-base);
+
+    &:hover {
+      filter: brightness(1) contrast(1);
+    }
+  }
+
+  /* 暗色模式下的视频背景 */
+  video {
+    background: #000;
+  }
+}
+
+/* 暗色模式下的组件特定优化 */
+
+/* 消息气泡暗色模式优化 */
+html[data-theme='dark'] {
+  .h-message-bubble--left {
+    background: linear-gradient(135deg, #1e3a36 0%, #234540 100%);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    &:hover {
+      background: linear-gradient(135deg, #234540 0%, #28504a 100%);
+    }
+  }
+}
+
+/* 聊天输入框暗色模式优化 */
+html[data-theme='dark'] {
+  .h-chat-input__wrapper {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.2);
+
+    &:focus-within {
+      background: #1f1f1f;
+      box-shadow:
+        0 0 0 2px rgba(19, 152, 127, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .h-chat-input__textarea {
+    color: var(--text-primary);
+
+    &::placeholder {
+      color: #606060;
+    }
+  }
+}
+
+/* 暗色模式下的导航栏 */
+html[data-theme='dark'] {
+  nav,
+  .navbar {
+    background: #0f0f0f;
+    border-bottom-color: #1f1f1f;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* 暗色模式下的侧边栏 */
+html[data-theme='dark'] {
+  aside,
+  .sidebar {
+    background: #1a1a1a;
+    border-right-color: #2a2a2a;
+  }
+}
+
+/* 暗色模式下的模态框 */
+html[data-theme='dark'] {
+  .modal {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.8),
+      0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-header {
+    border-bottom-color: #2a2a2a;
+  }
+
+  .modal-footer {
+    border-top-color: #2a2a2a;
+  }
+}
+
+/* 暗色模式下的下拉菜单 */
+html[data-theme='dark'] {
+  .dropdown-menu {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    .dropdown-item {
+      color: var(--text-primary);
+
+      &:hover {
+        background: #2a2a2a;
+        color: var(--primary-color);
+      }
+
+      &.active {
+        background: rgba(19, 152, 127, 0.1);
+        color: var(--primary-color);
+      }
+    }
+
+    .dropdown-divider {
+      border-color: #2a2a2a;
+    }
+  }
+}
+
+/* 暗色模式下的工具提示 */
+html[data-theme='dark'] {
+  .tooltip {
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    border: 1px solid #3a3a3a;
+  }
+
+  .tooltip-arrow::before {
+    border-top-color: rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* 暗色模式下的加载动画 */
+html[data-theme='dark'] {
+  .loading-spinner {
+    border-color: #3a3a3a;
+    border-top-color: var(--primary-color);
+  }
+
+  .loading-skeleton {
+    background: linear-gradient(
+      90deg,
+      #1a1a1a 25%,
+      #2a2a2a 50%,
+      #1a1a1a 75%
+    );
+  }
+}
+
+/* 暗色模式下的标签 */
+html[data-theme='dark'] {
+  .tag {
+    background: rgba(19, 152, 127, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(19, 152, 127, 0.2);
+
+    &.tag--outlined {
+      background: transparent;
+    }
+
+    &.tag--ghost {
+      background: rgba(19, 152, 127, 0.05);
+      border-color: transparent;
+    }
+  }
+}
+
+/* 暗色模式下的徽章 */
+html[data-theme='dark'] {
+  .badge {
+    background: var(--primary-color);
+    color: #fff;
+
+    &.badge--dot {
+      background: var(--danger-color);
+    }
+  }
+}
+
+/* 暗色模式下的进度条 */
+html[data-theme='dark'] {
+  .progress-bar {
+    background: #1a1a1a;
+
+    .progress-fill {
+      background: var(--primary-color);
+    }
+  }
+}
+
+/* 暗色模式下的开关 */
+html[data-theme='dark'] {
+  .switch {
+    .switch-track {
+      background: #3a3a3a;
+    }
+
+    &.checked .switch-track {
+      background: var(--primary-color);
+    }
+  }
+}
+
+/* 暗色模式下的滑块 */
+html[data-theme='dark'] {
+  .slider {
+    .slider-track {
+      background: #3a3a3a;
+    }
+
+    .slider-fill {
+      background: var(--primary-color);
+    }
+
+    .slider-thumb {
+      background: #fff;
+      border: 2px solid var(--primary-color);
+    }
+  }
+}
+
+/* 暗色模式下的时间轴 */
+html[data-theme='dark'] {
+  .timeline {
+    .timeline-line {
+      background: #2a2a2a;
+    }
+
+    .timeline-dot {
+      background: #1a1a1a;
+      border-color: var(--primary-color);
+    }
+
+    .timeline-item {
+      &::before {
+        background: #1a1a1a;
+        border-color: #2a2a2a;
+      }
+    }
+  }
+}
+
+/* 暗色模式下的评分 */
+html[data-theme='dark'] {
+  .rating {
+    .rating-star {
+      color: #4a4a4a;
+
+      &.filled {
+        color: #fbbf24;
+      }
+
+      &.hover {
+        color: #f59e0b;
+      }
+    }
+  }
+}

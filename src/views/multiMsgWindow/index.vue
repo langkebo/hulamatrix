@@ -25,7 +25,7 @@
             :content="item"
             class="w-fit relative flex flex-col pl-44px text-(14px [--text-color]) leading-26px user-select-text"
             :data-key="item.fromUser.uid === userUid ? `U${item.message.id}` : `Q${item.message.id}`"
-            :special-menu="specialMenuList(item.message.type)"
+            :special-menu="(specialMenuList(item.message.type) as never)"
             @select="$event.click(item)">
             <div :class="{ bubble: !isSpecialMsgType(item.message.type) }">
               <RenderMessage
@@ -44,6 +44,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import RenderMessage from '@/components/rightBox/renderMessage/index.vue'
 import { MsgEnum } from '@/enums'
@@ -55,8 +57,9 @@ import type { MessageType, UserItem } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
+import { formatTimestamp } from '@/utils/ComputedTime'
 import { getMsgList, getUserByIds } from '@/utils/ImRequestUtils'
+import { logger } from '@/utils/logger'
 
 type Msg = {
   msgId: string
@@ -103,7 +106,7 @@ const getAvatarSrc = (uid: string) => {
 // 获取当前页面的所有图片和表情URL
 const getAllImageUrls = computed(() => {
   const imageUrls: string[] = []
-  msgs.value.forEach((message) => {
+  msgs.value.forEach((message: MessageType) => {
     if (
       (message.message.type === MsgEnum.IMAGE || message.message.type === MsgEnum.EMOJI) &&
       message.message.body?.url
@@ -117,7 +120,7 @@ const getAllImageUrls = computed(() => {
 // 获取当前页面的所有视频URL
 const getAllVideoUrls = computed(() => {
   const videoUrls: string[] = []
-  msgs.value.forEach((message) => {
+  msgs.value.forEach((message: MessageType) => {
     if (message.message.type === MsgEnum.VIDEO && message.message.body?.url) {
       videoUrls.push(message.message.body.url)
     }
@@ -146,7 +149,7 @@ const handleVideoClick = async (videoUrl: string) => {
 
 const getAllMsg = async () => {
   const msgIds = choosedMsgs.value.map((msg) => msg.msgId)
-  msgs.value = await getMsgList({ msgIds })
+  msgs.value = (await getMsgList({ msgIds })) as MessageType[]
 }
 
 const getAllUserInfo = async () => {
@@ -163,7 +166,7 @@ onMounted(async () => {
       await getAllUserInfo()
     })
     .catch((e) => {
-      console.error(e)
+      logger.error(e)
     })
 })
 </script>

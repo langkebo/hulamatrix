@@ -57,14 +57,21 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { MergeMessageType, MittEnum } from '@/enums'
 import { useChatStore } from '@/stores/chat'
-import { useFileDownloadStore } from '@/stores/fileDownload'
+import { useMediaStore } from '@/stores/useMediaStore'
+import { fileService } from '@/services/file-service'
+import { writeFile, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { useUserStore } from '@/stores/user'
+import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
+import { isMobile } from '@/utils/PlatformConstants'
 import { useFileStore } from '@/stores/file'
 import { useMitt } from '@/hooks/useMitt'
 import { extractFileName } from '@/utils/Formatting'
 import type { MsgType } from '@/services/types'
 
+import { msg } from '@/utils/SafeUI'
 interface Props {
   visible: boolean
   imageUrl: string
@@ -90,7 +97,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const chatStore = useChatStore()
-const fileDownloadStore = useFileDownloadStore()
+const mediaStore = useMediaStore()
 const fileStore = useFileStore()
 
 // 获取当前房间ID的方法
@@ -106,16 +113,13 @@ const handleClose = () => {
 const handleForward = () => {
   const msgId = props.message?.id
   if (!msgId) {
-    if (window.$message) {
-      window.$message.warning('无法转发：消息ID缺失')
-    }
+    msg.warning('无法转发：消息ID缺失')
     return
   }
-  const target = chatStore.chatMessageList.find((m: any) => m.message.id === msgId)
+  // Define proper interface for chat message list items
+  const target = chatStore.chatMessageList.find((m) => m.message.id === msgId)
   if (!target) {
-    if (window.$message) {
-      window.$message.warning('未找到可转发的消息')
-    }
+    msg.warning('未找到可转发的消息')
     return
   }
   chatStore.clearMsgCheck()
@@ -129,24 +133,33 @@ const handleForward = () => {
 const handleSave = async () => {
   const imageUrl = props.imageUrl
   if (!imageUrl) {
-    if (window.$message) {
-      window.$message.warning('无法保存：图片地址缺失')
-    }
+    msg.warning('无法保存：图片地址缺失')
     return
   }
   try {
     const fileName = extractFileName(imageUrl) || 'image.png'
-    const result = await fileDownloadStore.downloadFile(imageUrl, fileName)
-    if (result && window.$message) {
-      console.log('图片保存路径:', result)
-      window.$message.success('图片已保存')
+    const res = await fileService.downloadWithResume(imageUrl)
+    const blob = res.blob as Blob
+    const buffer = await blob.arrayBuffer()
+    const data = new Uint8Array(buffer)
+    const userStore = useUserStore()
+    const dir = await userStore.getUserRoomDir()
+    const folder = await join(dir, 'images')
+    const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
+    await writeFile(await join(folder, fileName), data, { baseDir })
+    const baseDirPath = isMobile() ? await appDataDir() : await resourceDir()
+    const absolutePath = await join(baseDirPath, await join(folder, fileName))
+    if (absolutePath) {
+      logger.debug('图片保存路径::', { data: absolutePath, component: 'ImagePreview' })
+      msg.success('图片已保存')
 
       // 保存文件信息到 file store
       const roomId = getCurrentRoomId()
       if (roomId) {
         // 获取文件状态，使用相对路径（localPath）而不是绝对路径
-        const fileStatus = fileDownloadStore.getFileStatus(imageUrl)
-        const localPath = fileStatus.localPath || result
+        const fileStatus = mediaStore.getFileStatus(imageUrl)
+        const fileStatusWithPath = fileStatus as (typeof fileStatus & { localPath?: string }) | null
+        const localPath = fileStatusWithPath?.localPath || absolutePath
 
         // 如果没有消息信息，手动创建文件信息
         const fileInfo = {
@@ -155,27 +168,22 @@ const handleSave = async () => {
           fileName,
           type: 'image' as const,
           url: localPath, // 使用相对路径
-          suffix: fileName.split('.').pop()?.toLowerCase()
+          suffix: fileName.split('.').pop()?.toLowerCase() || ''
         }
         fileStore.addFile(fileInfo)
-        console.log('[ImagePreview Debug] 保存文件信息到 fileStore:', fileInfo)
+        logger.debug('[ImagePreview Debug] 保存文件信息到 fileStore::', { data: fileInfo, component: 'ImagePreview' })
       }
     }
   } catch (e) {
-    console.error('保存图片失败:', e)
-    if (window.$message) {
-      window.$message.error('保存失败')
-    }
+    logger.error('保存图片失败:', e)
+    msg.error('保存失败')
   }
 
   emit('save')
 }
 
 const handleMore = () => {
-  if (window.$message) {
-    window.$message.warning('更多功能暂未实现')
-  }
-
+  msg.warning('更多功能暂未实现')
   emit('more')
 }
 </script>

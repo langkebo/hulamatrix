@@ -22,11 +22,15 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
-import type { MsgId } from '@/typings/global'
+
+import { msg } from '@/utils/SafeUI'
+import { computed } from 'vue'
+import { logger, toError } from '@/utils/logger'
+//
 
 const { contentList, msgIds, msgId } = defineProps<{
   contentList: string[]
-  msgIds: MsgId[]
+  msgIds: string[]
   msgId?: string
 }>()
 
@@ -58,7 +62,7 @@ const processedContentList = computed(() => {
   // 尝试通过msgIds获取完整消息信息
   return msgIds.map((msgId, index) => {
     // 尝试从当前聊天消息中找到对应消息
-    const message = chatStore.currentMessageMap?.[msgId.msgId]
+    const message = chatStore.currentMessageMap?.[msgId]
 
     if (message) {
       const userInfo = groupStore.getUserInfo(message.fromUser.uid)
@@ -69,14 +73,16 @@ const processedContentList = computed(() => {
       let content = ''
 
       // 排除不需要显示的消息类型
-      if (msgType === MsgEnum.UNKNOWN || msgType === MsgEnum.RECALL || msgType === MsgEnum.BOT) {
-        content = message.message.body.content || ''
+      if (msgType === MsgEnum.UNKNOWN || msgType === MsgEnum.RECALL) {
+        const bodyContent = message.message.body.content
+        content = typeof bodyContent === 'string' ? bodyContent : JSON.stringify(bodyContent) || ''
       } else if (MSG_REPLY_TEXT_MAP[msgType]) {
         // 对于特殊类型消息，显示对应的文本提示
         content = MSG_REPLY_TEXT_MAP[msgType]
       } else {
         // 文本消息或其他消息
-        content = message.message.body.content || ''
+        const bodyContent = message.message.body.content
+        content = typeof bodyContent === 'string' ? bodyContent : JSON.stringify(bodyContent) || ''
       }
 
       return userName + ': ' + content
@@ -98,8 +104,8 @@ const openMultiMsgWindow = async () => {
     // 向窗口发送消息数据
     await sendWindowPayload(label, msgIds)
   } catch (e) {
-    console.error('创建聊天记录窗口失败:', e)
-    window.$message?.error('打开聊天记录失败')
+    logger.error('创建聊天记录窗口失败:', toError(e))
+    msg.error?.('打开聊天记录失败')
   }
 }
 </script>

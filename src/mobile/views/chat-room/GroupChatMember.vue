@@ -12,12 +12,12 @@
       <div class="flex flex-col overflow-auto h-full">
         <div class="flex flex-col flex-1 gap-15px py-15px px-20px">
           <!-- 搜索表单 -->
-          <n-form @submit="handleSubmit" class="flex flex-wrap gap-10px">
+          <n-form @submit="handleSubmit" class="flex flex-wrap gap-8px md:gap-10px px-12px">
             <div class="flex flex-1">
               <input
                 v-model="formData.keyword"
                 placeholder="搜索"
-                class="bg-gray-100 text-center border-none w-full rounded-10px h-30px" />
+                class="bg-gray-100 text-center border-none w-full rounded-10px min-h-36px" />
             </div>
           </n-form>
 
@@ -32,10 +32,10 @@
                 :item-size="42"
                 :items="filteredList">
                 <template #default="{ item }">
-                  <div @click="toFriendInfo(item.uid)" :key="item.uid" class="flex items-start" style="height: 52px">
+                  <div @click="toFriendInfo(item.uid)" :key="item.uid" class="flex items-start h-48 md:h-52">
                     <div class="flex items-center gap-10px">
                       <n-avatar
-                        :size="42"
+                        :size="40"
                         :src="AvatarUtils.getAvatarUrl(item.avatar)"
                         fallback-src="/logo.png"
                         round />
@@ -55,9 +55,10 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import type { UserItem } from '@/services/types'
-import { useGroupStore } from '@/stores/group'
+import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
 
@@ -69,23 +70,36 @@ defineOptions({
   name: 'mobileGroupChatMember'
 })
 
-const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 
 const formData = ref({
   keyword: ''
 })
 
+const memberList = computed(() => {
+  return (roomStore.currentMembers || []).map(
+    (m) =>
+      ({
+        uid: m.userId,
+        name: m.displayName,
+        avatar: m.avatarUrl || '',
+        account: m.userId,
+        myName: m.displayName // 映射
+      }) as UserItem
+  )
+})
+
 const filteredList = ref<UserItem[]>([])
 
 onMounted(() => {
-  filteredList.value = groupStore.memberList
-  // TODO 增加observer来专门监听measure，然后改变virtualScrollerHeight
+  filteredList.value = memberList.value
 
+  // 使用 ResizeObserver 监听 measure 元素的高度变化
+  // 动态更新 virtualScrollerHeight 以适应列表内容
   if (measure.value) {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         virtualScrollerHeight.value = entry.contentRect.height
-        console.log('高度：', virtualScrollerHeight.value)
       }
     })
     observer.observe(measure.value)
@@ -104,11 +118,11 @@ const search = useDebounceFn(() => {
 
   if (!kw) {
     // 关键字为空时，直接恢复完整列表
-    filteredList.value = groupStore.memberList
+    filteredList.value = memberList.value
     return
   }
 
-  filteredList.value = groupStore.memberList.filter((item) => {
+  filteredList.value = memberList.value.filter((item) => {
     return (
       item.name?.toLowerCase().includes(kw) ||
       item.account?.toLowerCase().includes(kw) ||
@@ -124,6 +138,14 @@ const handleSubmit = (e: Event) => {
 }
 
 watch(() => formData.value.keyword, search)
+watch(memberList, () => {
+  // 当成员列表更新时（例如初始化加载完成），刷新显示列表
+  if (!formData.value.keyword) {
+    filteredList.value = memberList.value
+  } else {
+    search()
+  }
+})
 </script>
 
 <style scoped></style>

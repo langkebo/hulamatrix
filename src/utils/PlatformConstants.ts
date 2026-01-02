@@ -1,4 +1,5 @@
 import { type } from '@tauri-apps/plugin-os'
+import { logger } from '@/utils/logger'
 
 /**
  * 平台类型枚举
@@ -9,6 +10,12 @@ export type PlatformType = 'desktop' | 'mobile'
  * 操作系统类型
  */
 export type OSType = 'windows' | 'macos' | 'linux' | 'android' | 'ios'
+
+// Window全局扩展接口
+interface WindowWithTauriEnv extends Window {
+  TAURI_ENV_PLATFORM?: string
+  [key: string]: unknown
+}
 
 /**
  * 平台检测结果 - 应用启动时执行一次，全局共享
@@ -25,15 +32,32 @@ class PlatformDetector {
     if (PlatformDetector._initialized) return
 
     try {
-      const detectedType = type()
+      // Tauri type() 函数返回字符串，需要转换为 OSType
+      const detectedType = String(type())
       PlatformDetector._osType = PlatformDetector.normalizeOSType(detectedType)
       PlatformDetector._platformType = PlatformDetector.isDesktopOS(PlatformDetector._osType) ? 'desktop' : 'mobile'
 
       if (import.meta.env.DEV) {
-        console.log(`Platform detected: ${PlatformDetector._osType} (${PlatformDetector._platformType})`)
       }
     } catch (error) {
-      console.warn('Failed to detect platform type, defaulting to desktop:', error)
+      const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+      const pathIsMobile = typeof location !== 'undefined' && location.pathname.startsWith('/mobile')
+      const isUaMobile = /Android|iPhone|iPad|iPod/i.test(ua)
+      // 类型安全的 window 全局访问
+      const windowWithEnv = typeof window !== 'undefined' ? (window as unknown as WindowWithTauriEnv) : null
+      const platformHint = windowWithEnv?.TAURI_ENV_PLATFORM || ''
+      let os: OSType = 'macos'
+      if (/Win/i.test(ua)) os = 'windows'
+      else if (/Linux/i.test(ua)) os = 'linux'
+      else if (/Android/i.test(ua) || platformHint === 'android') os = 'android'
+      else if (/iPhone|iPad|iPod/i.test(ua) || platformHint === 'ios') os = 'ios'
+      PlatformDetector._osType = os
+      PlatformDetector._platformType =
+        isUaMobile || pathIsMobile || platformHint === 'ios' || platformHint === 'android' ? 'mobile' : 'desktop'
+      if (import.meta.env.DEV) {
+        logger.warn('Failed to detect platform via Tauri plugin, fallback used:', error)
+        logger.debug(`Platform fallback: ${PlatformDetector._osType} (${PlatformDetector._platformType})`)
+      }
     }
 
     PlatformDetector._initialized = true
@@ -142,3 +166,5 @@ export const Platform = {
   isIOS,
   isCompatibility
 } as const
+
+export const usePlatformConstants = () => Platform

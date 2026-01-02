@@ -1,9 +1,35 @@
+import { TIME_INTERVALS } from '@/constants'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
-import { error, info, warn } from '@tauri-apps/plugin-log'
 import { useMitt } from '@/hooks/useMitt'
 import { WsResponseMessageType } from '@/services/wsType'
-import { useContactStore } from '@/stores/contacts'
+import type { TauriEvent } from '@/typings/tauri-events'
+import { logger } from '@/utils/logger'
+
+// Tauri environment check
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+// Logging wrapper that uses project logger in web mode, Tauri log in Tauri mode
+const logError = (...args: unknown[]) => {
+  try {
+    const msg = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+    logger.error(msg)
+  } catch {}
+}
+
+const logInfo = (...args: unknown[]) => {
+  try {
+    const msg = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+    logger.info(msg)
+  } catch {}
+}
+
+const logWarn = (...args: unknown[]) => {
+  try {
+    const msg = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+    logger.warn(msg)
+  } catch {}
+}
 
 /// WebSocket 连接状态
 export enum ConnectionState {
@@ -28,9 +54,9 @@ export interface WebSocketEvent {
   state?: ConnectionState
   isReconnection?: boolean
   is_reconnection?: boolean
-  message?: any
+  message?: unknown
   health?: ConnectionHealth
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 /**
@@ -65,7 +91,7 @@ class ListenerController {
         Promise.resolve()
           .then(() => unlisten())
           .catch((err) => {
-            error(`[ListenerController] 清理监听器失败: ${err}`)
+            logError(`[ListenerController] 清理监听器失败: ${err}`)
           })
       )
     }
@@ -74,14 +100,16 @@ class ListenerController {
     try {
       await Promise.race([
         Promise.all(cleanupPromises),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('清理超时')), 5000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Cleanup timeout')), TIME_INTERVALS.MESSAGE_RETRY_DELAY)
+        )
       ])
     } catch (err) {
-      warn(`[ListenerController] 部分监听器清理可能未完成: ${err}`)
+      logWarn(`[ListenerController] 部分监听器清理可能未完成: ${err}`)
     }
 
     this.listeners.clear()
-    info(`[ListenerController] 已清理所有监听器`)
+    logInfo(`[ListenerController] 已清理所有监听器`)
   }
 
   get size(): number {
@@ -97,7 +125,7 @@ class RustWebSocketClient {
   private listenerController: ListenerController = new ListenerController()
 
   constructor() {
-    info('[RustWS] Rust WebSocket 客户端初始化')
+    logInfo('[RustWS] Rust WebSocket 客户端初始化')
   }
 
   /**
@@ -105,19 +133,20 @@ class RustWebSocketClient {
    */
   async initConnect(): Promise<void> {
     try {
+      if (!isTauri) return
       const clientId = localStorage.getItem('clientId')
 
       const params = {
         clientId: clientId || ''
       }
 
-      info(`[RustWS] 初始化连接参数: ${JSON.stringify(params)}`)
+      logInfo(`[RustWS] 初始化连接参数: ${JSON.stringify(params)}`)
 
       await invoke('ws_init_connection', { params })
 
-      info('[RustWS] WebSocket 连接初始化成功')
+      logInfo('[RustWS] WebSocket 连接初始化成功')
     } catch (err) {
-      error(`[RustWS] 连接初始化失败: ${err}`)
+      logError(`[RustWS] 连接初始化失败: ${err}`)
       throw err
     }
   }
@@ -127,23 +156,25 @@ class RustWebSocketClient {
    */
   async disconnect(): Promise<void> {
     try {
+      if (!isTauri) return
       await invoke('ws_disconnect')
-      info('[RustWS] WebSocket 连接已断开')
+      logInfo('[RustWS] WebSocket 连接已断开')
     } catch (err) {
-      error(`[RustWS] 断开连接失败: ${err}`)
+      logError(`[RustWS] 断开连接失败: ${err}`)
     }
   }
 
   /**
    * 发送消息
    */
-  async sendMessage(data: any): Promise<void> {
+  async sendMessage(data: unknown): Promise<void> {
     try {
+      if (!isTauri) return
       await invoke('ws_send_message', {
         params: { data }
       })
-    } catch (err: any) {
-      error(`[RustWS] 发送消息失败: ${err}`)
+    } catch (err: unknown) {
+      logError(`[RustWS] 发送消息失败: ${err}`)
       throw err
     }
   }
@@ -153,10 +184,11 @@ class RustWebSocketClient {
    */
   async getState(): Promise<ConnectionState> {
     try {
+      if (!isTauri) return ConnectionState.ERROR
       const state = await invoke<ConnectionState>('ws_get_state')
       return state
     } catch (err) {
-      error(`[RustWS] 获取连接状态失败: ${err}`)
+      logError(`[RustWS] 获取连接状态失败: ${err}`)
       return ConnectionState.ERROR
     }
   }
@@ -166,10 +198,11 @@ class RustWebSocketClient {
    */
   async forceReconnect(): Promise<void> {
     try {
+      if (!isTauri) return
       await invoke('ws_force_reconnect')
-      info('[RustWS] 强制重连成功')
+      logInfo('[RustWS] 强制重连成功')
     } catch (err) {
-      error(`[RustWS] 强制重连失败: ${err}`)
+      logError(`[RustWS] 强制重连失败: ${err}`)
       throw err
     }
   }
@@ -179,10 +212,11 @@ class RustWebSocketClient {
    */
   async isConnected(): Promise<boolean> {
     try {
+      if (!isTauri) return false
       const connected = await invoke<boolean>('ws_is_connected')
       return connected
     } catch (err) {
-      error(`[RustWS] 检查连接状态失败: ${err}`)
+      logError(`[RustWS] 检查连接状态失败: ${err}`)
       return false
     }
   }
@@ -197,317 +231,349 @@ class RustWebSocketClient {
     reconnectDelayMs?: number
   }): Promise<void> {
     try {
+      if (!isTauri) return
       await invoke('ws_update_config', {
         params: config
       })
-      info('[RustWS] 配置更新成功')
+      logInfo('[RustWS] 配置更新成功')
     } catch (err) {
-      error(`[RustWS] 配置更新失败: ${err}`)
-      throw error
+      logError(`[RustWS] 配置更新失败: ${err}`)
+      throw err
     }
   }
-
-  /**
-   * 设置事件监听器
-   */
-  // private async setupEventListener(): Promise<void> {
-  //   try {
-  //     info(`[RustWS] 开始设置事件监听器，当前业务监听器数量: ${this.listenerController.size}`)
-
-  //     // 清理旧的监听器
-  //     if (this.eventListener) {
-  //       this.eventListener()
-  //       info('[RustWS] 已清理主事件监听器')
-  //     }
-
-  //     // 高效清理所有业务监听器（并行 + 超时）
-  //     const oldListenerCount = this.listenerController.size
-  //     await this.listenerController.abort()
-  //     this.listenerController = new ListenerController()
-  //     info(`[RustWS] 已高效清理 ${oldListenerCount} 个业务监听器`)
-
-  //     // 监听 WebSocket 事件
-  //     this.eventListener = await listen<WebSocketEvent>('websocket-event', (event) => {
-  //       this.handleWebSocketEvent(event.payload)
-  //     })
-
-  //     // 设置业务消息监听器
-  //     await this.setupBusinessMessageListeners()
-
-  //     info(`[RustWS] 事件监听器设置完成，新的业务监听器数量: ${this.listenerController.size}`)
-  //   } catch (err) {
-  //     error(`[RustWS] 设置事件监听器失败: ${err}`)
-  //   }
-  // }
 
   /**
    * 设置业务消息监听器
    * 监听 Rust 端发送的具体业务消息事件
    */
   public async setupBusinessMessageListeners(): Promise<void> {
-    const contactStore = useContactStore()
     this.listenerController.add(
-      await listen('ws-login-success', (event: any) => {
-        info('登录成功')
-        useMitt.emit(WsResponseMessageType.LOGIN_SUCCESS, event.payload)
+      await listen('ws-login-success', (event: unknown) => {
+        logInfo('登录成功')
+        const tauriEvent = event as TauriEvent<unknown>
+        useMitt.emit(WsResponseMessageType.LOGIN_SUCCESS, tauriEvent.payload)
       })
     )
 
     // 消息相关事件
     const listenerIndex = this.listenerController.size
     this.listenerController.add(
-      await listen('ws-receive-message', (event: any) => {
-        info(`[ws]收到消息[监听器${listenerIndex}]: ${JSON.stringify(event.payload)}`)
-        // debugger
-        useMitt.emit(WsResponseMessageType.RECEIVE_MESSAGE, event.payload)
+      await listen('ws-receive-message', (event: unknown) => {
+        const payload = (event as TauriEvent<unknown>).payload
+        logInfo(`[ws]收到消息[监听器${listenerIndex}]: ${JSON.stringify(payload)}`)
+
+        // Debug: Trace message flow from the very beginning
+        if (import.meta.env.MODE === 'development') {
+          const payloadRecord = payload as Record<string, unknown>
+          const message = payloadRecord.message as Record<string, unknown> | undefined
+          const messageId = message?.id || (message as { messageId?: string })?.messageId || 'unknown'
+          const roomId = message?.roomId || 'unknown'
+          logger.debug('[MessageFlow] ws-receive-message → useMitt.emit(RECEIVE_MESSAGE)', {
+            messageId,
+            roomId,
+            payload
+          })
+        }
+
+        try {
+          useMitt.emit(WsResponseMessageType.RECEIVE_MESSAGE, payload)
+        } catch (err) {
+          logError(`[ws]消息分发失败: ${err instanceof Error ? err.message : String(err)}`)
+        }
       })
     )
 
     this.listenerController.add(
-      await listen('ws-msg-recall', (event: any) => {
-        info('撤回')
-        useMitt.emit(WsResponseMessageType.MSG_RECALL, event.payload)
+      await listen('ws-msg-recall', (event: unknown) => {
+        logInfo('撤回')
+        useMitt.emit(WsResponseMessageType.MSG_RECALL, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-msg-mark-item', (event: any) => {
-        info(`消息标记: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.MSG_MARK_ITEM, event.payload)
+      await listen('ws-msg-mark-item', (event: unknown) => {
+        logInfo(`消息标记: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.MSG_MARK_ITEM, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 用户状态相关事件
     this.listenerController.add(
-      await listen('ws-online', (event: any) => {
-        info(`上线: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.ONLINE, event.payload)
+      await listen('ws-online', (event: unknown) => {
+        logInfo(`上线: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.ONLINE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-offline', (event: any) => {
-        info(`下线: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.OFFLINE, event.payload)
+      await listen('ws-offline', (event: unknown) => {
+        logInfo(`下线: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.OFFLINE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-user-state-change', (event: any) => {
-        info(`用户状态改变: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.USER_STATE_CHANGE, event.payload)
+      await listen('ws-user-state-change', (event: unknown) => {
+        logInfo(`用户状态改变: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.USER_STATE_CHANGE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 好友相关事件
     this.listenerController.add(
-      await listen('ws-request-new-apply', (event: any) => {
-        info('好友申请')
-        useMitt.emit(WsResponseMessageType.REQUEST_NEW_FRIEND, event.payload)
+      await listen('ws-request-new-apply', (event: unknown) => {
+        logInfo('好友申请')
+        useMitt.emit(WsResponseMessageType.REQUEST_NEW_FRIEND, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-group-set-admin-success', (event: any) => {
-        useMitt.emit(WsResponseMessageType.GROUP_SET_ADMIN_SUCCESS, event.payload)
+      await listen('ws-group-set-admin-success', (event: unknown) => {
+        useMitt.emit(WsResponseMessageType.GROUP_SET_ADMIN_SUCCESS, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-request-notify-event', (event: any) => {
-        info(`通知事件: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.NOTIFY_EVENT, event.payload)
+      await listen('ws-request-notify-event', (event: unknown) => {
+        logInfo(`通知事件: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.NOTIFY_EVENT, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-request-approval-friend', (event: any) => {
-        info(`同意好友申请: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.REQUEST_APPROVAL_FRIEND, event.payload)
+      await listen('ws-request-approval-friend', (event: unknown) => {
+        logInfo(`同意好友申请: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.REQUEST_APPROVAL_FRIEND, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-member-change', (event: any) => {
-        useMitt.emit(WsResponseMessageType.WS_MEMBER_CHANGE, event.payload)
+      await listen('ws-member-change', (event: unknown) => {
+        useMitt.emit(WsResponseMessageType.WS_MEMBER_CHANGE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 房间/群聊相关事件
     this.listenerController.add(
-      await listen('ws-room-info-change', (event: any) => {
-        info(`群主修改群聊信息: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.ROOM_INFO_CHANGE, event.payload)
+      await listen('ws-room-info-change', (event: unknown) => {
+        logInfo(`群主修改群聊信息: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.ROOM_INFO_CHANGE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-my-room-info-change', (event: any) => {
-        info(`自己修改我在群里的信息: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.MY_ROOM_INFO_CHANGE, event.payload)
+      await listen('ws-my-room-info-change', (event: unknown) => {
+        logInfo(`自己修改我在群里的信息: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.MY_ROOM_INFO_CHANGE, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-room-group-notice-msg', (event: any) => {
-        info(`发布群公告: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.ROOM_GROUP_NOTICE_MSG, event.payload)
+      await listen('ws-room-group-notice-msg', (event: unknown) => {
+        logInfo(`发布群公告: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.ROOM_GROUP_NOTICE_MSG, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-room-edit-group-notice-msg', (event: any) => {
-        info(`编辑群公告: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.ROOM_EDIT_GROUP_NOTICE_MSG, event.payload)
+      await listen('ws-room-edit-group-notice-msg', (event: unknown) => {
+        logInfo(`编辑群公告: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.ROOM_EDIT_GROUP_NOTICE_MSG, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-room-dissolution', (event: any) => {
-        info(`群解散: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.ROOM_DISSOLUTION, event.payload)
+      await listen('ws-room-dissolution', (event: unknown) => {
+        logInfo(`群解散: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.ROOM_DISSOLUTION, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 视频通话相关事件
     this.listenerController.add(
-      await listen('ws-video-call-request', (event: any) => {
-        info(`收到通话请求: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.VideoCallRequest, event.payload)
+      await listen('ws-video-call-request', (event: unknown) => {
+        logInfo(`收到通话请求: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.VideoCallRequest, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-call-accepted', (event: any) => {
-        info(`通话被接受: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.CallAccepted, event.payload)
+      await listen('ws-call-accepted', (event: unknown) => {
+        logInfo(`通话被接受: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.CallAccepted, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-call-rejected', (event: any) => {
-        info(`通话被拒绝: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.CallRejected, event.payload)
+      await listen('ws-call-rejected', (event: unknown) => {
+        logInfo(`通话被拒绝: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.CallRejected, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-room-closed', (event: any) => {
-        info(`房间已关闭: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.RoomClosed, event.payload)
+      await listen('ws-room-closed', (event: unknown) => {
+        logInfo(`房间已关闭: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.RoomClosed, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-webrtc-signal', (event: any) => {
-        info(`收到信令消息: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.WEBRTC_SIGNAL, event.payload)
+      await listen('ws-webrtc-signal', (event: unknown) => {
+        logInfo(`收到信令消息: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.WEBRTC_SIGNAL, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-join-video', (event: any) => {
-        info(`用户加入房间: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.JoinVideo, event.payload)
+      await listen('ws-join-video', (event: unknown) => {
+        logInfo(`用户加入房间: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.JoinVideo, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-leave-video', (event: any) => {
-        info(`用户离开房间: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.LeaveVideo, event.payload)
+      await listen('ws-leave-video', (event: unknown) => {
+        logInfo(`用户离开房间: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.LeaveVideo, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-dropped', (event: any) => {
-        useMitt.emit(WsResponseMessageType.DROPPED, event.payload)
+      await listen('ws-dropped', (event: unknown) => {
+        useMitt.emit(WsResponseMessageType.DROPPED, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-cancel', (event: any) => {
-        info(`已取消通话: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.CANCEL, event.payload)
+      await listen('ws-cancel', (event: unknown) => {
+        logInfo(`已取消通话: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.CANCEL, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 系统相关事件
     this.listenerController.add(
-      await listen('ws-token-expired', (event: any) => {
-        info('账号在其他设备登录')
-        useMitt.emit(WsResponseMessageType.TOKEN_EXPIRED, event.payload)
+      await listen('ws-token-expired', (event: unknown) => {
+        logInfo('账号在其他设备登录')
+        useMitt.emit(WsResponseMessageType.TOKEN_EXPIRED, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-invalid-user', (event: any) => {
-        info('无效用户')
-        useMitt.emit(WsResponseMessageType.INVALID_USER, event.payload)
+      await listen('ws-invalid-user', (event: unknown) => {
+        logInfo('无效用户')
+        useMitt.emit(WsResponseMessageType.INVALID_USER, (event as TauriEvent<unknown>).payload)
       })
     )
 
     // 未知消息类型
     this.listenerController.add(
-      await listen('ws-unknown-message', (event: any) => {
-        info(`接收到未处理类型的消息: ${JSON.stringify(event.payload)}`)
+      await listen('ws-unknown-message', (event: unknown) => {
+        logInfo(`接收到未处理类型的消息: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-delete-friend', (event: any) => {
-        info(`删除好友: ${JSON.stringify(event.payload)}`)
-        contactStore.deleteContact(event.payload)
+      await listen('ws-delete-friend', async (event: unknown) => {
+        logInfo(`删除好友: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        try {
+          const friendsStore = require('@/stores/friends').useFriendsStore()
+          await friendsStore.refreshAll()
+        } catch {}
       })
     )
 
     // 朋友圈相关事件
     this.listenerController.add(
-      await listen('ws-feed-send-msg', (event: any) => {
-        info(`收到朋友圈消息: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.FEED_SEND_MSG, event.payload)
+      await listen('ws-feed-send-msg', (event: unknown) => {
+        logInfo(`收到朋友圈消息: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.FEED_SEND_MSG, (event as TauriEvent<unknown>).payload)
       })
     )
 
     this.listenerController.add(
-      await listen('ws-feed-notify', (event: any) => {
-        info(`收到朋友圈通知: ${JSON.stringify(event.payload)}`)
-        useMitt.emit(WsResponseMessageType.FEED_NOTIFY, event.payload)
+      await listen('ws-feed-notify', (event: unknown) => {
+        logInfo(`收到朋友圈通知: ${JSON.stringify((event as TauriEvent<unknown>).payload)}`)
+        useMitt.emit(WsResponseMessageType.FEED_NOTIFY, (event as TauriEvent<unknown>).payload)
       })
     )
   }
+
+  /**
+   * Adapter compatibility method - send message via WebSocket
+   */
+  async send(params: { type: string; data: unknown }): Promise<unknown> {
+    try {
+      await this.sendMessage({ type: params.type, ...((params.data as Record<string, unknown>) ?? {}) })
+      return { success: true }
+    } catch (error) {
+      logError(`[RustWS] Send failed: ${error}`)
+      return { success: false, error }
+    }
+  }
+
+  /**
+   * Adapter compatibility method - register connect callback
+   */
+  onConnect(_callback?: () => void): void {
+    // Callbacks are handled through event listeners
+    logInfo('[RustWS] onConnect callback registered (no-op in current implementation)')
+  }
+
+  /**
+   * Adapter compatibility method - register disconnect callback
+   */
+  onDisconnect(_callback?: () => void): void {
+    // Callbacks are handled through event listeners
+    logInfo('[RustWS] onDisconnect callback registered (no-op in current implementation)')
+  }
+
+  /**
+   * Adapter compatibility method - connect to server
+   */
+  async connect(): Promise<void> {
+    await this.initConnect()
+  }
 }
-info('创建RustWebSocketClient')
-// 创建全局实例
-const rustWebSocketClient = new RustWebSocketClient()
-
-// 使用 Tauri 原生事件监听窗口焦点变化（跨平台兼容）
-// 防止重复设置窗口焦点监听器
-// let isWindowListenerInitialized = false
-
-// if (!isWindowListenerInitialized) {
-//   isWindowListenerInitialized = true
-//   ;(async () => {
-//     try {
-//       const currentWindow = getCurrentWebviewWindow()
-
-//       // 监听窗口获得焦点事件
-//       await currentWindow.listen('tauri://focus', () => {
-//         info('[RustWS] 窗口获得焦点，设置应用状态为前台')
-//         rustWebSocketClient.setAppBackgroundState(false)
-//       })
-
-//       // 监听窗口失去焦点事件
-//       await currentWindow.listen('tauri://blur', () => {
-//         info('[RustWS] 窗口失去焦点，设置应用状态为后台')
-//         rustWebSocketClient.setAppBackgroundState(true)
-//       })
-
-//       info('[RustWS] 窗口焦点事件监听器已设置')
-//     } catch (err) {
-//       error(`[RustWS] 设置窗口焦点监听器失败: ${err}`)
-//     }
-//   })()
-// }
+if (isTauri) {
+  try {
+    logInfo('创建RustWebSocketClient')
+  } catch {}
+}
+const rustWebSocketClient = isTauri
+  ? new RustWebSocketClient()
+  : new (class {
+      async initConnect(): Promise<void> {}
+      async disconnect(): Promise<void> {}
+      async sendMessage(_data: unknown): Promise<void> {}
+      async getState(): Promise<ConnectionState> {
+        return ConnectionState.DISCONNECTED
+      }
+      async forceReconnect(): Promise<void> {}
+      async isConnected(): Promise<boolean> {
+        return false
+      }
+      async updateConfig(_config: {
+        heartbeatInterval?: number
+        heartbeatTimeout?: number
+        maxReconnectAttempts?: number
+        reconnectDelayMs?: number
+      }): Promise<void> {}
+      async setupBusinessMessageListeners(): Promise<void> {}
+      // Adapter compatibility methods (这些方法在 RustWebSocketClient 中不存在，但适配器需要)
+      send(_params: unknown): Promise<unknown> {
+        return Promise.resolve({})
+      }
+      onConnect(_callback?: () => void): void {
+        // Mock method for compatibility
+      }
+      onDisconnect(_callback?: () => void): void {
+        // Mock method for compatibility
+      }
+      connect(): Promise<void> {
+        return Promise.resolve()
+      }
+    })()
 
 export default rustWebSocketClient

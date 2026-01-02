@@ -1,0 +1,305 @@
+/**! HuLa主题 - 统一配色方案 */
+:root {
+  .hula {
+    // 侧边栏样式 - 采用HuLa的青色系
+    --left-bg-color: #64a29c;
+    --left-active-bg-color: rgba(222, 222, 222, 0.2);
+    --left-text-color: #e3e3e3;
+    --left-icon-color: #e3e3e3;
+    --left-active-hover: #f1f1f1;
+    --left-bg-hover: rgba(255, 255, 255, 0.2);
+    --left-active-icon-color: #f1f1f1;
+    --left-win-icon-color: rgba(255, 255, 255, 0.4);
+    --left-gradient-bg: linear-gradient(180deg, #64a29c 0%, #4d8b85 100%);
+
+    // 包含边框的选中样式
+    --border-active-color: #64a29c;
+    --primary-color: #13987f;
+    --primary-color-hover: #0f7d69;
+    --primary-color-active: #0c6354;
+
+    // 右边布局内容背景 - 使用HuLa的渐变背景
+    --right-theme-bg: radial-gradient(
+      circle at top left,
+      rgba(255, 209, 255, 0.3) 20%,
+      rgba(130, 193, 187, 0.3) 100%
+    );
+    --right-theme-bg-color: radial-gradient(
+      circle at top left,
+      rgba(255, 209, 255, 0.3) 20%,
+      rgba(130, 193, 187, 0.3) 100%
+    );
+
+    // 聊天框主体样式
+    --right-chat-reply-color: #f1f1f1;
+    --right-chat-reply-active-color: rgba(99, 99, 99, 0.1);
+    --right-chat-footer-line-color: rgba(99, 99, 99, 0.1);
+
+    // 消息列表样式
+    --msg-active-color: #13987f;
+    --msg-hover-bg: rgba(100, 162, 156, 0.1);
+
+    // 群公告消息背景色
+    --group-notice-bg: #fff;
+
+    // 列表通用hover
+    --list-hover-color: rgba(99, 99, 99, 0.1);
+
+    // 整体hover图标的样式
+    --icon-hover-color: rgba(166, 166, 166, 0.2);
+
+    // Naive UI组件主题覆盖
+    --n-color: #ffffff;
+    --n-color-modal: rgba(255, 255, 255, 0.95);
+    --n-color-popover: rgba(255, 255, 255, 0.95);
+    --n-color-embedded: #f8f8f8;
+
+    --n-text-color: #18181c;
+    --n-text-color-1: #18181c;
+    --n-text-color-2: #5f5f5f;
+    --n-text-color-3: #999999;
+
+    --n-primary-color: #13987f;
+    --n-primary-color-hover: #0f7d69;
+    --n-primary-color-pressed: #0c6354;
+    --n-primary-color-suppl: #14a38a;
+
+    --n-info-color: #2080f0;
+    --n-info-color-hover: #4098fc;
+    --n-info-color-pressed: #1060c9;
+    --n-info-color-suppl: #66adff;
+
+    --n-success-color: #52c41a;
+    --n-success-color-hover: #73d13d;
+    --n-success-color-pressed: #389e0d;
+    --n-success-color-suppl: #95de64;
+
+    --n-warning-color: #f0a020;
+    --n-warning-color-hover: #fcb040;
+    --n-warning-color-pressed: #d48806;
+    --n-warning-color-suppl: #ffc53d;
+
+    --n-error-color: #f5222d;
+    --n-error-color-hover: #ff4d4f;
+    --n-error-color-pressed: #cf1322;
+    --n-error-color-suppl: #ff7875;
+
+    --n-border-color: #e3e3e3;
+    --n-border-color-1: #e3e3e3;
+    --n-border-color-2: #f0f0f0;
+    --n-border-color-3: #f5f5f5;
+
+    --n-divider-color: #e3e3e3;
+
+    --n-hover-color: #f0f0f0;
+    --n-pressed-color: #e5e5e5;
+
+    --n-scrollbar-color: #e3e3e3;
+    --n-scrollbar-color-hover: #cfcfcf;
+
+    // Matrix组件特定样式
+    --matrix-bg-primary: rgba(255, 255, 255, 0.95);
+    --matrix-bg-secondary: rgba(248, 248, 248, 0.95);
+    --matrix-bg-chat: rgba(255, 255, 255, 0.9);
+    --matrix-border: rgba(100, 162, 156, 0.2);
+    --matrix-text: #18181c;
+    --matrix-text-secondary: #5f5f5f;
+    --matrix-avatar-border: rgba(100, 162, 156, 0.3);
+    --matrix-bubble-sent: #13987f;
+    --matrix-bubble-received: #f1f1f1;
+    --matrix-typing-indicator: #13987f;
+  }
+}
+
+/* 深色模式适配 */
+html[data-theme='dark'] {
+  .hula {
+    // 侧边栏样式 - 深色模式
+    --left-bg-color: rgba(62, 101, 100, 0.9);
+    --left-active-bg-color: rgba(222, 222, 222, 0.1);
+    --left-text-color: #e3e3e3;
+    --left-icon-color: #e3e3e3;
+    --left-active-hover: rgba(26, 178, 146, 0.8);
+    --left-bg-hover: rgba(133, 133, 133, 0.2);
+    --left-active-icon-color: #1ab292;
+    --left-win-icon-color: #1ab292;
+    --left-gradient-bg: linear-gradient(180deg, rgba(62, 101, 100, 0.9) 0%, rgba(45, 80, 79, 0.9) 100%);
+
+    // 包含边框的选中样式
+    --border-active-color: #64a29c;
+    --primary-color: #1ab292;
+    --primary-color-hover: #22c7a6;
+    --primary-color-active: #159a80;
+
+    // 右边布局内容背景 - 深色渐变
+    --right-theme-bg: radial-gradient(
+      circle at top left,
+      rgba(26, 178, 146, 0.15) 0%,
+      rgba(62, 101, 100, 0.15) 150%
+    );
+    --right-theme-bg-color: radial-gradient(
+      circle at top left,
+      rgba(26, 178, 146, 0.15) 0%,
+      rgba(62, 101, 100, 0.15) 150%
+    );
+
+    // 聊天框主体样式
+    --right-chat-reply-color: rgba(51, 51, 51, 0.8);
+    --right-chat-reply-active-color: rgba(255, 255, 255, 0.1);
+    --right-chat-footer-line-color: rgba(255, 255, 255, 0.1);
+
+    // 消息列表样式
+    --msg-active-color: rgba(26, 178, 146, 0.6);
+    --msg-hover-bg: rgba(26, 178, 146, 0.1);
+
+    // 群公告消息背景色
+    --group-notice-bg: rgba(51, 51, 51, 0.5);
+
+    // 列表通用hover
+    --list-hover-color: rgba(255, 255, 255, 0.05);
+
+    // 整体hover图标的样式
+    --icon-hover-color: rgba(255, 255, 255, 0.1);
+
+    // Naive UI组件主题覆盖 - 深色
+    --n-color: #18181c;
+    --n-color-modal: rgba(24, 24, 28, 0.95);
+    --n-color-popover: rgba(24, 24, 28, 0.95);
+    --n-color-embedded: #242428;
+
+    --n-text-color: #ffffff;
+    --n-text-color-1: #ffffff;
+    --n-text-color-2: #e3e3e3;
+    --n-text-color-3: #999999;
+
+    --n-primary-color: #1ab292;
+    --n-primary-color-hover: #22c7a6;
+    --n-primary-color-pressed: #159a80;
+    --n-primary-color-suppl: #2dd4aa;
+
+    --n-border-color: #3c3c41;
+    --n-border-color-1: #3c3c41;
+    --n-border-color-2: #4a4a51;
+    --n-border-color-3: #525257;
+
+    --n-divider-color: #3c3c41;
+
+    --n-hover-color: #242428;
+    --n-pressed-color: #2a2a30;
+
+    --n-scrollbar-color: #3c3c41;
+    --n-scrollbar-color-hover: #4a4a51;
+
+    // Matrix组件特定样式 - 深色
+    --matrix-bg-primary: rgba(24, 24, 28, 0.95);
+    --matrix-bg-secondary: rgba(36, 36, 40, 0.95);
+    --matrix-bg-chat: rgba(24, 24, 28, 0.9);
+    --matrix-border: rgba(26, 178, 146, 0.3);
+    --matrix-text: #ffffff;
+    --matrix-text-secondary: #e3e3e3;
+    --matrix-avatar-border: rgba(26, 178, 146, 0.4);
+    --matrix-bubble-sent: #1ab292;
+    --matrix-bubble-received: #2a2a30;
+    --matrix-typing-indicator: #1ab292;
+  }
+}
+
+/* 全局样式增强 */
+.hula-theme {
+  // 应用整体背景
+  background: var(--right-theme-bg);
+
+  // 渐变背景动画
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--right-theme-bg);
+    z-index: -1;
+    animation: gradientShift 20s ease infinite;
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+// 特定组件样式
+.hula {
+  // 聊天消息气泡
+  .message-bubble {
+    &.sent {
+      background: var(--matrix-bubble-sent);
+      color: white;
+    }
+
+    &.received {
+      background: var(--matrix-bubble-received);
+      color: var(--matrix-text);
+    }
+  }
+
+  // 输入框样式
+  .n-input {
+    background: var(--matrix-bg-primary);
+    border-color: var(--matrix-border);
+
+    &:hover, &.n-input--focus {
+      border-color: var(--primary-color);
+    }
+  }
+
+  // 按钮样式
+  .n-button--primary-type {
+    background: var(--primary-color);
+
+    &:hover {
+      background: var(--primary-color-hover);
+    }
+
+    &:active {
+      background: var(--primary-color-active);
+    }
+  }
+
+  // 头像边框
+  .n-avatar {
+    border: 2px solid var(--matrix-avatar-border);
+  }
+
+  // 滚动条样式
+  .n-scrollbar {
+    --n-scrollbar-color: var(--n-scrollbar-color);
+    --n-scrollbar-color-hover: var(--n-scrollbar-color-hover);
+  }
+
+  // 卡片样式
+  .n-card {
+    background: var(--matrix-bg-primary);
+    border-color: var(--matrix-border);
+  }
+
+  // 抽屉样式
+  .n-drawer {
+    .n-drawer-body {
+      background: var(--matrix-bg-primary);
+    }
+  }
+
+  // 模态框样式
+  .n-modal {
+    .n-modal-body-wrapper {
+      .n-modal-body {
+        background: var(--matrix-bg-primary);
+      }
+    }
+  }
+}

@@ -1,4 +1,28 @@
-import * as lamejs from '@breezystack/lamejs'
+import { logger } from '@/utils/logger'
+
+// 可选依赖：@breezystack/lamejs 未安装时降级为 WAV 导出
+
+/** Lamejs Mp3Encoder 类类型 */
+interface Mp3EncoderConstructor {
+  new (
+    channels: number,
+    sampleRate: number,
+    bitRate: number
+  ): {
+    encodeBuffer(left: Int16Array, right?: Int16Array): Int8Array
+    flush(): Int8Array
+  }
+}
+
+/** Lamejs 库类型 */
+interface LamejsLibrary {
+  Mp3Encoder: Mp3EncoderConstructor
+}
+
+/** GlobalThis 扩展类型 */
+interface GlobalThisWithLamejs {
+  lamejs?: LamejsLibrary
+}
 
 /**
  * 音频压缩配置接口
@@ -41,19 +65,24 @@ export async function compressAudioToMp3(audioBuffer: ArrayBuffer, config: Audio
     // 转换为Int16Array格式
     const samples = convertToInt16Array(resampledBuffer, finalConfig.channels)
 
-    // 使用lamejs进行MP3编码
-    const mp3Data = encodeToMp3(samples, finalConfig)
-
-    // 创建MP3 Blob - 将 Int8Array 转换为 Uint8Array
-    const uint8Arrays = mp3Data.map((data) => new Uint8Array(data))
-    const blob = new Blob(uint8Arrays, { type: 'audio/mp3' })
+    // 如果全局提供了 lamejs，则使用 MP3 编码，否则降级为 WAV
+    const globalWithLamejs = globalThis as unknown as GlobalThisWithLamejs
+    const hasMp3 = !!globalWithLamejs?.lamejs?.Mp3Encoder
+    let blob: Blob
+    if (hasMp3) {
+      const mp3Data = encodeToMp3(samples, finalConfig)
+      const uint8Arrays = mp3Data.map((data) => new Uint8Array(data))
+      blob = new Blob(uint8Arrays, { type: 'audio/mp3' })
+    } else {
+      blob = writeWav(samples, finalConfig.sampleRate, finalConfig.channels)
+    }
 
     // 清理AudioContext
     await audioContext.close()
 
     return blob
   } catch (error) {
-    console.error('音频压缩失败:', error)
+    logger.error('音频压缩失败:', error)
     throw new Error('音频压缩失败')
   }
 }
@@ -85,7 +114,7 @@ async function resampleAudio(audioBuffer: AudioBuffer, targetSampleRate: number)
       const indexCeil = Math.min(indexFloor + 1, inputData.length - 1)
       const fraction = index - indexFloor
 
-      outputData[i] = inputData[indexFloor] * (1 - fraction) + inputData[indexCeil] * fraction
+      outputData[i] = (inputData[indexFloor] ?? 0) * (1 - fraction) + (inputData[indexCeil] ?? 0) * fraction
     }
   }
 
@@ -106,7 +135,7 @@ function convertToInt16Array(audioBuffer: AudioBuffer, targetChannels: number): 
     const channelData = audioBuffer.numberOfChannels > 1 ? mixToMono(audioBuffer) : audioBuffer.getChannelData(0)
 
     for (let i = 0; i < length; i++) {
-      const sample = channelData[i] * AMPLIFY
+      const sample = (channelData[i] ?? 0) * AMPLIFY
       samples[i] = Math.max(-1, Math.min(1, sample)) * 0x7fff
     }
   } else {
@@ -115,8 +144,8 @@ function convertToInt16Array(audioBuffer: AudioBuffer, targetChannels: number): 
     const rightChannel = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : leftChannel
 
     for (let i = 0; i < length; i++) {
-      const l = leftChannel[i] * AMPLIFY
-      const r = rightChannel[i] * AMPLIFY
+      const l = (leftChannel[i] ?? 0) * AMPLIFY
+      const r = (rightChannel[i] ?? 0) * AMPLIFY
       samples[i * 2] = Math.max(-1, Math.min(1, l)) * 0x7fff
       samples[i * 2 + 1] = Math.max(-1, Math.min(1, r)) * 0x7fff
     }
@@ -136,7 +165,7 @@ function mixToMono(audioBuffer: AudioBuffer): Float32Array {
   for (let i = 0; i < length; i++) {
     let sum = 0
     for (let channel = 0; channel < numberOfChannels; channel++) {
-      sum += audioBuffer.getChannelData(channel)[i]
+      sum += audioBuffer.getChannelData(channel)[i] ?? 0
     }
     monoData[i] = sum / numberOfChannels
   }
@@ -148,7 +177,13 @@ function mixToMono(audioBuffer: AudioBuffer): Float32Array {
  * 使用lamejs将音频数据编码为MP3
  */
 function encodeToMp3(samples: Int16Array, config: Required<AudioCompressionConfig>): Int8Array[] {
-  const mp3encoder = new lamejs.Mp3Encoder(config.channels, config.sampleRate, config.bitRate)
+  const globalWithLamejs = globalThis as unknown as GlobalThisWithLamejs
+  const Mp3Encoder = globalWithLamejs?.lamejs?.Mp3Encoder
+  if (!Mp3Encoder) {
+    throw new Error('lamejs not available')
+  }
+
+  const mp3encoder = new Mp3Encoder(config.channels, config.sampleRate, config.bitRate)
   const mp3Data: Int8Array[] = []
   const sampleBlockSize = 1152 // lamejs推荐的块大小
 
@@ -161,7 +196,7 @@ function encodeToMp3(samples: Int16Array, config: Required<AudioCompressionConfi
       sampleChunk = samples.subarray(i, i + sampleBlockSize)
       const mp3buf = mp3encoder.encodeBuffer(sampleChunk)
       if (mp3buf.length > 0) {
-        mp3Data.push(mp3buf as any)
+        mp3Data.push(mp3buf)
       }
     } else {
       // 立体声
@@ -169,13 +204,13 @@ function encodeToMp3(samples: Int16Array, config: Required<AudioCompressionConfi
       const rightChunk = new Int16Array(sampleBlockSize)
 
       for (let j = 0; j < sampleBlockSize && i + j * 2 + 1 < samples.length; j++) {
-        leftChunk[j] = samples[i + j * 2]
-        rightChunk[j] = samples[i + j * 2 + 1]
+        leftChunk[j] = samples[i + j * 2] ?? 0
+        rightChunk[j] = samples[i + j * 2 + 1] ?? 0
       }
 
       const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk)
       if (mp3buf.length > 0) {
-        mp3Data.push(mp3buf as any)
+        mp3Data.push(mp3buf)
       }
     }
   }
@@ -183,10 +218,55 @@ function encodeToMp3(samples: Int16Array, config: Required<AudioCompressionConfi
   // 完成编码
   const mp3buf = mp3encoder.flush()
   if (mp3buf.length > 0) {
-    mp3Data.push(mp3buf as any)
+    mp3Data.push(mp3buf)
   }
 
   return mp3Data
+}
+
+/**
+ * 将 Int16 PCM 写入 WAV
+ */
+function writeWav(samples: Int16Array, sampleRate: number, channels: number): Blob {
+  const bytesPerSample = 2
+  const blockAlign = channels * bytesPerSample
+  const byteRate = sampleRate * blockAlign
+  const dataSize = samples.length * bytesPerSample
+  const buffer = new ArrayBuffer(44 + dataSize)
+  const view = new DataView(buffer)
+
+  // RIFF header
+  writeString(view, 0, 'RIFF')
+  view.setUint32(4, 36 + dataSize, true)
+  writeString(view, 8, 'WAVE')
+
+  // fmt chunk
+  writeString(view, 12, 'fmt ')
+  view.setUint32(16, 16, true) // PCM
+  view.setUint16(20, 1, true) // format = 1
+  view.setUint16(22, channels, true)
+  view.setUint32(24, sampleRate, true)
+  view.setUint32(28, byteRate, true)
+  view.setUint16(32, blockAlign, true)
+  view.setUint16(34, bytesPerSample * 8, true)
+
+  // data chunk
+  writeString(view, 36, 'data')
+  view.setUint32(40, dataSize, true)
+
+  // PCM samples
+  let offset = 44
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    view.setInt16(offset, samples[i] ?? 0, true)
+  }
+
+  return new Blob([view], { type: 'audio/wav' })
+}
+
+function writeString(view: DataView, offset: number, str: string) {
+  for (let i = 0; i < str.length; i++) {
+    view.setUint8(offset + i, str.charCodeAt(i))
+  }
 }
 
 /**

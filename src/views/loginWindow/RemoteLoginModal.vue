@@ -34,19 +34,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { darkTheme, lightTheme } from 'naive-ui'
-import { storeToRefs } from 'pinia'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useWindow } from '@/hooks/useWindow'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useSettingStore } from '@/stores/setting'
-import { useUserStore } from '@/stores/user.ts'
+import { useUserStore } from '@/stores/user'
 import { isMac } from '@/utils/PlatformConstants'
+import { logger, toError } from '@/utils/logger'
 
 const ip = ref('未知IP')
 const showModal = ref(true)
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const naiveTheme = computed(() => (themes.value.content === 'dark' ? darkTheme : lightTheme))
 let currentWindow: WebviewWindow | null = null
 let parentWindow: WebviewWindow | null = null
@@ -61,7 +62,7 @@ const assignIpFromPayload = async () => {
       ip.value = payload.ip
     }
   } catch (error) {
-    console.error('获取异地登录信息失败:', error)
+    logger.error('获取异地登录信息失败:', toError(error))
   }
 }
 

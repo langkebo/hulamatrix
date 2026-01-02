@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ThemeEnum } from '@/enums'
 import { useAudioFileManager } from '@/hooks/useAudioFileManager'
 import { useAudioPlayback } from '@/hooks/useAudioPlayback'
@@ -73,16 +73,31 @@ import { useVoiceDragControl } from '@/hooks/useVoiceDragControl'
 import { useWaveformRenderer } from '@/hooks/useWaveformRenderer'
 import type { VoiceBody } from '@/services/types'
 import { useSettingStore } from '@/stores/setting'
+import type { EncryptedFile } from '@/integrations/matrix/mediaCrypto'
+
+// Extended VoiceBody type with encrypted file support
+interface VoiceBodyWithEncryption extends VoiceBody {
+  file?: EncryptedFile
+  [key: string]: unknown
+}
+import { fileService } from '@/services/file-service'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
+import { BaseDirectory, exists, mkdir, writeFile } from '@tauri-apps/plugin-fs'
+import { detectRemoteFileType } from '@/utils/PathUtil'
+import { md5FromString } from '@/utils/Md5Util'
 import { useUserStore } from '@/stores/user'
+import { isMobile } from '@/utils/PlatformConstants'
+import { logger, toError } from '@/utils/logger'
 
 const props = defineProps<{
-  body: VoiceBody
+  body: VoiceBodyWithEncryption
   fromUserUid: string
 }>()
 
 const settingStore = useSettingStore()
 const userStore = useUserStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 
 // 使用messageId作为音频ID，确保唯一性
 const audioId = props.body.url
@@ -206,14 +221,41 @@ onMounted(async () => {
     waveformRenderer.waveformCanvas.value = waveformCanvas.value
 
     // 加载音频波形数据
-    const audioBuffer = await fileManager.loadAudioWaveform(props.body.url)
-    await waveformRenderer.generateWaveformData(audioBuffer)
-
-    // 创建音频元素
-    const audioUrl = await fileManager.getAudioUrl(props.body.url)
-    await audioPlayback.createAudioElement(audioUrl, audioId, second.value)
+    const enc: EncryptedFile | undefined = props.body?.file
+    if (enc) {
+      const cipherUrl = enc.url || props.body.url
+      const result = await fileService.downloadWithResumeAndDecrypt(cipherUrl, enc)
+      const plain = result.data
+      await waveformRenderer.generateWaveformData(plain.buffer)
+      // 写入本地缓存
+      try {
+        const userStore = useUserStore()
+        const dir = await userStore.getUserRoomDir()
+        const folder = await join(dir, 'audio')
+        const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.AppCache
+        const ok = await exists(folder, { baseDir })
+        if (!ok) await mkdir(folder, { baseDir, recursive: true })
+        const extInfo = await detectRemoteFileType({ url: cipherUrl, fileSize: plain.length })
+        const ext = extInfo?.ext || 'm4a'
+        const name = `${await md5FromString(cipherUrl)}.${ext}`
+        const rel = await join(folder, name)
+        await writeFile(rel, plain, { baseDir })
+        const baseDirPath = isMobile() ? await appDataDir() : await resourceDir()
+        const abs = await join(baseDirPath, rel)
+        const url = convertFileSrc(abs)
+        await audioPlayback.createAudioElement(url, audioId, second.value)
+      } catch {
+        const blobUrl = URL.createObjectURL(new Blob([plain.buffer as unknown as ArrayBuffer]))
+        await audioPlayback.createAudioElement(blobUrl, audioId, second.value)
+      }
+    } else {
+      const audioBuffer = await fileManager.loadAudioWaveform(props.body.url)
+      await waveformRenderer.generateWaveformData(audioBuffer)
+      const audioUrl = await fileManager.getAudioUrl(props.body.url)
+      await audioPlayback.createAudioElement(audioUrl, audioId, second.value)
+    }
   } catch (error) {
-    console.error('组件初始化失败:', error)
+    logger.error('组件初始化失败:', toError(error))
   }
 })
 onUnmounted(() => {

@@ -5,34 +5,48 @@
       style="max-height: calc(100vh)"
       class="w-full box-border bg-[--center-bg-color] rounded-b-8px border-(solid 1px [--line-color])">
       <div class="flex flex-col gap-4 bg-#808080">
-        <VueOfficeDocx v-if="isShowWord" :src="resourceSrc" style="height: 100vh" />
+        <!-- @vue-office依赖已移除，暂时禁用文档预览功能 -->
+        <div v-if="isShowWord || isShowPdf || isShowExcel || isShowPpt" class="flex items-center justify-center h-96">
+          <div class="text-center">
+            <div class="text-gray-500 mb-4">📄 文档预览功能暂时禁用</div>
+            <div class="text-sm text-gray-400">由于依赖优化，{{ getFileTypeText() }}预览功能暂时不可用</div>
+            <div class="mt-4">
+              <button @click="openFileExternally" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                使用外部应用打开
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <VueOfficePdf v-else-if="isShowPdf" :src="resourceSrc" style="height: 95vh" />
-
-        <VueOfficeExcel v-else-if="isShowExcel" :src="resourceSrc" style="height: 95vh" />
-
-        <VueOfficePptx v-else-if="isShowPpt" :src="resourceSrc" style="height: 95vh" />
-
-        <div v-else class="text-gray-500">📄 暂无文档可预览</div>
+        <div v-else class="text-gray-500 flex items-center justify-center h-96">📄 暂无文档可预览</div>
       </div>
     </n-scrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
+import { reactive, computed, onMounted } from 'vue'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import VueOfficeDocx from '@vue-office/docx/lib/v3/vue-office-docx.mjs'
-import VueOfficeExcel from '@vue-office/excel/lib/v3/vue-office-excel.mjs'
-import VueOfficePdf from '@vue-office/pdf/lib/v3/vue-office-pdf.mjs'
-import VueOfficePptx from '@vue-office/pptx/lib/v3/vue-office-pptx.mjs'
+import { logger } from '@/utils/logger'
+// @vue-office依赖已移除，暂时禁用文档预览功能
+// const VueOfficeDocx = defineAsyncComponent(() => import('@vue-office/docx/lib/v3/vue-office-docx.mjs'))
+// const VueOfficeExcel = defineAsyncComponent(() => import('@vue-office/excel/lib/v3/vue-office-excel.mjs'))
+// const VueOfficePdf = defineAsyncComponent(() => import('@vue-office/pdf/lib/v3/vue-office-pdf.mjs'))
+// const VueOfficePptx = defineAsyncComponent(() => import('@vue-office/pptx/lib/v3/vue-office-pptx.mjs'))
 import type { FileTypeResult } from 'file-type'
-import '@vue-office/docx/lib/v3/index.css'
-import '@vue-office/excel/lib/v3/index.css'
+// import '@vue-office/docx/lib/v3/index.css'
+// import '@vue-office/excel/lib/v3/index.css'
 import { listen } from '@tauri-apps/api/event'
 import { merge } from 'es-toolkit'
 import { useTauriListener } from '@/hooks/useTauriListener'
 import { useWindow } from '@/hooks/useWindow'
 import { getFile } from '@/utils/PathUtil'
+
+// Tauri plugin-opener module interface
+interface OpenerModule {
+  open?: (path: string) => Promise<void>
+  default?: (path: string) => Promise<void>
+}
 
 type PayloadData = {
   userId: string
@@ -71,18 +85,7 @@ const uiData = reactive({
   fileLoading: false
 })
 
-const resourceSrc = computed(() => {
-  const { resourceFile } = uiData.payload
-  const { localExists, url } = resourceFile
-
-  // 优先使用本地已加载的文件 buffer
-  if (localExists && uiData.fileBuffer) {
-    return uiData.fileBuffer
-  }
-
-  // 否则使用远程地址
-  return url
-})
+//
 
 const fileExt = computed(() => uiData.payload.resourceFile.type?.ext || '')
 const localExists = computed(() => uiData.payload.resourceFile.localExists)
@@ -120,14 +123,51 @@ const updateFile = async (absolutePath: string, exists: boolean) => {
       uiData.fileBuffer = buffer
 
       uiData.fileLoading = true // 文件加载完毕，准备好渲染
-      console.log('已更新本地文件 ', file.file.size, uiData.file.size)
     } else {
       // 网络文件默认标记为可加载
       uiData.fileLoading = true
     }
   } catch (error) {
-    console.error('读取文件时出错：', error)
+    logger.error('读取文件时出错：', error instanceof Error ? error : new Error(String(error)), 'previewFile')
     uiData.fileLoading = false // 读取失败也应标记为 false
+  }
+}
+
+// 添加缺失的方法
+const getFileTypeText = () => {
+  const ext = uiData.payload.resourceFile.type?.ext.toLowerCase()
+  switch (ext) {
+    case 'docx':
+    case 'doc':
+      return 'Word文档'
+    case 'pdf':
+      return 'PDF文档'
+    case 'xlsx':
+    case 'xls':
+      return 'Excel表格'
+    case 'pptx':
+    case 'ppt':
+      return 'PowerPoint演示文稿'
+    default:
+      return '文档'
+  }
+}
+
+const openFileExternally = async () => {
+  const path = uiData.payload.resourceFile.absolutePath || uiData.payload.resourceFile.nativePath
+  if (path) {
+    try {
+      const mod = (await import('@tauri-apps/plugin-opener')) as OpenerModule
+      const open = mod.open || mod.default || (() => Promise.resolve())
+      await open(path)
+    } catch (error) {
+      logger.error('打开文件失败:', error instanceof Error ? error : new Error(String(error)), 'previewFile')
+      // 备用方案：打开文件所在的目录
+      const mod2 = (await import('@tauri-apps/plugin-opener')) as OpenerModule
+      const open = mod2.open || mod2.default || (() => Promise.resolve())
+      const dir = path.substring(0, path.lastIndexOf('/'))
+      await open(dir)
+    }
   }
 }
 
@@ -139,9 +179,9 @@ onMounted(async () => {
   const label = webviewWindow.label
 
   await addListener(
-    listen(`${label}:update`, (event: any) => {
+    listen(`${label}:update`, (event: { payload: { payload: PayloadData } }) => {
       const payload: PayloadData = event.payload.payload
-      console.log('payload更新：', payload)
+      logger.debug('payload更新：', payload, 'index')
 
       merge(uiData.payload, payload)
 
@@ -152,13 +192,13 @@ onMounted(async () => {
 
   try {
     const payload = await getWindowPayload<PayloadData>(label)
-    console.log('获取的载荷信息：', payload)
+    logger.debug('获取的载荷信息：', payload, 'index')
 
     merge(uiData.payload, payload)
 
     updateFile(payload.resourceFile.absolutePath || '', payload.resourceFile.localExists)
   } catch (error) {
-    console.log('获取错误：', error)
+    logger.warn('获取错误：', error instanceof Error ? error : new Error(String(error)), 'previewFile')
   }
 
   await webviewWindow.show()

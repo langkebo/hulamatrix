@@ -8,6 +8,7 @@
   </main>
 </template>
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { emit } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { EventEnum } from '@/enums'

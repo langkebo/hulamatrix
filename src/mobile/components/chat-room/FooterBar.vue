@@ -8,6 +8,7 @@
       style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; white-space: pre-wrap"></div>
 
     <div class="w-full min-h-20px bg-#FAFAFA flex flex-col z-2 footer-bar-shadow">
+      <div class="px-10px py-6px text-12px text-#606060 flex items-center gap-6px" v-if="false"></div>
       <div class="flex-1 min-h-0">
         <chat-footer :detail-id="globalStore.currentSession?.detailId"></chat-footer>
       </div>
@@ -16,10 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import 'vant/es/dialog/style'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { useGlobalStore } from '@/stores/global'
 import { isIOS } from '@/utils/PlatformConstants'
+//
 
 const globalStore = useGlobalStore()
 const emit = defineEmits(['focus', 'blur', 'updateHeight'])
@@ -31,7 +33,9 @@ const root = ref()
 onMounted(() => {
   if (root.value) {
     const resizeObserver = new ResizeObserver((entries) => {
-      const height = entries[0].contentRect.height
+      const entry = entries[0]
+      if (!entry) return
+      const height = entry.contentRect.height
       emit('updateHeight', height)
     })
     resizeObserver.observe(root.value)
@@ -42,13 +46,15 @@ onMounted(() => {
   }
 
   if (isIOS()) {
-    invoke('set_webview_keyboard_adjustment', { enabled: true })
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) invoke('set_webview_keyboard_adjustment', { enabled: true })
   }
 })
 
 onUnmounted(() => {
   if (isIOS()) {
-    invoke('set_webview_keyboard_adjustment', { enabled: false })
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) invoke('set_webview_keyboard_adjustment', { enabled: false })
   }
 })
 
@@ -104,4 +110,12 @@ defineExpose({ root })
 .transition-transform {
   transition: transform 0.15s ease;
 }
+.dot-online {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #1aaa55;
+}
 </style>
+//

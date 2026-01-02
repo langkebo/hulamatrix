@@ -69,19 +69,21 @@
         target="_blank"
         class="text-card"
         @click="openUrl(item)">
-        <div v-if="urlMap[item].image" class="text-card-image-wrapper">
+        <div v-if="urlMap[item]?.image" class="text-card-image-wrapper">
           <img class="text-card-image" :src="urlMap[item].image" @error="onImageLoadError" />
         </div>
         <div class="text-card-link-content">
-          <span class="text-14px line-clamp-1">{{ urlMap[item].title }}</span>
-          <span class="text-(12px [--chat-text-color]) mt-4px line-clamp-2">{{ urlMap[item].description }}</span>
+          <span class="text-14px line-clamp-1">{{ urlMap[item]?.title }}</span>
+          <span class="text-(12px [--chat-text-color]) mt-4px line-clamp-2">{{ urlMap[item]?.description }}</span>
         </div>
       </div>
     </template>
   </div>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import { openExternalUrl } from '@/hooks/useLinkSegments'
+import { msg } from '@/utils/SafeUI'
 import { useGroupStore } from '@/stores/group'
 import type { TextBody } from '@/services/types'
 import { isMobile } from '@/utils/PlatformConstants'
@@ -206,10 +208,12 @@ const fragments = computed(() => {
 
   // 合并重叠的标记
   for (let i = 0; i < markers.length - 1; i++) {
-    if (markers[i + 1].start < markers[i].end) {
+    const current = markers[i]
+    const next = markers[i + 1]
+    if (current && next && next.start < current.end) {
       // 如果下一个标记的开始位置在当前标记的结束位置之前，说明有重叠
       // 选择保留较长的标记
-      if (markers[i + 1].end - markers[i + 1].start > markers[i].end - markers[i].start) {
+      if (next.end - next.start > current.end - current.start) {
         markers.splice(i, 1) // 删除当前标记
       } else {
         markers.splice(i + 1, 1) // 删除下一个标记
@@ -248,7 +252,7 @@ const openUrl = (url: string) => openExternalUrl(url)
 const handleCopy = (item: string) => {
   if (item) {
     navigator.clipboard.writeText(item)
-    window.$message.success('复制成功')
+    msg.success('复制成功')
   }
 }
 

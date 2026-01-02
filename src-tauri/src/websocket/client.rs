@@ -2,7 +2,7 @@ use crate::AppData;
 use crate::command::message_command::{SyncMessagesParam, sync_messages};
 use crate::websocket::commands::get_websocket_client_container;
 
-use super::types::*;
+use super::types::{WebSocketConfig, ConnectionState, ConnectionHealth, WsMessage, WebSocketEvent};
 use anyhow::Result;
 use chrono::Utc;
 use futures_util::{sink::SinkExt, stream::StreamExt};
@@ -26,6 +26,7 @@ pub struct AckMessage {
 }
 
 impl AckMessage {
+    #[must_use] 
     pub fn new(msg_id: String) -> Self {
         Self {
             msg_id,
@@ -76,6 +77,7 @@ pub struct WebSocketClient {
 }
 
 impl WebSocketClient {
+    #[must_use] 
     pub fn new(app_handle: AppHandle) -> Self {
         Self {
             config: Arc::new(RwLock::new(WebSocketConfig::default())),
@@ -150,7 +152,7 @@ impl WebSocketClient {
 
         // 发送关闭信号以主动关闭 WebSocket 连接
         if let Some(close_sender) = self.close_sender.write().await.take() {
-            if let Err(_) = close_sender.send(()) {
+            if close_sender.send(()).is_err() {
                 warn!("Failed to send close signal, connection may already be closed");
             } else {
                 info!("WebSocket close signal sent");
@@ -183,9 +185,9 @@ impl WebSocketClient {
 
                 if let Some(sender) = sender.as_ref() {
                     let message = Message::Text(data.to_string().into());
-                    sender.send(message.clone()).map_err(|e| {
-                        anyhow::anyhow!("Failed to queue message for sending: {}", e)
-                    })?;
+                    sender
+                        .send(message.clone())
+                        .map_err(|e| anyhow::anyhow!("Failed to queue message for sending: {e}"))?;
                     info!("Message sent {:?}", message);
                     Ok(())
                 } else {
@@ -224,10 +226,9 @@ impl WebSocketClient {
                 Err(anyhow::anyhow!("WebSocket is connecting, message queued"))
             }
             _ => {
-                warn!("WebSocket 未连接 (状态: {:?})，无法发送消息", current_state);
+                warn!("WebSocket 未连接 (状态: {current_state:?})，无法发送消息");
                 Err(anyhow::anyhow!(
-                    "WebSocket not connected (state: {:?})",
-                    current_state
+                    "WebSocket not connected (state: {current_state:?})"
                 ))
             }
         }
@@ -236,7 +237,6 @@ impl WebSocketClient {
     /// 获取连接健康状态
     pub async fn get_health_status(&self) -> ConnectionHealth {
         let last_pong = self.last_pong_time.load(Ordering::SeqCst);
-        let failures = self.consecutive_failures.load(Ordering::SeqCst);
         let now = chrono::Utc::now().timestamp_millis() as u64;
 
         let is_healthy = if last_pong == 0 {
@@ -253,7 +253,9 @@ impl WebSocketClient {
             } else {
                 Some(last_pong)
             },
-            consecutive_failures: failures,
+            consecutive_failures: self
+                .consecutive_failures
+                .load(std::sync::atomic::Ordering::Relaxed),
             round_trip_time: None, // 可以在心跳时计算
         }
     }
@@ -294,7 +296,7 @@ impl WebSocketClient {
             }
 
             match self.try_connect().await {
-                Ok(_) => {
+                Ok(()) => {
                     info!("WebSocket connection established");
                     self.reconnect_attempts.store(0, Ordering::SeqCst);
 
@@ -332,7 +334,9 @@ impl WebSocketClient {
                         self.update_state(ConnectionState::Error, false).await;
 
                         // 重新登录
-                        self.app_handle.emit_to("home", "relogin", ()).unwrap();
+                        if let Err(e) = self.app_handle.emit_to("home", "relogin", ()) {
+                            error!("Failed to emit relogin event: {:?}", e);
+                        }
                         return Err(anyhow::anyhow!("Max reconnection attempts reached"));
                     }
 
@@ -373,8 +377,12 @@ impl WebSocketClient {
         let config = self.config.read().await.clone();
 
         // 构建连接URL
-        let mut url = Url::parse(&config.server_url)
-            .map_err(|e| anyhow::anyhow!("Invalid WebSocket URL '{}': {}", config.server_url, e))?;
+        let mut url = Url::parse(&config.server_url).map_err(|e| {
+            anyhow::anyhow!(
+                "Invalid WebSocket URL '{url}': {e}",
+                url = config.server_url
+            )
+        })?;
 
         url.query_pairs_mut()
             .append_pair("clientId", &config.client_id);
@@ -384,13 +392,13 @@ impl WebSocketClient {
         }
 
         let url_str = url.as_str();
-        info!("Connecting to WebSocket: {}", url_str);
+        info!("Connecting to WebSocket: {url_str}");
         self.update_state(ConnectionState::Connecting, false).await;
 
         // 建立连接
         let (ws_stream, _) = connect_async(url_str)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to connect to WebSocket '{}': {}", url_str, e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to connect to WebSocket '{url_str}': {e}"))?;
 
         let (mut ws_sender, mut ws_receiver) = ws_stream.split();
 
@@ -429,12 +437,12 @@ impl WebSocketClient {
                     tokio::select! {
                         Some(message) = msg_receiver.recv() => {
                             if let Err(e) = ws_sender.send(message).await {
-                                error!(" Failed to send message: {}", e);
+                                error!(" Failed to send message: {e}");
                                 is_ws_connected.store(false, Ordering::SeqCst);
                                 break;
                             }
                         }
-                        Some(_) = close_receiver.recv() => {
+                        Some(()) = close_receiver.recv() => {
                             info!("Received close signal, actively closing WebSocket connection");
                             if let Err(e) = ws_sender.close().await {
                                 warn!("Error closing WebSocket connection: {}", e);
@@ -509,7 +517,7 @@ impl WebSocketClient {
                 _ = message_receiver_task => {
                     info!("Message receiving task ended");
                 }
-                _ = async {
+                () = async {
                     while !should_stop.load(Ordering::SeqCst) {
                         sleep(Duration::from_millis(100)).await;
                     }
@@ -541,30 +549,27 @@ impl WebSocketClient {
         info!("Received message: {}", text);
 
         // 尝试解析心跳响应
-        if let Ok(ws_msg) = serde_json::from_str::<WsMessage>(&text) {
-            match ws_msg {
-                WsMessage::HeartbeatResponse { timestamp: _ } => {
-                    let now = chrono::Utc::now().timestamp_millis() as u64;
-                    last_pong_time.store(now, Ordering::SeqCst);
-                    consecutive_failures.store(0, Ordering::SeqCst);
+        if let Ok(WsMessage::HeartbeatResponse { timestamp: _ }) =
+            serde_json::from_str::<WsMessage>(&text)
+        {
+            let now = chrono::Utc::now().timestamp_millis() as u64;
+            last_pong_time.store(now, Ordering::SeqCst);
+            consecutive_failures.store(0, Ordering::SeqCst);
 
-                    info!("Received heartbeat response");
+            info!("Received heartbeat response");
 
-                    let health = ConnectionHealth {
-                        is_healthy: true,
-                        last_pong_time: Some(now),
-                        consecutive_failures: 0,
-                        round_trip_time: None,
-                    };
+            let health = ConnectionHealth {
+                is_healthy: true,
+                last_pong_time: Some(now),
+                consecutive_failures: 0,
+                round_trip_time: None,
+            };
 
-                    let _ = app_handle.emit(
-                        "websocket-event",
-                        &WebSocketEvent::HeartbeatStatusChanged { health },
-                    );
-                    return;
-                }
-                _ => {}
-            }
+            let _ = app_handle.emit(
+                "websocket-event",
+                &WebSocketEvent::HeartbeatStatusChanged { health },
+            );
+            return;
         }
 
         // 处理业务消息
@@ -604,7 +609,7 @@ impl WebSocketClient {
 
         while retry_count < max_retries {
             match self.send_message(ack_json.clone()).await {
-                Ok(_) => {
+                Ok(()) => {
                     info!(
                         "Sent ACK for message {} (attempt: {})",
                         message_id,
@@ -663,15 +668,16 @@ impl WebSocketClient {
                 let _ = app_handle.emit_to("home", "ws-login-success", data);
             }
 
-            // 消息相关 TODO 暂时只实现聊天消息的ack
+            // 消息相关 NOTE: WebSocket protocol is deprecated, use Matrix SDK for message handling
+            // Matrix SDK handles message receipts (m.read) and ACKs automatically
             "receiveMessage" => {
                 info!("Received message");
 
                 let client_container = get_websocket_client_container();
                 let client_guard = client_container.read().await;
 
-                if let Some(data_obj) = data {
-                    if let Some(message_id) = data_obj
+                if let Some(data_obj) = data
+                    && let Some(message_id) = data_obj
                         .get("message")
                         .and_then(|m| m.get("id"))
                         .and_then(|id| id.as_str())
@@ -680,18 +686,17 @@ impl WebSocketClient {
 
                         if let Some(client) = client_guard.as_ref() {
                             match client.send_ack(message_id).await {
-                                Ok(_) => {
+                                Ok(()) => {
                                     info!("ACK sent successfully for message {}", message_id);
                                 }
                                 Err(e) => {
                                     error!(" Failed to send ACK for message {}: {}", message_id, e);
                                 }
-                            };
+                            }
                         } else {
                             error!(" 回执失败");
                         }
                     }
-                }
 
                 let _ = app_handle.emit_to("home", "ws-receive-message", data);
             }
@@ -1123,7 +1128,7 @@ impl WebSocketClient {
         let heartbeat_msg = WsMessage::Heartbeat;
         if let Ok(json) = serde_json::to_value(&heartbeat_msg) {
             match self.send_message(json).await {
-                Ok(_) => {
+                Ok(()) => {
                     info!("Test heartbeat sent successfully");
                 }
                 Err(e) => {
@@ -1145,11 +1150,13 @@ impl WebSocketClient {
     }
 
     /// 获取应用后台状态
+    #[must_use] 
     pub fn is_app_in_background(&self) -> bool {
         self.is_app_in_background.load(Ordering::SeqCst)
     }
 
     /// 检查 WebSocket 是否已连接
+    #[must_use] 
     pub fn is_connected(&self) -> bool {
         self.is_ws_connected.load(Ordering::SeqCst)
     }

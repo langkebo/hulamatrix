@@ -32,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { CallTypeEnum, MittEnum } from '@/enums'
 import { useMitt } from '@/hooks/useMitt'
 import { useMobileStore } from '@/stores/mobile'
@@ -40,6 +42,7 @@ import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import rustWebSocketClient from '@/services/webSocketRust'
 import { CallResponseStatus, WsRequestMsgType, WsResponseMessageType } from '@/services/wsType'
+import { logger } from '@/utils/logger'
 
 type CallPayload = {
   callerUid?: string
@@ -159,7 +162,7 @@ const handleReject = async () => {
       }
     })
   } catch (error) {
-    console.error('发送拒绝响应失败:', error)
+    logger.error('发送拒绝响应失败:', error)
   } finally {
     clearCall()
   }
@@ -180,7 +183,7 @@ const handleAccept = async () => {
   try {
     await router.push({ path: '/mobile/rtcCall', query })
   } catch (error) {
-    console.error('跳转通话页面失败:', error)
+    logger.error('跳转通话页面失败:', error)
   } finally {
     clearCall()
   }

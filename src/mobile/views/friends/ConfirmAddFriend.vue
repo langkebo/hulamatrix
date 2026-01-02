@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-1 flex-col">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
+    <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
     <AutoFixHeightPage :show-footer="false">
       <template #header>
         <HeaderBar
@@ -49,14 +49,17 @@
 </template>
 
 <script setup lang="ts">
-import { useCommon } from '@/hooks/useCommon.ts'
-import { useGlobalStore } from '@/stores/global.ts'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useCommon } from '@/hooks/useCommon'
+import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { useUserStore } from '@/stores/user.ts'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { sendAddFriendRequest } from '@/utils/ImRequestUtils'
 import router from '@/router'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
+import { msg } from '@/utils/SafeUI'
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 const groupStore = useGroupStore()
@@ -78,14 +81,13 @@ const addFriend = async () => {
     msg: requestMsg.value,
     targetUid: globalStore.addFriendModalInfo.uid as string
   })
-  window.$message.success('已发送好友申请')
+  msg.success?.('已发送好友申请')
   setTimeout(() => {
     router.push('/mobile/message')
   }, 2000)
 }
 
 onMounted(async () => {
-  console.log(userInfo.value)
   requestMsg.value = `我是${userStore.userInfo!.name}`
 })
 </script>

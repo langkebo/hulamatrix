@@ -11,16 +11,16 @@ export enum ErrorType {
 
 export interface ErrorDetails {
   type: ErrorType
-  code?: number
-  details?: Record<string, any>
+  code?: number | undefined
+  details?: Record<string, unknown> | undefined
   showError?: boolean
   isRetryError?: boolean
 }
 
 export class AppException extends Error {
   public readonly type: ErrorType
-  public readonly code?: number
-  public readonly details?: Record<string, any>
+  public readonly code: number | undefined
+  public readonly details: Record<string, unknown> | undefined
   // 使用静态标志位来追踪是否已经显示过错误消息
   private static hasShownError = false
 
@@ -28,16 +28,15 @@ export class AppException extends Error {
     super(message)
     this.name = 'AppException'
     this.type = errorDetails?.type || ErrorType.Unknown
-    this.code = errorDetails?.code
-    this.details = errorDetails?.details
+    this.code = errorDetails?.code ?? undefined
+    this.details = errorDetails?.details ?? undefined
 
     // 只有在明确指定显示错误时才显示
     if (errorDetails?.showError && !AppException.hasShownError) {
-      // 如果是重试相关的错误，使用console.log打印而不是弹窗提示
+      // 如果是重试相关的错误，使用logger.debug打印而不是弹窗提示
       if (errorDetails?.isRetryError) {
-        console.log('重试错误:', message, this.details)
       } else {
-        window.$message.error(message)
+        msg.error?.(message)
         AppException.hasShownError = true
 
         // 只有在 2 秒内没有显示过错误消息时才会显示
@@ -58,3 +57,5 @@ export class AppException extends Error {
     }
   }
 }
+import { msg } from '@/utils/SafeUI'
+// import { logger } from '@/utils/logger'

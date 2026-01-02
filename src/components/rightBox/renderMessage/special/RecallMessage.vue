@@ -30,11 +30,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { MittEnum, MsgEnum } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import type { MessageBody, MsgType } from '@/services/types'
-import { useChatStore } from '@/stores/chat.ts'
-import { useUserStore } from '@/stores/user.ts'
+import { sanitizeHtml } from '@/utils/htmlSanitizer'
+import { useChatStore } from '@/stores/chat'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps<{
   message: MsgType
@@ -50,12 +52,18 @@ const userUid = computed(() => userStore.userInfo!.uid)
 
 const recallText = computed(() => {
   // 处理body可能是字符串或对象的情况
+  let content = ''
   if (typeof props.body === 'string') {
-    return props.body
+    content = props.body
   } else if (props.body && typeof props.body === 'object' && 'content' in props.body) {
-    return props.body.content
+    // Ensure content is always a string
+    const bodyContent = props.body.content
+    content = typeof bodyContent === 'string' ? bodyContent : String(bodyContent || '')
+  } else {
+    content = '撤回了一条消息'
   }
-  return '撤回了一条消息'
+  // Sanitize HTML to prevent XSS attacks
+  return sanitizeHtml(content)
 })
 
 const canReEdit = computed(() => (msgId: string) => {

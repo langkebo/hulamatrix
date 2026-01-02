@@ -43,17 +43,13 @@ async fn get_directory_size_with_progress(
     // 添加总体超时机制，防止扫描过大目录时无限期运行
     let timeout_duration = tokio::time::Duration::from_secs(300); // 5分钟超时
 
-    match tokio::time::timeout(
+    if let Ok(result) = tokio::time::timeout(
         timeout_duration,
         scan_directory_internal(directory_path, handle),
     )
-    .await
-    {
-        Ok(result) => result,
-        Err(_) => {
-            tracing::warn!("Directory scan timeout, automatically cancelled");
-            Err("目录扫描超时，请尝试扫描较小的目录".to_string())
-        }
+    .await { result } else {
+        tracing::warn!("Directory scan timeout, automatically cancelled");
+        Err("目录扫描超时，请尝试扫描较小的目录".to_string())
     }
 }
 
@@ -100,7 +96,7 @@ async fn scan_directory_internal(directory_path: String, handle: AppHandle) -> R
             entry = entries.next() => {
                 match entry {
                     Some(Ok(entry)) => {
-                        if entry.file_type().await.map_or(false, |ft| ft.is_file()) {
+                        if entry.file_type().await.is_ok_and(|ft| ft.is_file()) {
                             total_files += 1;
                         }
                     }
@@ -129,7 +125,7 @@ async fn scan_directory_internal(directory_path: String, handle: AppHandle) -> R
             entry = entries.next() => {
                 match entry {
                     Some(Ok(entry)) => {
-                        if entry.file_type().await.map_or(false, |ft| ft.is_file()) {
+                        if entry.file_type().await.is_ok_and(|ft| ft.is_file()) {
                             match entry.metadata().await {
                                 Ok(metadata) => {
                                     total_size = total_size.saturating_add(metadata.len());
@@ -138,7 +134,7 @@ async fn scan_directory_internal(directory_path: String, handle: AppHandle) -> R
                                     // 进度更新：每200ms或每100个文件发送一次
                                     let now = Instant::now();
                                     if now.duration_since(last_progress_time).as_millis() > 200
-                                        || files_processed % 100 == 0
+                                        || files_processed.is_multiple_of(100)
                                     {
                                         last_progress_time = now;
 

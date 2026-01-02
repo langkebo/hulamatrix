@@ -22,8 +22,8 @@
       </div>
       <div class="file-size">
         {{ formatBytes(body?.size != null && !isNaN(body.size) ? body.size : 0) }}
-        <span class="download-status" :class="{ downloaded: fileStatus?.isDownloaded }">
-          {{ fileStatus?.isDownloaded ? t('message.file.status.downloaded') : t('message.file.status.not_downloaded') }}
+        <span class="download-status" :class="{ downloaded: fileStatus?.downloaded }">
+          {{ fileStatus?.downloaded ? t('message.file.status.downloaded') : t('message.file.status.not_downloaded') }}
         </span>
       </div>
     </div>
@@ -108,35 +108,34 @@
 </template>
 
 <script setup lang="ts">
-import { join } from '@tauri-apps/api/path'
+import { computed, onMounted, ref, watch } from 'vue'
 import { openPath, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { MessageStatusEnum, TauriCommand } from '@/enums'
-import { useDownload } from '@/hooks/useDownload'
-import type { FileBody, FilesMeta, MsgType } from '@/services/types'
-import { useFileDownloadStore } from '@/stores/fileDownload'
-import { useGlobalStore } from '@/stores/global'
-import { useUserStore } from '@/stores/user'
+import { fileService } from '@/services/file-service'
+import type { FileBody, MsgType } from '@/services/types'
+import { useMediaStore } from '@/stores/useMediaStore'
 import { useChatStore } from '@/stores/chat'
+import { useUserStore } from '@/stores/user'
 import { formatBytes, getFileSuffix } from '@/utils/Formatting'
-import { getFilesMeta } from '@/utils/PathUtil'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
-import { useI18n } from 'vue-i18n'
 
-const userStore = useUserStore()
-const globalStore = useGlobalStore()
+import { msg } from '@/utils/SafeUI'
+import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
+
 const chatStore = useChatStore()
 const { t } = useI18n()
 
-const { isDownloading: legacyIsDownloading } = useDownload()
-const fileDownloadStore = useFileDownloadStore()
+const legacyIsDownloading = ref(false)
+const mediaStore = useMediaStore()
 const fallbackFileName = computed(() => t('message.file.unknown_file'))
 
 const props = defineProps<{
   body: FileBody
-  messageStatus?: MessageStatusEnum
-  uploadProgress?: number
-  searchKeyword?: string
-  message?: MsgType
+  messageStatus?: MessageStatusEnum | undefined
+  uploadProgress?: number | undefined
+  searchKeyword?: string | undefined
+  message?: MsgType | undefined
 }>()
 
 // 图标尺寸状态
@@ -149,7 +148,7 @@ const uploadProgress = computed(() => props.uploadProgress || 0)
 // 文件下载状态
 const fileStatus = computed(() => {
   if (!props.body?.url) return null
-  return fileDownloadStore.getFileStatus(props.body.url)
+  return mediaStore.getFileStatus(props.body.url)
 })
 
 // 是否正在下载
@@ -171,19 +170,24 @@ const persistFileLocalPath = async (absolutePath: string) => {
   const nextBody = { ...(target.message.body || {}), localPath: absolutePath }
   chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, body: nextBody })
   const updated = { ...target, message: { ...target.message, body: nextBody } }
-  await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as any })
+  await invokeSilently(TauriCommand.SAVE_MSG, {
+    data: updated as {
+      message: { id: string; status?: number | unknown; body: Record<string, unknown> }
+      [key: string]: unknown
+    }
+  })
 }
 
 const revealInDirSafely = async (targetPath?: string | null) => {
   if (!targetPath) {
-    window.$message?.error(t('message.file.toast.missing_local'))
+    msg.error(t('message.file.toast.missing_local'))
     return
   }
   try {
     await revealItemInDir(targetPath)
   } catch (error) {
-    console.error('在文件夹中显示文件失败:', error)
-    window.$message?.error(t('message.file.toast.reveal_fail'))
+    logger.error('在文件夹中显示文件失败:', toError(error))
+    msg.error(t('message.file.toast.reveal_fail'))
   }
 }
 
@@ -198,7 +202,7 @@ const needsDownload = computed(() => {
 
   // 检查文件是否已下载
   const status = fileStatus.value
-  return !status?.isDownloaded
+  return !status?.downloaded
 })
 
 // 计算overlay样式
@@ -222,9 +226,9 @@ watch(
   async ([newUrl, newFileName]) => {
     if (newUrl && newFileName) {
       try {
-        await fileDownloadStore.checkFileExists(newUrl, newFileName)
+        await mediaStore.checkFileExists(newUrl, newFileName)
       } catch (error) {
-        console.error('检查文件状态失败:', error)
+        logger.error('检查文件状态失败:', toError(error))
       }
     }
   },
@@ -234,7 +238,7 @@ watch(
 watch(
   fileStatus,
   (status) => {
-    if (status?.isDownloaded && status.absolutePath) {
+    if (status?.downloaded && status.absolutePath) {
       void persistFileLocalPath(status.absolutePath)
     }
   },
@@ -299,7 +303,7 @@ const handleFileClick = async () => {
     // 检查文件是否已下载
     const status = fileStatus.value
 
-    if (status?.isDownloaded && status.absolutePath) {
+    if (status?.downloaded && status.absolutePath) {
       // 文件已下载，尝试打开本地文件
       try {
         await openPath(status.absolutePath)
@@ -314,33 +318,22 @@ const handleFileClick = async () => {
       try {
         await openPath(props.body.url)
       } catch (openError) {
-        console.warn('无法直接打开文件，尝试在文件管理器中显示:', openError)
+        logger.warn('无法直接打开文件，尝试在文件管理器中显示:', openError)
         await revealInDirSafely(props.body.url)
       }
     }
   } catch (error) {
-    console.error('打开文件失败:', error)
+    logger.error('打开文件失败:', toError(error))
     const errorMessage = error instanceof Error ? error.message : t('message.file.unknown_error')
     if (errorMessage.includes('Not allowed to open path') || errorMessage.includes('revealItemInDir')) {
-      console.error('无法打开或显示文件。请手动在文件管理器中找到并打开文件。')
+      logger.error('无法打开或显示文件。请手动在文件管理器中找到并打开文件。')
     } else {
-      console.error(`打开文件失败: ${errorMessage}`)
+      logger.error(`打开文件失败: ${errorMessage}`)
     }
   } finally {
-    const currentChatRoomId = globalStore.currentSessionRoomId // 这个id可能为群id可能为用户uid，所以不能只用用户uid
-    const currentUserUid = userStore.userInfo!.uid as string
-
-    const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
-    const absolutePath = await join(resourceDirPath, props.body.fileName)
-
-    const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath || props.body.url])
-
-    await fileDownloadStore.refreshFileDownloadStatus({
+    await mediaStore.refreshFileDownloadStatus({
       fileUrl: props.body.url,
-      roomId: currentChatRoomId,
-      userId: currentUserUid,
-      fileName: props.body.fileName,
-      exists: fileMeta.exists
+      msgId: props.message!.id
     })
   }
 }
@@ -351,7 +344,25 @@ const downloadAndOpenFile = async () => {
 
   try {
     const fileName = props.body.fileName
-    const absolutePath = await fileDownloadStore.downloadFile(props.body.url, fileName)
+
+    const res = await fileService.downloadWithResume(props.body.url)
+    const blob = res.blob as Blob
+    const buffer = await blob.arrayBuffer()
+    const data = new Uint8Array(buffer)
+    const userStore = useUserStore()
+    const dir = await userStore.getUserRoomDir()
+    const folder = await (await import('@tauri-apps/api/path')).join(dir, 'files')
+    const { BaseDirectory, exists, mkdir, writeFile } = await import('@tauri-apps/plugin-fs')
+    const isMobile = (await import('@/utils/PlatformConstants')).isMobile
+    const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
+    const ok = await exists(folder, { baseDir })
+    if (!ok) await mkdir(folder, { baseDir, recursive: true })
+    const rel = await (await import('@tauri-apps/api/path')).join(folder, fileName)
+    await writeFile(rel, data, { baseDir })
+    const baseDirPath = isMobile()
+      ? await (await import('@tauri-apps/api/path')).appDataDir()
+      : await (await import('@tauri-apps/api/path')).resourceDir()
+    const absolutePath = await (await import('@tauri-apps/api/path')).join(baseDirPath, rel)
 
     if (absolutePath) {
       void persistFileLocalPath(absolutePath)
@@ -359,17 +370,17 @@ const downloadAndOpenFile = async () => {
       try {
         await openPath(absolutePath)
       } catch (openError) {
-        console.warn('无法直接打开文件，尝试在文件管理器中显示:', openError)
+        logger.warn('无法直接打开文件，尝试在文件管理器中显示:', openError)
         await revealInDirSafely(absolutePath)
       }
     }
   } catch (error) {
-    console.error('下载文件失败:', error)
+    logger.error('下载文件失败:', toError(error))
     const errorMessage = error instanceof Error ? error.message : '未知错误'
     if (errorMessage.includes('Not allowed to open path') || errorMessage.includes('revealItemInDir')) {
-      window.$message?.error(t('message.file.toast.download_open_fail'))
+      msg.error(t('message.file.toast.download_open_fail'))
     } else {
-      window.$message?.error(t('message.file.toast.download_failed', { reason: errorMessage }))
+      msg.error(t('message.file.toast.download_failed', { reason: errorMessage }))
     }
   }
 }
@@ -380,28 +391,36 @@ const downloadFileOnly = async () => {
 
   try {
     const fileName = props.body.fileName
-    const absolutePath = await fileDownloadStore.downloadFile(props.body.url, fileName)
+
+    const res = await fileService.downloadWithResume(props.body.url)
+    const blob = res.blob as Blob
+    const buffer = await blob.arrayBuffer()
+    const data = new Uint8Array(buffer)
+    const userStore = useUserStore()
+    const dir = await userStore.getUserRoomDir()
+    const folder = await (await import('@tauri-apps/api/path')).join(dir, 'files')
+    const { BaseDirectory, exists, mkdir, writeFile } = await import('@tauri-apps/plugin-fs')
+    const isMobile = (await import('@/utils/PlatformConstants')).isMobile
+    const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
+    const ok = await exists(folder, { baseDir })
+    if (!ok) await mkdir(folder, { baseDir, recursive: true })
+    const rel = await (await import('@tauri-apps/api/path')).join(folder, fileName)
+    await writeFile(rel, data, { baseDir })
+    const baseDirPath = isMobile()
+      ? await (await import('@tauri-apps/api/path')).appDataDir()
+      : await (await import('@tauri-apps/api/path')).resourceDir()
+    const absolutePath = await (await import('@tauri-apps/api/path')).join(baseDirPath, rel)
     if (absolutePath) {
       void persistFileLocalPath(absolutePath)
     }
   } catch (error) {
-    console.error('下载文件失败:', error)
+    logger.error('下载文件失败:', toError(error))
   } finally {
     // 刷新文件状态
-    const currentChatRoomId = globalStore.currentSessionRoomId
-    const currentUserUid = userStore.userInfo!.uid as string
 
-    const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
-    const absolutePath = await join(resourceDirPath, props.body.fileName)
-
-    const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath || props.body.url])
-
-    await fileDownloadStore.refreshFileDownloadStatus({
+    await mediaStore.refreshFileDownloadStatus({
       fileUrl: props.body.url,
-      roomId: currentChatRoomId,
-      userId: currentUserUid,
-      fileName: props.body.fileName,
-      exists: fileMeta.exists
+      msgId: props.message!.id
     })
   }
 }
@@ -415,7 +434,7 @@ const handleIconClick = async (event: Event) => {
   const status = fileStatus.value
 
   // 如果文件已下载，显示提示
-  if (status?.isDownloaded) {
+  if (status?.downloaded) {
     return
   }
 
@@ -430,9 +449,9 @@ onMounted(async () => {
   if (props.body?.url && props.body?.fileName) {
     try {
       // 检查文件是否已存在于本地
-      await fileDownloadStore.checkFileExists(props.body.url, props.body.fileName)
+      await mediaStore.checkFileExists(props.body.url, props.body.fileName)
     } catch (error) {
-      console.error('检查文件状态失败:', error)
+      logger.error('检查文件状态失败:', toError(error))
     }
   }
 })

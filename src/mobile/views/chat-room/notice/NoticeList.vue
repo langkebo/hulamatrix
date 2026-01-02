@@ -10,48 +10,46 @@
     </template>
 
     <template #container>
-      <div
-        class="bg-[url('@/assets/mobile/chat-home/background.webp')] bg-cover bg-center flex flex-col overflow-auto h-full relative">
+      <div class="flex flex-col overflow-auto h-full relative">
+        <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
         <div class="flex flex-col flex-1 gap-15px py-15px px-20px">
-          <RecycleScroller :items="announList" :item-size="15" key-field="id" class="flex flex-col gap-15px">
-            <template #default="{ item }">
-              <!-- 公告内容块 -->
-              <div @click="goToNoticeDetail(item.id)" class="shadow flex p-15px bg-white rounded-10px">
-                <div class="flex flex-col w-full gap-10px">
-                  <!-- 时间/阅读人数 -->
-                  <div class="flex items-center justify-between text-14px">
-                    <span class="flex gap-5px">
-                      <span class="text-#717171">发布人:</span>
-                      <span class="text-black">{{ groupStore.getUserInfo(item.uid)?.name }}</span>
-                    </span>
-                    <span
-                      v-if="item.isTop"
-                      class="text-#13987F rounded-15px px-7px py-5px text-12px"
-                      style="border: 1px solid; border-color: #13987f">
-                      置顶
-                    </span>
-                  </div>
-                  <!-- 公告内容 -->
-                  <div class="text-14px line-clamp-3 line-height-20px text-#717171 max-h-60px">
-                    {{ item.content }}
-                  </div>
+          <!-- vue-virtual-scroller依赖已移除，使用普通列表替代 -->
+          <div v-for="item in announList" :key="item.id" class="flex flex-col gap-15px">
+            <!-- 公告内容块 -->
+            <div @click="goToNoticeDetail(String(item.id))" class="shadow flex p-15px bg-white rounded-10px">
+              <div class="flex flex-col w-full gap-10px">
+                <!-- 时间/阅读人数 -->
+                <div class="flex items-center justify-between text-14px">
+                  <span class="flex gap-5px">
+                    <span class="text-#717171">发布人:</span>
+                    <span class="text-black">{{ groupStore.getUserInfo(item.uid)?.name }}</span>
+                  </span>
+                  <span
+                    v-if="item.isTop"
+                    class="text-#13987F rounded-15px px-7px py-5px text-12px"
+                    style="border: 1px solid; border-color: #13987f">
+                    置顶
+                  </span>
+                </div>
+                <!-- 公告内容 -->
+                <div class="text-14px line-clamp-3 line-height-20px text-#717171 max-h-60px">
+                  {{ item.content }}
+                </div>
 
-                  <div class="flex items-center justify-between text-12px">
-                    <span class="flex gap-5px text-#717171">{{ formatTimestamp(item.createTime) }}</span>
-                    <span class="text-#13987F">128人已读</span>
-                  </div>
+                <div class="flex items-center justify-between text-12px">
+                  <span class="flex gap-5px text-#717171">{{ formatTimestamp(item.createTime) }}</span>
+                  <span class="text-#13987F">128人已读</span>
                 </div>
               </div>
-            </template>
-          </RecycleScroller>
+            </div>
+          </div>
         </div>
 
-        <!-- 右下角悬浮气泡 - 仅群主、管理员或特定徽章用户可见 -->
-        <van-floating-bubble v-if="canAddAnnouncement" axis="xy" magnetic="x" @click="goToAddNotice">
-          <template #default>
-            <svg class="w-24px h-24px iconpark-icon text-white"><use href="#plus"></use></svg>
-          </template>
-        </van-floating-bubble>
+        <div v-if="canAddAnnouncement" class="fixed right-20px bottom-20px z-50">
+          <n-button circle type="primary" size="large" @click="goToAddNotice">
+            <svg class="w-20px h-20px"><use href="#plus"></use></svg>
+          </n-button>
+        </div>
       </div>
     </template>
   </AutoFixHeightPage>
@@ -59,13 +57,16 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { RecycleScroller } from 'vue-virtual-scroller'
+// vue-virtual-scroller依赖已移除，暂时禁用虚拟滚动功能
+// import { RecycleScroller } from 'vue-virtual-scroller'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
-import { useCachedStore } from '@/stores/cached'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { onActivated } from 'vue'
+import { useCachedStore } from '@/stores/dataCache'
+import { formatTimestamp } from '@/utils/ComputedTime'
+import { ref, computed, onMounted, onActivated } from 'vue'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
+import { logger } from '@/utils/logger'
 
 defineOptions({
   name: 'mobileChatNoticeList'
@@ -73,7 +74,19 @@ defineOptions({
 
 const route = useRoute()
 const router = useRouter()
-const announList = ref<any[]>([])
+
+// Type definition for announcement items
+interface AnnouncementItem {
+  id: string | number
+  uid: string
+  content: string
+  createTime: number
+  isTop?: boolean
+  top?: boolean
+  [key: string]: unknown
+}
+
+const announList = ref<AnnouncementItem[]>([])
 const groupStore = useGroupStore()
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
@@ -102,35 +115,37 @@ const loadAnnouncementList = async () => {
   try {
     const roomId = globalStore.currentSessionRoomId
     if (!roomId) {
-      console.error('当前会话没有roomId')
+      logger.error('当前会话没有roomId')
       return
     }
 
     const data = await cacheStore.getGroupAnnouncementList(roomId, 1, 10)
-    if (data && data.records) {
-      announList.value = data.records
-      // 处理置顶公告
-      if (announList.value && announList.value.length > 0) {
-        const topAnnouncement = announList.value.find((item: any) => item.top)
-        if (topAnnouncement) {
-          announList.value = [topAnnouncement, ...announList.value.filter((item: any) => !item.top)]
+    if (data) {
+      const dataWithRecords = data as { records?: unknown[] }
+      if (dataWithRecords.records) {
+        announList.value = dataWithRecords.records as AnnouncementItem[]
+        // 处理置顶公告
+        if (announList.value && announList.value.length > 0) {
+          const topAnnouncement = announList.value.find((item: AnnouncementItem) => item.top)
+          if (topAnnouncement) {
+            announList.value = [topAnnouncement, ...announList.value.filter((item: AnnouncementItem) => !item.top)]
+          }
         }
       }
     }
   } catch (error) {
-    console.error('加载群公告失败:', error)
+    logger.error('加载群公告失败:', error)
   }
 }
 
 const goToNoticeDetail = (id: string) => {
   // 跳转到公告详情页面
-  console.log(`跳转到公告详情页面，公告ID: ${id}`)
   router.push(`/mobile/chatRoom/notice/detail/${id}`)
 }
 
 const goToAddNotice = () => {
   // 跳转到新增公告页面
-  console.log('跳转到新增公告页面')
+  logger.debug('跳转到新增公告页面', undefined, 'NoticeList')
   router.push('/mobile/chatRoom/notice/add')
 }
 

@@ -1,0 +1,502 @@
+/* ==========================================================================
+   聊天输入框组件样式优化
+   ========================================================================== */
+
+/* 主输入容器 */
+.h-chat-input {
+  display: flex;
+  flex-direction: column;
+  background: var(--center-bg-color);
+  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  transition: all var(--transition-base);
+}
+
+/* 工具栏 */
+.h-chat-input__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: 0 var(--spacing-xs);
+}
+
+.h-chat-input__toolbar-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--icon-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: transparent;
+  border: none;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--icon-color-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  /* 图标大小 */
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 徽标提示 */
+  .badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--danger-color);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+}
+
+/* 输入区域容器 */
+.h-chat-input__container {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+  position: relative;
+}
+
+/* 输入框包装器 */
+.h-chat-input__wrapper {
+  flex: 1;
+  position: relative;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--input-border-hover);
+  }
+
+  &:focus-within {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+  }
+}
+
+/* 输入框 */
+.h-chat-input__textarea {
+  width: 100%;
+  min-height: var(--sz-chat-input-min-h);
+  max-height: 120px;
+  padding: var(--sz-chat-input-pad-y) var(--sz-chat-input-pad-x);
+  font-size: var(--sz-chat-input-font-size);
+  line-height: var(--sz-chat-input-line-h);
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  caret-color: var(--caret-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+
+  /* 占位符样式 */
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
+}
+
+/* 输入状态提示 */
+.h-chat-input__status {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+/* 发送按钮 */
+.h-chat-input__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: var(--button-height);
+  padding: 0 var(--spacing-md);
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    background: var(--button-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* 按图标模式 */
+  &--icon {
+    min-width: auto;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+/* 表情选择器 */
+.h-chat-input__emoji-picker {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: var(--spacing-sm);
+  background: var(--popover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-sm);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all var(--transition-fast);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* 表情标签 */
+.h-chat-input__emoji-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--spacing-sm);
+}
+
+.h-chat-input__emoji-tab {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    color: var(--primary-color);
+    background: rgba(19, 152, 127, 0.1);
+  }
+}
+
+/* 表情网格 */
+.h-chat-input__emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+
+  /* 自定义滚动条 */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-hover);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+
+    &:hover {
+      background: var(--text-tertiary);
+    }
+  }
+}
+
+.h-chat-input__emoji-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-hover);
+    transform: scale(1.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 语音输入 */
+.h-chat-input__voice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--danger-bg);
+  color: var(--danger-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--danger-color);
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  &.recording {
+    background: var(--danger-color);
+    color: #fff;
+    animation: recording-pulse 1.5s ease-in-out infinite;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* 语音提示 */
+.h-chat-input__voice-tip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* @提及功能 */
+.h-chat-input__mention-list {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  background: var(--popover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all var(--transition-fast);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.h-chat-input__mention-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &.active {
+    background: var(--bg-selected);
+  }
+
+  .mention-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+
+  .mention-info {
+    flex: 1;
+
+    .mention-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .mention-status {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+/* 快捷回复 */
+.h-chat-input__quick-reply {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--border-light);
+  margin-top: var(--spacing-sm);
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-hover);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+}
+
+.h-chat-input__quick-reply-item {
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-info);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+}
+
+/* 暗色模式适配 */
+html[data-theme='dark'] {
+  .h-chat-input__wrapper {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+  }
+
+  .h-chat-input__emoji-picker {
+    background: var(--popover-bg);
+    border-color: var(--border-color);
+  }
+}
+
+/* 动画定义 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(193, 64, 83, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0);
+  }
+}
+
+@keyframes recording-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(193, 64, 83, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0);
+  }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .h-chat-input {
+    padding: var(--spacing-sm);
+  }
+
+  .h-chat-input__toolbar {
+    gap: var(--spacing-xs);
+  }
+
+  .h-chat-input__toolbar-item {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .h-chat-input__send {
+    min-width: 60px;
+    height: var(--button-height-sm);
+  }
+
+  .h-chat-input__emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}

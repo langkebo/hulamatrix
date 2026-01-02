@@ -1,10 +1,13 @@
+import { logger } from '@/utils/logger'
+import { createApp } from 'vue'
 import 'uno.css'
 import '@unocss/reset/eric-meyer.css' // unocss提供的浏览器默认样式重置
-import TlbsMap from 'tlbs-map-vue'
+import '@/styles/index.scss' // 引入自定义样式
+// TlbsMap已移除 - 如需地图功能可考虑替代方案
 import { setupI18n } from '@/services/i18n'
-import { AppException } from '@/common/exception.ts'
+import { AppException } from '@/common/exception'
 import vResize from '@/directives/v-resize'
-import vSlide from '@/directives/v-slide.ts'
+import vSlide from '@/directives/v-slide'
 import router from '@/router'
 import { pinia } from '@/stores'
 import { initializePlatform } from '@/utils/PlatformConstants'
@@ -12,15 +15,333 @@ import { startWebVitalObserver } from '@/utils/WebVitalsObserver'
 import { invoke } from '@tauri-apps/api/core'
 import { isMobile } from '@/utils/PlatformConstants'
 import App from '@/App.vue'
+import { provideMatrixClientManager } from '@/integrations/matrix/client-manager'
+import { Perf } from '@/utils/Perf'
+import { flagSummary, validateEnvFlags, flags } from '@/utils/envFlags'
+import { msg } from '@/utils/SafeUI'
+
+// Type definitions for import.meta
+interface ImportMetaEnv {
+  DEV?: boolean
+  PROD?: boolean
+  MODE?: string
+  VITE_PERFORMANCE_ENDPOINT?: string
+  VITE_APP_VERSION?: string
+  VITE_APP_NAME?: string
+  VITE_APP_AUTHOR_URL?: string
+  VITE_LOCKSCREEN_PASSWORD?: string
+  VITE_LOCKSCREEN_ENABLE?: string
+  VITE_MATRIX_DEV_SYNC?: string
+  [key: string]: string | boolean | undefined
+}
+
+interface ImportMetaLike {
+  env: ImportMetaEnv
+  [key: string]: unknown
+}
+
+declare const importMeta: ImportMetaLike
+
+// Type definitions for error events
+interface ErrorEventLike {
+  message?: string
+  error?: Error
+  filename?: string
+  lineno?: number
+  colno?: number
+  [key: string]: unknown
+}
+
+interface PromiseRejectionEventLike {
+  reason?: unknown
+  promise?: Promise<unknown>
+  [key: string]: unknown
+}
+
+// Type definitions for window augmentations
+interface WindowWithCleanup extends Window {
+  __globalErrorCleanup?: () => void
+  [key: string]: unknown
+}
 
 initializePlatform()
 startWebVitalObserver()
-import('@/services/webSocketAdapter')
+import('@/services/webSocketRust')
 
-if (process.env.NODE_ENV === 'development') {
-  import('@/utils/Console.ts').then((module) => {
-    /**! 控制台打印项目版本信息(不需要可手动关闭)*/
-    module.consolePrint()
+// 在开发环境下引入调试器
+if (import.meta.env.DEV) {
+  import('@/utils/messageListDebugger')
+}
+
+// 初始化性能监控
+import { usePerformanceMonitor } from '@/utils/extended-performance-monitor'
+import { startHistoryMonitoring } from '@/utils/history-monitor'
+
+// 获取性能监控实例
+const perfMonitor = usePerformanceMonitor()
+
+// 性能监控配置
+// 生产环境: 启用完整性能监控
+// 开发环境: 仅在 VITE_DEV_PERF='true' 时启用（避免影响开发性能）
+const shouldEnablePerfMonitoring =
+  import.meta.env.PROD || (import.meta.env.DEV && import.meta.env.VITE_DEV_PERF === 'true')
+
+// 启动性能监控
+if (shouldEnablePerfMonitoring) {
+  // 启动扩展性能监控
+  perfMonitor.start()
+
+  logger.debug('🚀 Performance monitoring started', {
+    env: import.meta.env.PROD ? 'production' : 'development'
+  })
+
+  // 历史监控仅在明确启用时启动（较重的操作）
+  if (import.meta.env.PROD || import.meta.env.VITE_DEV_PERF === 'true') {
+    startHistoryMonitoring(30000)
+  }
+
+  // 异步上报性能数据
+  reportPerformance().catch((err) => {
+    logger.warn('[Performance] Failed to report metrics:', err)
+  })
+} else {
+  logger.debug('⏭️  Performance monitoring disabled (set VITE_DEV_PERF=true to enable in development)')
+}
+
+// 性能数据上报
+async function reportPerformance() {
+  // 获取扩展性能指标
+  const metrics = perfMonitor.getMetrics()
+
+  // 在开发环境打印性能数据
+  if (import.meta.env.DEV) {
+    console.group('📊 Performance Metrics')
+    logger.debug('Metrics:', metrics)
+    console.groupEnd()
+  }
+
+  // 在生产环境上报到分析服务
+  if (import.meta.env.PROD) {
+    // 实现分析服务上报
+    // 支持的分析服务可以通过环境变量配置：
+    // - VITE_GA_ID: Google Analytics ID
+    // - VITE_ANALYTICS_ENDPOINT: 自定义分析端点
+    try {
+      // Google Analytics 上报（如果配置了 GA ID）
+      if (import.meta.env.VITE_GA_ID) {
+        // 上报 Web Vitals 到 Google Analytics
+        const gaId = import.meta.env.VITE_GA_ID
+        // 使用类型断言访问 window.gtag
+        const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag
+        if (gtag) {
+          gtag('event', 'web_vitals', {
+            event_category: 'Performance',
+            event_label: metrics.lcp,
+            value: Math.round(metrics.lcp),
+            non_interaction: true
+          })
+          logger.debug('[Analytics] Reported to Google Analytics', { gaId })
+        }
+      }
+
+      // 自定义分析端点上报（如果配置了）
+      if (import.meta.env.VITE_ANALYTICS_ENDPOINT) {
+        const analyticsReport = {
+          timestamp: Date.now(),
+          url: window.location.href,
+          userAgent: navigator.userAgent,
+          version: import.meta.env.VITE_APP_VERSION || '3.0.5',
+          metrics: {
+            fcp: metrics.fcp,
+            lcp: metrics.lcp,
+            ttfb: metrics.ttfb,
+            cls: metrics.cls
+          }
+        }
+
+        await fetch(import.meta.env.VITE_ANALYTICS_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(analyticsReport),
+          keepalive: true // 使用 keepalive 确保在页面卸载时也能发送
+        }).catch((error) => {
+          logger.warn('[Analytics] Failed to report to analytics endpoint:', error)
+        })
+      }
+    } catch (error) {
+      logger.warn('[Analytics] Failed to report analytics:', error)
+    }
+  }
+
+  // 在生产环境上报到服务端
+  if (import.meta.env.PROD && import.meta.env.VITE_PERFORMANCE_ENDPOINT) {
+    const report = {
+      timestamp: Date.now(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      version: import.meta.env.VITE_APP_VERSION || '3.0.5',
+      metrics
+    }
+
+    await fetch(import.meta.env.VITE_PERFORMANCE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(report)
+    })
+  }
+}
+
+try {
+  const v = validateEnvFlags()
+
+  // 输出配置验证结果
+  if (v.errors.length > 0) {
+    logger.error('[EnvFlags] 关键配置错误:')
+    for (const error of v.errors) {
+      logger.error(`  ❌ ${error.key}: ${error.message}`)
+      logger.error(`     💡 建议: ${error.suggestion}`)
+    }
+  }
+
+  if (v.warnings.length > 0) {
+    logger.warn('[EnvFlags] 配置警告:')
+    for (const warning of v.warnings) {
+      logger.warn(`  ⚠️  ${warning.key}=${warning.value}: ${warning.message}`)
+      logger.warn(`     💡 建议: ${warning.suggestion}`)
+    }
+  }
+
+  if (v.info.length > 0) {
+    logger.info('[EnvFlags] 功能状态信息:')
+    for (const info of v.info) {
+      logger.info(`  ℹ️  ${info.message}`)
+      logger.info(`     💡 ${info.suggestion}`)
+    }
+  }
+
+  logger.info('[EnvFlags] 启动特性开关', flagSummary())
+
+  // 如果有关键错误，阻止应用启动（仅在开发环境）
+  if (!v.isValid && import.meta.env.DEV) {
+    logger.error('[EnvFlags] 关键配置错误，应用无法启动')
+    logger.error('[EnvFlags] 请修复上述错误后重新启动应用')
+    // 注意: 生产环境不阻止启动，允许降级运行
+  }
+} catch (e) {
+  logger.error('[EnvFlags] 校验失败', e)
+}
+
+// 全局错误处理 - 只在开发模式下添加，生产环境可能有自己的错误处理
+if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
+  try {
+    const errorHandler = (ev: Event | ErrorEventLike) => {
+      const errorEvent = ev as Partial<ErrorEventLike>
+      const msg = String(errorEvent?.message || errorEvent?.error || '')
+      const file = String(errorEvent?.filename || '')
+      const isDevNoise = file.includes('@vite/client') || msg.includes('WebSocket closed without opened')
+      if (isDevNoise) return
+      const errorOrMessage = errorEvent?.error || errorEvent?.message || String(ev)
+      logger.error('[EnvFlags] 异常', flagSummary(), typeof errorOrMessage === 'string' ? errorOrMessage : undefined)
+    }
+
+    const rejectionHandler = (ev: Event | PromiseRejectionEventLike) => {
+      const rejectionEvent = ev as Partial<PromiseRejectionEventLike>
+      const reasonText = String(rejectionEvent?.reason || '')
+      const isDevNoise =
+        reasonText.includes('@vite') ||
+        reasonText.includes('WebSocket closed without opened') ||
+        reasonText.includes('transformCallback')
+      if (isDevNoise) return
+      const reason = rejectionEvent?.reason
+      logger.error('[EnvFlags] 未处理拒绝', flagSummary(), typeof reason === 'string' ? reason : String(reason))
+    }
+
+    window.addEventListener('error', errorHandler)
+    window.addEventListener('unhandledrejection', rejectionHandler)
+
+    // 导出清理函数供测试使用
+    if (typeof window !== 'undefined') {
+      ;(window as unknown as WindowWithCleanup).__globalErrorCleanup = () => {
+        window.removeEventListener('error', errorHandler)
+        window.removeEventListener('unhandledrejection', rejectionHandler)
+      }
+    }
+  } catch (error) {
+    logger.debug('[Main] Failed to setup global error handlers (non-critical):', error)
+  }
+}
+
+if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
+  /**! 控制台打印项目版本信息(不需要可手动关闭)*/
+  import('@/utils/logger').then(({ logger }) => {
+    const meta = import.meta as unknown as ImportMetaLike
+    const appName = meta?.env?.VITE_APP_NAME || 'HuLa'
+    const appVersion = meta?.env?.VITE_APP_VERSION || ''
+    const appAuthorUrl = meta?.env?.VITE_APP_AUTHOR_URL || ''
+    logger.debug(
+      `%c 🍀 ${appName} ${appVersion}`,
+      'font-size:20px;border-left: 4px solid #13987f;background: #cef9ec;font-family: Comic Sans MS, cursive;color:#581845;padding:10px;border-radius:4px;',
+      `${appAuthorUrl}`
+    )
+  })
+  const __origConsoleError = console.error
+  console.error = (...args: unknown[]) => {
+    try {
+      const text = args.map((a) => (typeof a === 'string' ? a : '')).join(' ')
+      const isDevNoise =
+        text.includes('@vite/client') ||
+        text.includes('WebSocket closed without opened') ||
+        text.includes('Failed to get TURN URIs') ||
+        text.includes("Can't fetch server versions") ||
+        text.includes('ConnectionError: fetch failed') ||
+        text.includes('/_matrix/client') ||
+        text.includes('/_synapse/client') ||
+        text.includes('sync /sync error') ||
+        text.includes('net::ERR_ABORTED') ||
+        text.includes('[Performance] Long task detected:') ||
+        text.includes('[Performance] Slow resource:') ||
+        text.includes('[PerformanceMonitor] Long task detected:') ||
+        // Filter Matrix SDK event builder errors (handled by startClient error recovery)
+        text.includes('builder error') ||
+        text.includes('Event builder') ||
+        text.includes('Invalid event') ||
+        text.includes('MatrixEvent builder')
+      if (isDevNoise) return
+    } catch (_error) {
+      // Silently ignore console.error filtering errors
+    }
+    __origConsoleError.apply(console, args as unknown[])
+  }
+  const __origConsoleWarn = console.warn
+  console.warn = (...args: unknown[]) => {
+    try {
+      const text = args.map((a) => (typeof a === 'string' ? a : '')).join(' ')
+      const isDevNoise =
+        text.includes('[Compatibility] Using legacy store') ||
+        text.includes('[EnhancedFriends] Client not initialized') ||
+        text.includes('[HistoryStats]') ||
+        // Filter expected Matrix SDK performance warnings
+        text.includes('检测到长时间运行任务') ||
+        text.includes('📊 Matrix SDK Performance Report') ||
+        text.includes('[PerformanceMonitor] Long task detected:') ||
+        text.includes('[Performance] Long task detected:') ||
+        text.includes('[Performance] Slow resource:')
+      if (isDevNoise) return
+    } catch (_error) {
+      // Silently ignore console.warn filtering errors
+    }
+    __origConsoleWarn.apply(console, args as unknown[])
+  }
+  import('@/integrations/matrix/spaces-test-harness').then((m) => {
+    try {
+      m.setupSpacesTestHarness()
+    } catch (error) {
+      logger.debug('[Main] Spaces test harness setup failed (non-critical):', error)
+    }
   })
 }
 
@@ -43,22 +364,96 @@ if (isMobile()) {
 }
 
 async function setup() {
-  await invoke('set_complete', { task: 'frontend' })
+  try {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) {
+      await invoke('set_complete', { task: 'frontend' })
+    }
+  } catch (error) {
+    logger.debug('[Main] Failed to set frontend complete flag (non-critical):', error)
+  }
 }
 
+Perf.mark('app-start')
 const app = createApp(App)
-app
-  .use(router)
-  .use(pinia)
-  .use(TlbsMap)
-  .use(setupI18n)
-  .directive('resize', vResize)
-  .directive('slide', vSlide)
-  .mount('#app')
-app.config.errorHandler = (err) => {
+
+provideMatrixClientManager(app)
+app.use(router).use(pinia).use(setupI18n).directive('resize', vResize).directive('slide', vSlide).mount('#app')
+Perf.measure('app-mounted', 'app-start')
+
+// 应用环境变量中的锁屏设置（必须在 Pinia 安装之后）
+try {
+  const { useSettingStore } = await import('@/stores/setting')
+  const setting = useSettingStore()
+  const env = ((import.meta as unknown as ImportMetaLike)?.env || {}) as ImportMetaEnv
+  if (env?.VITE_LOCKSCREEN_PASSWORD) {
+    setting.lockScreen.password = String(env.VITE_LOCKSCREEN_PASSWORD)
+  }
+  if (env?.VITE_LOCKSCREEN_ENABLE === 'true') {
+    setting.lockScreen.enable = true
+  }
+} catch (error) {
+  logger.warn('[Main] Failed to apply lock screen settings from environment:', error)
+}
+
+// Global Vue error handler - improved with better logging and user feedback
+app.config.errorHandler = (err, instance, info) => {
+  // Log all errors for debugging
+  logger.error('[VueErrorHandler] Error caught:', {
+    error: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+    component: instance?.$options?.name || instance?.$?.type?.name || 'Unknown',
+    info
+  })
+
+  // Handle AppException with user-friendly message
   if (err instanceof AppException) {
-    window.$message.error(err.message)
+    msg.error(err.message)
     return
   }
-  throw err
+
+  // Handle other errors with generic message
+  // Don't show error toasts for development noise
+  const isDevNoise =
+    String(err).includes('@vite') ||
+    String(err).includes('WebSocket closed without opened') ||
+    String(err).includes('transformCallback')
+
+  if (!isDevNoise) {
+    // Provide user-friendly error message
+    const errorMessage = err instanceof Error ? err.message : '操作失败,请重试'
+    // Only show non-sensitive errors
+    if (!errorMessage.includes('token') && !errorMessage.includes('authorization')) {
+      msg.error(errorMessage)
+    }
+  }
+}
+
+if (flags.matrixEnabled) {
+  try {
+    const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
+    const auth = useMatrixAuthStore()
+    const baseUrl = auth.getHomeserverBaseUrl()
+    const token = auth.accessToken
+    const uid = auth.userId
+    if (baseUrl && token && uid) {
+      await (await import('@/integrations/matrix/client')).matrixClientService.initialize({
+        baseUrl,
+        accessToken: token,
+        userId: uid
+      })
+      ;(await import('@/integrations/matrix/client')).initializeMatrixBridges()
+      await (await import('@/integrations/matrix/client')).matrixClientService.startClient({
+        initialSyncLimit: 5,
+        pollTimeout: 15000
+      })
+    }
+  } catch (error) {
+    logger.error('[Main] Matrix client initialization failed:', error)
+    msg.warning('Matrix 服务初始化失败,部分功能可能不可用')
+  }
+}
+
+if (flags.matrixEnabled && import.meta.env.VITE_MATRIX_DEV_SYNC === 'true') {
+  import('@/hooks/useMatrixDevSync').then((m) => m.useMatrixDevSync())
 }

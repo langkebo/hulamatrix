@@ -1,3 +1,4 @@
+import { onMounted, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 
 /**! 这个是暂时用来解决在n-scrollbar中使用n-virtual-list使用n-popover时候滚动出现原生滚动条的方法 */
@@ -14,15 +15,16 @@ export const usePopover = (selectKey: Ref<string>, id: string) => {
     window.removeEventListener('wheel', preventDefault)
   }
 
-  const close = (event: any) => {
-    if (!event.target.matches('.n-popover, .n-popover *')) {
+  const close = (event: Event) => {
+    const target = event.target as Element
+    if (!target.matches('.n-popover, .n-popover *')) {
       enableScroll()
     }
   }
 
-  const handlePopoverUpdate = (key: string, show?: boolean) => {
+  const handlePopoverUpdate = (key: string, show?: boolean): boolean => {
     const scrollbar = document.querySelector(`#${id}`) as HTMLElement
-    if (!scrollbar) return
+    if (!scrollbar) return false
 
     if (selectKey.value === key) {
       if (show) {
@@ -35,6 +37,7 @@ export const usePopover = (selectKey: Ref<string>, id: string) => {
       }
       return true
     }
+    return false
   }
 
   onMounted(() => {

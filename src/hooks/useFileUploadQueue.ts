@@ -32,8 +32,8 @@ export const useFileUploadQueue = () => {
     completedFiles: 0,
     failedFiles: 0,
     isActive: false,
-    startTime: undefined,
-    endTime: undefined
+    startTime: 0,
+    endTime: 0
   })
 
   // 计算属性
@@ -63,7 +63,7 @@ export const useFileUploadQueue = () => {
     queue.failedFiles = 0
     queue.isActive = true
     queue.startTime = Date.now()
-    queue.endTime = undefined
+    delete queue.endTime
   }
 
   /**
@@ -133,8 +133,8 @@ export const useFileUploadQueue = () => {
     queue.completedFiles = 0
     queue.failedFiles = 0
     queue.isActive = false
-    queue.startTime = undefined
-    queue.endTime = undefined
+    delete queue.startTime
+    delete queue.endTime
   }
 
   return {

@@ -1,15 +1,21 @@
 <template>
   <!-- 好友详情 -->
-  <n-flex v-if="content.type === RoomTypeEnum.SINGLE" vertical align="center" :size="30" class="mt-60px">
+  <n-flex
+    v-if="content.type === RoomTypeEnum.SINGLE && item"
+    vertical
+    align="center"
+    :size="30"
+    class="mt-40px md:mt-60px px-16px w-full max-w-560px">
     <n-image
       object-fit="cover"
       show-toolbar-tooltip
       preview-disabled
-      width="146"
-      height="146"
+      :width="Math.round(Math.min(146, Math.max(96, win.innerWidth * 0.25)))"
+      :height="Math.round(Math.min(146, Math.max(96, win.innerWidth * 0.25)))"
+      sizes="(max-width: 600px) 25vw, 146px"
       style="border: 2px solid #fff"
       class="rounded-50% select-none cursor-pointer"
-      :src="AvatarUtils.getAvatarUrl(item.avatar)"
+      :src="AvatarUtils.getAvatarUrl(item.avatar ?? '')"
       @dblclick="openImageViewer"
       alt="" />
 
@@ -39,13 +45,13 @@
         </n-flex>
       </n-flex>
       <!-- 选项按钮 -->
-      <n-flex align="center" justify="space-between" :size="60">
+      <n-flex align="center" justify="space-between" :size="40" class="w-full max-w-420px">
         <n-icon-wrapper
           v-for="(item, index) in footerOptions"
           :key="index"
           @click="item.click()"
           class="cursor-pointer"
-          :size="28"
+          :size="32"
           :border-radius="10"
           :color="'#13987f'">
           <n-popover trigger="hover">
@@ -63,27 +69,28 @@
 
   <!-- 群聊详情 -->
   <div
-    v-else-if="content.type === RoomTypeEnum.GROUP && item"
-    class="flex flex-col flex-1 mt-60px gap-30px select-none p-[0_40px] box-border">
+    v-else-if="content.type === RoomTypeEnum.GROUP && groupDetail"
+    class="flex flex-col flex-1 mt-40px md:mt-60px gap-24px md:gap-30px select-none p-[0_16px] md:p-[0_40px] box-border">
     <!-- 群聊头像及名称 -->
-    <n-flex align="center" justify="space-between" class="px-30px box-border">
+    <n-flex align="center" justify="space-between" class="px-16px md:px-30px box-border">
       <n-flex align="center" :size="30">
         <n-image
           object-fit="cover"
           show-toolbar-tooltip
           preview-disabled
-          width="106"
-          height="106"
+          :width="Math.round(Math.min(106, Math.max(80, win.innerWidth * 0.22)))"
+          :height="Math.round(Math.min(106, Math.max(80, win.innerWidth * 0.22)))"
+          sizes="(max-width: 600px) 22vw, 106px"
           style="border: 2px solid #fff"
           class="rounded-50% select-none cursor-pointer"
-          :src="AvatarUtils.getAvatarUrl(item.avatar)"
+          :src="AvatarUtils.getAvatarUrl(groupDetail.avatar ?? '')"
           @dblclick="openImageViewer"
           alt="" />
 
         <n-flex vertical :size="16">
           <n-flex align="center" :size="12">
-            <span class="text-(20px [--text-color])">{{ item.groupName }}</span>
-            <n-popover trigger="hover" v-if="item.roomId === '1'">
+            <span class="text-(20px [--text-color])">{{ groupDetail.groupName || groupDetail.name }}</span>
+            <n-popover trigger="hover" v-if="groupDetail.roomId === '1'">
               <template #trigger>
                 <svg class="size-20px color-#13987f select-none outline-none cursor-pointer">
                   <use href="#auth"></use>
@@ -93,10 +100,10 @@
             </n-popover>
           </n-flex>
           <n-flex align="center" :size="12">
-            <span class="text-(14px #909090)">{{ t('home.chat_details.group.id', { account: item.account }) }}</span>
+            <span class="text-(14px #909090)">{{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}</span>
             <n-tooltip trigger="hover">
               <template #trigger>
-                <svg class="size-12px cursor-pointer color-#909090" @click="handleCopy(item.account)">
+                <svg class="size-12px cursor-pointer color-#909090" @click="handleCopy(groupDetail.uid || groupDetail.roomId || '')">
                   <use href="#copy"></use>
                 </svg>
               </template>
@@ -119,7 +126,7 @@
     </n-flex>
 
     <!-- 群信息列表 -->
-    <n-flex vertical class="select-none w-full px-30px box-border">
+    <n-flex vertical class="select-none w-full px-16px md:px-30px box-border">
       <n-flex
         align="center"
         justify="space-between"
@@ -128,7 +135,7 @@
         <div v-if="isEditingRemark" class="flex items-center">
           <n-input
             ref="remarkInputRef"
-            v-model:value="item.remark"
+            v-model:value="editingRemarkValue"
             size="tiny"
             class="border-(1px solid #90909080)"
             :placeholder="t('home.chat_details.group.remark.placeholder')"
@@ -141,14 +148,14 @@
             @keydown.enter="handleRemarkUpdate" />
         </div>
         <span v-else class="cursor-pointer" @click="startEditRemark">
-          {{ item.remark || t('home.chat_details.group.remark.empty') }}
+          {{ groupDetail.remark || t('home.chat_details.group.remark.empty') }}
         </span>
       </n-flex>
 
       <n-flex
         align="center"
         justify="space-between"
-        :class="{ 'pr-4px': item.myName }"
+        :class="{ 'pr-4px': groupDetail.myName }"
         class="py-6px border-b h-26px text-(14px [--chat-text-color])">
         <span>{{ t('home.chat_details.group.nickname.label') }}</span>
         <div v-if="isEditingNickname" class="flex items-center">
@@ -168,7 +175,7 @@
         </div>
         <span v-else class="flex items-center cursor-pointer" @click="startEditNickname">
           <p class="text-#909090">{{ displayNickname || t('home.chat_details.group.nickname.empty') }}</p>
-          <n-icon v-if="!item.myName" size="16" class="ml-1">
+          <n-icon v-if="!groupDetail.myName" size="16" class="ml-1">
             <svg><use href="#right"></use></svg>
           </n-icon>
         </span>
@@ -178,7 +185,7 @@
         <span>{{ t('home.chat_details.group.announcement.label') }}</span>
         <span class="flex items-center cursor-pointer gap-4px" @click="handleOpenAnnouncement">
           <p
-            class="text-#909090 max-w-200px truncate leading-tight"
+            class="text-#909090 max-w-[clamp(160px,40vw,320px)] truncate leading-tight"
             :title="announcementContent || t('home.chat_details.group.announcement.empty')">
             {{ announcementContent || t('home.chat_details.group.announcement.empty') }}
           </p>
@@ -190,16 +197,26 @@
     </n-flex>
 
     <!-- 群成员 -->
-    <n-flex vertical :size="10" class="px-30px box-border">
+    <n-flex vertical :size="10" class="px-16px md:px-30px box-border">
       <n-flex align="center" justify="space-between" class="text-(14px [--chat-text-color])">
-        <span>{{ t('home.chat_details.group.members.count', { count: item.memberNum }) }}</span>
+        <span v-if="formattedStats.hasData">
+          {{ t('home.chat_details.group.members.count', { count: formattedStats.memberCount }) }}
+        </span>
+        <span v-else>
+          {{ t('home.chat_details.group.members.count', { count: groupDetail.memberNum || 0 }) }}
+        </span>
         <span class="flex items-center">
-          {{ t('home.chat_details.group.members.online', { count: item.onlineNum }) }}
+          <span v-if="formattedStats.hasData">
+            {{ t('home.chat_details.group.members.online', { count: formattedStats.onlineCount }) }}
+          </span>
+          <span v-else>
+            {{ t('home.chat_details.group.members.online', { count: groupDetail.onlineNum || 0 }) }}
+          </span>
         </span>
       </n-flex>
 
       <n-flex class="pt-16px">
-        <n-avatar-group :options="options" :size="40" :max="10" expand-on-hover>
+        <n-avatar-group :options="options" :size="36" :max="10" expand-on-hover>
           <template #avatar="{ option: { src } }">
             <n-avatar :src="AvatarUtils.getAvatarUrl(src)" />
           </template>
@@ -209,34 +226,78 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref, useTemplateRef, computed, watchEffect, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CallTypeEnum, RoomTypeEnum, UserType } from '@/enums'
-import { useCommon } from '@/hooks/useCommon.ts'
+import { useCommon } from '@/hooks/useCommon'
 import { useMyRoomInfoUpdater } from '@/hooks/useMyRoomInfoUpdater'
 import { useWindow } from '@/hooks/useWindow'
-import type { UserItem } from '@/services/types'
-import { useCachedStore } from '@/stores/cached'
+import type { UserItem, SessionItem } from '@/services/types'
+import { useCachedStore } from '@/stores/dataCache'
 import { useGroupStore } from '@/stores/group'
-import { useImageViewer } from '@/stores/imageViewer'
+import { useMediaStore } from '@/stores/useMediaStore'
 import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { getGroupDetail } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import { useRoomStats } from '@/composables/useRoomStats'
 
 const { t } = useI18n()
+const win = window
 const { openMsgSession } = useCommon()
 const { createWebviewWindow, startRtcCall } = useWindow()
 const globalStore = useGlobalStore()
 const IMAGEWIDTH = 630
 const IMAGEHEIGHT = 660
+
+// 公告响应接口
+interface AnnouncementResponse {
+  records?: AnnouncementItem[]
+}
+
+interface AnnouncementItem {
+  top?: boolean
+  content?: string
+  [key: string]: unknown
+}
+
+// 群组详情响应接口 - 扩展以包含所有可能的属性
+interface GroupDetail {
+  roomId?: string
+  myName?: string
+  remark?: string
+  memberNum?: number
+  onlineNum?: number
+  // 为了与 UserItem 兼容，添加这些属性
+  avatar?: string
+  name?: string
+  uid?: string
+  groupName?: string
+  itemIds?: string[]
+  locPlace?: string
+  [key: string]: unknown
+}
+
+// 底部操作选项
+interface FooterOption {
+  url: string
+  title: string
+  click: () => void
+  icon?: string
+  [key: string]: unknown
+}
+
 const { content } = defineProps<{
-  content: any
+  content: SessionItem
 }>()
-const item = ref<any>(null)
+const item = ref<UserItem | GroupDetail | null>(null)
 const options = ref<Array<{ name: string; src: string }>>([])
 
 // 编辑群备注相关状态
 const isEditingRemark = ref(false)
 const remarkInputRef = useTemplateRef('remarkInputRef')
+const editingRemarkValue = ref('')
 
 // 编辑本群昵称相关状态
 const isEditingNickname = ref(false)
@@ -250,6 +311,9 @@ const remarkSnapshot = ref('')
 const nicknameSnapshot = ref('')
 const announcementContent = ref('')
 
+// 房间统计信息
+const { formattedStats, fetchRoomStats } = useRoomStats()
+
 const loadAnnouncement = async (roomId: string) => {
   if (!roomId) {
     announcementContent.value = ''
@@ -257,22 +321,22 @@ const loadAnnouncement = async (roomId: string) => {
   }
 
   try {
-    const data: any = await cacheStore.getGroupAnnouncementList(roomId, 1, 10)
+    const data = (await cacheStore.getGroupAnnouncementList(roomId, 1, 10)) as AnnouncementResponse
     if (data && Array.isArray(data.records) && data.records.length > 0) {
-      const topAnnouncement = data.records.find((item: any) => item.top)
+      const topAnnouncement = data.records.find((item: AnnouncementItem) => item.top)
       const targetAnnouncement = topAnnouncement || data.records[0]
       announcementContent.value = targetAnnouncement?.content || ''
     } else {
       announcementContent.value = ''
     }
   } catch (error) {
-    console.error('获取群公告失败:', error)
+    logger.error('获取群公告失败:', error)
     announcementContent.value = ''
   }
 }
 
 const handleOpenAnnouncement = async () => {
-  if (!item.value?.roomId) return
+  if (!isGroupDetail(item.value) || !item.value.roomId) return
   await createWebviewWindow(
     t('home.chat_details.group.announcement.window_title'),
     `announList/${item.value.roomId}/1`,
@@ -282,38 +346,71 @@ const handleOpenAnnouncement = async () => {
 }
 
 const displayNickname = computed(() =>
-  resolveMyRoomNickname({ roomId: item.value?.roomId, myName: item.value?.myName })
+  resolveMyRoomNickname({
+    roomId: isGroupDetail(item.value) ? item.value.roomId : '',
+    myName: isGroupDetail(item.value) ? item.value.myName : ''
+  })
 )
 
 // 判断是否为 BOT 用户
 const isBotUser = computed(() => {
-  if (content.type !== RoomTypeEnum.SINGLE || !item.value?.uid) return false
+  if (content.type !== RoomTypeEnum.SINGLE || !isUserItem(item.value)) return false
   return groupStore.getUserInfo(item.value.uid)?.account === UserType.BOT
+})
+
+// Type guard functions
+function isGroupDetail(item: UserItem | GroupDetail | null): item is GroupDetail {
+  return item !== null && 'roomId' in item && typeof item.roomId === 'string'
+}
+
+function isUserItem(item: UserItem | GroupDetail | null): item is UserItem {
+  return item !== null && 'uid' in item && typeof item.uid === 'string'
+}
+
+// Computed properties for template type safety
+const groupDetail = computed<GroupDetail | null>(() => {
+  return isGroupDetail(item.value) ? item.value : null
+})
+
+const userDetail = computed<UserItem | null>(() => {
+  return isUserItem(item.value) ? item.value : null
 })
 
 watchEffect(async () => {
   if (content.type === RoomTypeEnum.SINGLE) {
-    item.value = groupStore.getUserInfo(content.uid)!
+    // For SINGLE type, use detailId which contains the other user's uid
+    const targetUid = content.detailId
+    if (targetUid) {
+      const userInfo = groupStore.getUserInfo(targetUid)
+      item.value = userInfo ?? null
+    } else {
+      item.value = null
+    }
     nicknameValue.value = ''
     remarkSnapshot.value = ''
     nicknameSnapshot.value = ''
     announcementContent.value = ''
   } else {
-    await getGroupDetail(content.uid)
-      .then((response: any) => {
-        item.value = response
-        const normalizedNickname = resolveMyRoomNickname({ roomId: response.roomId, myName: response.myName })
-        const normalizedRemark = response.remark || ''
+    await requestWithFallback({ url: 'get_group_detail', params: { id: content.detailId } })
+      .then((response: unknown) => {
+        const res = response as GroupDetail
+        item.value = res
+        const normalizedNickname = resolveMyRoomNickname({
+          roomId: res.roomId || '',
+          myName: res.myName || ''
+        })
+        const normalizedRemark = res.remark || ''
         nicknameValue.value = normalizedNickname
         nicknameSnapshot.value = normalizedNickname
         remarkSnapshot.value = normalizedRemark
-        if (item.value && item.value.roomId) {
+        if (item.value && isGroupDetail(item.value) && item.value.roomId) {
           fetchGroupMembers(item.value.roomId)
+          fetchRoomStats(item.value.roomId)
           void loadAnnouncement(item.value.roomId)
         }
       })
       .catch((e) => {
-        console.error('获取群组详情失败:', e)
+        logger.error('获取群组详情失败:', e)
         announcementContent.value = ''
       })
   }
@@ -321,7 +418,10 @@ watchEffect(async () => {
 
 // 开始编辑群备注
 const startEditRemark = () => {
-  remarkSnapshot.value = item.value?.remark || ''
+  if (isGroupDetail(item.value)) {
+    remarkSnapshot.value = item.value.remark || ''
+    editingRemarkValue.value = item.value.remark || ''
+  }
   isEditingRemark.value = true
   nextTick(() => {
     remarkInputRef.value?.focus()
@@ -330,13 +430,13 @@ const startEditRemark = () => {
 
 // 处理群备注更新
 const handleRemarkUpdate = async () => {
-  if (!item.value?.roomId) {
+  if (!isGroupDetail(item.value) || !item.value.roomId) {
     isEditingRemark.value = false
     return
   }
 
   const previousRemark = remarkSnapshot.value || ''
-  const nextRemark = item.value.remark || ''
+  const nextRemark = editingRemarkValue.value || ''
 
   if (nextRemark === previousRemark) {
     isEditingRemark.value = false
@@ -350,10 +450,12 @@ const handleRemarkUpdate = async () => {
       remark: nextRemark
     })
     remarkSnapshot.value = nextRemark
-    window.$message.success(t('home.chat_details.group.remark.success'))
+    if (isGroupDetail(item.value)) {
+      item.value.remark = nextRemark
+    }
+    msg.success(t('home.chat_details.group.remark.success'))
   } catch (error) {
-    item.value.remark = previousRemark
-    window.$message.error(t('home.chat_details.group.remark.fail'))
+    msg.error(t('home.chat_details.group.remark.fail'))
   } finally {
     isEditingRemark.value = false
   }
@@ -372,7 +474,7 @@ const startEditNickname = () => {
 
 // 处理本群昵称更新
 const handleNicknameUpdate = async () => {
-  if (!item.value?.roomId) {
+  if (!isGroupDetail(item.value) || !item.value.roomId) {
     isEditingNickname.value = false
     return
   }
@@ -398,16 +500,18 @@ const handleNicknameUpdate = async () => {
     const resolvedNickname = resolveMyRoomNickname({ roomId: item.value.roomId, myName: nextNickname })
     nicknameValue.value = resolvedNickname
     nicknameSnapshot.value = resolvedNickname
-    window.$message.success(t('home.chat_details.group.nickname.success'))
+    msg.success(t('home.chat_details.group.nickname.success'))
   } catch (error) {
-    item.value.myName = originalStoredNickname
+    if (isGroupDetail(item.value)) {
+      item.value.myName = originalStoredNickname
+    }
     const fallbackNickname = resolveMyRoomNickname({
-      roomId: item.value?.roomId,
+      roomId: isGroupDetail(item.value) ? item.value.roomId : '',
       myName: originalStoredNickname
     })
     nicknameValue.value = fallbackNickname || previousNickname
     nicknameSnapshot.value = fallbackNickname || previousNickname
-    window.$message.error(t('home.chat_details.group.nickname.fail'))
+    msg.error(t('home.chat_details.group.nickname.fail'))
   } finally {
     isEditingNickname.value = false
   }
@@ -417,7 +521,7 @@ const handleNicknameUpdate = async () => {
 const handleCopy = (account: string) => {
   if (account) {
     navigator.clipboard.writeText(account)
-    window.$message.success(t('home.chat_details.group.copy_success', { account }))
+    msg.success(t('home.chat_details.group.copy_success', { account }))
   }
 }
 
@@ -436,19 +540,19 @@ const fetchGroupMembers = async (roomId: string) => {
 
     options.value = memberDetails
   } catch (error) {
-    console.error('获取群成员失败:', error)
+    logger.error('获取群成员失败:', error)
   }
 }
 
-const handleStartCall = async (callType: CallTypeEnum) => {
+const handleStartCall = async (callType: (typeof CallTypeEnum)[keyof typeof CallTypeEnum]) => {
   if (content.type !== RoomTypeEnum.SINGLE) {
-    window.$message.warning(t('home.chat_details.single.call_only_single'))
+    msg.warning(t('home.chat_details.single.call_only_single'))
     return
   }
 
   const targetUid = item.value?.uid
   if (!targetUid) {
-    window.$message.error(t('home.chat_details.single.friend_info_missing'))
+    msg.error(t('home.chat_details.single.friend_info_missing'))
     return
   }
 
@@ -460,7 +564,7 @@ const handleStartCall = async (callType: CallTypeEnum) => {
   startRtcCall(callType)
 }
 
-const footerOptions = computed<OPT.Details[]>(() => {
+const footerOptions = computed<FooterOption[]>(() => {
   const sessionType = content.type
 
   return [
@@ -469,16 +573,16 @@ const footerOptions = computed<OPT.Details[]>(() => {
       title: t('home.chat_details.actions.message'),
       click: () => {
         if (sessionType === RoomTypeEnum.GROUP) {
-          const roomId = item.value?.roomId
+          const roomId = isGroupDetail(item.value) ? item.value.roomId : undefined
           if (!roomId) {
-            window.$message.error(t('home.chat_details.group.info_missing'))
+            msg.error(t('home.chat_details.group.info_missing'))
             return
           }
           openMsgSession(roomId, sessionType)
         } else {
-          const uid = item.value?.uid
+          const uid = isUserItem(item.value) ? item.value.uid : undefined
           if (!uid) {
-            window.$message.error(t('home.chat_details.single.friend_info_missing'))
+            msg.error(t('home.chat_details.single.friend_info_missing'))
             return
           }
           openMsgSession(uid, sessionType)
@@ -505,9 +609,10 @@ const footerOptions = computed<OPT.Details[]>(() => {
 // 打开图片查看器
 const openImageViewer = async () => {
   try {
-    const imageViewerStore = useImageViewer()
-    // 设置为单图模式并传入图片URL
-    imageViewerStore.setSingleImage(AvatarUtils.getAvatarUrl(item.value.avatar))
+    const mediaStore = useMediaStore()
+    // 查看头像
+    if (!item.value) return
+    mediaStore.viewImage(AvatarUtils.getAvatarUrl(item.value.avatar ?? ''))
 
     // 创建窗口，使用计算后的尺寸
     await createWebviewWindow(
@@ -521,7 +626,7 @@ const openImageViewer = async () => {
       IMAGEHEIGHT
     )
   } catch (error) {
-    console.error('打开图片查看器失败:', error)
+    logger.error('打开图片查看器失败:', error)
   }
 }
 </script>

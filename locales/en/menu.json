@@ -48,6 +48,7 @@
   "delete_friend": "Remove friend",
   "dissolve_group": "Disband group",
   "leave_group": "Leave Group",
+  "clear_all_unread": "Clear all unread",
   "today": "Today",
   "yesterday": "Yesterday"
 }

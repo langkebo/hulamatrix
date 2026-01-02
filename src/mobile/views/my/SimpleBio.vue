@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-1">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 z-0" alt="hula" />
+    <img :src="bgImage" class="w-100% absolute top-0 z-0" alt="hula" />
     <AutoFixHeightPage :show-footer="false" class="z-1">
       <template #container>
         <div class="z-2 flex flex-col gap-1 overflow-auto h-full">
@@ -59,9 +59,12 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { ref } from 'vue'
 import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 const userStore = useUserStore()
 
@@ -77,31 +80,27 @@ const options = ref([
     icon: 'shoucang',
     label: '收藏',
     onClick: () => {
-      // TODO: 跳转到收藏页面
-      console.log('收藏')
+      // 跳转到收藏页面
+      router.push('/mobile/favorites')
+      logger.debug('导航到收藏页面:', { component: 'SimpleBio' })
     }
   },
   {
     icon: 'wenjian',
     label: '文件',
     onClick: () => {
-      // TODO: 跳转到文件页面
-      console.log('文件')
+      // 跳转到文件页面
+      router.push('/mobile/files')
+      logger.debug('导航到文件页面:', { component: 'SimpleBio' })
     }
   },
   {
     icon: 'gexingzhuangban',
     label: '个性装扮',
     onClick: () => {
-      // TODO: 跳转到个性装扮页面
-      console.log('个性装扮')
-    }
-  },
-  {
-    icon: 'robot',
-    label: 'AI助手',
-    onClick: () => {
-      router.push('/mobile/mobileMy/aiAssistant')
+      // 跳转到个性装扮页面
+      router.push('/mobile/personalize')
+      logger.debug('导航到个性装扮页面:', { component: 'SimpleBio' })
     }
   }
 ])
@@ -122,11 +121,11 @@ const handleBack = async () => {
   // const result = await invoke('plugin:hula|ping', {
   //   payload: { value: 'hello world' }
   // })
-  // console.log('插件测试结果：', result)
+  // logger.debug('插件测试结果：:', { data: result, component: 'SimpleBio' })
 
-  // TODO 返回上一页
+  // 返回上一页
   router.back()
-  console.log('返回')
+  logger.debug('返回:', { component: 'SimpleBio' })
 }
 </script>
 

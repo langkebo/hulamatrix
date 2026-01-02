@@ -20,7 +20,7 @@
         'will-change': isDragging ? 'transform' : ''
       }">
       <template v-if="isRefreshing">
-        <img class="size-18px" src="@/assets/img/loading.svg" alt="" />
+        <img class="size-18px" :src="loadingSvg" alt="" />
         <span class="ml-2 text-sm color-#333">正在刷新...</span>
       </template>
       <template v-else>
@@ -55,7 +55,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useEventListener } from '@vueuse/core'
+import loadingSvg from '/src/assets/img/loading.svg'
 
 type Props = {
   threshold?: number // 触发刷新的阈值
@@ -102,11 +104,15 @@ const scheduleDistanceUpdate = (val: number) => {
 const handleTouchStart = (e: TouchEvent) => {
   if (props.disabled || isRefreshing.value) return
 
-  const scrollTop = containerRef.value?.scrollTop ?? 0
+  const container = containerRef.value
+  const scrollTop = container?.scrollTop ?? 0
   // 只有在顶部才能下拉
   if (scrollTop <= 0) {
-    startY.value = e.touches[0].clientY
-    isDragging.value = true
+    // Ensure e.touches exists and has at least one element
+    if (e.touches && e.touches.length > 0 && e.touches[0]) {
+      startY.value = e.touches[0].clientY
+      isDragging.value = true
+    }
   }
 }
 
@@ -114,8 +120,12 @@ const handleTouchStart = (e: TouchEvent) => {
 const handleTouchMove = (e: TouchEvent) => {
   if (props.disabled || !startY.value || isRefreshing.value) return
 
-  const scrollTop = containerRef.value?.scrollTop ?? 0
+  const container = containerRef.value
+  const scrollTop = container?.scrollTop ?? 0
   if (scrollTop > 0) return
+
+  // Ensure e.touches exists and has at least one element
+  if (!e.touches || e.touches.length === 0 || !e.touches[0]) return
 
   const currentY = e.touches[0].clientY
   const diff = currentY - startY.value
@@ -163,12 +173,23 @@ defineExpose({
 
 // 防止iOS橡皮筋效果
 onMounted(() => {
+  const container = containerRef.value
+  if (!container) return
+
   useEventListener(
-    containerRef.value,
+    container,
     'touchmove',
     (e: TouchEvent) => {
-      if (!containerRef.value) return
-      if (e.cancelable && containerRef.value?.scrollTop <= 0 && e.touches[0].clientY > startY.value) {
+      if (!container) return
+      // Ensure e.touches exists and has at least one element
+      if (
+        e.cancelable &&
+        container.scrollTop <= 0 &&
+        e.touches &&
+        e.touches.length > 0 &&
+        e.touches[0] &&
+        e.touches[0].clientY > startY.value
+      ) {
         e.preventDefault()
       }
     },

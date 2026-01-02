@@ -1,12 +1,14 @@
-import { type Config, type Driver, type DriveStep, driver } from 'driver.js'
-import { useGuideStore } from '@/stores/guide'
-import 'driver.js/dist/driver.css'
-import '@/styles/scss/global/driver.scss'
+import { logger } from '@/utils/logger'
+// driver.js依赖已移除，暂时禁用用户引导功能
+//
+//
+// import 'driver.js/dist/driver.css'
+// import '@/styles/scss/global/driver.scss'
 
 /**
  * Driver.js 步骤配置接口
  */
-export interface DriverStepConfig extends Omit<DriveStep, 'popover'> {
+export interface DriverStepConfig {
   element: string
   /** 是否禁用被聚焦元素的交互（步骤级别配置，会覆盖全局配置） */
   disableActiveInteraction?: boolean
@@ -25,7 +27,7 @@ export interface DriverStepConfig extends Omit<DriveStep, 'popover'> {
 /**
  * Driver.js 配置选项接口
  */
-export interface DriverConfig extends Omit<Config, 'steps'> {
+export interface DriverConfig {
   nextBtnText?: string
   prevBtnText?: string
   doneBtnText?: string
@@ -42,8 +44,8 @@ export interface DriverConfig extends Omit<Config, 'steps'> {
  * useDriver hooks 返回值接口
  */
 export interface UseDriverReturn {
-  /** Driver 实例 */
-  driverInstance: Driver | null
+  /** Driver 实例 (null since driver.js is disabled) */
+  driverInstance: unknown
   /** 开始引导 */
   startTour: () => void
   /** 停止引导 */
@@ -64,165 +66,25 @@ export interface UseDriverReturn {
  * @param config 可选的 Driver 配置
  * @returns useDriver 返回值对象
  */
-export const useDriver = (steps: DriverStepConfig[], config: DriverConfig = {}): UseDriverReturn => {
-  let driverInstance: Driver | null = null
-  const guideStore = useGuideStore()
+export const useDriver = (_steps: DriverStepConfig[] = [], _config: DriverConfig = {}): UseDriverReturn => {
+  // driver.js已禁用，返回空实现
+  // 强制禁用引导功能
+  logger.warn('[useDriver] Driver.js已禁用，用户引导功能暂时不可用')
 
-  // 默认配置
-  const defaultConfig: DriverConfig = {
-    progressText: '{{current}}/{{total}}',
-    nextBtnText: '下一步',
-    prevBtnText: '上一步',
-    doneBtnText: '完成',
-    showButtons: ['next', 'previous'],
-    showProgress: true,
-    allowClose: false,
-    popoverClass: 'driverjs-theme',
-    disableActiveInteraction: true // 默认禁用被聚焦元素的点击事件
+  // 空实现
+  const emptyMethod = () => {
+    logger.warn('[useDriver] 引导功能已禁用')
   }
 
-  // 合并配置
-  const mergedConfig = {
-    ...defaultConfig,
-    ...config,
-    onDestroyed: () => {
-      guideStore.markGuideCompleted()
-    }
+  const emptyMethods: UseDriverReturn = {
+    driverInstance: null,
+    startTour: emptyMethod,
+    stopTour: emptyMethod,
+    moveNext: emptyMethod,
+    movePrevious: emptyMethod,
+    moveTo: emptyMethod,
+    reinitialize: emptyMethod
   }
 
-  /**
-   * 处理步骤中的自定义点击事件
-   * @param step 步骤配置
-   * @returns 处理后的步骤配置
-   */
-  const processStep = (step: DriverStepConfig): DriveStep => {
-    const processedStep: DriveStep = {
-      element: step.element,
-      disableActiveInteraction: step.disableActiveInteraction,
-      popover: step.popover
-        ? {
-            title: step.popover.title,
-            description: step.popover.description,
-            side: step.popover.side,
-            align: step.popover.align
-          }
-        : undefined
-    }
-
-    // 处理自定义点击事件
-    if (step.popover?.onNextClick) {
-      processedStep.popover = {
-        ...processedStep.popover,
-        onNextClick: () => {
-          step.popover!.onNextClick!()
-          // 如果有自定义的 onNextClick，需要在 nextTick 后手动移动到下一步
-          nextTick(() => {
-            if (driverInstance) {
-              driverInstance.moveNext()
-            }
-          })
-        }
-      }
-    }
-
-    if (step.popover?.onPrevClick) {
-      processedStep.popover = {
-        ...processedStep.popover,
-        onPrevClick: step.popover.onPrevClick
-      }
-    }
-
-    if (step.popover?.onCloseClick) {
-      processedStep.popover = {
-        ...processedStep.popover,
-        onCloseClick: step.popover.onCloseClick
-      }
-    }
-
-    return processedStep
-  }
-
-  /**
-   * 初始化 Driver 实例
-   */
-  const initializeDriver = () => {
-    const processedSteps = steps.map(processStep)
-
-    driverInstance = driver({
-      ...mergedConfig,
-      steps: processedSteps
-    })
-  }
-
-  /**
-   * 开始引导
-   */
-  const startTour = () => {
-    if (!driverInstance) {
-      initializeDriver()
-    }
-    driverInstance?.drive()
-  }
-
-  /**
-   * 停止引导
-   */
-  const stopTour = () => {
-    driverInstance?.destroy()
-    driverInstance = null
-  }
-
-  /**
-   * 移动到下一步
-   */
-  const moveNext = () => {
-    driverInstance?.moveNext()
-  }
-
-  /**
-   * 移动到上一步
-   */
-  const movePrevious = () => {
-    driverInstance?.movePrevious()
-  }
-
-  /**
-   * 移动到指定步骤
-   * @param stepIndex 步骤索引（从0开始）
-   */
-  const moveTo = (stepIndex: number) => {
-    driverInstance?.moveTo(stepIndex)
-  }
-
-  /**
-   * 重新初始化引导
-   * @param newSteps 新的步骤配置
-   * @param newConfig 新的配置（可选）
-   */
-  const reinitialize = (newSteps: DriverStepConfig[], newConfig?: Partial<DriverConfig>) => {
-    // 销毁现有实例
-    stopTour()
-
-    // 更新步骤和配置
-    steps.splice(0, steps.length, ...newSteps)
-    if (newConfig) {
-      Object.assign(mergedConfig, newConfig)
-    }
-
-    // 重新初始化
-    initializeDriver()
-  }
-
-  // 初始化 Driver 实例
-  initializeDriver()
-
-  return {
-    driverInstance,
-    startTour,
-    stopTour,
-    moveNext,
-    movePrevious,
-    moveTo,
-    reinitialize
-  }
+  return emptyMethods
 }

@@ -1,0 +1,384 @@
+/* ==========================================================================
+   性能优化样式
+   ========================================================================== */
+
+/* ==========================================================================
+   CSS containment 优化
+   ========================================================================== */
+
+/* 为独立的部分创建包含上下文，减少重排重绘 */
+.sidebar {
+  contain: layout style paint;
+}
+
+.chat-container {
+  contain: layout style paint;
+}
+
+.message-list {
+  contain: layout style;
+}
+
+.message-bubble {
+  contain: layout style;
+  will-change: transform;
+}
+
+.input-area {
+  contain: layout style;
+}
+
+/* ==========================================================================
+   GPU 加速优化
+   ========================================================================== */
+
+/* 对频繁变化的元素启用硬件加速 */
+.animated-element,
+.modal,
+.drawer,
+.dropdown,
+.tooltip {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* 优化滚动性能 */
+.smooth-scroll-container {
+  transform: translateZ(0);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+/* ==========================================================================
+   动画性能优化
+   ========================================================================== */
+
+/* 优先使用 transform 和 opacity 进行动画 */
+.performance-animation {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* 避免使用昂贵属性 */
+.no-expensive-properties {
+  /* 避免 */
+  /* box-shadow, border-radius, background-position */
+  /* 使用 transform 和 opacity 代替 */
+}
+
+/* ==========================================================================
+   选择器优化
+   ========================================================================== */
+
+/* 避免过深的选择器嵌套 */
+.optimized-selector {
+  /* 好的做法 - 平的选择器 */
+  color: var(--text-primary);
+}
+
+/* 避免通配符选择器 */
+/*不好的做法：* { ... } */
+
+/* 使用类选择器代替标签选择器 */
+.btn {
+  /* 好 */
+  display: inline-block;
+}
+
+/* 避免 */
+/* button { ... } */
+
+/* ==========================================================================
+   减少重排和重绘
+   ========================================================================== */
+
+/* 使用 CSS 变量减少样式计算 */
+.optimized-component {
+  background: var(--component-bg);
+  color: var(--component-text);
+  border-color: var(--component-border);
+  transition: background-color var(--transition-fast);
+}
+
+/* 批量更新样式 */
+.batch-update {
+  /* 使用 transform 代替 top/left */
+  transform: translateX(100px);
+}
+
+/* ==========================================================================
+   内容可见性优化
+   ========================================================================== */
+
+/* 对离屏元素使用 content-visibility */
+.offscreen-content {
+  content-visibility: hidden;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* 对大型列表使用虚拟滚动优化 */
+.virtual-list {
+  contain: strict;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* ==========================================================================
+   图片加载优化
+   ========================================================================== */
+
+/* 图片懒加载占位 */
+.lazy-image {
+  background: var(--bg-hover);
+  min-height: 200px;
+  transition: opacity var(--transition-base);
+
+  &[lazy="loaded"] {
+    opacity: 1;
+  }
+
+  &[lazy="loading"] {
+    opacity: 0;
+  }
+}
+
+/* 响应式图片优化 */
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   字体渲染优化
+   ========================================================================== */
+
+/* 字体显示策略 */
+.font-optimized {
+  font-display: swap;
+  font-family: var(--font-family);
+}
+
+/* 文本渲染优化 */
+.text-optimized {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   滚动性能优化
+   ========================================================================== */
+
+/* 主滚动容器优化 */
+.main-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* 滚动条样式优化 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+    transition: background var(--transition-fast);
+
+    &:hover {
+      background: var(--text-tertiary);
+    }
+  }
+}
+
+/* ==========================================================================
+   减少样式计算
+   ========================================================================== */
+
+/* 使用简化的动画 */
+.simple-animation {
+  animation: simple-fade var(--transition-base) ease-out;
+}
+
+@keyframes simple-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 避免复杂的渐变和滤镜 */
+.simple-gradient {
+  background: var(--bg-info);
+  /* 避免复杂的 radial-gradient */
+}
+
+/* ==========================================================================
+   减少布局抖动
+   ========================================================================== */
+
+/* 为动态内容预留空间 */
+.reserved-space {
+  min-height: 100px;
+  /* 为将要加载的内容预留空间 */
+}
+
+/* 使用 CSS Grid 进行稳定布局 */
+.stable-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   优化媒体查询
+   ========================================================================== */
+
+/* 减少媒体查询的使用 */
+@media (max-width: 768px) {
+  /* 移动端优化 */
+  .performance-critical {
+    will-change: auto; /* 移动端关闭 will-change */
+  }
+}
+
+/* ==========================================================================
+   交互优化
+   ========================================================================== */
+
+/* 优化点击目标 */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  /* 符合移动端触摸标准 */
+}
+
+/* 减少交互延迟 */
+.fast-interaction {
+  touch-action: manipulation;
+  /* 减少点击延迟 300ms */
+}
+
+/* ==========================================================================
+   资源加载优化
+   ========================================================================== */
+
+/* 关键 CSS 内联 */
+.critical-css {
+  /* 这些样式应该在 HTML 中内联 */
+  display: none;
+}
+
+/* 非关键 CSS 异步加载 */
+.non-critical-css {
+  /* 这些样式应该异步加载 */
+}
+
+/* ==========================================================================
+   减少重绘区域
+   ========================================================================== */
+
+/* 固定尺寸元素减少重排 */
+.fixed-size {
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+}
+
+/* 使用绝对定位减少影响 */
+.isolated-element {
+  position: absolute;
+  /* 减少对其他元素的影响 */
+}
+
+/* ==========================================================================
+   性能监控类
+   ========================================================================== */
+
+/* 用于性能分析的标记 */
+.performance-marker::before {
+  content: "performance-marker";
+  display: none;
+}
+
+/* 标记重绘区域 */
+.repaint-area {
+  outline: 1px solid red;
+  /* 用于调试重绘区域 */
+}
+
+/* ==========================================================================
+   特殊优化
+   ========================================================================== */
+
+/* 高频更新元素优化 */
+.frequent-update {
+  contain: strict;
+  will-change: transform;
+}
+
+/* 大型组件优化 */
+.heavy-component {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 1000px;
+}
+
+/* 动画结束清理 */
+.animation-cleanup {
+  animation: slide-in var(--transition-base) forwards;
+  animation-fill-mode: forwards;
+}
+
+.animation-cleanup.animation-end {
+  will-change: auto;
+  transform: none;
+}
+
+/* ==========================================================================
+   内存优化
+   ========================================================================== */
+
+/* 避免过多的 box-shadow */
+.light-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* 简单的阴影 */
+}
+
+/* 避免过多的渐变 */
+.solid-bg {
+  background: var(--bg-color);
+  /* 纯色背景 */
+}
+
+/* ==========================================================================
+   网络优化
+   ========================================================================== */
+
+/* 字体子集化 */
+.font-subset {
+  font-family: 'CustomFontSubset';
+  /* 使用只包含必要字符的字体文件 */
+}
+
+/* 图标字体优化 */
+.icon-font {
+  font-display: block;
+  /* 防止 FOUT */
+}
+
+/* SVG 优化 */
+.svg-icon {
+  fill: currentColor;
+  /* 使用 currentColor 实现主题化 */
+}

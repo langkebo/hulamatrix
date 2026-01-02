@@ -166,14 +166,22 @@ import {
 import { useRouter } from 'vue-router'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { msg } from '@/utils/SafeUI'
+import { useDialog } from 'naive-ui'
 import { validateAlias } from '@/integrations/matrix/alias'
 import { logger, toError } from '@/utils/logger'
-import { mapRooms, searchRooms, type SearchCriteria } from '@/views/rooms/search-logic'
+import { mapRooms, searchRooms, type SearchCriteria, type RoomRow } from '@/views/rooms/search-logic'
+import type { RoomVisibility } from '@/types/matrix'
 import RoomDirectory from '@/components/rooms/RoomDirectory.vue'
+
+// Type guard for directory visibility
+const isValidDirectoryVisibility = (value: unknown): value is RoomVisibility => {
+  return value === 'public' || value === 'private'
+}
 
 const client = matrixClientService.getClient()
 const roomId = ref<string>('')
-const rooms = ref<any[]>(client?.getRooms?.() || [])
+const getRoomsMethod = client?.getRooms as (() => Record<string, unknown>[]) | undefined
+const rooms = ref<Record<string, unknown>[]>(getRoomsMethod?.() || [])
 const page = ref(1)
 const pageSize = ref(20)
 //
@@ -181,7 +189,9 @@ const pagedRooms = computed(() => {
   const start = (page.value - 1) * pageSize.value
   return rooms.value.slice(start, start + pageSize.value)
 })
-const roomOptions = computed(() => pagedRooms.value.map((r) => ({ label: r.name || r.roomId, value: r.roomId })))
+const roomOptions = computed(() =>
+  pagedRooms.value.map((r) => ({ label: (r.name || r.roomId) as string, value: r.roomId as string }))
+)
 const name = ref('')
 const topic = ref('')
 const joinRule = ref<'public' | 'invite'>('invite')
@@ -208,6 +218,7 @@ const inviteUserId = ref('')
 const members = ref<Array<{ userId: string; name?: string }>>([])
 //
 const router = useRouter()
+const dialog = useDialog()
 const presetTag = computed(() => (joinRule.value === 'public' ? 'public_chat' : 'private_chat'))
 const persistKey = computed(() => (roomId.value ? `matrix-room-config:${roomId.value}` : ''))
 const saveRoomConfig = () => {
@@ -225,7 +236,9 @@ const loadRoomConfig = () => {
       const js = JSON.parse(raw)
       if (js && typeof js === 'object') {
         joinRule.value = js.preset === 'public_chat' ? 'public' : 'invite'
-        directoryVisibility.value = (js.visibility || directoryVisibility.value) as any
+        // Validate directory visibility before assigning
+        const visibility = js.visibility || directoryVisibility.value
+        directoryVisibility.value = isValidDirectoryVisibility(visibility) ? visibility : directoryVisibility.value
       }
     }
   } catch {}
@@ -239,7 +252,8 @@ const refreshRooms = async () => {
   loading.value = true
   try {
     loadError.value = ''
-    rooms.value = c?.getRooms?.() || []
+    const getRoomsMethod = c?.getRooms as (() => Record<string, unknown>[]) | undefined
+    rooms.value = getRoomsMethod?.() || []
     if (timeoutHandle.value) {
       clearTimeout(timeoutHandle.value)
       timeoutHandle.value = null
@@ -254,7 +268,7 @@ const refreshRooms = async () => {
     loading.value = false
   }
 }
-const ensureMatrixReady = async (): Promise<any | null> => {
+const ensureMatrixReady = async (): Promise<Record<string, unknown> | null> => {
   const c = matrixClientService.getClient()
   if (c) return c
   const auth = useMatrixAuthStore()
@@ -294,7 +308,7 @@ const filterOptions = [
   { label: '敲门房', value: 'rule:knock' }
 ]
 const searching = ref(false)
-const results = ref<any[]>([])
+const results = ref<RoomRow[]>([])
 const pagination = ref({ page: 1, pageSize: 10, pageCount: 1 })
 const pagedResults = computed(() => {
   const start = (pagination.value.page - 1) * pagination.value.pageSize
@@ -305,7 +319,7 @@ const pagedResults = computed(() => {
 const doSearch = async () => {
   searching.value = true
   try {
-    const c: any = matrixClientService.getClient()
+    const c = matrixClientService.getClient()
     const rows = mapRooms(c)
     results.value = searchRooms(rows, search.value)
     pagination.value.page = 1
@@ -318,12 +332,14 @@ const resetSearch = () => {
   results.value = []
 }
 const joinRoom = async (id: string) => {
-  const c: any = matrixClientService.getClient()
+  const c = matrixClientService.getClient()
   try {
-    await c.joinRoom(id)
+    const joinRoomMethod = c?.joinRoom as ((roomId: string) => Promise<Record<string, unknown>>) | undefined
+    await joinRoomMethod?.(id)
     router.push('/message')
-  } catch (e: any) {
-    window.alert('加入房间失败：' + (e?.message || String(e)))
+  } catch (e) {
+    const err = e as { message?: string; errcode?: string }
+    window.alert('加入房间失败：' + (err?.message || String(e)))
   }
 }
 const retryLoad = () => {
@@ -337,20 +353,35 @@ const focusCreate = () => {
 watch(roomId, async (rid) => {
   if (!rid) return
   members.value = await getJoinedMembers(rid).then((list) =>
-    list.map((u: any) => (typeof u === 'string' ? { userId: u } : u))
+    list.map((u: string | { userId: string }) => (typeof u === 'string' ? { userId: u } : u))
   )
-  const room = client?.getRoom?.(rid)
+  const getRoomMethod = client?.getRoom as
+    | ((roomId: string) => {
+        name?: string
+        currentState?: { getStateEvents?: (type: string) => unknown[] }
+      } | null)
+    | undefined
+  const room = getRoomMethod?.(rid)
   name.value = room?.name || ''
-  topic.value = room?.currentState?.getStateEvents?.('m.room.topic')?.[0]?.getContent?.()?.topic || ''
+  const stateEvents = room?.currentState?.getStateEvents?.('m.room.topic')
+  const topicEvent = stateEvents?.[0] as Record<string, unknown> | undefined
+  const getContentMethod = topicEvent?.getContent as (() => { topic?: string }) | undefined
+  topic.value = (getContentMethod?.()?.topic as string) || ''
   const aliases = await getAliases(rid)
   alias.value = aliases?.[0] || ''
   const v = await getDirectoryVisibility(rid)
-  directoryVisibility.value = (v || 'private') as any
+  // Validate and set directory visibility
+  directoryVisibility.value = isValidDirectoryVisibility(v) ? v : 'private'
   // 尝试加载本地持久化标识
   loadRoomConfig()
 })
 
-const isForbidden = (e: any) => String((e && e.errcode) || e?.message || '').includes('M_FORBIDDEN')
+const isForbidden = (e: unknown) =>
+  String(
+    ((e as Record<string, unknown>) && (e as Record<string, unknown>).errcode) ||
+      (e as { message?: string })?.message ||
+      ''
+  ).includes('M_FORBIDDEN')
 const applyName = async () => {
   if (!roomId.value) return
   try {
@@ -406,8 +437,9 @@ const applyEncryption = async () => {
     encryption.value = false
   }
 }
-const onPickAvatar = async (e: any) => {
-  const f = e.target.files?.[0]
+const onPickAvatar = async (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const f = target.files?.[0]
   if (!f || !roomId.value) return
   try {
     await setRoomAvatar(roomId.value, f)
@@ -454,7 +486,7 @@ const onInvite = async () => {
   await inviteUser(roomId.value, inviteUserId.value)
   msg.success('已邀请')
   members.value = await getJoinedMembers(roomId.value).then((list) =>
-    list.map((u: any) => (typeof u === 'string' ? { userId: u } : u))
+    list.map((u: string | { userId: string }) => (typeof u === 'string' ? { userId: u } : u))
   )
 }
 const onKick = async (uid: string) => {
@@ -462,7 +494,7 @@ const onKick = async (uid: string) => {
   await kickUser(roomId.value, uid)
   msg.success('已移除')
   members.value = await getJoinedMembers(roomId.value).then((list) =>
-    list.map((u: any) => (typeof u === 'string' ? { userId: u } : u))
+    list.map((u: string | { userId: string }) => (typeof u === 'string' ? { userId: u } : u))
   )
 }
 const onBan = async (uid: string) => {
@@ -501,21 +533,22 @@ const onCreateRoom = async () => {
   refreshRooms()
   roomId.value = String(res.roomId)
   joinRule.value = res.preset === 'public_chat' ? 'public' : 'invite'
-  directoryVisibility.value = res.visibility as any
+  // Validate and set directory visibility
+  directoryVisibility.value = isValidDirectoryVisibility(res.visibility) ? res.visibility : 'private'
 }
 
 const memberCols = [
   {
     title: '成员',
     key: 'userId',
-    render(row: any) {
+    render(row: { userId: string; name?: string }) {
       return row.name || row.userId
     }
   },
   {
     title: '操作',
     key: 'ops',
-    render(row: any) {
+    render(row: { userId: string }) {
       return h('div', { class: 'flex gap-8px' }, [
         h('button', { class: 'n-button n-button--error', onClick: () => onKick(row.userId) }, '移除'),
         h('button', { class: 'n-button n-button--warning', onClick: () => onBan(row.userId) }, '封禁'),
@@ -528,22 +561,83 @@ const memberCols = [
 // Room Directory handlers
 const handleDirectoryJoin = async (roomIdValue: string) => {
   try {
-    const c: any = matrixClientService.getClient()
-    await c.joinRoom(roomIdValue)
+    const c = matrixClientService.getClient()
+    const joinRoomMethod = c?.joinRoom as ((roomId: string) => Promise<Record<string, unknown>>) | undefined
+    await joinRoomMethod?.(roomIdValue)
     msg.success('已加入房间')
     refreshRooms()
     // Switch to the joined room
     router.push('/message')
-  } catch (e: any) {
+  } catch (e) {
+    const err = e as { message?: string }
     logger.error('加入房间失败:', toError(e))
-    msg.error('加入房间失败：' + (e?.message || String(e)))
+    msg.error('加入房间失败：' + (err?.message || String(e)))
   }
 }
 
 const handleDirectoryPreview = async (roomIdValue: string) => {
-  // TODO: Implement room preview functionality
-  logger.info('[RoomDirectory] Preview room:', roomIdValue)
-  msg.info('预览功能即将推出')
+  try {
+    // 使用 Matrix SDK 的房间预览功能（无需加入即可查看公共信息）
+    const { matrixClientService } = await import('@/integrations/matrix/client')
+    const client = matrixClientService.getClient()
+
+    if (!client) {
+      msg.error('Matrix 客户端未初始化')
+      return
+    }
+
+    // 类型安全的 getStateEvent 调用
+    const getStateEvent = async (eventType: string, stateKey: string = ''): Promise<Record<string, unknown> | null> => {
+      try {
+        const result = await (
+          client as {
+            getStateEvent: (roomId: string, type: string, key: string) => Promise<unknown>
+          }
+        ).getStateEvent(roomIdValue, eventType, stateKey)
+        return result as Record<string, unknown> | null
+      } catch {
+        return null
+      }
+    }
+
+    // 尝试获取房间的公共状态
+    const roomState = await getStateEvent('m.room.name', '')
+    const roomTopic = await getStateEvent('m.room.topic', '')
+    const roomAvatar = await getStateEvent('m.room.avatar', '')
+    const roomJoinRules = await getStateEvent('m.room.join_rules', '')
+
+    // 构建预览信息
+    const previewInfo = {
+      roomId: roomIdValue,
+      name: (roomState as { name?: string })?.name || roomIdValue,
+      topic: (roomTopic as { topic?: string })?.topic || '暂无主题',
+      avatar: (roomAvatar as { url?: string })?.url || '',
+      joinRule: (roomJoinRules as { join_rule?: string })?.join_rule || 'unknown',
+      isPublic: (roomJoinRules as { join_rule?: string })?.join_rule === 'public'
+    }
+
+    // 显示预览对话框
+    dialog.info({
+      title: '房间预览',
+      content: () => {
+        return h('div', { class: 'room-preview' }, [
+          h('p', { class: 'preview-item' }, [h('strong', '房间名称：'), previewInfo.name]),
+          h('p', { class: 'preview-item' }, [h('strong', '房间主题：'), previewInfo.topic]),
+          h('p', { class: 'preview-item' }, [h('strong', '房间ID：'), roomIdValue]),
+          h('p', { class: 'preview-item' }, [h('strong', '访问类型：'), previewInfo.isPublic ? '公开房间' : '私有房间'])
+        ])
+      },
+      positiveText: '关闭',
+      onPositiveClick: () => {
+        logger.info('[RoomDirectory] Room preview closed', { roomId: roomIdValue })
+      }
+    })
+
+    logger.info('[RoomDirectory] Room preview shown', { roomId: roomIdValue, previewInfo })
+  } catch (error) {
+    logger.error('[RoomDirectory] Failed to preview room:', error)
+    msg.error('无法预览房间，可能房间不存在或没有权限')
+  }
 }
 
 onMounted(refreshRooms)

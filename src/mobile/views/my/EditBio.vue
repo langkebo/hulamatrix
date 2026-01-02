@@ -10,8 +10,8 @@
     </template>
 
     <template #container>
-      <div
-        class="bg-[url('@/assets/mobile/chat-home/background.webp')] bg-cover bg-center flex flex-col overflow-auto h-full">
+      <div class="flex flex-col overflow-auto h-full relative">
+        <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
         <div class="flex flex-col flex-1 gap-20px py-15px px-20px">
           <n-form class="bg-white rounded-15px p-10px shadow" label-placement="left" label-width="100px">
             <n-form-item>
@@ -26,22 +26,9 @@
             </n-form-item>
           </n-form>
 
-          <div class="flex justify-center">
-            <div
-              class="w-20%"
-              style="
-                background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
-                border-radius: 30px;
-                padding: 10px 30px;
-                color: white;
-                font-weight: 500;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-                text-align: center;
-                display: inline-block;
-              "
-              @click="handleSave">
-              保存
-            </div>
+          <div class="mobile-action-footer">
+            <n-button tertiary class="mobile-primary-btn" @click="router.back()">取消</n-button>
+            <n-button type="primary" class="mobile-primary-btn" @click="handleSave">保存</n-button>
           </div>
         </div>
       </div>
@@ -50,8 +37,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.ts'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 const userStore = useUserStore()
 const bioAutosize = { minRows: 5, maxRows: 20 }

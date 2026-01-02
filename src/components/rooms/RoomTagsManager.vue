@@ -11,10 +11,23 @@
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, h } from 'vue'
-import { NCard, NButton, NSpace, NTag, NInput, NInputNumber, NSelect, NEmpty, useMessage, NSpin, NDataTable } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import {
+  NCard,
+  NButton,
+  NSpace,
+  NTag,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NEmpty,
+  useMessage,
+  NSpin,
+  NDataTable
+} from 'naive-ui'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { useI18n } from 'vue-i18n'
+import { setRoomTag, deleteRoomTag } from '@/utils/matrixClientUtils'
 
 interface Props {
   roomId?: string
@@ -76,19 +89,20 @@ async function loadRoomTags() {
     logger.info('[RoomTagsManager] Loading room tags')
 
     // Get all rooms
-    const rooms = client.getRooms ? client.getRooms() : []
+    const rooms =
+      (client.getRooms as (() => Array<{ roomId?: string; name?: string; avatarUrl?: string }>) | undefined)?.() || []
 
     // Collect tagged rooms
     const roomMap = new Map<string, TaggedRoom>()
 
     for (const room of rooms) {
-      const roomId = room.roomId
+      const roomId = room.roomId || ''
       const roomName = room.name || roomId
       const avatar = room.avatarUrl || ''
 
       // Get tags for this room using SDK
-      const tags = client.getRoomTags ? client.getRoomTags(roomId) : {}
-      const tagNames = Object.keys(tags).filter(tag => tags[tag])
+      const tags = (client.getRoomTags as ((roomId: string) => Record<string, unknown>) | undefined)?.(roomId) || {}
+      const tagNames = Object.keys(tags).filter((tag) => tags[tag])
 
       if (tagNames.length > 0) {
         roomMap.set(roomId, {
@@ -104,20 +118,18 @@ async function loadRoomTags() {
 
     // Load custom tags (non-default tags)
     const allTags = new Set<string>()
-    taggedRooms.value.forEach(room => {
-      room.tags.forEach(tag => {
-        if (!defaultTags.value.find(dt => dt.value === tag)) {
+    taggedRooms.value.forEach((room) => {
+      room.tags.forEach((tag) => {
+        if (!defaultTags.value.find((dt) => dt.value === tag)) {
           allTags.add(tag)
         }
       })
     })
 
-    customTags.value = Array.from(allTags).map(tag => ({
+    customTags.value = Array.from(allTags).map((tag) => ({
       name: tag,
       order: 0.5,
-      rooms: taggedRooms.value
-        .filter(r => r.tags.includes(tag))
-        .map(r => r.roomId)
+      rooms: taggedRooms.value.filter((r) => r.tags.includes(tag)).map((r) => r.roomId)
     }))
 
     logger.info('[RoomTagsManager] Room tags loaded:', {
@@ -181,7 +193,7 @@ async function assignTagToRoom(roomId: string, tagName: string) {
     logger.info('[RoomTagsManager] Assigning tag to room:', { roomId, tagName })
 
     // Use SDK's setRoomTag
-    await client.setRoomTag(roomId, tagName, {
+    await setRoomTag(client, roomId, tagName, {
       order: Math.floor(Date.now() / 1000)
     })
 
@@ -209,7 +221,7 @@ async function removeTagFromRoom(roomId: string, tagName: string) {
     logger.info('[RoomTagsManager] Removing tag from room:', { roomId, tagName })
 
     // Use SDK's deleteRoomTag
-    await client.deleteRoomTag(roomId, tagName)
+    await deleteRoomTag(client, roomId, tagName)
 
     message.success('Tag removed')
 
@@ -236,7 +248,7 @@ async function deleteTag(tagName: string) {
     // Remove tag from all rooms that have it
     for (const room of taggedRooms.value) {
       if (room.tags.includes(tagName)) {
-        await client.deleteRoomTag(room.roomId, tagName)
+        await deleteRoomTag(client, room.roomId, tagName)
       }
     }
 
@@ -254,7 +266,7 @@ async function deleteTag(tagName: string) {
  * Get tag display name
  */
 function getTagName(tagName: string): string {
-  const defaultTag = defaultTags.value.find(dt => dt.value === tagName)
+  const defaultTag = defaultTags.value.find((dt) => dt.value === tagName)
   if (defaultTag) {
     return defaultTag.label
   }
@@ -266,7 +278,7 @@ function getTagName(tagName: string): string {
  * Get tag icon
  */
 function getTagIcon(tagName: string): string {
-  const defaultTag = defaultTags.value.find(dt => dt.value === tagName)
+  const defaultTag = defaultTags.value.find((dt) => dt.value === tagName)
   return defaultTag?.icon || '🏷️'
 }
 
@@ -283,10 +295,14 @@ const columns = computed(() => [
     title: 'Tags',
     key: 'tags',
     render(row: TaggedRoom) {
-      return row.tags.map(tag =>
-        h(NTag, { size: 'small', closable: false }, {
-          default: () => `${getTagIcon(tag)} ${getTagName(tag)}`
-        })
+      return row.tags.map((tag) =>
+        h(
+          NTag,
+          { size: 'small', closable: false },
+          {
+            default: () => `${getTagIcon(tag)} ${getTagName(tag)}`
+          }
+        )
       )
     }
   },
@@ -300,7 +316,7 @@ const columns = computed(() => [
           placeholder: 'Add tag',
           options: [
             ...defaultTags.value,
-            ...customTags.value.map(ct => ({ label: getTagName(ct.name), value: ct.name }))
+            ...customTags.value.map((ct) => ({ label: getTagName(ct.name), value: ct.name }))
           ],
           onUpdateValue: (value: string) => assignTagToRoom(row.roomId, value)
         })

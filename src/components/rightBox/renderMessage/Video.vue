@@ -123,35 +123,36 @@
 </template>
 
 <script setup lang="ts">
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
 import { BaseDirectory, exists } from '@tauri-apps/plugin-fs'
 import { MessageStatusEnum, TauriCommand } from '@/enums'
 import { MittEnum, MsgEnum } from '@/enums/index'
-import { useDownload } from '@/hooks/useDownload'
+import { fileService } from '@/services/file-service'
 import { useIntersectionTaskQueue } from '@/hooks/useIntersectionTaskQueue'
 import { useMitt } from '@/hooks/useMitt'
 import { useVideoViewer } from '@/hooks/useVideoViewer'
 import type { MsgType, VideoBody } from '@/services/types'
-import { useVideoViewer as useVideoViewerStore } from '@/stores/videoViewer'
-import { useThumbnailCacheStore } from '@/stores/thumbnailCache'
+import { useCacheStore } from '@/stores/mediaCache'
 import { useChatStore } from '@/stores/chat'
-import { formatBytes } from '@/utils/Formatting.ts'
+import { formatBytes } from '@/utils/Formatting'
 import { isMobile } from '@/utils/PlatformConstants'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 const { openVideoViewer, getLocalVideoPath, checkVideoDownloaded } = useVideoViewer()
-const videoViewerStore = useVideoViewerStore()
 const chatStore = useChatStore()
-const { downloadFile, isDownloading, process } = useDownload()
+const isDownloading = ref(false)
+const process = ref(0)
 const { t } = useI18n()
 const props = defineProps<{
   body: VideoBody
-  messageStatus?: MessageStatusEnum
-  uploadProgress?: number
-  onVideoClick?: (url: string) => void
-  message?: MsgType
+  messageStatus?: MessageStatusEnum | undefined
+  uploadProgress?: number | undefined
+  onVideoClick?: ((url: string) => void) | undefined
+  message?: MsgType | undefined
 }>()
 
 // 视频容器引用
@@ -176,7 +177,7 @@ const uploadProgress = computed(() => {
 const fallbackVideoName = computed(() => t('message.video.unknown_video'))
 const uploadingTip = computed(() => t('message.video.uploading', { progress: uploadProgress.value }))
 const openingTip = computed(() => t('message.video.opening'))
-const thumbnailStore = useThumbnailCacheStore()
+const cacheStore = useCacheStore()
 const { observe: observeVideoVisibility, disconnect: disconnectVideoVisibility } = useIntersectionTaskQueue({
   threshold: 0.5
 })
@@ -191,7 +192,12 @@ const persistVideoLocalPath = async (absolutePath: string) => {
 
   chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, body: nextBody })
   const updated = { ...target, message: { ...target.message, body: nextBody } }
-  await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as any })
+  await invokeSilently(TauriCommand.SAVE_MSG, {
+    data: updated as {
+      message: { id: string; status?: number | unknown; body: Record<string, unknown> }
+      [key: string]: unknown
+    }
+  })
 }
 const localVideoThumbSrc = ref<string | null>(null)
 
@@ -242,14 +248,24 @@ const remoteThumbSrc = computed(() => props.body?.thumbUrl || '')
 const downloadKey = computed(() => remoteThumbSrc.value || '')
 const displayThumbSrc = computed(() => localVideoThumbSrc.value || remoteThumbSrc.value || '')
 
-const requestVideoThumbnailDownload = () => {
+const requestVideoThumbnailDownload = async () => {
   if (!downloadKey.value || !props.message) return
-  void thumbnailStore
-    .enqueueThumbnail({ url: downloadKey.value, msgId: props.message.id, roomId: props.message.roomId, kind: 'video' })
-    .then((path) => {
-      if (!path) return
-      localVideoThumbSrc.value = convertFileSrc(path)
-    })
+
+  try {
+    // 使用 mediaService 下载缩略图
+    const { mediaService } = await import('@/services/mediaService')
+    const localPath = await mediaService.downloadMedia(downloadKey.value)
+
+    if (localPath) {
+      // 更新本地缩略图路径
+      localVideoThumbSrc.value = convertFileSrc(localPath)
+
+      // 添加到缓存
+      cacheStore.addCacheEntry(downloadKey.value, localPath, 0, 'thumb')
+    }
+  } catch (error) {
+    logger.warn('[Video] Failed to download thumbnail:', toError(error))
+  }
 }
 
 const ensureLocalVideoThumbnail = async () => {
@@ -266,11 +282,12 @@ const ensureLocalVideoThumbnail = async () => {
       return
     }
   } catch (error) {
-    console.warn('[Video] 检查缩略图文件失败:', error)
+    logger.warn('[Video] 检查缩略图文件失败:', toError(error))
   }
 
   localVideoThumbSrc.value = null
-  thumbnailStore.invalidate(downloadKey.value)
+  // 移除旧的缓存条目
+  cacheStore.removeCacheEntry(downloadKey.value)
   requestVideoThumbnailDownload()
 }
 
@@ -292,7 +309,7 @@ watch(
         isVideoDownloaded.value = true
       }
     } catch (error) {
-      console.warn('[Video] 本地视频校验失败:', error)
+      logger.warn('[Video] 本地视频校验失败:', toError(error))
     }
   },
   { immediate: true }
@@ -335,20 +352,24 @@ const downloadVideo = async () => {
   try {
     const localPath = await getLocalVideoPath(props.body?.url)
     if (localPath) {
+      const res = await fileService.downloadWithResume(props.body.url)
+      const blob = res.blob as Blob
+      const buffer = await blob.arrayBuffer()
+      const data = new Uint8Array(buffer)
       const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
-      await downloadFile(props.body.url, localPath, baseDir)
+      const { writeFile } = await import('@tauri-apps/plugin-fs')
+      await writeFile(localPath, data, { baseDir })
       isVideoDownloaded.value = await checkVideoDownloaded(props.body.url)
 
-      // 下载完成后，更新videoViewer store中的视频路径
+      // 下载完成后，更新视频路径
       if (isVideoDownloaded.value) {
         const baseDirPath = isMobile() ? await appDataDir() : await resourceDir()
         const path = await join(baseDirPath, localPath)
-        videoViewerStore.updateVideoPath(props.body.url, path)
         void persistVideoLocalPath(path)
       }
     }
   } catch (error) {
-    console.error('下载视频失败:', error)
+    logger.error('下载视频失败:', toError(error))
   }
 }
 
@@ -398,14 +419,14 @@ const handleOpenVideoViewer = async () => {
 
         // 如果下载失败，不继续打开视频
         if (!isVideoDownloaded.value) {
-          console.error('视频下载失败，无法打开')
+          logger.error('视频下载失败，无法打开')
           return
         }
       }
 
       await openVideoViewer(props.body.url, [MsgEnum.VIDEO])
     } catch (error) {
-      console.error('打开视频失败:', error)
+      logger.error('打开视频失败:', toError(error))
     } finally {
       isOpening.value = false
     }

@@ -16,6 +16,8 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { listen } from '@tauri-apps/api/event'
 import { cancel, Format, scan } from '@tauri-apps/plugin-barcode-scanner'
 import { MittEnum } from '@/enums'
@@ -41,7 +43,8 @@ const startScan = async () => {
       }, 300)
     })
 
-    const res = (await Promise.race([scanTask, cancelTask])) as any
+    type ScanResult = { content: string } | string | null
+    const res = (await Promise.race([scanTask, cancelTask])) as ScanResult
 
     // 为空或已取消
     if (!res) {
@@ -49,15 +52,15 @@ const startScan = async () => {
       return
     }
 
-    console.log('扫码结果：', res)
+    logger.debug('扫码结果：:', { data: res, component: 'MobileQRCode' })
 
     if (res && typeof res === 'object' && 'content' in res && typeof res.content === 'string') {
       try {
         const jsonData = JSON.parse(res.content)
-        console.log('扫码json:', jsonData)
+        logger.debug('扫码json::', { data: jsonData, component: 'MobileQRCode' })
         useMitt.emit(MittEnum.QR_SCAN_EVENT, jsonData)
       } catch (error) {
-        console.log('扫码结果不是JSON，按纯文本处理：', error)
+        logger.debug('扫码结果不是JSON，按纯文本处理：', error)
         useMitt.emit(MittEnum.QR_SCAN_EVENT, { raw: res.content })
       }
 
@@ -76,10 +79,16 @@ const startScan = async () => {
     } else {
       result.value = '扫码失败或已取消'
     }
-  } catch (err: any) {
-    console.error('扫码异常:', err)
+  } catch (err: unknown) {
+    logger.error('扫码异常:', err)
 
-    if (err && typeof err === 'object' && 'message' in err && /permission/i.test(err.message)) {
+    if (
+      err &&
+      typeof err === 'object' &&
+      'message' in err &&
+      typeof err.message === 'string' &&
+      /permission/i.test(err.message)
+    ) {
       alert('没有相机权限，请在系统设置中开启权限')
       router.back() // 用户点 OK 后会执行这里
       result.value = '缺少权限'
@@ -112,11 +121,11 @@ onMounted(async () => {
       unlistenAndroidBack = await listen('tauri://android-back', () => {
         isActive.value = false
         cancel().catch((e) => {
-          console.warn('cancel() 调用失败:', e)
+          logger.warn('cancel() 调用失败:', e)
         })
       })
     } catch (e) {
-      console.warn('监听 Android 返回键失败:', e)
+      logger.warn('监听 Android 返回键失败:', e)
     }
   }
 })
@@ -133,7 +142,7 @@ onUnmounted(() => {
     appContainer.style.backgroundColor = originalAppBg
   }
   cancel().catch((e) => {
-    console.warn('cancel() 调用失败:', e)
+    logger.warn('cancel() 调用失败:', e)
   })
 })
 </script>

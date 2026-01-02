@@ -26,14 +26,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, watchEffect, onMounted, computed } from 'vue'
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useSettingStore } from '@/stores/setting'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
 const settingStore = useSettingStore()
-const { login } = storeToRefs(settingStore)
+const login = computed(() => settingStore.login)
 const autoLogin = ref(login.value.autoLogin)
 const autoStartup = ref(login.value.autoStartup)
 
@@ -54,6 +55,8 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .item-box {
-  @apply text-14px text-[--text-color] bg-[--bg-setting-item] rounded-8px p-10px border-(solid 1px [--line-color]) custom-shadow;
+  @apply text-[--text-color] bg-[--bg-setting-item] rounded-8px border-(solid 1px [--line-color]) custom-shadow;
+  font-size: clamp(12px, 2vw, 14px);
+  padding: var(--pad-container-x);
 }
 </style>

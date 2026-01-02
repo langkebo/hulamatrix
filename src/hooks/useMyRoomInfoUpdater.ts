@@ -1,8 +1,8 @@
-import { useCachedStore } from '@/stores/cached'
+import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat'
 import { useGroupStore } from '@/stores/group'
-import { useUserStore } from '@/stores/user.ts'
-import { updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { useUserStore } from '@/stores/user'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 
 type UpdatePayload = {
   roomId: string
@@ -44,7 +44,10 @@ export const useMyRoomInfoUpdater = () => {
         updated = await cacheStore.updateMyRoomInfo(payload)
       }
     }
-    await updateMyRoomInfo(payload)
+    await requestWithFallback({
+      url: 'update_my_room_info',
+      body: payload
+    })
 
     groupStore.myNameInCurrentGroup = myName
     if (groupStore.countInfo) {

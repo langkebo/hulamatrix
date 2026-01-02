@@ -10,9 +10,10 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { NModal, NInput, NButton, NSpace, NSpin, NCard, useMessage } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { useI18n } from 'vue-i18n'
+import { sendMessage } from '@/utils/matrixClientUtils'
 
 interface Props {
   show: boolean
@@ -95,7 +96,7 @@ async function saveEdit() {
     }
 
     // Send the edit event
-    await client.sendMessage(props.roomId, editEventContent)
+    await sendMessage(client, props.roomId, editEventContent, 'm.room.message')
 
     logger.info('[MessageEditDialog] Message edited successfully')
 

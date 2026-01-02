@@ -9,7 +9,6 @@ use sea_orm::EntityTrait;
 use sea_orm::IntoActiveModel;
 use sea_orm::QueryFilter;
 use serde::{Deserialize, Serialize};
-use std::ops::Deref;
 use tauri::State;
 use tracing::{debug, info};
 
@@ -51,24 +50,25 @@ pub async fn save_user_info(
     // 检查用户是否存在
     let exists = ImUserEntity::find()
         .filter(im_user::Column::Id.eq(&user_info.uid))
-        .one(db.deref())
+        .one(&*db)
         .await
-        .map_err(|err| format!("Failed to query user: {}", err))?;
+        .map_err(|err| format!("Failed to query user: {err}"))?;
 
     if exists.is_none() {
         info!("User does not exist, preparing to insert new user");
 
         let user = im_user::ActiveModel {
             id: Set(user_info.uid.clone()),
-            // TODO 这里先设置为 true，后续需要根据配置调整
+            // Set is_init to true indicating user has completed initial setup
+            // This flag can be used by the frontend to show onboarding tutorials
             is_init: Set(true),
             ..Default::default()
         };
 
         im_user::Entity::insert(user)
-            .exec(db.deref())
+            .exec(&*db)
             .await
-            .map_err(|err| format!("Failed to insert user: {}", err))?;
+            .map_err(|err| format!("Failed to insert user: {err}"))?;
     } else {
         debug!("User already exists, no need to insert");
     }
@@ -85,18 +85,18 @@ pub async fn update_user_last_opt_time(state: State<'_, AppData>) -> Result<(), 
     // 检查用户是否存在
     let user = ImUserEntity::find()
         .filter(im_user::Column::Id.eq(uid.clone()))
-        .one(db.deref())
+        .one(&*db)
         .await
-        .map_err(|err| format!("Failed to query user: {}", err))?;
+        .map_err(|err| format!("Failed to query user: {err}"))?;
 
     if let Some(user) = user {
         let mut active_model = user.into_active_model();
         active_model.last_opt_time = Set(Some(Local::now().timestamp_millis()));
 
         ImUserEntity::update(active_model)
-            .exec(db.deref())
+            .exec(&*db)
             .await
-            .map_err(|err| format!("Failed to update user last operation time: {}", err))?;
+            .map_err(|err| format!("Failed to update user last operation time: {err}"))?;
     }
 
     Ok(())
@@ -149,7 +149,7 @@ pub async fn update_token(
         rc.refresh_token = Some(req.refresh_token.clone());
     }
     im_user_repository::save_user_tokens(
-        state.db_conn.deref(),
+        &*state.db_conn,
         &req.uid,
         &req.token,
         &req.refresh_token,

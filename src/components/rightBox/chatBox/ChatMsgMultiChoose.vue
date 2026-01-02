@@ -5,7 +5,7 @@
     <!-- 功能模块 -->
     <div class="flex items-start gap-14px">
       <div class="flex flex-col items-center gap-14px w-64px" v-for="opt in opts">
-        <n-button :disabled="opt.disabled" secondary circle @click="opt.click" class="size-46px mx-auto">
+        <n-button :disabled="opt.disabled || false" secondary circle @click="opt.click" class="size-46px mx-auto">
           <template #icon>
             <svg class="size-22px">
               <use :href="opt.icon"></use>
@@ -141,7 +141,7 @@
 <script setup lang="ts">
 import { ErrorType } from '@/common/exception'
 import { MergeMessageType, MittEnum, RoomTypeEnum, TauriCommand } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
@@ -150,9 +150,23 @@ import { mergeMsg } from '@/utils/ImRequestUtils'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+
+import { msg } from '@/utils/SafeUI'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { MsgId } from '@/typings/global'
+//
 import ChatMultiMsg from './ChatMultiMsg.vue'
+import { logger, toError } from '@/utils/logger'
+
+// 消息体接口定义
+interface MessageBody {
+  content?: string
+  fileName?: string
+  name?: string
+  title?: string
+  url?: string
+  [key: string]: unknown
+}
 
 const { t } = useI18n()
 const chatStore = useChatStore()
@@ -170,7 +184,7 @@ const selectedMsgs = computed(() =>
 const getMessagePreview = (msg: (typeof selectedMsgs.value)[number]) => {
   const userInfo = groupStore.getUserInfo(msg.fromUser.uid)
   const nickname = userInfo?.myName || msg.fromUser?.username || ''
-  const body: any = msg.message.body || {}
+  const body = (msg.message.body as MessageBody) || {}
   const preview =
     body.content || body.fileName || body.name || body.title || body.url || t('message.multi_choose.non_text_message')
   return nickname ? `${nickname}: ${preview}` : preview
@@ -178,13 +192,8 @@ const getMessagePreview = (msg: (typeof selectedMsgs.value)[number]) => {
 
 const msgContents = computed(() => selectedMsgs.value.map((msg) => getMessagePreview(msg)))
 
-const msgIds = computed((): MsgId[] => {
-  return selectedMsgs.value.map((msg) => {
-    return {
-      msgId: msg.message.id,
-      fromUid: msg.fromUser.uid
-    }
-  })
+const msgIds = computed((): string[] => {
+  return selectedMsgs.value.map((msg) => msg.message.id)
 })
 
 const filteredSessionList = computed(() => {
@@ -209,7 +218,7 @@ const deleteConfirmText = computed(() => {
 
 const handleDeleteClick = () => {
   if (selectedMsgs.value.length === 0) {
-    window.$message?.warning(t('message.multi_choose.select_delete_prompt'))
+    msg.warning?.(t('message.multi_choose.select_delete_prompt'))
     return
   }
   showDeleteConfirm.value = true
@@ -219,7 +228,7 @@ const handleBatchDelete = async () => {
   if (isDeleting.value || selectedMsgs.value.length === 0) return
   const roomId = globalStore.currentSessionRoomId
   if (!roomId) {
-    window.$message?.error(t('message.multi_choose.room_missing'))
+    msg.error?.(t('message.multi_choose.room_missing'))
     showDeleteConfirm.value = false
     return
   }
@@ -244,15 +253,15 @@ const handleBatchDelete = async () => {
       )
     )
     ids.forEach((id) => chatStore.deleteMsg(id))
-    window.$message?.success(t('message.multi_choose.delete_success'))
+    msg.success?.(t('message.multi_choose.delete_success'))
     chatStore.clearMsgCheck()
     chatStore.resetSessionSelection()
     chatStore.setMsgMultiChoose(false)
     useMitt.emit(MittEnum.UPDATE_SESSION_LAST_MSG, { roomId })
     showDeleteConfirm.value = false
   } catch (error) {
-    console.error('批量删除消息失败:', error)
-    window.$message?.error(t('message.multi_choose.delete_failed_retry'))
+    logger.error('批量删除消息失败:', toError(error))
+    msg.error?.(t('message.multi_choose.delete_failed_retry'))
   } finally {
     isDeleting.value = false
   }
@@ -283,14 +292,14 @@ const opts = computed(() => [
   //   text: '收藏',
   //   icon: '#collect',
   //   click: () => {
-  //     window.$message.warning('暂未实现')
+  //     msg.warning('暂未实现')
   //   }
   // },
   {
     text: t('message.multi_choose.save_to_pc'),
     icon: '#collect-laptop',
     click: () => {
-      window.$message.warning(t('message.multi_choose.not_implemented'))
+      msg.warning?.(t('message.multi_choose.not_implemented'))
     }
   },
   {
@@ -340,11 +349,11 @@ const sendMsg = async () => {
     fromRoomId: globalStore.currentSessionRoomId
   })
     .then(() => {
-      window.$message.success(t('message.multi_choose.forward_success'))
+      msg.success?.(t('message.multi_choose.forward_success'))
     })
     .catch((e) => {
-      console.error('消息转发失败', e)
-      window.$message.error(t('message.multi_choose.forward_failed'))
+      logger.error('消息转发失败', toError(e))
+      msg.error?.(t('message.multi_choose.forward_failed'))
     })
     .finally(() => {
       showModal.value = false

@@ -14,22 +14,24 @@
           <div class="text-26px">登录</div>
         </div>
 
-        <van-checkbox-group v-model="checkedValues" checked-color="#487D68" class="flex flex-col gap-14px text-14px">
-          <van-checkbox name="syncRecentMessages">同步最近的消息</van-checkbox>
-          <van-checkbox name="autoLogin">自动登录该设备</van-checkbox>
-        </van-checkbox-group>
+        <n-checkbox-group v-model:value="checkedValues" class="flex flex-col gap-14px text-14px">
+          <n-checkbox value="syncRecentMessages">同步最近的消息</n-checkbox>
+          <n-checkbox value="autoLogin">自动登录该设备</n-checkbox>
+        </n-checkbox-group>
       </div>
-      <div class="flex w-45% gap-30px justify-center items-center flex-col">
-        <van-button @click="handleConfirmLogin" color="#487D68" class="w-full" type="primary">确定登录</van-button>
-        <div @click="handleCancelLogin" class="w-full text-center text-gray-600">取消登录</div>
+      <div class="mobile-action-footer">
+        <n-button tertiary class="mobile-primary-btn" @click="handleCancelLogin">取消登录</n-button>
+        <n-button type="primary" class="mobile-primary-btn" @click="handleConfirmLogin">确定登录</n-button>
       </div>
     </div>
   </MobileLayout>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSettingStore } from '@/stores/setting'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 const settingStore = useSettingStore()
@@ -49,7 +51,7 @@ const handleConfirmLogin = async () => {
     // 跳转到主页面
     router.push('/mobile/home')
   } catch (error) {
-    console.error('登录确认失败:', error)
+    logger.error('登录确认失败:', error)
   }
 }
 

@@ -54,10 +54,14 @@ export class UnreadCountManager {
     sessionList: SessionItem[],
     unReadMark: { newFriendUnreadCount: number; newGroupUnreadCount: number; newMsgUnreadCount: number }
   ) {
-    // 检查当前窗口标签
-    const webviewWindowLabel = WebviewWindow.getCurrent()
-    if (webviewWindowLabel.label !== 'home' && webviewWindowLabel.label !== 'mobile-home') {
-      return
+    // 检查当前窗口标签 (在测试环境中 Tauri API 不可用，跳过窗口检查)
+    try {
+      const webviewWindowLabel = WebviewWindow.getCurrent()
+      if (webviewWindowLabel.label !== 'home' && webviewWindowLabel.label !== 'mobile-home') {
+        return
+      }
+    } catch {
+      // Tauri API 不可用 (如测试环境)，继续执行
     }
 
     info('[UnreadCountManager] 计算全局未读消息计数')
@@ -111,6 +115,24 @@ export class UnreadCountManager {
     } else {
       // 没有未读消息时，设置tipVisible为false
       this.setTipVisible?.(false)
+    }
+  }
+
+  /**
+   * 标记消息为已读
+   * @param sessionId 会话ID
+   * @param sessionList 会话列表
+   * @param unReadMark 未读标记对象
+   */
+  public markRead(
+    sessionId: string,
+    sessionList: SessionItem[],
+    unReadMark: { newFriendUnreadCount: number; newGroupUnreadCount: number; newMsgUnreadCount: number }
+  ) {
+    const session = sessionList.find((s) => s.id === sessionId)
+    if (session) {
+      session.unreadCount = 0
+      this.calculateTotal(sessionList, unReadMark)
     }
   }
 

@@ -36,6 +36,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, nextTick } from 'vue'
+
 const props = defineProps({
   /** PIN码长度 */
   length: {
@@ -99,14 +101,15 @@ watch(
 /** 处理PIN输入 */
 const handleInput = (index: number) => {
   // 确保只输入一个字符
-  if (digits.value[index].length > 1) {
-    digits.value[index] = digits.value[index].slice(0, 1)
+  const currentDigit = digits.value[index]
+  if (currentDigit && currentDigit.length > 1) {
+    digits.value[index] = currentDigit.slice(0, 1)
   }
 
   // 自动跳转到下一个输入框
   if (digits.value[index] && index < props.length - 1) {
     nextTick(() => {
-      pinInputs.value[index + 1].focus()
+      pinInputs.value[index + 1]?.focus()
     })
   }
 }
@@ -117,7 +120,7 @@ const handleKeydown = (event: KeyboardEvent, index: number) => {
   if (event.key === 'Backspace') {
     if (!digits.value[index] && index > 0) {
       digits.value[index - 1] = ''
-      pinInputs.value[index - 1].focus()
+      pinInputs.value[index - 1]?.focus()
     }
   }
 }
@@ -135,14 +138,17 @@ const handlePaste = (event: ClipboardEvent, index: number) => {
 
   // 从当前索引开始填充
   for (let i = 0; i < validChars.length && i + index < props.length; i++) {
-    digits.value[i + index] = validChars[i]
+    const char = validChars[i]
+    if (char !== undefined) {
+      digits.value[i + index] = char
+    }
   }
 
   // 如果填充完毕且还有输入框，聚焦到下一个空输入框
   const nextEmptyIndex = digits.value.findIndex((digit, idx) => digit === '' && idx >= index)
   if (nextEmptyIndex !== -1) {
     nextTick(() => {
-      pinInputs.value[nextEmptyIndex].focus()
+      pinInputs.value[nextEmptyIndex]?.focus()
     })
   }
 }

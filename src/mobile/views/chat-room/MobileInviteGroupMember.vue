@@ -52,17 +52,18 @@
                     <n-avatar
                       round
                       :size="44"
-                      :src="AvatarUtils.getAvatarUrl(groupStore.getUserInfo(item.uid)?.avatar!)"
+                      :src="AvatarUtils.getAvatarUrl(item.avatar!)"
                       fallback-src="/logo.png"
                       style="border: 1px solid var(--avatar-border-color)" />
                     <!-- 文字信息 -->
                     <div class="flex flex-col leading-tight truncate">
                       <span class="text-14px font-medium truncate">
-                        {{ groupStore.getUserInfo(item.uid)?.name }}
+                        {{ item.name }}
                       </span>
                       <div class="text-12px text-gray-500 flex items-center gap-4px truncate">
-                        <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? '#1ab292' : '#909090'" dot />
-                        {{ item.activeStatus === OnlineEnum.ONLINE ? '在线' : '离线' }}
+                        <!-- 在线状态暂未从FriendsStore完全同步，默认离线或隐藏 -->
+                        <!-- <n-badge :color="(item.activeStatus === OnlineEnum.ONLINE) ? '#1ab292' : '#909090'" dot /> -->
+                        <!-- {{ (item.activeStatus === OnlineEnum.ONLINE) ? '在线' : '离线' }} -->
                       </div>
                     </div>
                   </div>
@@ -85,22 +86,22 @@
 </template>
 
 <script setup lang="ts">
-import { OnlineEnum } from '@/enums'
-import { useContactStore } from '@/stores/contacts.ts'
+import { computed, onMounted, ref, onBeforeUnmount } from 'vue'
+import { useFriendsStore } from '@/stores/friends'
 import { useGlobalStore } from '@/stores/global'
-import { useGroupStore } from '@/stores/group'
-import { useChatStore } from '@/stores/chat'
+import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { inviteGroupMember } from '@/utils/ImRequestUtils'
 import router from '@/router'
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 
 defineOptions({
   name: 'mobileInviteGroupMember'
 })
 
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
 const globalStore = useGlobalStore()
-const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 
 const keyword = ref('')
 const selectedList = ref<string[]>([])
@@ -110,14 +111,21 @@ const scrollArea = ref<HTMLElement>()
 
 // 获取所有好友列表（排除已在群中的成员和机器人）
 const allContacts = computed(() => {
-  return contactStore.contactsList.filter((item) => {
+  const contacts = (friendsStore.friends || []).map((f) => ({
+    uid: f.user_id,
+    name: f.display_name || f.name || f.user_id,
+    avatar: f.avatar_url
+    // activeStatus: ... // FriendsStore info
+  }))
+
+  return contacts.filter((item) => {
     // 排除机器人（uid === '1'）
     if (item.uid === '1') {
       return false
     }
 
     // 排除已在群中的成员
-    const isInGroup = groupStore.memberList.some((member) => member.uid === item.uid)
+    const isInGroup = !!roomStore.getMember(globalStore.currentSessionRoomId, item.uid)
     return !isInGroup
   })
 })
@@ -130,9 +138,7 @@ const filteredContacts = computed(() => {
 
   const searchKeyword = keyword.value.toLowerCase()
   return allContacts.value.filter((item) => {
-    const userInfo = groupStore.getUserInfo(item.uid)
-    if (!userInfo) return false
-    return userInfo.name.toLowerCase().includes(searchKeyword) || userInfo.account.toLowerCase().includes(searchKeyword)
+    return item.name.toLowerCase().includes(searchKeyword) || item.uid.toLowerCase().includes(searchKeyword)
   })
 })
 
@@ -144,23 +150,27 @@ const doSearch = () => {
 // 处理邀请
 const handleInvite = async () => {
   if (selectedList.value.length === 0) {
-    window.$message.warning('请选择要邀请的好友')
+    msg.warning('请选择要邀请的好友')
     return
   }
 
   isLoading.value = true
   try {
-    await inviteGroupMember({
-      roomId: globalStore.currentSessionRoomId,
-      uidList: selectedList.value
-    })
+    const service = roomStore.getService()
+    if (!service) {
+      throw new Error('Service not initialized')
+    }
 
-    window.$message.success(`成功邀请 ${selectedList.value.length} 位好友`)
+    // 批量邀请
+    const invitePromises = selectedList.value.map((uid) => service.inviteUser(globalStore.currentSessionRoomId, uid))
+    await Promise.all(invitePromises)
+
+    msg.success(`成功邀请 ${selectedList.value.length} 位好友`)
     // 返回群设置页面
     router.back()
   } catch (error) {
-    console.error('邀请失败:', error)
-    window.$message.error('邀请失败，请重试')
+    logger.error('邀请失败:', error)
+    msg.error('邀请失败，请重试')
   } finally {
     isLoading.value = false
   }
@@ -174,26 +184,15 @@ const calculateScrollHeight = () => {
   }
 }
 
-// 初始化时获取群成员列表和所有用户信息
+// 初始化时获取群成员列表
 onMounted(async () => {
   try {
-    // 先加载所有群的成员数据，确保 groupStore.allUserInfo 有数据
-    const chatStore = useChatStore()
-    const groupSessions = chatStore.getGroupSessions()
-
     // 加载当前群的成员列表
     if (globalStore.currentSessionRoomId) {
-      await groupStore.getGroupUserList(globalStore.currentSessionRoomId)
+      await roomStore.initRoom(globalStore.currentSessionRoomId)
     }
-
-    // 加载其他群的成员列表以获取所有用户信息
-    await Promise.all(
-      groupSessions
-        .filter((session: any) => session.roomId !== globalStore.currentSessionRoomId)
-        .map((session: any) => groupStore.getGroupUserList(session.roomId))
-    )
   } catch (error) {
-    console.error('加载用户信息失败:', error)
+    logger.error('加载用户信息失败:', error)
   }
 
   calculateScrollHeight()

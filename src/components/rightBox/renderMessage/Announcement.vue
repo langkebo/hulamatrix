@@ -46,11 +46,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWindow } from '@/hooks/useWindow'
 import type { AnnouncementBody } from '@/services/types'
 import { useGlobalStore } from '@/stores/global'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
+import { formatTimestamp } from '@/utils/ComputedTime'
 import { isMobile } from '@/utils/PlatformConstants'
 
 const props = defineProps<{

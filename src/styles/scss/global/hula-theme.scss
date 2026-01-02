@@ -1,0 +1,273 @@
+/* ==========================================================================
+   HuLa主题样式覆盖
+   应用统一的HuLa配色方案和背景
+   ========================================================================== */
+
+/* 全局应用HuLa主题样式 */
+html,
+body {
+  /* 应用HuLa的渐变背景 */
+  background: var(--app-bg-gradient, radial-gradient(
+    circle at top left,
+    rgba(255, 209, 255, 0.3) 20%,
+    rgba(130, 193, 187, 0.3) 100%
+  )) !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  min-height: 100vh;
+}
+
+/* 深色模式背景调整 */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  background: radial-gradient(
+    circle at top left,
+    rgba(26, 178, 146, 0.15) 0%,
+    rgba(62, 101, 100, 0.15) 150%
+  ) !important;
+}
+
+/* 主布局容器 */
+#layout {
+  background: transparent !important;
+}
+
+/* 左侧栏样式优化 */
+.layout-left,
+.left-panel {
+  background: var(--left-bg-color, var(--hula-primary, #64a29c)) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 中央内容区域 */
+.layout-center,
+.center-panel {
+  background: var(--center-bg-color, rgba(255, 255, 255, 0.95)) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 右侧聊天区域 */
+.layout-right,
+.right-panel,
+.chat-container {
+  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 聊天框样式 */
+.chat-box,
+.chat-wrapper {
+  background: transparent !important;
+}
+
+/* 消息气泡样式优化 */
+.message-bubble {
+  &.sent {
+    background: var(--hula-accent, #13987f) !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(19, 152, 127, 0.2);
+  }
+
+  &.received {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--text-color, #18181c) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(100, 162, 156, 0.1);
+  }
+}
+
+/* 输入框样式 */
+.message-input,
+.chat-input {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--hula-primary, #64a29c) !important;
+  border-radius: 8px;
+
+  &:focus {
+    border-color: var(--hula-accent, #13987f) !important;
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2) !important;
+  }
+}
+
+/* 按钮样式统一 */
+.n-button--primary-type {
+  background: var(--hula-accent, #13987f) !important;
+  border-color: var(--hula-accent, #13987f) !important;
+
+  &:hover {
+    background: var(--hula-accent-hover, #0f7d69) !important;
+    border-color: var(--hula-accent-hover, #0f7d69) !important;
+  }
+
+  &:active {
+    background: var(--hula-accent-active, #0c6354) !important;
+    border-color: var(--hula-accent-active, #0c6354) !important;
+  }
+}
+
+/* 头像边框 */
+.n-avatar,
+.avatar {
+  border: 2px solid var(--hula-primary, #64a29c) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 头像在线状态指示器 */
+.online-indicator {
+  background: var(--hula-accent, #13987f) !important;
+  border: 2px solid white;
+}
+
+/* 卡片和面板样式 */
+.n-card,
+.panel-card,
+.chat-header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(100, 162, 156, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 深色模式下的调整 */
+html[data-theme='dark'] {
+  .layout-center,
+  .center-panel {
+    background: rgba(36, 36, 40, 0.95) !important;
+    color: white;
+  }
+
+  .layout-right,
+  .right-panel,
+  .chat-container {
+    background: rgba(24, 24, 28, 0.9) !important;
+    color: white;
+  }
+
+  .message-bubble {
+    &.received {
+      background: rgba(42, 42, 48, 0.95) !important;
+      color: white;
+      border: 1px solid rgba(26, 178, 146, 0.3);
+    }
+  }
+
+  .message-input,
+  .chat-input {
+    background: rgba(36, 36, 40, 0.95) !important;
+    color: white;
+    border: 1px solid rgba(26, 178, 146, 0.3);
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .n-card,
+  .panel-card,
+  .chat-header {
+    background: rgba(36, 36, 40, 0.95) !important;
+    color: white;
+    border: 1px solid rgba(26, 178, 146, 0.3);
+  }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(100, 162, 156, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hula-primary, #64a29c);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--hula-primary-dark, #4d8b85);
+  }
+}
+
+/* 深色模式滚动条 */
+html[data-theme='dark'] ::-webkit-scrollbar {
+  &-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &-thumb {
+    background: var(--hula-primary-light, #82b2ac);
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-item,
+.chat-message {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 加载状态优化 */
+.loading-overlay {
+  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* 模态框和抽屉 */
+.n-modal,
+.n-drawer {
+  .n-modal-body-wrapper,
+  .n-drawer-body {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+html[data-theme='dark'] {
+  .n-modal,
+  .n-drawer {
+    .n-modal-body-wrapper,
+    .n-drawer-body {
+      background: rgba(24, 24, 28, 0.98) !important;
+      color: white;
+    }
+  }
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .layout-left,
+  .layout-right {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+
+  .message-bubble {
+    &.sent,
+    &.received {
+      box-shadow: none;
+    }
+  }
+}

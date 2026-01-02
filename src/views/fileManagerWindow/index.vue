@@ -17,21 +17,43 @@
 </template>
 
 <script setup lang="ts">
+import { ref, provide, readonly, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import FileContent from '@/components/fileManager/FileContent.vue'
 import SideNavigation from '@/components/fileManager/SideNavigation.vue'
 import UserList from '@/components/fileManager/UserList.vue'
+import { logger, toError } from '@/utils/logger'
+
+// Type definitions
+interface NavigationItem {
+  id: string
+  name: string
+  count: number
+  type: string
+  active?: boolean
+  key?: string
+}
+
+interface UserItem {
+  userId: string
+  userName?: string
+  avatar?: string
+}
+
+interface TimeGroupedFiles {
+  [key: string]: unknown[]
+}
 
 // 定义文件管理的响应式状态
 const activeNavigation = ref('myFiles')
 const selectedUser = ref('')
 const selectedRoom = ref('')
 const searchKeyword = ref('')
-const timeGroupedFiles = ref<any[]>([])
-const userList = ref<any[]>([])
+const timeGroupedFiles = ref<TimeGroupedFiles>({})
+const userList = ref<UserItem[]>([])
 const loading = ref(false)
-const navigationItems = ref<any[]>([])
+const navigationItems = ref<NavigationItem[]>([])
 
 // 查询文件
 const queryFiles = async () => {
@@ -39,14 +61,22 @@ const queryFiles = async () => {
     loading.value = true
 
     // 根据导航类型确定查询参数
-    const queryParam = {
+    type QueryParam = {
+      navigationType: string
+      selectedUser?: string
+      searchKeyword?: string
+      roomId?: string
+      page: number
+      pageSize: number
+    }
+    const queryParam: QueryParam = {
       navigationType: activeNavigation.value,
       selectedUser: undefined,
       searchKeyword: searchKeyword.value || undefined,
       roomId: undefined,
       page: 1,
       pageSize: 50
-    } as any
+    }
 
     // 根据不同的导航类型设置查询参数
     switch (activeNavigation.value) {
@@ -66,12 +96,12 @@ const queryFiles = async () => {
 
     const response = (await invoke('query_files', {
       param: queryParam
-    })) as any
+    })) as { timeGroupedFiles: TimeGroupedFiles; userList: UserItem[] }
 
     timeGroupedFiles.value = response.timeGroupedFiles
     userList.value = response.userList
   } catch (error) {
-    console.error('查询文件失败:', error)
+    logger.error('查询文件失败:', toError(error))
   } finally {
     loading.value = false
   }
@@ -80,18 +110,18 @@ const queryFiles = async () => {
 // 获取导航菜单项
 const getNavigationItems = async () => {
   try {
-    const items = (await invoke('get_navigation_items')) as any[]
+    const items = (await invoke('get_navigation_items')) as NavigationItem[]
     navigationItems.value = items
   } catch (error) {
-    console.error('获取导航菜单失败:', error)
+    logger.error('获取导航菜单失败:', toError(error))
   }
 }
 
 // 设置激活的导航项
 const setActiveNavigation = (key: string) => {
   activeNavigation.value = key
-  navigationItems.value.forEach((item) => {
-    item.active = item.key === key
+  navigationItems.value.forEach((item: NavigationItem) => {
+    item.active = item?.key === key
   })
 
   // 切换导航时重置选择状态

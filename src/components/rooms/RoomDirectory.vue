@@ -11,9 +11,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { NCard, NSpin, NInput, NButton, NTag, NAvatar, NEmpty, NSpace, NTooltip, useMessage } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { useI18n } from 'vue-i18n'
+import { getPublicRooms, joinRoom, mxcUrlToHttp } from '@/utils/matrixClientUtils'
+
 interface Props {
   /** Initial search term */
   initialSearchTerm?: string
@@ -78,7 +80,27 @@ async function loadRooms(direction: 'initial' | 'next' = 'initial') {
       direction
     })
 
-    const response = await client.getPublicRooms({
+    const response = await (
+      client.getPublicRooms as (opts?: {
+        limit?: number
+        since?: string
+        server?: string
+        filter?: { generic_search_term?: string }
+      }) => Promise<{
+        chunk?: Array<{
+          room_id: string
+          name?: string
+          aliases?: string[]
+          topic?: string
+          avatar_url?: string
+          num_joined_members?: number
+          world_readable?: boolean
+          guest_can_join?: boolean
+        }>
+        next_batch?: string
+        total_room_count_estimate?: number
+      }>
+    )?.({
       limit: props.pageSize,
       since: direction === 'next' ? nextBatch.value : undefined,
       server: props.server,
@@ -89,15 +111,26 @@ async function loadRooms(direction: 'initial' | 'next' = 'initial') {
         : undefined
     })
 
-    const newRooms = (response.chunk || []).map((room: any) => ({
-      roomId: room.room_id,
-      name: room.name || room.aliases?.[0] || room.room_id,
-      topic: room.topic,
-      avatar: room.avatar_url,
-      numJoinedMembers: room.num_joined_members || 0,
-      worldReadable: room.world_readable || false,
-      guestCanJoin: room.guest_can_join || false
-    }))
+    const newRooms = (response?.chunk || []).map(
+      (room: {
+        room_id: string
+        name?: string
+        aliases?: string[]
+        topic?: string
+        avatar_url?: string
+        num_joined_members?: number
+        world_readable?: boolean
+        guest_can_join?: boolean
+      }) => ({
+        roomId: room.room_id,
+        name: room.name || room.aliases?.[0] || room.room_id,
+        topic: room.topic,
+        avatar: room.avatar_url,
+        numJoinedMembers: room.num_joined_members || 0,
+        worldReadable: room.world_readable || false,
+        guestCanJoin: room.guest_can_join || false
+      })
+    )
 
     if (direction === 'initial') {
       rooms.value = newRooms
@@ -150,7 +183,7 @@ async function handleJoinRoom(roomId: string, roomName: string) {
 
     logger.info('[RoomDirectory] Joining room:', { roomId, roomName })
 
-    await client.joinRoom(roomId)
+    await joinRoom(client, roomId)
 
     message.success(`Joined ${roomName}`)
     emit('joinRoom', roomId)
@@ -179,7 +212,7 @@ function getAvatarUrl(room: PublicRoom): string {
   if (!client) return room.avatar
 
   // Use SDK's mxcUrlToHttp for proper URL conversion
-  return client.mxcUrlToHttp(room.avatar, 80, 80) || room.avatar
+  return mxcUrlToHttp(client, room.avatar, 80, 80) || room.avatar
 }
 
 // Lifecycle

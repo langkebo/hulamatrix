@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
+import { logger } from '@/utils/logger'
 
 /**
  * 统一管理 后端状态是否可用 的判定，避免在AppData尚未注入时调用 tauri command。
@@ -27,7 +28,7 @@ const waitForReadyEvent = () =>
         cleanup = unlisten
       })
       .catch((error) => {
-        console.warn('[appStateReady] Failed to register listener:', error)
+        logger.warn('[appStateReady] Failed to register listener:', error)
         pendingPromise = null
         resolve()
       })
@@ -49,7 +50,7 @@ export const ensureAppStateReady = async () => {
       return
     }
   } catch (error) {
-    console.warn('[appStateReady] is_app_state_ready invoke failed:', error)
+    logger.warn('[appStateReady] is_app_state_ready invoke failed:', error)
   }
 
   if (!pendingPromise) {

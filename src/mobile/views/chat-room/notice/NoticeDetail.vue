@@ -10,8 +10,8 @@
     </template>
 
     <template #container>
-      <div
-        class="bg-[url('@/assets/mobile/chat-home/background.webp')] bg-cover bg-center flex flex-col overflow-auto h-full">
+      <div class="flex flex-col overflow-auto h-full relative">
+        <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
         <div class="flex flex-col flex-1 gap-15px py-15px px-20px">
           <div v-if="loading" class="flex justify-center items-center h-200px">
             <n-spin size="large" />
@@ -35,7 +35,7 @@
                   {{ publisherName }}
                 </div>
                 <div class="text-12px text-#333">
-                  {{ formatTimestamp(announcement.createTime) }}
+                  {{ formatTimestamp(typeof announcement.createTime === 'number' ? announcement.createTime : announcement.createTime ? Number(announcement.createTime) : 0) }}
                 </div>
               </div>
 
@@ -78,12 +78,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
+import { formatTimestamp } from '@/utils/ComputedTime'
 import { getAnnouncementDetail } from '@/utils/ImRequestUtils'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
+import { logger } from '@/utils/logger'
 
 defineOptions({
   name: 'mobileChatNoticeDetail'
@@ -95,7 +98,17 @@ const groupStore = useGroupStore()
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 
-const announcement = ref<any>(null)
+interface Announcement {
+  uid: string
+  id: string
+  title?: string
+  content?: string
+  createTime?: string | number
+  readCount?: number
+  [key: string]: unknown
+}
+
+const announcement = ref<Announcement | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -139,9 +152,9 @@ const fetchAnnouncementDetail = async () => {
       roomId: globalStore.currentSessionRoomId,
       announcementId: route.params.id as string
     })
-    announcement.value = data
+    announcement.value = data as Announcement
   } catch (err) {
-    console.error('获取公告详情失败:', err)
+    logger.error('获取公告详情失败:', err)
     error.value = '获取公告详情失败，请重试'
   } finally {
     loading.value = false

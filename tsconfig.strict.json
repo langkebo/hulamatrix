@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // 更严格的类型检查配置
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+
+    // 禁止使用any类型（除了特定场景）
+
+    // 更严格的未使用检查
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    // 强制一致的文件命名
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "src/**/__tests__/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "tests/**/*",
+    "src/types/test-shims/**/*",
+    "node_modules",
+    "dist",
+    "coverage",
+    "**/*.d.ts",
+    "src/adapters/**/*"
+  ]
+}

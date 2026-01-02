@@ -1,0 +1,342 @@
+// Matrix组件响应式设计规范
+// 定义统一的断点和样式变量
+
+// 断点定义
+$breakpoints: (
+  'mobile': 480px,
+  'tablet': 768px,
+  'desktop': 1024px,
+  'large': 1440px
+);
+
+// 混合器 - 响应式断点
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (max-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  }
+}
+
+// 混合器 - 横屏模式
+@mixin landscape {
+  @media (orientation: landscape) {
+    @content;
+  }
+}
+
+// 混合器 - 坚屏模式
+@mixin portrait {
+  @media (orientation: portrait) {
+    @content;
+  }
+}
+
+// 混合器 - 深色模式
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+// 混合器 - 浅色模式
+@mixin light-mode {
+  @media (prefers-color-scheme: light) {
+    @content;
+  }
+}
+
+// 混合器 - 减少动画
+@mixin reduce-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// 混合器 - 高对比度
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
+    @content;
+  }
+}
+
+// 通用响应式工具类
+.matrix-responsive {
+  // 移动端优化
+  @include respond-to('mobile') {
+    // 隐藏不必要的文本
+    .hide-text-mobile {
+      display: none;
+    }
+
+    // 紧凑布局
+    .compact-mobile {
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+
+    // 全宽按钮
+    .full-width-mobile {
+      width: 100%;
+    }
+
+    // 小尺寸头像
+    .avatar-small-mobile {
+      width: 32px !important;
+      height: 32px !important;
+    }
+
+    // 隐藏次要元素
+    .secondary-mobile {
+      opacity: 0.7;
+      font-size: 0.8rem;
+    }
+  }
+
+  // 平板端优化
+  @include respond-to('tablet') {
+    .tablet-compact {
+      padding: 0.75rem;
+      gap: 0.75rem;
+    }
+  }
+
+  // 横屏模式优化
+  @include landscape {
+    .landscape-stack {
+      flex-direction: row;
+    }
+
+    .landscape-center {
+      align-items: center;
+    }
+  }
+
+  // 深色模式适配
+  @include dark-mode {
+    --matrix-bg-primary: rgba(24, 24, 28, 0.95);
+    --matrix-bg-secondary: rgba(36, 36, 40, 0.95);
+    --matrix-border: rgba(255, 255, 255, 0.1);
+    --matrix-text: rgba(255, 255, 255, 0.9);
+  }
+
+  // 高对比度适配
+  @include high-contrast {
+    border-width: 2px;
+    font-weight: 500;
+
+    button, .btn {
+      border: 1px solid currentColor;
+    }
+  }
+
+  // 减少动画适配
+  @include reduce-motion {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// Matrix组件特定样式
+.matrix-chat {
+  // 聊天界面响应式
+  @include respond-to('mobile') {
+    .chat-header {
+      height: 56px;
+      padding: 0 12px;
+
+      .header-title {
+        font-size: 16px;
+      }
+
+      .header-actions {
+        .n-button {
+          padding: 0 8px;
+        }
+      }
+    }
+
+    .chat-messages {
+      padding: 8px 12px;
+    }
+
+    .message-item {
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+      }
+
+      .message-content {
+        max-width: 85%;
+      }
+    }
+
+    .chat-input {
+      .input-toolbar {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .message-editor {
+        min-height: 44px;
+        max-height: 150px;
+      }
+    }
+  }
+}
+
+.matrix-call {
+  // 通话界面响应式
+  @include respond-to('mobile') {
+    .call-overlay {
+      .control-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 0 24px;
+      }
+
+      .control-btn {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .call-bar {
+      height: 56px;
+      padding: 6px 12px;
+
+      .call-info {
+        min-width: 0;
+      }
+
+      .call-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  }
+
+  @include landscape {
+    .local-video-pip {
+      bottom: 100px;
+    }
+  }
+}
+
+.matrix-sidebar {
+  // 侧边栏响应式
+  @include respond-to('mobile') {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+
+    &.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      height: 56px;
+      padding: 0 12px;
+    }
+
+    .sidebar-content {
+      height: calc(100vh - 56px);
+    }
+  }
+}
+
+// 通话质量指示器
+.call-quality-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &.excellent {
+    background-color: #52c41a;
+    box-shadow: 0 0 8px rgba(82, 196, 26, 0.5);
+  }
+
+  &.good {
+    background-color: #1890ff;
+    box-shadow: 0 0 8px rgba(24, 144, 255, 0.5);
+  }
+
+  &.poor {
+    background-color: #faad14;
+    box-shadow: 0 0 8px rgba(250, 173, 20, 0.5);
+  }
+
+  &.very-poor {
+    background-color: #ff4d4f;
+    box-shadow: 0 0 8px rgba(255, 77, 79, 0.5);
+    animation: pulse-red 1s infinite;
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// 安全区域适配（iPhone X及以上）
+@supports (padding: max(0px)) {
+  .matrix-responsive {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+// 触摸设备优化
+@media (hover: none) and (pointer: coarse) {
+  .matrix-responsive {
+    // 增大触摸目标
+    .n-button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    // 增加间距
+    .touch-spacer {
+      height: 10px;
+    }
+
+    // 触摸反馈
+    .touch-feedback {
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      &:active::after {
+        opacity: 1;
+      }
+    }
+  }
+}

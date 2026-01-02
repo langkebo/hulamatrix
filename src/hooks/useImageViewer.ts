@@ -3,84 +3,12 @@ import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { MsgEnum } from '@/enums'
 import { useWindow } from '@/hooks/useWindow'
 import { useChatStore } from '@/stores/chat'
-import { useFileDownloadStore } from '@/stores/fileDownload'
-import { useImageViewer as useImageViewerStore } from '@/stores/imageViewer'
+import { useMediaStore } from '@/stores/useMediaStore'
+import { useMediaViewerStore, type MediaItem } from '@/stores/mediaViewer'
 import type { FilesMeta } from '@/services/types'
 import { extractFileName } from '@/utils/Formatting'
 import { getFilesMeta } from '@/utils/PathUtil'
-
-type WorkerResponse = {
-  success: boolean
-  url: string
-  buffer?: ArrayBuffer
-  error?: string
-}
-
-type WorkerRequest = {
-  resolve: (value: string | null) => void
-  reject: (reason?: unknown) => void
-  fileName: string
-}
-
-const workerRequests = new Map<string, WorkerRequest>()
-let imageDownloadWorker: Worker | null = null
-const imageDownloaderWorkerUrl = new URL('../workers/imageDownloader.ts', import.meta.url)
-
-const ensureWorker = () => {
-  if (imageDownloadWorker || typeof window === 'undefined') return
-  imageDownloadWorker = new Worker(imageDownloaderWorkerUrl, { type: 'module' })
-  imageDownloadWorker.onmessage = async (event: MessageEvent<WorkerResponse>) => {
-    const { success, url, buffer, error } = event.data
-    const request = workerRequests.get(url)
-    if (!request) {
-      return
-    }
-    workerRequests.delete(url)
-
-    if (!success || !buffer) {
-      request.reject(new Error(error || '下载失败'))
-      return
-    }
-
-    try {
-      const fileDownloadStore = useFileDownloadStore()
-      const absolutePath = await fileDownloadStore.saveFileFromBytes(url, request.fileName, new Uint8Array(buffer))
-      request.resolve(absolutePath)
-    } catch (err) {
-      request.reject(err)
-    }
-  }
-}
-
-const downloadImageWithWorker = (url: string, fileName: string) => {
-  ensureWorker()
-  if (!imageDownloadWorker) {
-    return Promise.reject(new Error('Web Worker 不可用'))
-  }
-
-  const existing = workerRequests.get(url)
-  if (existing) {
-    return new Promise<string | null>((resolve, reject) => {
-      const prevResolve = existing.resolve
-      const prevReject = existing.reject
-      existing.resolve = (value) => {
-        prevResolve(value)
-        resolve(value)
-      }
-      existing.reject = (reason) => {
-        prevReject(reason)
-        reject(reason)
-      }
-    })
-  }
-
-  const promise = new Promise<string | null>((resolve, reject) => {
-    workerRequests.set(url, { resolve, reject, fileName })
-    imageDownloadWorker!.postMessage({ url })
-  })
-
-  return promise
-}
+import { logger } from '@/utils/logger'
 
 const deduplicateList = (list: string[]) => {
   const uniqueList: string[] = []
@@ -100,12 +28,12 @@ const deduplicateList = (list: string[]) => {
 export const useImageViewer = () => {
   const chatStore = useChatStore()
   const { createWebviewWindow } = useWindow()
-  const imageViewerStore = useImageViewerStore()
-  const fileDownloadStore = useFileDownloadStore()
+  const mediaStore = useMediaStore()
+  const mediaViewerStore = useMediaViewerStore()
 
   const ensureLocalFileExists = async (url: string) => {
     if (!url) return null
-    const status = fileDownloadStore.getFileStatus(url)
+    const status = mediaStore.getFileStatus(url)
     const validatePath = async (absolutePath: string | undefined | null) => {
       if (!absolutePath) {
         return null
@@ -117,25 +45,21 @@ export const useImageViewer = () => {
         }
         return null
       } catch (error) {
-        console.error('检查本地图片失败:', error)
+        logger.error('检查本地图片失败:', error)
         return null
       }
     }
 
-    if (status?.isDownloaded) {
+    if (status?.downloaded && status?.total && status.downloaded >= status.total) {
       const validPath = await validatePath(status.absolutePath)
       if (validPath) {
         return validPath
       }
 
-      fileDownloadStore.updateFileStatus(url, {
-        isDownloaded: false,
+      mediaStore.updateFileStatus(url, {
         absolutePath: '',
         localPath: '',
-        nativePath: '',
-        displayPath: '',
-        status: 'pending',
-        progress: 0
+        status: 'downloading'
       })
     }
 
@@ -145,15 +69,15 @@ export const useImageViewer = () => {
     }
 
     try {
-      const exists = await fileDownloadStore.checkFileExists(url, fileName)
+      const exists = await mediaStore.checkFileExists(url, fileName)
       if (!exists) {
         return null
       }
 
-      const refreshedStatus = fileDownloadStore.getFileStatus(url)
+      const refreshedStatus = mediaStore.getFileStatus(url)
       return await validatePath(refreshedStatus.absolutePath)
     } catch (error) {
-      console.error('重新检查本地图片失败:', error)
+      logger.error('重新检查本地图片失败:', error)
       return null
     }
   }
@@ -164,7 +88,7 @@ export const useImageViewer = () => {
       try {
         return convertFileSrc(localPath)
       } catch (error) {
-        console.error('转换本地图片路径失败:', error)
+        logger.error('转换本地图片路径失败:', error)
       }
     }
     return url
@@ -188,52 +112,19 @@ export const useImageViewer = () => {
       try {
         return convertFileSrc(localPath)
       } catch (error) {
-        console.error('转换本地媒体路径失败:', error)
+        logger.error('转换本地媒体路径失败:', error)
       }
     }
     return await getDisplayUrl(url)
-  }
-
-  const replaceImageWithLocalPath = (originalUrl: string, absolutePath: string) => {
-    const index = imageViewerStore.originalImageList.indexOf(originalUrl)
-    if (index === -1) {
-      return
-    }
-    try {
-      const displayUrl = convertFileSrc(absolutePath)
-      imageViewerStore.updateImageAt(index, displayUrl)
-      imageViewerStore.updateSingleImageSource(displayUrl)
-    } catch (error) {
-      console.error('替换本地图片路径失败:', error)
-    }
-  }
-
-  const scheduleDownload = (originalUrl: string) => {
-    const fileName = extractFileName(originalUrl) || `image-${Date.now()}.png`
-    downloadImageWithWorker(originalUrl, fileName)
-      .then((absolutePath) => {
-        if (absolutePath) {
-          replaceImageWithLocalPath(originalUrl, absolutePath)
-        }
-      })
-      .catch((error) => {
-        console.error('图片下载失败:', error)
-      })
   }
 
   const downloadOriginalByIndex = (index: number) => {
     if (index < 0) {
       return
     }
-    const originalUrl = imageViewerStore.originalImageList[index]
-    if (!originalUrl) {
-      return
-    }
-    const displayUrl = imageViewerStore.imageList[index]
-    if (!displayUrl || displayUrl !== originalUrl) {
-      return
-    }
-    scheduleDownload(originalUrl)
+    // 使用 mediaViewerStore API 导航到指定索引
+    mediaViewerStore.navigateToIndex(index)
+    logger.info('导航到图片索引:', index)
   }
 
   /**
@@ -302,7 +193,17 @@ export const useImageViewer = () => {
       const targetIndex = dedupedList.indexOf(url)
       const resolvedIndex = targetIndex === -1 ? (index >= 0 ? index : 0) : targetIndex
 
-      imageViewerStore.resetImageList(resolvedList, resolvedIndex, dedupedList)
+      // 使用 mediaViewerStore API 管理状态
+      const mediaItems: MediaItem[] = resolvedList.map((displayUrl, idx) => ({
+        id: dedupedList[idx],
+        url: displayUrl,
+        type: 'image',
+        currentIndex: idx,
+        list: resolvedList.map((u, i) => ({ id: dedupedList[i], url: u, type: 'image' as const }))
+      }))
+
+      mediaViewerStore.showImageViewer(mediaItems, resolvedIndex)
+      logger.info('准备显示图片列表，数量:', resolvedList.length)
 
       // 检查图片查看器窗口是否已存在
       const existingWindow = await WebviewWindow.getByLabel('imageViewer')
@@ -366,7 +267,7 @@ export const useImageViewer = () => {
         Math.round(windowHeight)
       )
     } catch (error) {
-      console.error('打开图片查看器失败:', error)
+      logger.error('打开图片查看器失败:', error)
     }
   }
 

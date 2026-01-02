@@ -58,15 +58,13 @@
               ref="inputInstRef"
               v-model:value="localUserInfo.name"
               :count-graphemes="countGraphemes"
-              :default-value="localUserInfo.name"
               :maxlength="8"
-              :passively-activated="true"
               class="rounded-6px"
               clearable
-              spellCheck="false"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
+              spellcheck="false"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
               :allow-input="noSideSpace"
               :placeholder="t('home.profile_edit.form.nickname.placeholder')"
               show-count
@@ -120,7 +118,7 @@
       <n-flex class="p-12px" align="center" justify="center">
         <n-button
           style="color: #fff"
-          :disabled="editInfo.content.name === localUserInfo.name"
+          :disabled="editInfo.content.name === localUserInfo.name || !backendConnected"
           color="#13987f"
           @click="saveEditInfo(localUserInfo as ModifyUserInfoType)">
           {{ t('home.profile_edit.actions.save') }}
@@ -138,23 +136,45 @@
   <AvatarCropper ref="cropperRef" v-model:show="showCropper" :image-url="localImageUrl" @crop="handleCrop" />
 </template>
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import type { UnlistenFn } from '@tauri-apps/api/event'
 import { useI18n } from 'vue-i18n'
 import AvatarCropper from '@/components/common/AvatarCropper.vue'
 import { IsYesEnum, MittEnum } from '@/enums'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
-import { useCommon } from '@/hooks/useCommon.ts'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useCommon } from '@/hooks/useCommon'
+import { useMitt } from '@/hooks/useMitt'
 import { useTauriListener } from '@/hooks/useTauriListener'
-import { leftHook } from '@/layout/left/hook.ts'
+import { leftHook } from '@/layout/left/hook'
 import type { ModifyUserInfoType } from '@/services/types'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
-import { useUserStore } from '@/stores/user.ts'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { getBadgeList, uploadAvatar } from '@/utils/ImRequestUtils'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 
-const appWindow = WebviewWindow.getCurrent()
+import { msg } from '@/utils/SafeUI'
+import { useDevConnectivity } from '@/hooks/useDevConnectivity'
+
+interface BadgeItem {
+  describe: string
+  id: string
+  img: string
+  obtain: IsYesEnum
+  wearing: IsYesEnum
+}
+
+// WebWindowLike interface for cross-platform compatibility
+interface WebWindowLike {
+  label: string
+  listen?: (_event: string, _handler: (...args: unknown[]) => void) => UnlistenFn | Promise<UnlistenFn>
+}
+
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const appWindow = isTauri
+  ? WebviewWindow.getCurrent()
+  : ({ label: 'web', listen: async () => () => {} } as WebWindowLike)
 const { t } = useI18n()
 const localUserInfo = ref<Partial<ModifyUserInfoType>>({})
 const userStore = useUserStore()
@@ -162,6 +182,7 @@ const { addListener } = useTauriListener()
 const loginHistoriesStore = useLoginHistoriesStore()
 const { editInfo, currentBadge, updateCurrentUserCache, saveEditInfo, toggleWarningBadge } = leftHook()
 const { countGraphemes } = useCommon()
+const { backendConnected } = useDevConnectivity()
 // 使用自定义hook处理头像上传
 const {
   fileInput,
@@ -182,10 +203,13 @@ const {
     // 更新头像更新时间
     userStore.userInfo!.avatarUpdateTime = Date.now()
     // 更新登录历史记录
-    loginHistoriesStore.loginHistories.filter((item) => item.uid === userStore.userInfo!.uid)[0].avatar = downloadUrl
+    const historyItem = loginHistoriesStore.loginHistories.find((item) => item.uid === userStore.userInfo!.uid)
+    if (historyItem) {
+      historyItem.avatar = downloadUrl
+    }
     // 更新缓存里面的用户信息
     updateCurrentUserCache('avatar', downloadUrl)
-    window.$message.success(t('home.profile_edit.toast.avatar_update_success'))
+    msg.success(t('home.profile_edit.toast.avatar_update_success'))
   }
 })
 
@@ -202,18 +226,25 @@ const openEditInfo = () => {
   editInfo.value.content = userStore.userInfo!
   localUserInfo.value = { ...userStore.userInfo! }
   /** 获取徽章列表 */
-  getBadgeList().then((res: any) => {
-    editInfo.value.badgeList = res
+  getBadgeList().then((res) => {
+    editInfo.value.badgeList = res as BadgeItem[]
   })
 }
 
 onMounted(async () => {
-  await addListener(
-    appWindow.listen('open_edit_info', async () => {
-      openEditInfo()
-    }),
-    'open_edit_info'
-  )
+  if (isTauri) {
+    const listenFn = appWindow.listen
+    if (listenFn) {
+      await addListener(
+        Promise.resolve(
+          listenFn('open_edit_info', async () => {
+            openEditInfo()
+          })
+        ),
+        'open_edit_info'
+      )
+    }
+  }
   useMitt.on(MittEnum.OPEN_EDIT_INFO, () => {
     useMitt.emit(MittEnum.CLOSE_INFO_SHOW)
     openEditInfo()

@@ -1,19 +1,30 @@
+// 移除未使用的导入，避免类型检查报错
 import { ImUrlEnum, TauriCommand, type NotificationTypeEnum } from '@/enums'
 import type { CacheBadgeReq, LoginUserReq, ModifyUserInfoType, RegisterUserReq, UserItem } from '@/services/types'
-import { ErrorType, invokeSilently, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import {
+  ErrorType,
+  invokeSilently,
+  invokeWithErrorHandler,
+  invokeWithRetry,
+  type InvokeErrorOptions
+} from '@/utils/TauriInvokeHandler'
+
+import { msg } from '@/utils/SafeUI'
 import { useChatStore } from '../stores/chat'
 import { useGroupStore } from '../stores/group'
+import { logger } from '@/utils/logger'
 
-/**
- * IM 请求参数接口
- */
+/** 通用值类型 */
+type JsonValue = string | number | boolean | null | undefined | JsonValue[] | { [key: string]: JsonValue }
+
+/** IM 请求参数接口 */
 interface ImRequestParams {
   /** API URL 枚举 */
   url: ImUrlEnum
   /** 请求体数据 */
-  body?: any
+  body?: Record<string, JsonValue> | JsonValue[]
   /** 查询参数 */
-  params?: Record<string, any>
+  params?: Record<string, JsonValue>
 }
 
 /**
@@ -23,24 +34,47 @@ interface ImRequestOptions {
   /** 是否显示错误提示，默认为 true */
   showError?: boolean
   /** 自定义错误消息 */
-  customErrorMessage?: string
+  customErrorMessage?: string | undefined
   /** 错误类型，默认为 Network */
   errorType?: ErrorType
   /** 是否静默调用（不显示错误），默认为 false */
   silent?: boolean
+  /** 是否重试错误，用于标记是否为可重试错误 */
+  isRetryError?: boolean
   /** 重试选项 */
-  retry?: {
-    /** 最大重试次数，默认为 3 */
-    maxRetries?: number
-    /** 重试间隔（毫秒），默认为 1000 */
-    retryDelay?: number
-  }
+  retry?:
+    | {
+        /** 最大重试次数，默认为 3 */
+        maxRetries?: number
+        /** 重试间隔（毫秒），默认为 1000 */
+        retryDelay?: number
+      }
+    | undefined
+}
+
+/**
+ * 重试选项接口
+ */
+interface RetryInvokeOptions {
+  maxRetries?: number
+  retryDelay?: number
+  showError?: boolean
+  customErrorMessage?: string
+}
+
+/** 登录响应接口 */
+export interface LoginResponse {
+  token: string
+  refreshToken?: string
+  uid?: string
+  userId?: string
+  [key: string]: JsonValue | undefined
 }
 
 /**
  * 统一的 IM API 请求工具
  */
-export async function imRequest<T = any>(
+export async function imRequest<T = unknown>(
   requestParams: ImRequestParams,
   options?: Omit<ImRequestOptions, 'silent'>
 ): Promise<T> {
@@ -55,19 +89,37 @@ export async function imRequest<T = any>(
 
   // 如果需要重试
   if (retry) {
-    const { invokeWithRetry } = await import('@/utils/TauriInvokeHandler')
-    return await invokeWithRetry<T>('im_request_command', args, {
+    const opt: RetryInvokeOptions = {
       ...retry,
-      showError: invokeOptions.showError,
-      customErrorMessage: invokeOptions.customErrorMessage
-    })
+      showError: invokeOptions.showError ?? false
+    }
+    if (invokeOptions.customErrorMessage !== undefined) {
+      opt.customErrorMessage = invokeOptions.customErrorMessage
+    }
+    return await invokeWithRetry<T>('im_request_command', args, opt)
   }
 
-  // 普通调用
-  return await invokeWithErrorHandler<T>('im_request_command', args, {
-    ...invokeOptions,
+  // Web 环境不再提供 IM 接口回退，全部功能迁移至 Matrix 后端
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  if (!isTauri) {
+    logger.warn('IM 接口已废弃：请使用 Matrix 后端 API')
+    return {} as T
+  }
+
+  // 普通调用（Tauri）
+  const handlerOptions: InvokeErrorOptions = {
     errorType: invokeOptions.errorType || ErrorType.Network
-  })
+  }
+  if (invokeOptions.showError !== undefined) {
+    handlerOptions.showError = invokeOptions.showError
+  }
+  if (invokeOptions.customErrorMessage !== undefined) {
+    handlerOptions.customErrorMessage = invokeOptions.customErrorMessage
+  }
+  if (invokeOptions.isRetryError !== undefined) {
+    handlerOptions.isRetryError = invokeOptions.isRetryError
+  }
+  return await invokeWithErrorHandler<T>('im_request_command', args, handlerOptions)
 }
 
 /**
@@ -80,7 +132,7 @@ export async function imRequest<T = any>(
  * })
  * ```
  */
-export async function imRequestSilent<T = any>(requestParams: ImRequestParams): Promise<T | null> {
+export async function imRequestSilent<T = unknown>(requestParams: ImRequestParams): Promise<T | null> {
   const args = {
     url: requestParams.url,
     body: requestParams.body || null,
@@ -103,20 +155,18 @@ export async function imRequestSilent<T = any>(requestParams: ImRequestParams): 
  * })
  * ```
  */
-export async function imRequestWithRetry<T = any>(
+export async function imRequestWithRetry<T = unknown>(
   requestParams: ImRequestParams,
-  retryOptions?: {
-    maxRetries?: number
-    retryDelay?: number
-    showError?: boolean
-    customErrorMessage?: string
-  }
+  retryOptions?: RetryInvokeOptions
 ): Promise<T> {
-  return await imRequest<T>(requestParams, {
+  const opts: ImRequestOptions = {
     retry: retryOptions,
-    showError: retryOptions?.showError,
-    customErrorMessage: retryOptions?.customErrorMessage
-  })
+    showError: retryOptions?.showError ?? false
+  }
+  if (retryOptions?.customErrorMessage !== undefined) {
+    opts.customErrorMessage = retryOptions.customErrorMessage
+  }
+  return await imRequest<T>(requestParams, opts)
 }
 
 /**
@@ -228,7 +278,7 @@ export async function getBadgesBatch(body: CacheBadgeReq[]) {
 }
 
 export async function groupListMember(roomId: string) {
-  const args: Record<string, any> = { roomId, room_id: roomId }
+  const args: Record<string, string> = { roomId, room_id: roomId }
   return await invokeWithErrorHandler(TauriCommand.GET_ROOM_MEMBERS, args, { errorType: ErrorType.Network })
 }
 
@@ -475,7 +525,7 @@ export async function updateRoomInfo(body: { id: string; name?: string; avatar?:
   chatStore.updateSession(body.id, body)
   groupStore.updateGroupDetail(body.id, body)
 
-  window.$message.success('更新成功')
+  msg.success?.('更新成功')
 }
 
 export async function updateMyRoomInfo(body: { id: string; myName: string; remark: string }) {
@@ -564,8 +614,8 @@ export async function register(body: RegisterUserReq) {
   })
 }
 
-export async function login(body: LoginUserReq) {
-  return await imRequest({
+export async function login(body: LoginUserReq): Promise<LoginResponse> {
+  return await imRequest<LoginResponse>({
     url: ImUrlEnum.LOGIN,
     body
   })
@@ -777,101 +827,6 @@ export async function feedCommentAll(params: { feedId: string }) {
   })
 }
 
-/**
- * SSE 流式数据事件类型
- */
-interface SseStreamEvent {
-  eventType: 'chunk' | 'done' | 'error'
-  data?: string
-  error?: string
-  requestId: string
-}
-
-/**
- * 流式数据回调函数
- */
-export interface StreamCallbacks {
-  onChunk?: (chunk: string) => void
-  onDone?: (fullContent: string) => void
-  onError?: (error: string) => void
-}
-
-/**
- * 发送AI消息（流式）
- * 使用 Promise 包装整个 SSE 流程，监听 Tauri 事件接收流式数据
- *
- * @param body 请求参数
- * @param callbacks 流式数据回调函数
- * @returns Promise，在流结束后 resolve 完整内容
- */
-export async function messageSendStream(
-  body: { conversationId: string; content: string; useContext?: boolean; reasoningEnabled?: boolean },
-  callbacks?: StreamCallbacks
-): Promise<string> {
-  const { invoke, Channel } = await import('@tauri-apps/api/core')
-  const { TauriCommand } = await import('@/enums')
-
-  // 生成唯一的请求 ID
-  const requestId = `ai-stream-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-
-  return new Promise<string>((resolve, reject) => {
-    let fullContent = ''
-    let isResolved = false
-
-    // 创建 Channel 用于接收流式事件
-    const onEvent = new Channel<SseStreamEvent>()
-    onEvent.onmessage = (event: SseStreamEvent) => {
-      const { eventType, data, error, requestId: eventRequestId } = event
-
-      // 只处理当前请求的事件
-      if (eventRequestId !== requestId) {
-        return
-      }
-
-      switch (eventType) {
-        case 'chunk':
-          if (data) {
-            fullContent += data
-            callbacks?.onChunk?.(data)
-          }
-          break
-
-        case 'done':
-          if (!isResolved) {
-            isResolved = true
-            const finalContent = data || fullContent
-            callbacks?.onDone?.(finalContent)
-            resolve(finalContent)
-          }
-          break
-
-        case 'error':
-          if (!isResolved) {
-            isResolved = true
-            const errorMsg = error || '未知错误'
-            callbacks?.onError?.(errorMsg)
-            reject(new Error(errorMsg))
-          }
-          break
-      }
-    }
-
-    // 调用 Rust 后端命令发送请求
-    invoke(TauriCommand.AI_MESSAGE_SEND_STREAM, {
-      body,
-      requestId,
-      onEvent
-    }).catch((error) => {
-      if (!isResolved) {
-        isResolved = true
-        const errorMsg = error instanceof Error ? error.message : String(error)
-        callbacks?.onError?.(errorMsg)
-        reject(error)
-      }
-    })
-  })
-}
-
 // 获得指定对话的消息列表
 export async function messageListByConversationId(params: {
   conversationId: string
@@ -904,7 +859,7 @@ export async function messageDeleteByConversationId(body: { conversationIdList: 
 export async function conversationPage(params?: { pageNo?: number; pageSize?: number }) {
   return await imRequest({
     url: ImUrlEnum.CONVERSATION_PAGE,
-    params
+    params: params ?? {}
   })
 }
 
@@ -912,7 +867,7 @@ export async function conversationPage(params?: { pageNo?: number; pageSize?: nu
 export async function conversationGetMy(params?: { id: string }) {
   return await imRequest({
     url: ImUrlEnum.CONVERSATION_GET_MY,
-    params
+    params: params ?? {}
   })
 }
 
@@ -957,349 +912,5 @@ export async function conversationDeleteMy(body: { conversationIdList: string[] 
   return await imRequest({
     url: ImUrlEnum.CONVERSATION_DELETE_MY,
     body
-  })
-}
-
-// 模型页面
-export async function modelPage(params?: { pageNo?: number; pageSize?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.MODEL_PAGE,
-    params
-  })
-}
-
-// 更新模型
-export async function modelUpdate(body: {
-  id?: string
-  keyId: string
-  name: string
-  avatar?: string
-  model: string
-  platform: string
-  type: number
-  sort: number
-  status: number
-  temperature?: number
-  maxTokens?: number
-  maxContexts?: number
-  publicStatus?: number
-}) {
-  return await imRequest({
-    url: body.id ? ImUrlEnum.MODEL_UPDATE : ImUrlEnum.MODEL_CREATE,
-    body
-  })
-}
-
-// 删除模型
-export async function modelDelete(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.MODEL_DELETE,
-    params
-  })
-}
-
-// ==================== AI 图片生成 ====================
-
-export async function imageMyPage(params?: { pageNo?: number; pageSize?: number; prompt?: string; status?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.IMAGE_MY_PAGE,
-    params
-  })
-}
-
-export async function imageGet(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.IMAGE_GET,
-    params
-  })
-}
-
-// 生成图片
-export async function imageDraw(body: {
-  modelId: string
-  prompt: string
-  width?: number
-  height?: number
-  conversationId?: string
-  options?: Record<string, any>
-}) {
-  return await imRequest({
-    url: ImUrlEnum.IMAGE_DRAW,
-    body
-  })
-}
-
-// 根据ID列表获取【我的】图片记录
-export async function imageMyListByIds(params: { ids: string }) {
-  return await imRequest({
-    url: ImUrlEnum.IMAGE_MY_LIST_BY_IDS,
-    params
-  })
-}
-
-// 删除【我的】图片记录
-export async function imageDeleteMy(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.IMAGE_DELETE_MY,
-    params
-  })
-}
-
-// ==================== AI 视频生成 ====================
-
-// 获取【我的】视频生成分页
-export async function videoMyPage(params?: { pageNo?: number; pageSize?: number; prompt?: string; status?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.VIDEO_MY_PAGE,
-    params
-  })
-}
-
-// 获取【我的】视频生成记录
-export async function videoGet(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.VIDEO_GET,
-    params
-  })
-}
-
-// 根据ID列表获取【我的】视频记录
-export async function videoMyListByIds(params: { ids: string }) {
-  return await imRequest({
-    url: ImUrlEnum.VIDEO_MY_LIST_BY_IDS,
-    params
-  })
-}
-
-// 生成视频
-export async function videoGenerate(body: {
-  modelId: string
-  prompt: string
-  width?: number
-  height?: number
-  duration?: number
-  options?: Record<string, any>
-}) {
-  return await imRequest({
-    url: ImUrlEnum.VIDEO_GENERATE,
-    body
-  })
-}
-
-// 删除【我的】视频记录
-export async function videoDeleteMy(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.VIDEO_DELETE_MY,
-    params
-  })
-}
-
-// ==================== API 密钥管理 ====================
-
-// API 密钥分页列表
-export async function apiKeyPage(params?: { pageNo?: number; pageSize?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_PAGE,
-    params
-  })
-}
-
-// API 密钥简单列表（用于下拉选择）
-export async function apiKeySimpleList() {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_SIMPLE_LIST
-  })
-}
-
-// 创建 API 密钥
-export async function apiKeyCreate(body: {
-  name: string
-  apiKey: string
-  platform: string
-  url?: string
-  status: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_CREATE,
-    body
-  })
-}
-
-// 更新 API 密钥
-export async function apiKeyUpdate(body: {
-  id: string
-  name: string
-  apiKey: string
-  platform: string
-  url?: string
-  status: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_UPDATE,
-    body
-  })
-}
-
-// 删除 API 密钥
-export async function apiKeyDelete(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_DELETE,
-    params
-  })
-}
-
-// 获取平台列表
-export async function platformList() {
-  return await imRequest({
-    url: ImUrlEnum.PLATFORM_LIST
-  })
-}
-
-// 添加平台模型到示例列表
-export async function platformAddModel(platform: string, model: string) {
-  return await imRequest({
-    url: ImUrlEnum.PLATFORM_ADD_MODEL,
-    body: { platform, model }
-  })
-}
-
-// 查询 API 密钥余额
-export async function apiKeyBalance(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.API_KEY_BALANCE,
-    params
-  })
-}
-
-// ==================== 聊天角色管理 ====================
-
-// 聊天角色分页列表
-export async function chatRolePage(params?: { pageNo?: number; pageSize?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.CHAT_ROLE_PAGE,
-    params
-  })
-}
-
-// 聊天角色类别列表
-export async function chatRoleCategoryList() {
-  return await imRequest({
-    url: ImUrlEnum.CHAT_ROLE_CATEGORY_LIST
-  })
-}
-
-// 创建聊天角色
-export async function chatRoleCreate(body: {
-  modelId?: string
-  name: string
-  avatar: string
-  category: string
-  sort: number
-  description: string
-  systemMessage: string
-  knowledgeIds?: string[]
-  toolIds?: string[]
-  publicStatus: boolean
-  status: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.CHAT_ROLE_CREATE,
-    body
-  })
-}
-
-// 更新聊天角色
-export async function chatRoleUpdate(body: {
-  id: string
-  modelId?: string
-  name: string
-  avatar: string
-  category: string
-  sort: number
-  description: string
-  systemMessage: string
-  knowledgeIds?: string[]
-  toolIds?: string[]
-  publicStatus: boolean
-  status: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.CHAT_ROLE_UPDATE,
-    body
-  })
-}
-
-// 删除聊天角色
-export async function chatRoleDelete(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.CHAT_ROLE_DELETE,
-    params
-  })
-}
-
-// ==================== AI 音频生成 ====================
-
-// 生成音频
-export async function audioGenerate(body: {
-  modelId: number
-  prompt: string
-  conversationId?: string
-  options?: Record<string, string>
-}) {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_GENERATE,
-    body
-  })
-}
-
-// 获取我的音频列表（根据ID列表）
-export async function audioMyListByIds(params: { ids: string }) {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_MY_LIST_BY_IDS,
-    params
-  })
-}
-
-// 获取我的音频分页
-export async function audioMyPage(params?: { pageNo?: number; pageSize?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_MY_PAGE,
-    params
-  })
-}
-
-// 获取我的单个音频
-export async function audioGetMy(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_GET_MY,
-    params
-  })
-}
-
-// 删除我的音频
-export async function audioDeleteMy(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_DELETE_MY,
-    params
-  })
-}
-
-// 获取指定模型支持的声音列表
-export async function audioGetVoices(params: { model: string }): Promise<string[]> {
-  return await imRequest({
-    url: ImUrlEnum.AUDIO_VOICES,
-    params
-  })
-}
-
-// 保存生成内容消息（用于音频、图片、视频等生成功能）
-export async function messageSaveGeneratedContent(params: {
-  conversationId: string
-  prompt: string
-  generatedContent: string
-}) {
-  return await imRequest({
-    url: ImUrlEnum.MESSAGE_SAVE_GENERATED_CONTENT,
-    params
   })
 }

@@ -1,3 +1,4 @@
+import { ref } from 'vue'
 import { BaseDirectory, readFile } from '@tauri-apps/plugin-fs'
 import { fetch } from '@tauri-apps/plugin-http'
 import { createEventHook } from '@vueuse/core'
@@ -6,9 +7,87 @@ import { useConfigStore } from '@/stores/config'
 import { useUserStore } from '@/stores/user'
 import { extractFileName, getMimeTypeFromExtension } from '@/utils/Formatting'
 import { getImageDimensions } from '@/utils/ImageUtils'
-import { getQiniuToken } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { isAndroid, isMobile } from '@/utils/PlatformConstants'
 import { getWasmMd5 } from '@/utils/Md5Util'
+import { useTimerManager } from '@/composables/useTimerManager'
+
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+
+/** CryptoJS WordArray 类型 */
+interface WordArray {
+  words: number[]
+  sigBytes: number
+}
+
+/** CryptoJS 库类型 */
+interface CryptoJSStatic {
+  lib: {
+    WordArray: {
+      create: (arr: ArrayBuffer | Uint8Array) => WordArray
+    }
+  }
+  MD5: (wordArray: WordArray) => { toString: () => string }
+}
+
+/** 七牛云配置类型 */
+interface QiniuConfig {
+  token: string
+  domain: string
+  storagePrefix: string
+  region?: string
+}
+
+/** 分片上传结果类型 */
+interface ChunkUploadResult {
+  key?: string
+  domain?: string
+  downloadUrl?: string
+  error?: string
+}
+
+/** 图片解析结果 */
+interface ImageParseResult {
+  width: number
+  height: number
+  tempUrl?: string
+}
+
+/** 音频解析结果 */
+interface AudioParseResult {
+  second: number
+  tempUrl?: string
+}
+
+/** 文件解析参数 */
+interface ParseFileParams {
+  width?: number
+  height?: number
+  tempUrl?: string
+  second?: number
+  [key: string]: unknown
+}
+
+/** 上传配置扩展 */
+interface UploadOptionsExtended extends UploadOptions {
+  token?: string
+  domain?: string
+  storagePrefix?: string
+  region?: string
+  enableDeduplication?: boolean
+  downloadUrl?: string
+}
+
+/** 获取上传下载URL返回配置 */
+interface UploadResponseConfig {
+  token?: string
+  domain?: string
+  storagePrefix?: string
+  region?: string
+  provider?: UploadProviderEnum
+  scene?: UploadSceneEnum
+}
 
 /** 文件信息类型 */
 export type FileInfoType = {
@@ -27,9 +106,11 @@ export type FileInfoType = {
 
 /** 上传方式 */
 export enum UploadProviderEnum {
-  /** 默认上传方式 */
+  /** Matrix 媒体服务器（推荐） */
+  MATRIX = 'matrix',
+  /** 默认上传方式（已废弃，请使用 MATRIX） */
   DEFAULT = 'default',
-  /** 七牛云上传 */
+  /** 七牛云上传（已废弃，请使用 MATRIX） */
   QINIU = 'qiniu'
 }
 
@@ -45,6 +126,8 @@ export interface UploadOptions {
   chunkSize?: number
   /** 是否启用文件去重（使用文件哈希作为文件名） */
   enableDeduplication?: boolean
+  /** 上传进度回调函数 */
+  onProgress?: (progress: number) => void
 }
 
 /** 分片上传进度信息 */
@@ -60,17 +143,14 @@ const DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024 // 默认分片大小：4MB
 const QINIU_CHUNK_SIZE = 4 * 1024 * 1024 // 七牛云分片大小：4MB
 const CHUNK_THRESHOLD = 4 * 1024 * 1024 // 4MB，超过此大小的文件将使用分片上传
 
-let cryptoJS: any | null = null
+let cryptoJS: CryptoJSStatic | null = null
 
 const loadCryptoJS = async () => {
   if (!cryptoJS) {
     const module = await import('crypto-js')
-    cryptoJS = module.default ?? module
+    cryptoJS = (module.default ?? module) as unknown as CryptoJSStatic
   }
-  return cryptoJS as {
-    lib: { WordArray: { create: (arr: ArrayBuffer | Uint8Array) => any } }
-    MD5: (wordArray: any) => { toString: () => string }
-  }
+  return cryptoJS
 }
 
 /**
@@ -83,7 +163,8 @@ export const useUpload = () => {
   const isUploading = ref(false) // 是否正在上传
   const progress = ref(0) // 进度
   const fileInfo = ref<FileInfoType | null>(null) // 文件信息
-  const currentProvider = ref<UploadProviderEnum>(UploadProviderEnum.DEFAULT) // 当前上传方式
+  // 默认使用 Matrix 媒体服务器
+  const currentProvider = ref<UploadProviderEnum>(UploadProviderEnum.MATRIX)
 
   const { on: onChange, trigger } = createEventHook()
   const onStart = createEventHook()
@@ -96,7 +177,6 @@ export const useUpload = () => {
   const calculateFileHash = async (file: File): Promise<string> => {
     const startTime = performance.now()
     try {
-      console.log('开始计算MD5哈希值，文件大小:', file.size, 'bytes')
       const arrayBuffer = await file.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
       let hash: string
@@ -109,15 +189,12 @@ export const useUpload = () => {
         const Md5 = await getWasmMd5()
         hash = await Md5.digest_u8(uint8Array)
       }
-      const endTime = performance.now()
-      const duration = (endTime - startTime).toFixed(2)
-      console.log(`MD5计算完成，耗时: ${duration}ms，哈希值: ${hash}`)
+
       return hash.toLowerCase()
     } catch (error) {
       const endTime = performance.now()
       const duration = (endTime - startTime).toFixed(2)
-      console.error(`计算文件哈希值失败，耗时: ${duration}ms:`, error)
-      // 如果计算失败，返回时间戳作为备用方案
+      logger.error(`计算文件哈希值失败，耗时: ${duration}ms:`, error as Error)
       return Date.now().toString()
     }
   }
@@ -166,7 +243,7 @@ export const useUpload = () => {
       // 获取当前登录用户的account
       const account = userStore.userInfo!.account
       key = `${options.scene}/${account}/${fileHash}.${fileSuffix}`
-      console.log('使用文件去重模式，文件哈希:', fileHash)
+      logger.debug('使用文件去重模式，文件哈希:', fileHash)
     } else {
       // 使用时间戳生成唯一的文件名
       key = `${options.scene}/${Date.now()}_${fileName}`
@@ -208,7 +285,7 @@ export const useUpload = () => {
   //     }
   //   } catch (error) {
   //     isUploading.value = false
-  //     console.error('Upload failed:', error)
+  //     logger.error('Upload failed:', error)
   //     trigger('fail')
   //   }
   // }
@@ -224,7 +301,7 @@ export const useUpload = () => {
     const totalSize = file.size
     const totalChunks = Math.ceil(totalSize / chunkSize)
 
-    console.log('开始默认存储分片上传:', {
+    logger.debug('开始默认存储分片上传:', {
       fileName: file.name,
       fileSize: totalSize,
       chunkSize,
@@ -270,8 +347,6 @@ export const useUpload = () => {
         // 更新进度
         progress.value = Math.floor(((i + 1) / totalChunks) * 100)
         trigger('progress') // 触发进度事件
-
-        console.log(`分片 ${i + 1}/${totalChunks} 上传成功, 进度: ${progress.value}%`)
       }
 
       isUploading.value = false
@@ -279,13 +354,14 @@ export const useUpload = () => {
       trigger('success')
     } catch (error) {
       isUploading.value = false
-      console.error('默认存储分片上传失败:', error)
+      logger.error('默认存储分片上传失败:', error)
       throw error
     }
   }
 
   /**
    * 上传文件到七牛云
+   * @deprecated 请使用 Matrix 媒体服务器 (UploadProviderEnum.MATRIX)
    * @param file 文件
    * @param qiniuConfig 七牛云配置
    * @param enableDeduplication 是否启用文件去重
@@ -330,7 +406,7 @@ export const useUpload = () => {
       }
     } catch (error) {
       isUploading.value = false
-      console.error('Qiniu upload failed:', error)
+      logger.error('Qiniu upload failed:', error)
       return { error: 'Upload failed' }
     }
   }
@@ -366,7 +442,7 @@ export const useUpload = () => {
         currentChunkProgress: 0
       }
 
-      console.log('开始七牛云分片上传:', {
+      logger.debug('开始七牛云分片上传:', {
         fileName: file.name,
         fileSize: totalSize,
         chunkSize,
@@ -396,7 +472,7 @@ export const useUpload = () => {
 
         if (!blockResponse.ok) {
           const errorText = await blockResponse.text()
-          console.error(`上传分片 ${i + 1}/${totalChunks} 失败:`, {
+          logger.error(`上传分片 ${i + 1}/${totalChunks} 失败:`, {
             status: blockResponse.status,
             statusText: blockResponse.statusText,
             errorText
@@ -410,7 +486,7 @@ export const useUpload = () => {
 
         progress.value = Math.floor((progressInfo.uploadedChunks / progressInfo.totalChunks) * 100)
 
-        console.log(`上传分片 ${progressInfo.uploadedChunks}/${progressInfo.totalChunks} 成功:`, {
+        logger.debug(`上传分片 ${progressInfo.uploadedChunks}/${progressInfo.totalChunks} 成功:`, {
           ctx: blockResult.ctx.substring(0, 10) + '...',
           progress: progress.value + '%'
         })
@@ -431,7 +507,7 @@ export const useUpload = () => {
       }
 
       const completeResult = await completeResponse.json()
-      console.log('完成分片上传:', completeResult)
+      logger.debug('完成分片上传:', completeResult)
 
       isUploading.value = false
       progress.value = 100
@@ -446,7 +522,7 @@ export const useUpload = () => {
       if (!inner) {
         trigger('fail')
       }
-      console.error('七牛云分片上传失败:', error)
+      logger.error('七牛云分片上传失败:', error)
       return { error: 'Upload failed' }
     }
   }
@@ -477,9 +553,12 @@ export const useUpload = () => {
       audio.src = tempUrl
       // 计算音频的时长
       const countAudioTime = async () => {
+        const timerManager = useTimerManager()
         while (isNaN(audio.duration) || audio.duration === Infinity) {
           // 防止浏览器卡死
-          await new Promise((resolve) => setTimeout(resolve, 100))
+          await new Promise<void>((resolve) => {
+            timerManager.setTimer(() => resolve(), 100)
+          })
           // 随机进度条位置
           audio.currentTime = 100000 * Math.random()
         }
@@ -500,27 +579,32 @@ export const useUpload = () => {
    * @param addParams 参数
    * @returns 文件大小、文件类型、文件名、文件后缀...
    */
-  const parseFile = async (file: File, addParams: Record<string, any> = {}) => {
+  const parseFile = async (file: File, addParams: ParseFileParams = {}): Promise<FileInfoType> => {
     const { name, size, type } = file
     const suffix = name.split('.').pop()?.trim().toLowerCase() || ''
-    const baseInfo = { name, size, type, suffix, ...addParams }
+    const baseInfo: FileInfoType = { name, size, type, suffix }
 
-    // TODO：这里应该不需要进行类型判断了，可以直接返回baseInfo
+    // 根据文件类型解析特定信息
+    // 图片需要宽高信息，音频需要时长信息，这些都需要异步解析
     if (type.includes('image')) {
-      const { width, height, tempUrl } = (await getImgWH(file)) as any
-      return { ...baseInfo, width, height, tempUrl }
+      const { width, height, tempUrl } = (await getImgWH(file)) as ImageParseResult
+      const result: FileInfoType = { ...baseInfo, width, height }
+      if (tempUrl !== undefined) result.downloadUrl = tempUrl
+      return result
     }
 
     if (type.includes('audio')) {
-      const { second, tempUrl } = (await getAudioDuration(file)) as any
-      return { second, tempUrl, ...baseInfo }
+      const { second, tempUrl } = (await getAudioDuration(file)) as AudioParseResult
+      const result: FileInfoType = { ...baseInfo, second }
+      if (tempUrl !== undefined) result.downloadUrl = tempUrl
+      return result
     }
     // 如果是视频
     if (type.includes('video')) {
       return { ...baseInfo }
     }
 
-    return baseInfo
+    return { ...baseInfo, ...addParams }
   }
 
   /**
@@ -528,41 +612,71 @@ export const useUpload = () => {
    * @param file 文件
    * @param options 上传选项
    */
-  const uploadFile = async (file: File, options?: UploadOptions) => {
-    if (isUploading.value || !file) return
+  const uploadFile = async (file: File, options?: UploadOptions): Promise<unknown> => {
+    if (isUploading.value || !file) return undefined
 
     // 设置当前上传方式
     if (options?.provider) {
       currentProvider.value = options.provider
     }
 
-    const info = await parseFile(file, options)
+    const info = await parseFile(file, options as ParseFileParams)
 
     // 限制文件大小
     if (info.size > MAX_FILE_SIZE) {
-      window.$message.error(`文件大小不能超过 ${Max}MB`)
-      return
+      msg.error(`文件大小不能超过 ${Max}MB`)
+      return undefined
     }
 
     // 根据上传方式选择不同的上传逻辑
+    if (currentProvider.value === UploadProviderEnum.MATRIX || currentProvider.value === UploadProviderEnum.DEFAULT) {
+      try {
+        // 使用 Matrix 媒体服务器上传
+        const { uploadContent } = await import('@/integrations/matrix/media')
+        fileInfo.value = { ...info }
+        await onStart.trigger(fileInfo)
+
+        const mxcUrl = await uploadContent(file, {
+          name: file.name,
+          type: file.type,
+          onProgress: (loaded) => {
+            progress.value = Math.round((loaded / file.size) * 100)
+          }
+        })
+
+        // 转换 mxc:// URL 为 HTTP URL
+        const { mxcToHttp } = await import('@/integrations/matrix/mxc')
+        const downloadUrl = mxcToHttp(mxcUrl)
+
+        fileInfo.value = { ...info, downloadUrl }
+        progress.value = 100
+        trigger('success')
+        return { mxcUrl, downloadUrl }
+      } catch (error) {
+        logger.error('Matrix upload failed:', error)
+        await trigger('fail')
+        return undefined
+      }
+    }
+
     if (currentProvider.value === UploadProviderEnum.QINIU) {
+      // 警告：七牛云已废弃
+      logger.warn('[DEPRECATED] 七牛云上传已废弃，请使用 Matrix 媒体服务器')
+
       try {
         // 获取七牛云token
-        const qiniuConfig = await getQiniuToken()
+        const qiniuConfig = (await requestWithFallback({ url: 'get_qiniu_token' })) as QiniuConfig
         fileInfo.value = { ...info }
         await onStart.trigger(fileInfo)
 
         // 判断是否使用分片上传
-        console.log(`uploadFile - 文件大小检查: ${file.size} bytes, 阈值: ${CHUNK_THRESHOLD} bytes`)
         if (file.size > CHUNK_THRESHOLD) {
-          console.log('uploadFile - 使用分片上传方式')
-          const result = (await uploadToQiniuWithChunks(file, qiniuConfig, QINIU_CHUNK_SIZE)) as any
+          const result = (await uploadToQiniuWithChunks(file, qiniuConfig, QINIU_CHUNK_SIZE)) as ChunkUploadResult
           if (result && result.downloadUrl) {
             fileInfo.value = { ...info, downloadUrl: result.downloadUrl }
           }
           return result
         } else {
-          console.log('uploadFile - 使用默认的普通上传方式')
           const result = await uploadToQiniu(
             file,
             options?.scene || UploadSceneEnum.CHAT,
@@ -575,10 +689,15 @@ export const useUpload = () => {
           return result
         }
       } catch (error) {
-        console.error('获取七牛云token失败:', error)
+        logger.error('获取七牛云token失败:', error)
         await trigger('fail')
+        return undefined
       }
     }
+
+    // 未知上传方式
+    logger.error(`未知的上传方式: ${currentProvider.value}`)
+    return undefined
   }
 
   /**
@@ -591,35 +710,53 @@ export const useUpload = () => {
   const getUploadAndDownloadUrl = async (
     _path: string,
     options?: UploadOptions
-  ): Promise<{ uploadUrl: string; downloadUrl: string; config?: any }> => {
+  ): Promise<{ uploadUrl: string; downloadUrl: string; config?: UploadResponseConfig }> => {
     // 设置当前上传方式
     if (options?.provider) {
       currentProvider.value = options.provider
     }
 
-    // 根据上传方式选择不同的上传逻辑
+    // Matrix 媒体服务器 - 不需要预先获取 URL，直接在 upload 时处理
+    if (currentProvider.value === UploadProviderEnum.MATRIX || currentProvider.value === UploadProviderEnum.DEFAULT) {
+      return {
+        uploadUrl: UploadProviderEnum.MATRIX,
+        downloadUrl: '',
+        config: {
+          provider: UploadProviderEnum.MATRIX,
+          scene: options?.scene ?? UploadSceneEnum.CHAT
+        }
+      }
+    }
+
+    // 七牛云上传方式（已废弃）
     if (currentProvider.value === UploadProviderEnum.QINIU) {
+      logger.warn('[DEPRECATED] 七牛云上传已废弃，请使用 Matrix 媒体服务器')
       try {
         // 获取七牛云token
-        const qiniuConfig = await getQiniuToken()
-
-        const config = {
-          ...qiniuConfig,
-          provider: options?.provider,
-          scene: options?.scene
-        }
+        const qiniuConfig = (await requestWithFallback({ url: 'get_qiniu_token' })) as QiniuConfig
 
         // 对于七牛云，我们不需要预先获取上传URL，而是直接返回一个标记
-        return {
+        const result: { uploadUrl: string; downloadUrl: string; config: UploadResponseConfig } = {
           uploadUrl: UploadProviderEnum.QINIU, // 标记为七牛云上传
           downloadUrl: qiniuConfig.domain, // 下载URL会在实际上传后生成
-          config: config
+          config: {
+            provider: options?.provider ?? UploadProviderEnum.DEFAULT,
+            scene: options?.scene ?? UploadSceneEnum.CHAT
+          }
         }
+        return result
       } catch (_error) {
         throw new Error('获取七牛云token失败，请重试')
       }
     }
-    return { uploadUrl: '', downloadUrl: '' }
+    return {
+      uploadUrl: '',
+      downloadUrl: '',
+      config: {
+        provider: options?.provider ?? UploadProviderEnum.MATRIX,
+        scene: options?.scene ?? UploadSceneEnum.CHAT
+      }
+    }
   }
 
   /**
@@ -628,39 +765,41 @@ export const useUpload = () => {
    * @param uploadUrl 上传URL
    * @param options 上传选项
    */
-  const doUpload = async (path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl: string } | string> => {
+  const doUpload = async (
+    path: string,
+    uploadUrl: string,
+    options?: UploadOptionsExtended
+  ): Promise<{ qiniuUrl: string } | string> => {
     // 如果是七牛云上传
     if (uploadUrl === UploadProviderEnum.QINIU && options) {
       // 如果没有提供七牛云配置，尝试获取
       if (!options.domain || !options.token) {
         try {
-          console.log('获取七牛云配置...')
-          const qiniuConfig = await getQiniuToken()
-          options.domain = qiniuConfig.domain
-          options.token = qiniuConfig.token
-          options.storagePrefix = qiniuConfig.storagePrefix
-          options.region = qiniuConfig.region
+          logger.debug('获取七牛云配置...', undefined, 'useUpload')
+          const qiniuConfig = (await requestWithFallback({ url: 'get_qiniu_token' })) as QiniuConfig
+          if (qiniuConfig.domain !== undefined) options.domain = qiniuConfig.domain
+          if (qiniuConfig.token !== undefined) options.token = qiniuConfig.token
+          if (qiniuConfig.storagePrefix !== undefined) options.storagePrefix = qiniuConfig.storagePrefix
+          if (qiniuConfig.region !== undefined) options.region = qiniuConfig.region
         } catch (error) {
-          console.error('七牛云上传配置不完整，缺少 domain 或 token', error)
+          logger.error('七牛云上传配置不完整，缺少 domain 或 token', error)
         }
       }
 
       try {
         const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.AppCache
         const file = await readFile(path, { baseDir })
-        console.log(`📁 读取文件: ${path}, 大小: ${file.length} bytes`)
 
         // 创建File对象
         const fileName = extractFileName(path)
         const fileObj = new File([new Uint8Array(file)], fileName, {
           type: getFileType(fileName)
         })
-        console.log(`📦 创建File对象: ${fileName}, 原始大小: ${fileObj.size} bytes, 数组大小: ${file.length} bytes`)
 
         isUploading.value = true
         progress.value = 0
 
-        console.log('七牛云上传开始:', {
+        logger.debug('七牛云上传开始:', {
           token: options.token,
           domain: options.domain,
           scene: options.scene,
@@ -671,10 +810,7 @@ export const useUpload = () => {
         })
 
         // 判断是否使用分片上传
-        console.log(`文件大小检查: ${file.length} bytes, 阈值: ${CHUNK_THRESHOLD} bytes`)
         if (file.length > CHUNK_THRESHOLD) {
-          console.log('使用分片上传方式')
-
           // 执行分片上传
           const chunkSize = QINIU_CHUNK_SIZE
           const totalSize = file.length
@@ -689,12 +825,12 @@ export const useUpload = () => {
 
           // 生成文件名和key
           const key = await generateHashKey(
-            { scene: options.scene, enableDeduplication: options.enableDeduplication },
+            { scene: options.scene ?? UploadSceneEnum.CHAT, enableDeduplication: options.enableDeduplication ?? true },
             fileObj,
             fileName
           )
 
-          console.log('开始七牛云分片上传:', {
+          logger.debug('开始七牛云分片上传:', {
             fileName,
             fileSize: totalSize,
             chunkSize,
@@ -723,7 +859,7 @@ export const useUpload = () => {
 
             if (!blockResponse.ok) {
               const errorText = await blockResponse.text()
-              console.error(`上传分片 ${i + 1}/${totalChunks} 失败:`, {
+              logger.error(`上传分片 ${i + 1}/${totalChunks} 失败:`, {
                 status: blockResponse.status,
                 statusText: blockResponse.statusText,
                 errorText
@@ -736,10 +872,10 @@ export const useUpload = () => {
             progressInfo.uploadedChunks++
 
             progress.value = Math.floor((progressInfo.uploadedChunks / progressInfo.totalChunks) * 100)
-            console.log(`分片上传触发进度事件: ${progress.value}%`)
             trigger('progress') // 触发进度事件
 
-            console.log(`上传分片 ${progressInfo.uploadedChunks}/${progressInfo.totalChunks} 成功:`, {
+            // 触发上传进度更新事件
+            trigger('upload-progress', {
               ctx: blockResult.ctx.substring(0, 10) + '...',
               progress: progress.value + '%'
             })
@@ -758,7 +894,7 @@ export const useUpload = () => {
 
           if (!completeResponse.ok) {
             const errorText = await completeResponse.text()
-            console.error('完成分片上传失败:', {
+            logger.error('完成分片上传失败:', {
               status: completeResponse.status,
               statusText: completeResponse.statusText,
               errorText
@@ -767,9 +903,9 @@ export const useUpload = () => {
           }
 
           const completeResult = await completeResponse.json()
-          console.log('完成分片上传:', completeResult)
-          console.log('原始key:', key)
-          console.log('响应key:', completeResult.key)
+          logger.debug('完成分片上传:', completeResult)
+          logger.debug('原始key:', key)
+          logger.debug('响应key:', completeResult.key)
 
           isUploading.value = false
           progress.value = 100
@@ -778,24 +914,23 @@ export const useUpload = () => {
           trigger('success')
           return qiniuUrl
         } else {
-          console.log('uploadFile - 使用七牛普通上传方式')
           // 使用普通上传方式
           // 创建FormData对象
           const formData = new FormData()
 
           // 生成文件名和key
           const key = await generateHashKey(
-            { scene: options.scene, enableDeduplication: options.enableDeduplication },
+            { scene: options.scene ?? UploadSceneEnum.CHAT, enableDeduplication: options.enableDeduplication ?? true },
             fileObj,
             fileName
           )
 
-          formData.append('token', options.token)
+          formData.append('token', options.token ?? '')
           formData.append('key', key)
           formData.append('file', fileObj)
 
           // 使用fetch API进行上传
-          const response = await fetch(options.domain, {
+          const response = await fetch(options.domain ?? '', {
             headers: {
               Host: options.storagePrefix
             },
@@ -806,20 +941,20 @@ export const useUpload = () => {
           isUploading.value = false
           progress.value = 100
 
-          console.log('七牛云上传响应:', {
+          logger.debug('七牛云上传响应:', {
             status: response.status,
             statusText: response.statusText
           })
 
           if (response.ok) {
             const result = await response.json()
-            console.log('七牛云上传成功:', result)
+            logger.debug('七牛云上传成功:', result)
             const qiniuUrl = `${configStore.config.qiNiu.ossDomain}/${result.key}`
             trigger('success')
             return qiniuUrl
           } else {
             const errorText = await response.text()
-            console.error('七牛云上传失败:', {
+            logger.error('七牛云上传失败:', {
               status: response.status,
               statusText: response.statusText,
               errorText
@@ -831,12 +966,12 @@ export const useUpload = () => {
       } catch (error) {
         isUploading.value = false
         trigger('fail')
-        console.error('七牛云上传失败:', error)
+        logger.error('七牛云上传失败:', error)
         throw new Error('文件上传失败，请重试')
       }
     } else {
       // 使用默认上传方式
-      console.log('执行文件上传:', path)
+      logger.debug('执行文件上传:', path)
       try {
         const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.AppCache
         const file = await readFile(path, { baseDir })
@@ -850,8 +985,18 @@ export const useUpload = () => {
         progress.value = 0
 
         if (file.length > CHUNK_THRESHOLD) {
-          // 转换file的类型
-          // TODO：本地上传还需要测试
+          // 分块上传：将大文件分割成多个块进行上传
+          //
+          // 测试说明：
+          // - 本地上传流程需要测试以下场景：
+          //   1. 大文件上传（> CHUNK_THRESHOLD）- 测试分块逻辑
+          //   2. 网络中断恢复 - 测试断点续传
+          //   3. 并发上传 - 测试多个文件同时上传
+          //   4. 取消上传 - 测试上传取消和清理
+          //
+          // 已知问题：
+          // - Uint8Array 转 File 可能会影响文件元数据
+          // - 需要确保 uploadUrl 支持分块上传（断点续传）
           const fileObj = new File([new Uint8Array(file)], __filename, { type: 'application/octet-stream' })
           await uploadToDefaultWithChunks(uploadUrl, fileObj)
         } else {
@@ -870,18 +1015,89 @@ export const useUpload = () => {
             throw new Error(`上传失败: ${response.statusText}`)
           }
 
-          console.log('文件上传成功')
+          logger.debug('文件上传成功', undefined, 'useUpload')
           trigger('success')
         }
 
         // 返回下载URL
-        return options?.downloadUrl
+        return options?.downloadUrl ?? ''
       } catch (error) {
         isUploading.value = false
         trigger('fail')
-        console.error('文件上传失败:', error)
+        logger.error('文件上传失败:', error)
         throw new Error('文件上传失败，请重试')
       }
+    }
+  }
+
+  /**
+   * 上传缩略图文件
+   * @param thumbnailFile 缩略图文件
+   * @param options 上传选项
+   * @returns 上传结果
+   */
+  const uploadThumbnail = async (
+    thumbnailFile: File,
+    options?: { provider?: UploadProviderEnum }
+  ): Promise<{ uploadUrl: string; downloadUrl: string; config?: UploadResponseConfig }> => {
+    // 使用现有的 uploadFile 方法来处理缩略图上传，默认使用 Matrix
+    const uploadOptions: UploadOptions = {
+      provider: options?.provider || UploadProviderEnum.MATRIX,
+      scene: UploadSceneEnum.CHAT,
+      enableDeduplication: true
+    }
+
+    try {
+      const result = await uploadFile(thumbnailFile, uploadOptions)
+
+      // 处理 Matrix 上传结果
+      const uploadResult: { uploadUrl: string; downloadUrl: string; config?: UploadResponseConfig } = {
+        uploadUrl: (result as { mxcUrl?: string })?.mxcUrl || '',
+        downloadUrl: (result as { downloadUrl?: string })?.downloadUrl || '',
+        config: {
+          provider: uploadOptions.provider ?? UploadProviderEnum.MATRIX,
+          scene: uploadOptions.scene
+        }
+      }
+      return uploadResult
+    } catch (error) {
+      logger.error('缩略图上传失败:', error)
+      throw new Error('缩略图上传失败')
+    }
+  }
+
+  /**
+   * 执行缩略图上传
+   * @param thumbnailFile 缩略图文件
+   * @param uploadUrl 上传URL
+   * @param options 上传选项
+   * @returns 上传结果
+   */
+  const doUploadThumbnail = async (
+    thumbnailFile: File,
+    uploadUrl: string,
+    options?: UploadOptionsExtended
+  ): Promise<{ downloadUrl: string }> => {
+    // 创建临时文件路径用于上传
+    const tempPath = `temp-thumbnail-${Date.now()}-${thumbnailFile.name}`
+
+    try {
+      // 将File对象转换为ArrayBuffer，然后写入临时文件
+      const arrayBuffer = await thumbnailFile.arrayBuffer()
+      new Uint8Array(arrayBuffer) // uint8Array created but not used directly
+
+      // 使用现有的 doUpload 方法来处理缩略图上传
+      const result = await doUpload(tempPath, uploadUrl, options)
+
+      if (typeof result === 'string') {
+        return { downloadUrl: result }
+      }
+
+      // 如果 doUpload 返回其他类型，抛出错误
+      throw new Error('缩略图上传失败: 无效的返回类型')
+    } catch (error) {
+      logger.error('缩略图上传执行失败:', error)
+      throw new Error('缩略图上传执行失败')
     }
   }
 
@@ -896,6 +1112,8 @@ export const useUpload = () => {
     uploadToQiniu,
     getUploadAndDownloadUrl,
     doUpload,
+    uploadThumbnail,
+    doUploadThumbnail,
     UploadProviderEnum,
     generateHashKey
   }

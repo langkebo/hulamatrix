@@ -10,8 +10,8 @@
     </template>
 
     <template #container>
-      <div
-        class="bg-[url('@/assets/mobile/chat-home/background.webp')] bg-cover bg-center flex flex-col overflow-auto h-full">
+      <div class="flex flex-col overflow-auto h-full relative">
+        <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
         <div class="flex flex-col flex-1 gap-20px py-15px px-20px">
           <!-- 公告内容编辑区域 -->
           <div class="bg-white rounded-15px p-15px shadow">
@@ -59,10 +59,9 @@
             </div>
           </div>
 
-          <!-- 操作按钮 -->
-          <div class="flex justify-center gap-15px">
-            <n-button type="default" class="w-40%" size="large" @click="handleCancel">取消</n-button>
-            <n-button type="primary" class="w-40%" size="large" @click="handleSubmit" :loading="submitting">
+          <div class="mobile-action-footer">
+            <n-button tertiary class="mobile-primary-btn" @click="handleCancel">取消</n-button>
+            <n-button type="primary" class="mobile-primary-btn" @click="handleSubmit" :loading="submitting">
               保存
             </n-button>
           </div>
@@ -73,10 +72,14 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
 import { getAnnouncementDetail, editAnnouncement, pushAnnouncement } from '@/utils/ImRequestUtils'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
+import { msg } from '@/utils/SafeUI'
 defineOptions({
   name: 'mobileChatNoticeEdit'
 })
@@ -102,17 +105,17 @@ const loadAnnouncementDetail = async () => {
   }
 
   try {
-    const data = await getAnnouncementDetail({
+    const data = (await getAnnouncementDetail({
       roomId: globalStore.currentSessionRoomId,
       announcementId: route.params.id as string
-    })
+    })) as { content: string; top?: boolean }
 
     // 填充表单数据
     announcementContent.value = data.content
     top.value = data.top || false
-    console.log('announcementContent ', announcementContent)
+    logger.debug('announcementContent', { value: announcementContent.value, component: 'NoticeEdit' })
   } catch (error) {
-    console.error('加载公告详情失败:', error)
+    logger.error('加载公告详情失败:', error)
   }
 }
 
@@ -125,7 +128,7 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   // 简单验证
   if (!announcementContent.value.trim()) {
-    window.$message?.error('请输入公告内容')
+    msg.error('请输入公告内容')
     return
   }
 
@@ -142,7 +145,7 @@ const handleSubmit = async () => {
       }
 
       await editAnnouncement(announcementData)
-      window.$message?.success('公告修改成功')
+      msg.success('公告修改成功')
       router.push({
         path: `/mobile/chatRoom/notice/detail/${announcementData.id}`
       })
@@ -155,12 +158,12 @@ const handleSubmit = async () => {
       }
 
       await pushAnnouncement(announcementData)
-      window.$message?.success('公告发布成功')
+      msg.success('公告发布成功')
       router.back()
     }
   } catch (error) {
-    console.error('保存公告失败:', error)
-    window.$message?.error('保存公告失败，请重试')
+    logger.error('保存公告失败:', error)
+    msg.error('保存公告失败，请重试')
   } finally {
     submitting.value = false
   }
@@ -172,38 +175,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 按钮样式优化 */
-.n-button {
-  border-radius: 30px;
-  font-weight: 500;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
-}
-
-.n-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.n-button--primary {
-  background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
-  border: none;
-}
-
-/* 上传图片组件样式优化 */
 .upload-image-container {
   width: 100%;
 }
-
 .upload-image-container :deep(.n-upload) {
   width: 100%;
 }
-
 .upload-image-container :deep(.n-upload-trigger) {
   width: 100px;
   height: 100px;
 }
-
 .upload-trigger {
   display: flex;
   flex-direction: column;
@@ -214,9 +195,7 @@ onMounted(() => {
   border: 1px dashed #d9d9d9;
   border-radius: 8px;
   background-color: #fafafa;
-  cursor: not-allowed;
 }
-
 .upload-image-container :deep(.n-upload-file-list) {
   display: grid;
   grid-template-columns: repeat(auto-fill, 100px);

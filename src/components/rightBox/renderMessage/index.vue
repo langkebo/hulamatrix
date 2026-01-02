@@ -55,7 +55,7 @@
         </svg>
         <!-- 头像 -->
         <n-popover
-          :ref="(el: any) => el && (infoPopoverRefs[message.message.id] = el)"
+          :ref="(el: unknown) => el && (infoPopoverRefs[message.message.id] = el)"
           @update:show="handlePopoverUpdate(message.message.id, $event)"
           trigger="click"
           placement="right"
@@ -65,8 +65,8 @@
             <ContextMenu
               @select="$event.click(message, 'Main')"
               :content="message"
-              :menu="isGroup ? optionsList : void 0"
-              :special-menu="report">
+              :menu="(isGroup ? (optionsList as MenuItem[]) : void 0)"
+              :special-menu="(report as MenuItem[])">
               <!-- 存在头像时候显示 -->
               <n-avatar
                 round
@@ -75,7 +75,7 @@
                 class="select-none"
                 :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
                 :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-                :src="getAvatarSrc(message.fromUser.uid)"
+                :src="getAvatarSrc(message.fromUser.uid) || ''"
                 :class="isMe ? '' : 'mr-10px'" />
             </ContextMenu>
           </template>
@@ -88,8 +88,8 @@
             <ContextMenu
               @select="$event.click(message, 'Main')"
               :content="message"
-              :menu="isGroup ? optionsList : void 0"
-              :special-menu="report">
+              :menu="(isGroup ? (optionsList as MenuItem[]) : void 0)"
+              :special-menu="(report as MenuItem[])">
               <n-flex
                 :size="6"
                 class="select-none cursor-default"
@@ -109,7 +109,7 @@
                       :size="18"
                       round
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-                      :src="cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.img" />
+                      :src="cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.img || ''" />
                   </template>
                   <span>
                     {{ cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.describe }}
@@ -160,9 +160,9 @@
             :class="isMe ? 'items-end' : 'items-start'"
             :style="{ '--bubble-max-width': bubbleMaxWidth }"
             @select="$event.click(message, 'Main')"
-            :menu="handleItemType(message.message.type)"
+            :menu="(handleItemType(message.message.type) as MenuItem[])"
             :emoji="emojiList"
-            :special-menu="specialMenuList(message.message.type)"
+            :special-menu="(specialMenuList(message.message.type) as MenuItem[])"
             @reply-emoji="handleEmojiSelect($event, message)"
             @click="handleMsgClick(message)">
             <component
@@ -199,6 +199,18 @@
               :search-keyword="searchKeyword"
               :history-mode="historyMode" />
 
+            <!-- 自毁消息倒计时显示 -->
+            <SelfDestructCountdown
+              v-if="isSelfDestructingMessage(message.message)"
+              :message-id="message.message.id"
+              :room-id="message.message.roomId"
+              :event-id="message.message.id"
+              :message-body="message.message.body"
+              :inline="true"
+              @destroy="handleMessageDestroyed"
+              @warning="handleMessageWarning"
+            />
+
             <!-- 显示翻译文本 -->
             <Transition name="fade-translate" appear mode="out-in">
               <div v-if="message.message.body.translatedText" class="translated-text cursor-default flex flex-col">
@@ -220,7 +232,7 @@
                       <span>复制翻译</span>
                     </n-tooltip>
                   </n-flex>
-                  <svg class="size-10px cursor-pointer" @click="message.message.body.translatedText = null">
+                  <svg class="size-10px cursor-pointer" @click="delete (message.message.body as Record<string, unknown>).translatedText">
                     <use href="#close"></use>
                   </svg>
                 </n-flex>
@@ -229,7 +241,7 @@
             </Transition>
 
             <!-- 消息状态指示器 -->
-            <div v-if="isMe" class="absolute -left-6 top-2">
+            <div v-if="isMe" class="absolute -left-6 top-2 flex flex-col items-end">
               <n-icon v-if="message.message.status === MessageStatusEnum.SENDING" class="text-gray-400">
                 <img class="size-16px" src="@/assets/img/loading-one.svg" alt="" />
               </n-icon>
@@ -241,6 +253,9 @@
                   <use href="#cloudError"></use>
                 </svg>
               </n-icon>
+              <span v-if="flags.matrixEnabled && readCount > 0" class="text-(10px #909090) whitespace-nowrap mt-2px select-none">
+                {{ readCount }} 已读
+              </span>
             </div>
           </ContextMenu>
 
@@ -256,13 +271,13 @@
             <svg class="size-14px">
               <use href="#to-top"></use>
             </svg>
-            <n-avatar
-              class="reply-avatar"
-              round
-              :size="20"
-              :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
-              :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-              :src="getAvatarSrc(message.message.body.reply.uid)" />
+                <n-avatar
+                  class="reply-avatar"
+                  round
+                  :size="20"
+                  :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                  :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
+                  :src="getAvatarSrc(message.message.body.reply.uid ?? '') || ''" />
             <span>{{ `${message.message.body.reply.username}: ` }}</span>
             <span class="content-span">
               {{ message.message.body.reply.body }}
@@ -299,24 +314,28 @@
 </template>
 <script setup lang="ts">
 import type { Component } from 'vue'
+import { computed, inject, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 import { MessageStatusEnum, MittEnum, MsgEnum, ThemeEnum } from '@/enums'
 import { chatMainInjectionKey, useChatMain } from '@/hooks/useChatMain'
 import { useMitt } from '@/hooks/useMitt'
 import { usePopover } from '@/hooks/usePopover'
-import type { MessageType } from '@/services/types'
-import { useCachedStore } from '@/stores/cached'
+import type { MessageType, MsgType } from '@/services/types'
+import { useCachedStore } from '@/stores/dataCache'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
+import { formatTimestamp } from '@/utils/ComputedTime'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
-import { markMsg } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { createMacContextSelectionGuard } from '@/utils/MacSelectionGuard'
 import { isMobile } from '@/utils/PlatformConstants'
+import { sdkGetReceipts } from '@/services/messages'
+import { flags } from '@/utils/envFlags'
 import Announcement from './Announcement.vue'
 import AudioCall from './AudioCall.vue'
 import Emoji from './Emoji.vue'
@@ -324,7 +343,6 @@ import File from './File.vue'
 import Image from './Image.vue'
 import Location from './Location.vue'
 import MergeMessage from './MergeMessage.vue'
-import BotMessage from './special/BotMessage.vue'
 import RecallMessage from './special/RecallMessage.vue'
 import SystemMessage from './special/SystemMessage.vue'
 import Text from './Text.vue'
@@ -333,18 +351,30 @@ import VideoCall from './VideoCall.vue'
 import Voice from './Voice.vue'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
 import { vOnLongPress } from '@vueuse/components'
+import { msg } from '@/utils/SafeUI'
+import SelfDestructCountdown from '@/components/message/SelfDestructCountdown.vue'
+
+// MenuItem type for context menu items
+interface MenuItem {
+  visible?: (content?: Record<string, unknown>) => boolean
+  click?: (content?: Record<string, unknown>) => void
+  children?: MenuItem[] | ((content?: Record<string, unknown>) => MenuItem[])
+  icon?: string | ((content?: Record<string, unknown>) => string)
+  label?: string | ((content?: Record<string, unknown>) => string)
+  [key: string]: unknown
+}
 
 const props = withDefaults(
   defineProps<{
     message: MessageType
-    uploadProgress?: number
+    uploadProgress?: number | undefined
     isGroup: boolean
     fromUser: {
       uid: string
     }
-    onImageClick?: (url: string) => void
-    onVideoClick?: (url: string) => void
-    searchKeyword?: string
+    onImageClick?: ((url: string) => void) | undefined
+    onVideoClick?: ((url: string) => void) | undefined
+    searchKeyword?: string | undefined
     historyMode?: boolean
   }>(),
   {
@@ -356,15 +386,32 @@ const emit = defineEmits(['jump2Reply'])
 const { t } = useI18n()
 const globalStore = useGlobalStore()
 const selectKey = ref(props.fromUser!.uid)
-const infoPopoverRefs = reactive<Record<string, any>>({})
+// Interface for popover ref that has setShow method
+interface PopoverRef {
+  setShow: (show: boolean) => void
+}
+const infoPopoverRefs = reactive<Record<string, PopoverRef | unknown>>({})
 const { handlePopoverUpdate } = usePopover(selectKey, 'image-chat-main')
 
 const userStore = useUserStore()
 // 响应式状态变量
 const activeReply = ref<string>('')
 const hoverMsgId = ref<string>('')
+const readCount = ref(0)
+
+onMounted(async () => {
+  if (flags.matrixEnabled && props.message.message.id && props.message.message.roomId) {
+    try {
+      const receipts = await sdkGetReceipts(props.message.message.roomId, props.message.message.id)
+      readCount.value = receipts.length
+    } catch (e) {
+      // ignore error
+    }
+  }
+})
+
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const injectedChatMain = inject(chatMainInjectionKey, null)
 const chatMainApi = injectedChatMain ?? useChatMain()
 const { optionsList, report, activeBubble, handleItemType, emojiList, specialMenuList, handleMsgClick } = chatMainApi
@@ -443,7 +490,6 @@ const componentMap: Partial<Record<MsgEnum, Component>> = {
   [MsgEnum.AUDIO_CALL]: AudioCall,
   [MsgEnum.SYSTEM]: SystemMessage,
   [MsgEnum.RECALL]: RecallMessage,
-  [MsgEnum.BOT]: BotMessage,
   [MsgEnum.MERGE]: MergeMessage,
   [MsgEnum.LOCATION]: Location
 }
@@ -458,6 +504,37 @@ const isSpecialMsgType = (type: number): boolean => {
     type === MsgEnum.MERGE ||
     type === MsgEnum.LOCATION
   )
+}
+
+/**
+ * 检查消息是否为自毁消息
+ * @param msg 消息对象
+ * @returns 是否为自毁消息
+ */
+const isSelfDestructingMessage = (msg: MsgType): boolean => {
+  if (!msg || !msg.body) return false
+
+  // 检查 com.hula.self_destruct 元数据
+  const selfDestructMeta = (msg.body as Record<string, unknown>)['com.hula.self_destruct']
+  return (selfDestructMeta as { will_self_destruct?: boolean })?.will_self_destruct === true
+}
+
+/**
+ * 处理消息销毁事件
+ * @param messageId 消息ID
+ */
+const handleMessageDestroyed = (messageId: string) => {
+  logger.debug('[RenderMessage] Message self-destructed:', messageId)
+  // 可以在这里添加额外的清理逻辑，比如从消息列表中移除
+}
+
+/**
+ * 处理消息即将销毁的警告
+ * @param messageId 消息ID
+ * @param remainingTime 剩余时间（毫秒）
+ */
+const handleMessageWarning = (messageId: string, remainingTime: number) => {
+  logger.debug('[RenderMessage] Message will self-destruct soon:', { messageId, remainingTime })
 }
 
 // 判断表情反应是否只有一行
@@ -492,9 +569,12 @@ const cancelReplyEmoji = async (item: MessageType, type: number): Promise<void> 
         markType: type, // 使用对应的MarkEnum类型
         actType: 2 // 使用Confirm作为操作类型
       }
-      await markMsg(data)
+      await requestWithFallback({
+        url: 'mark_msg',
+        body: data
+      })
     } catch (error) {
-      console.error('取消表情标记失败:', error)
+      logger.error('取消表情标记失败:', toError(error))
     }
   }
 }
@@ -520,21 +600,79 @@ const hasUserMarkedEmoji = (item: MessageType, emojiType: number) => {
   return item.message.messageMarks[String(emojiType)]?.userMarked
 }
 
-const handleRetry = (item: MessageType): void => {
-  // TODO: 实现重试发送逻辑
-  console.log('重试发送消息:', item)
+const handleRetry = async (item: MessageType): Promise<void> => {
+  try {
+    logger.debug('[MessageRender] 重试发送消息:', item)
+
+    // 检查消息状态
+    if (item.message?.status !== MessageStatusEnum.FAILED) {
+      logger.warn('[MessageRender] 消息未处于失败状态，无需重试')
+      return
+    }
+
+    // 导入 UnifiedMessageService
+    const { unifiedMessageService } = await import('@/services/unified-message-service')
+
+    // 从消息体中获取房间 ID，如果没有则使用当前会话的房间 ID
+    const roomId = (item.message?.body as Record<string, unknown>)?.roomId as string | undefined
+
+    // 准备重试的消息参数
+    const retryParams = {
+      type: item.message!.type,
+      body: item.message!.body as Record<string, unknown> | undefined
+    }
+
+    // 更新消息状态为发送中
+    const chatStore = useChatStore()
+    chatStore.updateMsg({
+      msgId: item.message!.id,
+      status: MessageStatusEnum.SENDING
+    })
+
+    // 重新发送消息
+    const result = await unifiedMessageService.sendMessage({
+      roomId: roomId || '',
+      type: retryParams.type,
+      body: retryParams.body || {}
+    })
+
+    // 更新消息状态
+    chatStore.updateMsg({
+      msgId: item.message!.id,
+      status: MessageStatusEnum.SUCCESS
+    })
+
+    // 如果是新的消息 ID，更新映射
+    if (result.id && result.id !== item.message!.id) {
+      logger.info('[MessageRender] 消息重试成功，新 ID:', result.id)
+      // 可以选择更新本地消息映射
+    }
+
+    msg.success('消息已重新发送')
+  } catch (error) {
+    logger.error('[MessageRender] 重试发送消息失败:', error)
+
+    // 更新消息状态为失败
+    const chatStore = useChatStore()
+    chatStore.updateMsg({
+      msgId: item.message!.id,
+      status: MessageStatusEnum.FAILED
+    })
+
+    msg.error('发送失败，请稍后重试')
+  }
 }
 
 // 处理复制翻译文本
 const handleCopyTranslation = (text: string) => {
   if (text) {
     navigator.clipboard.writeText(text)
-    window.$message.success('复制成功')
+    msg.success('复制成功')
   }
 }
 
 const hasBubble = (type: MsgEnum) => {
-  return !(type === MsgEnum.RECALL || type === MsgEnum.SYSTEM || type === MsgEnum.BOT)
+  return !(type === MsgEnum.RECALL || type === MsgEnum.SYSTEM)
 }
 
 const isMe = computed(() => {
@@ -542,8 +680,9 @@ const isMe = computed(() => {
 })
 
 // 解决mac右键会选中文本的问题
-const closeMenu = (event: any) => {
-  if (!event.target.matches('.bubble', 'bubble-oneself')) {
+const closeMenu = (event: unknown) => {
+  const e = event as { target: Element }
+  if (!e.target.matches('.bubble') && !e.target.matches('.bubble-oneself')) {
     activeBubble.value = ''
   }
 }
@@ -564,28 +703,33 @@ const handleEmojiSelect = async (
   // 只给没有标记过的图标标记
   if (!userMarked) {
     try {
-      await markMsg({
-        msgId: item.message.id,
-        markType: context.value,
-        actType: 1
+      await requestWithFallback({
+        url: 'mark_msg',
+        body: {
+          msgId: item.message.id,
+          markType: context.value,
+          actType: 1
+        }
       })
     } catch (error) {
-      console.error('标记表情失败:', error)
+      logger.error('标记表情失败:', toError(error))
     }
   } else {
-    window.$message.warning('该表情已标记')
+    msg.warning('该表情已标记')
   }
 }
 
-useMitt.on(`${MittEnum.INFO_POPOVER}-Main`, (event: any) => {
-  const messageId = event.uid
+useMitt.on(`${MittEnum.INFO_POPOVER}-Main`, (event: unknown) => {
+  const e = event as { uid: string | number }
+  const messageId = String(e.uid)
 
   // 首先设置 selectKey 以显示 InfoPopover 组件
   selectKey.value = messageId
 
   // 如果有对应的 popover 引用，则显示 popover
-  if (infoPopoverRefs[messageId]) {
-    infoPopoverRefs[messageId].setShow(true)
+  const popoverRef = infoPopoverRefs[messageId] as PopoverRef | undefined
+  if (popoverRef?.setShow) {
+    popoverRef.setShow(true)
     handlePopoverUpdate(messageId)
   }
 })
@@ -616,7 +760,7 @@ const longPressOption = computed(() => ({
   updateTiming: 'sync'
 }))
 
-const handleLongPress = (e: PointerEvent, _menu: any) => {
+const handleLongPress = (e: PointerEvent, _menu: unknown) => {
   if (!isMobile()) return
 
   // 1. 阻止默认行为（防止系统菜单出现）

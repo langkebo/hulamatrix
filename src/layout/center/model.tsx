@@ -1,35 +1,39 @@
+import { computed } from 'vue'
 import type { TransferRenderSourceList, TransferRenderTargetLabel } from 'naive-ui'
 import { NAvatar, NCheckbox } from 'naive-ui'
-import { useContactStore } from '@/stores/contacts.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useGroupStore } from '@/stores/group.ts'
+import { useFriendsStore } from '@/stores/friends'
+import { useGlobalStore } from '@/stores/global'
+import { useGroupStore } from '@/stores/group'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { UserType } from '@/enums'
 
-const contactStore = useContactStore()
+/** Friend option type for transfer component */
+interface FriendOption {
+  label: string
+  value: string
+  avatar: string
+  disabled?: boolean
+}
+
+const friendsStore = useFriendsStore()
 const groupStore = useGroupStore()
 const globalStore = useGlobalStore()
 
-export const options = computed(() => {
-  return contactStore.contactsList
-    .map((item) => {
-      const userInfo = groupStore.getUserInfo(item.uid)
-      const contactAccount = (item as any).account
-      const isBotAccount =
-        (userInfo?.account && userInfo.account.toLowerCase() === UserType.BOT) ||
-        (typeof contactAccount === 'string' && contactAccount.toLowerCase() === UserType.BOT)
-
-      if (isBotAccount) {
-        return null
-      }
-
+export const options = computed<FriendOption[]>(() => {
+  return (friendsStore.friends || [])
+    .map((f) => {
+      const uid = String(f.user_id)
+      const userInfo = groupStore.getUserInfo(uid)
+      const account = userInfo?.account
+      const isBotAccount = typeof account === 'string' && account.toLowerCase() === UserType.BOT
+      if (isBotAccount) return null
       return {
-        label: userInfo?.name || item.remark,
-        value: item.uid,
+        label: userInfo?.name || uid,
+        value: uid,
         avatar: AvatarUtils.getAvatarUrl(userInfo?.avatar || '/logoD.png')
       }
     })
-    .filter(Boolean) as any
+    .filter((item): item is NonNullable<typeof item> => item !== null)
 })
 
 // 获取已禁用选项的值列表
@@ -45,7 +49,7 @@ export const getDisabledOptions = () => {
 }
 
 // 获取过滤后的选项列表
-export const getFilteredOptions = () => {
+export const getFilteredOptions = (): FriendOption[] => {
   // 获取禁用选项列表
   const disabledOptions = getDisabledOptions()
   // 当前选中的房间id
@@ -54,7 +58,7 @@ export const getFilteredOptions = () => {
   if (!currentRoomId) return options.value
 
   // 标记已在群内的好友
-  return options.value.map((option: { value: string; label: string; avatar?: string; [key: string]: any }) => {
+  return options.value.map((option) => {
     const isInGroup = disabledOptions.includes(option.value)
 
     if (isInGroup) {
@@ -82,13 +86,13 @@ export const renderSourceList = (
 
     // 根据搜索模式进一步过滤
     const displayOptions = pattern
-      ? baseOptions.filter((option: { label: string }) => option.label?.toLowerCase().includes(pattern.toLowerCase()))
+      ? baseOptions.filter((option) => option.label?.toLowerCase().includes(pattern.toLowerCase()))
       : baseOptions
 
     return (
       <div class="select-none">
         {placeholder && <div class="text-(12px [--chat-text-color]) pb-6px">{placeholder}</div>}
-        {displayOptions.map((option: any) => {
+        {displayOptions.map((option) => {
           // 判断是否是预选中的好友（仅在启用预选中时生效）
           const isPreSelected = enablePreSelection && option.value === preSelectedFriendId
           // 判断是否被禁用(已在群内)（仅在启用预选中时生效）
@@ -150,17 +154,20 @@ export const renderSourceList = (
   }
 }
 
-export const renderLabel: TransferRenderTargetLabel = ({ option }: { option: any }) => {
+export const renderLabel: TransferRenderTargetLabel = ({ option }) => {
+  const friendOption = option as FriendOption
   return (
     <div class="select-none" style={{ display: 'flex', margin: '6px 0' }}>
-      {option.avatar ? (
-        <NAvatar round src={option.avatar || '/logoD.png'} size={24} fallbackSrc="/logoD.png" />
+      {friendOption.avatar ? (
+        <NAvatar round src={friendOption.avatar || '/logoD.png'} size={24} fallbackSrc="/logoD.png" />
       ) : (
         <NAvatar round size={24}>
-          {option.label.slice(0, 1)}
+          {String(option.label).slice(0, 1)}
         </NAvatar>
       )}
-      <div style={{ display: 'flex', marginLeft: '12px', alignSelf: 'center', fontSize: '14px' }}>{option.label}</div>
+      <div style={{ display: 'flex', marginLeft: '12px', alignSelf: 'center', fontSize: '14px' }}>
+        {String(option.label)}
+      </div>
     </div>
   )
 }
@@ -178,25 +185,27 @@ export const renderTargetList = (
     pattern
   }: {
     onCheck: (checkedValueList: Array<string | number>) => void
-    checkedOptions: any[]
+    checkedOptions: unknown[]
     pattern: string
   }) => {
     // 根据搜索模式过滤选项
     const displayOptions = pattern
-      ? checkedOptions.filter((option: { label: string }) =>
-          option.label?.toLowerCase().includes(pattern.toLowerCase())
-        )
+      ? checkedOptions.filter((option) => {
+          const opt = option as FriendOption
+          return opt.label?.toLowerCase().includes(pattern.toLowerCase())
+        })
       : checkedOptions
 
     return (
       <div>
         {placeholder && <div class="text-(12px [--chat-text-color]) pb-6px">{placeholder}</div>}
-        {displayOptions.map((option: any) => {
-          const isPreSelected = enablePreSelection && option.value === preSelectedFriendId
+        {displayOptions.map((option) => {
+          const opt = option as FriendOption
+          const isPreSelected = enablePreSelection && opt.value === preSelectedFriendId
 
           return (
             <div
-              key={option.value}
+              key={String(opt.value)}
               style={{
                 userSelect: 'none',
                 display: 'flex',
@@ -209,14 +218,14 @@ export const renderTargetList = (
                 position: 'relative'
               }}>
               <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-                {option.avatar ? (
-                  <NAvatar round src={option.avatar || '/logoD.png'} size={24} fallbackSrc="/logoD.png" />
+                {opt.avatar ? (
+                  <NAvatar round src={opt.avatar || '/logoD.png'} size={24} fallbackSrc="/logoD.png" />
                 ) : (
                   <NAvatar round size={24}>
-                    {option.label?.slice(0, 1)}
+                    {String(opt.label).slice(0, 1)}
                   </NAvatar>
                 )}
-                <div style={{ marginLeft: '12px', fontSize: '14px' }}>{option.label}</div>
+                <div style={{ marginLeft: '12px', fontSize: '14px' }}>{String(opt.label)}</div>
               </div>
 
               {!isPreSelected && (
@@ -229,8 +238,8 @@ export const renderTargetList = (
                     color: '#909090'
                   }}
                   onClick={() => {
-                    const newCheckedOptions = checkedOptions.filter((o: any) => o.value !== option.value)
-                    onCheck(newCheckedOptions.map((o: any) => o.value))
+                    const newCheckedOptions = checkedOptions.filter((o) => (o as FriendOption).value !== opt.value)
+                    onCheck(newCheckedOptions.map((o) => (o as FriendOption).value))
                   }}>
                   <use href="#close"></use>
                 </svg>

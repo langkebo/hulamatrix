@@ -1,0 +1,76 @@
+{
+  "title": "私密消息",
+  "sessions": {
+    "title": "私密消息",
+    "no_sessions": "暂无私密聊天",
+    "start_chat": "开始聊天",
+    "new_chat": "新建聊天",
+    "select_session": "选择一个会话开始聊天"
+  },
+  "chat": {
+    "online": "在线",
+    "offline": "离线",
+    "typing": "正在输入...",
+    "empty_state": "开始聊天吧！",
+    "loading_messages": "加载消息中..."
+  },
+  "input": {
+    "placeholder": "输入消息...",
+    "send": "发送",
+    "sending": "发送中"
+  },
+  "ttl": {
+    "title": "消息自毁",
+    "no_destroy": "不销毁",
+    "seconds_30": "30秒",
+    "minutes_1": "1分钟",
+    "minutes_5": "5分钟",
+    "hours_1": "1小时"
+  },
+  "message": {
+    "destroyed": "已销毁",
+    "status_sending": "发送中",
+    "status_sent": "已发送",
+    "status_delivered": "已送达",
+    "status_read": "已读",
+    "status_failed": "发送失败",
+    "recall_success": "消息已撤回",
+    "recall_failed": "撤回消息失败"
+  },
+  "menu": {
+    "clear_history": "清空聊天记录",
+    "delete_session": "删除会话",
+    "view_profile": "查看资料"
+  },
+  "dialogs": {
+    "new_chat_title": "新建私密聊天",
+    "user_id_label": "用户ID",
+    "user_id_placeholder": "请输入要聊天的用户ID",
+    "start_button": "开始聊天",
+    "user_id_required": "请输入用户ID",
+    "create_success": "会话已创建",
+    "create_failed": "创建会话失败"
+  },
+  "confirm": {
+    "clear_title": "清空聊天记录",
+    "clear_content": "确定要清空所有聊天记录吗？此操作不可撤销。",
+    "clear_success": "聊天记录已清空",
+    "clear_failed": "清空失败",
+    "delete_title": "删除会话",
+    "delete_content": "确定要删除这个会话吗？",
+    "delete_success": "会话已删除",
+    "delete_failed": "删除失败"
+  },
+  "time": {
+    "just_now": "刚刚",
+    "minutes_ago": "{minutes}分钟前",
+    "yesterday": "昨天",
+    "today": "今天"
+  },
+  "errors": {
+    "load_sessions_failed": "加载会话列表失败",
+    "load_messages_failed": "加载消息失败",
+    "send_failed": "发送消息失败",
+    "get_presence_failed": "获取Presence失败"
+  }
+}

@@ -116,12 +116,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { reverseGeocode } from '@/services/mapApi'
 import { getSettings } from '@/services/tauriCommand'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import LocationMap from './LocationMap.vue'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 type LocationData = {
   latitude: number
@@ -197,7 +199,7 @@ const getLocation = async () => {
 
     // 获取地址信息
     const geocodeResult = await reverseGeocode(result.transformed.lat, result.transformed.lng).catch((error) => {
-      console.warn(t('message.location.modal.errors.geocode_failed'), error)
+      logger.warn(t('message.location.modal.errors.geocode_failed'), error)
       return null
     })
     const address =
@@ -212,7 +214,7 @@ const getLocation = async () => {
       timestamp: result.timestamp
     }
   } catch (error) {
-    console.error('获取位置失败:', error)
+    logger.error('获取位置失败:', error)
   }
 }
 
@@ -248,18 +250,25 @@ const handleLocationChange = async (newLocation: { lat: number; lng: number }) =
 
   // 获取新位置的地址
   const geocodeResult = await reverseGeocode(newLocation.lat, newLocation.lng).catch((error) => {
-    console.warn(t('message.location.modal.errors.geocode_failed'), error)
+    logger.warn(t('message.location.modal.errors.geocode_failed'), error)
     return null
   })
   const address =
     geocodeResult?.formatted_addresses?.recommend || geocodeResult?.address || selectedLocation.value.address
 
-  selectedLocation.value = {
-    ...selectedLocation.value,
-    latitude: newLocation.lat,
-    longitude: newLocation.lng,
-    address,
-    timestamp: Date.now()
+  if (selectedLocation.value) {
+    const updatedLocation: LocationData = {
+      latitude: newLocation.lat,
+      longitude: newLocation.lng,
+      timestamp: Date.now()
+    }
+
+    // Only add address if it exists
+    if (address) {
+      updatedLocation.address = address
+    }
+
+    selectedLocation.value = updatedLocation
   }
 }
 

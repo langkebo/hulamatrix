@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
-import { CloseBxEnum, ShowModeEnum, StoresEnum, ThemeEnum } from '@/enums'
-import { isDesktop, isMac } from '@/utils/PlatformConstants'
+import { CloseBxEnum, ShowModeEnum, ThemeEnum } from '@/enums'
+import { isMac } from '@/utils/PlatformConstants'
+import { cache } from '@/services/cache'
+import { STORAGE_KEYS } from '@/constants'
+import { applyThemeTokens, type ThemeMode } from '@/theme/tokens'
+import { matrixClientService } from '@/integrations/matrix/client'
 
 // 获取平台对应的默认快捷键
 const getDefaultShortcuts = () => {
@@ -10,15 +14,44 @@ const getDefaultShortcuts = () => {
     globalEnabled: false // 默认关闭全局快捷键
   }
 }
+interface SettingState {
+  themes: { content: string; pattern: string; versatile: string }
+  themeMode?: 'light' | 'dark' | 'system'
+  escClose: boolean
+  showMode: ShowModeEnum
+  lockScreen: { enable: boolean; password: string }
+  tips: { type: CloseBxEnum; notTips: boolean }
+  login: { autoLogin: boolean; autoStartup: boolean }
+  chat: {
+    sendKey: string
+    isDouble: boolean
+    translate: string
+    layoutMode: string
+    compactLayout: boolean
+    imageSizeLimit: string
+  }
+  shortcuts: { screenshot: string; openMainPanel: string; globalEnabled: boolean }
+  page: { shadow: boolean; fonts: string; blur: boolean; lang: string; fontScale: number }
+  update: { dismiss: string }
+  screenshot: { isConceal: boolean }
+  notification: {
+    messageSound: boolean
+    keywords: string[]
+    quietHours: { enabled: boolean; start: string; end: string }
+  }
+  levels?: {
+    account?: Record<string, unknown>
+    device?: Record<string, unknown>
+    defaults?: Record<string, unknown>
+  }
+}
 
-// TODO 使用indexDB或sqlite缓存数据，还需要根据每个账号来进行配置 (nyh -> 2024-03-26 01:22:12)
-const isDesktopComputed = computed(() => isDesktop())
-export const useSettingStore = defineStore(StoresEnum.SETTING, {
-  state: (): STO.Setting => ({
+export const useSettingStore = defineStore('setting', {
+  state: (): SettingState => ({
     themes: {
-      content: '',
-      pattern: '',
-      versatile: isDesktopComputed.value ? 'default' : 'simple'
+      content: 'light',
+      pattern: ThemeEnum.OS,
+      versatile: 'default'
     },
     escClose: true,
     showMode: ShowModeEnum.ICON,
@@ -37,14 +70,18 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
     chat: {
       sendKey: 'Enter',
       isDouble: true,
-      translate: 'youdao'
+      translate: 'youdao',
+      layoutMode: 'default',
+      compactLayout: false,
+      imageSizeLimit: 'auto'
     },
     shortcuts: getDefaultShortcuts(),
     page: {
       shadow: true,
       fonts: 'PingFang',
       blur: true,
-      lang: 'AUTO'
+      lang: 'AUTO',
+      fontScale: 100
     },
     update: {
       dismiss: ''
@@ -53,7 +90,14 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
       isConceal: false
     },
     notification: {
-      messageSound: true
+      messageSound: true,
+      keywords: [],
+      quietHours: { enabled: false, start: '22:00', end: '08:00' }
+    },
+    levels: {
+      account: {},
+      device: {},
+      defaults: {}
     }
   }),
   actions: {
@@ -62,6 +106,15 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
       this.themes.content = theme
       document.documentElement.dataset.theme = theme
       this.themes.pattern = theme
+      try {
+        applyThemeTokens(theme as ThemeMode)
+        matrixClientService.setAccountSetting('appearance.theme', theme, 'account').then(async () => {
+          const rb = await matrixClientService.getAccountSetting('appearance.theme')
+          if (String(rb) !== String(theme)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+      } catch {}
     },
     /** 切换主题 */
     toggleTheme(theme: string) {
@@ -70,10 +123,28 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
         const os = matchMedia('(prefers-color-scheme: dark)').matches ? ThemeEnum.DARK : ThemeEnum.LIGHT
         document.documentElement.dataset.theme = os
         this.themes.content = os
+        try {
+          applyThemeTokens(os as ThemeMode)
+          matrixClientService.setAccountSetting('appearance.theme', os, 'account').then(async () => {
+            const rb = await matrixClientService.getAccountSetting('appearance.theme')
+            if (String(rb) !== String(os)) {
+              await matrixClientService.rollbackAccountSettings()
+            }
+          })
+        } catch {}
       } else {
         this.themes.content = theme
         document.documentElement.dataset.theme = theme
         this.themes.pattern = theme
+        try {
+          applyThemeTokens(theme as ThemeMode)
+          matrixClientService.setAccountSetting('appearance.theme', theme, 'account').then(async () => {
+            const rb = await matrixClientService.getAccountSetting('appearance.theme')
+            if (String(rb) !== String(theme)) {
+              await matrixClientService.rollbackAccountSettings()
+            }
+          })
+        } catch {}
       }
     },
     /** 切换登录设置 */
@@ -95,6 +166,15 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
         this.shortcuts = getDefaultShortcuts()
       }
       this.shortcuts.screenshot = shortcut
+      matrixClientService
+        .setAccountSetting('shortcuts.screenshot', shortcut, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('shortcuts.screenshot')
+          if (String(rb) !== String(shortcut)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
     },
     /** 设置打开主面板快捷键 */
     setOpenMainPanelShortcut(shortcut: string) {
@@ -102,13 +182,111 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
         this.shortcuts = getDefaultShortcuts()
       }
       this.shortcuts.openMainPanel = shortcut
+      matrixClientService
+        .setAccountSetting('shortcuts.openMainPanel', shortcut, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('shortcuts.openMainPanel')
+          if (String(rb) !== String(shortcut)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
     },
     /** 设置发送消息快捷键 */
     setSendMessageShortcut(shortcut: string) {
       if (!this.chat) {
-        this.chat = { sendKey: 'Enter', isDouble: true, translate: 'youdao' }
+        this.chat = {
+          sendKey: 'Enter',
+          isDouble: true,
+          translate: 'youdao',
+          layoutMode: 'default',
+          compactLayout: false,
+          imageSizeLimit: 'auto'
+        }
       }
       this.chat.sendKey = shortcut
+    },
+    /** 设置字体缩放 */
+    setFontScale(scale: number) {
+      this.page.fontScale = scale
+      matrixClientService
+        .setAccountSetting('appearance.fontScale', scale, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('appearance.fontScale')
+          if (String(rb) !== String(scale)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
+    },
+    /** 设置消息布局模式 */
+    setLayoutMode(mode: string) {
+      if (!this.chat) {
+        this.chat = {
+          sendKey: 'Enter',
+          isDouble: true,
+          translate: 'youdao',
+          layoutMode: 'default',
+          compactLayout: false,
+          imageSizeLimit: 'auto'
+        }
+      }
+      this.chat.layoutMode = mode
+      matrixClientService
+        .setAccountSetting('appearance.layoutMode', mode, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('appearance.layoutMode')
+          if (String(rb) !== String(mode)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
+    },
+    /** 设置紧凑布局 */
+    setCompactLayout(compact: boolean) {
+      if (!this.chat) {
+        this.chat = {
+          sendKey: 'Enter',
+          isDouble: true,
+          translate: 'youdao',
+          layoutMode: 'default',
+          compactLayout: false,
+          imageSizeLimit: 'auto'
+        }
+      }
+      this.chat.compactLayout = compact
+      matrixClientService
+        .setAccountSetting('appearance.compactLayout', compact, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('appearance.compactLayout')
+          if (String(rb) !== String(compact)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
+    },
+    /** 设置图片大小限制 */
+    setImageSizeLimit(limit: string) {
+      if (!this.chat) {
+        this.chat = {
+          sendKey: 'Enter',
+          isDouble: true,
+          translate: 'youdao',
+          layoutMode: 'default',
+          compactLayout: false,
+          imageSizeLimit: 'auto'
+        }
+      }
+      this.chat.imageSizeLimit = limit
+      matrixClientService
+        .setAccountSetting('appearance.imageSizeLimit', limit, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('appearance.imageSizeLimit')
+          if (String(rb) !== String(limit)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
     },
     /** 设置全局快捷键开关状态 */
     setGlobalShortcutEnabled(enabled: boolean) {
@@ -116,6 +294,15 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
         this.shortcuts = getDefaultShortcuts()
       }
       this.shortcuts.globalEnabled = enabled
+      matrixClientService
+        .setAccountSetting('shortcuts.globalEnabled', enabled, 'account')
+        .then(async () => {
+          const rb = await matrixClientService.getAccountSetting('shortcuts.globalEnabled')
+          if (String(rb) !== String(enabled)) {
+            await matrixClientService.rollbackAccountSettings()
+          }
+        })
+        .catch(() => {})
     },
     closeAutoLogin() {
       this.login.autoLogin = false
@@ -130,13 +317,96 @@ export const useSettingStore = defineStore(StoresEnum.SETTING, {
     /** 设置消息提示音开关 */
     setMessageSoundEnabled(enabled: boolean) {
       if (!this.notification) {
-        this.notification = { messageSound: true }
+        this.notification = {
+          messageSound: true,
+          keywords: [],
+          quietHours: { enabled: false, start: '22:00', end: '08:00' }
+        }
       }
       this.notification.messageSound = enabled
+    },
+    /** 设置关键字列表 */
+    setNotificationKeywords(list: string[]) {
+      if (!this.notification) {
+        this.notification = {
+          messageSound: true,
+          keywords: [],
+          quietHours: { enabled: false, start: '22:00', end: '08:00' }
+        }
+      }
+      this.notification.keywords = Array.from(new Set(list))
+    },
+    /** 设置静默时段 */
+    setQuietHours(enabled: boolean, start: string, end: string) {
+      if (!this.notification) {
+        this.notification = {
+          messageSound: true,
+          keywords: [],
+          quietHours: { enabled: false, start: '22:00', end: '08:00' }
+        }
+      }
+      this.notification.quietHours = { enabled, start, end }
+    },
+    /** 异步保存设置到缓存 */
+    async saveToCache(userId?: string) {
+      if (userId) {
+        cache.setUserId(userId)
+      }
+      await cache.set(STORAGE_KEYS.SETTINGS, this.$state, {
+        storage: 'indexedDB',
+        ttl: 30 * 24 * 60 * 60 * 1000 // 30天
+      })
+    },
+    /** 从缓存加载设置 */
+    async loadFromCache(userId?: string) {
+      if (userId) {
+        cache.setUserId(userId)
+      }
+      const cachedSettings = await cache.get(STORAGE_KEYS.SETTINGS, 'indexedDB')
+      if (cachedSettings) {
+        this.$patch(cachedSettings)
+        return true
+      }
+      return false
+    },
+    /** SettingLevel: 账户/设备/默认 分层设置写入（骨架） */
+    setLevelSetting(level: 'account' | 'device' | 'defaults', key: string, value: unknown) {
+      if (!this.levels) {
+        this.levels = { account: {}, device: {}, defaults: {} }
+      }
+      const target = this.levels[level] || {}
+      target[key] = value
+      this.levels[level] = target
+    },
+    /** SettingLevel: 分层读取（账户优先，其次设备，最后默认） */
+    getLevelSetting(key: string) {
+      const acc = this.levels?.account?.[key]
+      if (acc !== undefined) return acc
+      const dev = this.levels?.device?.[key]
+      if (dev !== undefined) return dev
+      return this.levels?.defaults?.[key]
+    },
+    /** 设置主题模式（light/dark/system） */
+    setThemeMode(mode: 'light' | 'dark' | 'system') {
+      this.themeMode = mode
+      localStorage.setItem('theme-mode', mode)
+      // 根据模式更新主题
+      if (mode === 'dark') {
+        this.initTheme(ThemeEnum.DARK)
+      } else if (mode === 'light') {
+        this.initTheme(ThemeEnum.LIGHT)
+      } else {
+        this.toggleTheme(ThemeEnum.OS)
+      }
+    },
+    /** 设置主题（用于 ThemeSelector） */
+    setTheme(options: { theme: string; darkMode: boolean }) {
+      const theme = options.darkMode ? ThemeEnum.DARK : ThemeEnum.LIGHT
+      this.initTheme(theme)
+      // 同时更新 versatile（主题风格）
+      if (this.themes) {
+        this.themes.versatile = options.theme
+      }
     }
-  },
-  share: {
-    enable: true,
-    initialize: true
   }
 })

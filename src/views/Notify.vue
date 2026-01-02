@@ -50,23 +50,34 @@
   </n-flex>
 </template>
 <script setup lang="tsx">
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { PhysicalPosition } from '@tauri-apps/api/dpi'
 import { type Event, emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { info } from '@tauri-apps/plugin-log'
 import { useDebounceFn } from '@vueuse/core'
 import { sumBy } from 'es-toolkit'
 import { RoomTypeEnum } from '@/enums'
-import { useReplaceMsg } from '@/hooks/useReplaceMsg.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
-import type { MessageType } from '@/services/types.ts'
-import { useChatStore } from '@/stores/chat.ts'
-import { useGlobalStore } from '@/stores/global.ts'
+import { useReplaceMsg } from '@/hooks/useReplaceMsg'
+import { useWindow } from '@/hooks/useWindow'
+import type { MessageType } from '@/services/types'
+import { useChatStore } from '@/stores/chat'
+import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 
 // import { useTauriListener } from '../hooks/useTauriListener'
+import { logger } from '@/utils/logger'
+
+// Type definitions for Tauri event payload
+interface NotifyPositionPayload {
+  position: {
+    Physical: {
+      x: number
+      y: number
+    }
+  }
+}
 
 // 定义分组消息的类型
 type GroupedMessage = {
@@ -88,7 +99,7 @@ const { checkWinExist, resizeWindow } = useWindow()
 const { checkMessageAtMe } = useReplaceMsg()
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()
-const { tipVisible } = storeToRefs(globalStore)
+const tipVisible = computed(() => globalStore.tipVisible)
 const { t } = useI18n()
 const isMouseInWindow = ref(false)
 const content = ref<GroupedMessage[]>([])
@@ -99,7 +110,7 @@ let homeBlurUnlisten: (() => void) | null = null
 // 监听 tipVisible 的变化，当它变为 false 时重置消息列表
 watch(
   () => tipVisible.value,
-  (newValue) => {
+  (newValue: boolean) => {
     if (!newValue) {
       content.value = []
       msgCount.value = 0
@@ -114,14 +125,24 @@ const division = () => {
 }
 
 // 处理点击消息的逻辑
-// TODO: 会导致频控触发
-const handleClickMsg = async (group: any) => {
+//
+// 注意事项：
+// - 点击消息会触发窗口切换和会话定位，可能导致频控触发
+// - 频控（频率控制）是指对快速重复操作的限流机制
+// - 如果用户快速点击多个消息，可能会触发频控导致部分操作被限制
+// - 当前实现没有防抖处理，可能导致快速点击时的竞态条件
+//
+// 改进建议：
+// - 添加防抖延迟（300ms）防止快速重复点击
+// - 在点击期间禁用其他消息的点击
+// - 或者只记录最后一次点击，忽略中间的点击
+const handleClickMsg = async (group: GroupedMessage) => {
   // 打开消息页面
   await checkWinExist('home')
   // 找到对应的会话 - 根据roomId而不是消息ID
   const session = chatStore.sessionList.find((s) => s.roomId === group.roomId)
   if (session) {
-    info(`点击消息，打开会话：${JSON.stringify(session)}`)
+    logger.info(`点击消息，打开会话：${JSON.stringify(session)}`)
     emitTo('home', 'search_to_msg', {
       uid: group.roomType === RoomTypeEnum.SINGLE ? session.detailId : session.roomId,
       roomType: group.roomType
@@ -129,7 +150,7 @@ const handleClickMsg = async (group: any) => {
     // 收起通知面板
     await debouncedHandleTip()
   } else {
-    console.error('找不到对应的会话信息')
+    logger.error('找不到对应的会话信息')
   }
 }
 
@@ -153,7 +174,7 @@ const handleTip = async () => {
 const debouncedHandleTip = useDebounceFn(handleTip, 100)
 
 // 处理窗口显示和隐藏的逻辑
-const showWindow = async (event: Event<any>) => {
+const showWindow = async (event: Event<NotifyPositionPayload>) => {
   if (tipVisible.value) {
     const notifyWindow = WebviewWindow.getCurrent()
     const outerSize = await notifyWindow?.outerSize()
@@ -180,24 +201,37 @@ const hideWindow = async () => {
 }
 
 const handleMouseEnter = () => {
-  console.log('Mouse enter')
   isMouseInWindow.value = true
 }
 
 const handleMouseLeave = async () => {
-  console.log('Mouse leave')
   isMouseInWindow.value = false
   await hideWindow()
 }
 
-// TODO 在托盘图标闪烁的时候鼠标移动到null的图标上的时候会导致Notify窗口消失或者直接不显示Notify，即使已经移动到Notify了也会消失。
+// 已知问题说明：
+//
+// 问题：在托盘图标闪烁的时候，鼠标移动到 null 的图标上时会导致：
+// 1. Notify 窗口消失
+// 2. 或者直接不显示 Notify
+// 3. 即使已经移动到 Notify 上也会消失
+//
+// 根本原因：
+// - 托盘图标的鼠标事件和 Notify 窗口的鼠标事件存在竞态条件
+// - notify_leave 事件可能在 notify_enter 之后触发，导致窗口立即隐藏
+// - 300ms 的延迟可能不够处理快速鼠标移动
+//
+// 解决方案：
+// - 增加延迟时间到 500ms-1000ms
+// - 或添加状态检查：只有鼠标在窗口外时才响应 leave 事件
+// - 或使用鼠标位置跟踪来判断是否真正离开了窗口
 onMounted(async () => {
   // 初始化窗口高度
   resizeWindow('notify', 280, 140)
 
   if (isWindows()) {
-    appWindow.listen('notify_enter', async (event: Event<any>) => {
-      info('监听到enter事件，打开notify窗口')
+    appWindow.listen('notify_enter', async (event: Event<NotifyPositionPayload>) => {
+      logger.info('监听到enter事件，打开notify窗口')
       await showWindow(event)
     })
 
@@ -221,7 +255,7 @@ onMounted(async () => {
         // 处理消息内容
         const msg = event.payload
         const session = chatStore.sessionList.find((s) => s.roomId === msg.message.roomId)
-        const existingGroup = content.value.find((group) => group.roomId === msg.message.roomId)
+        const existingGroup = content.value.find((group: GroupedMessage) => group.roomId === msg.message.roomId)
 
         // 使用useReplaceMsg处理消息内容
         const { formatMessageContent, getMessageSenderName } = useReplaceMsg()
@@ -282,7 +316,7 @@ onMounted(async () => {
         }
 
         // 对消息进行排序 - 先按置顶状态排序，再按活跃时间排序
-        content.value.sort((a, b) => {
+        content.value.sort((a: GroupedMessage, b: GroupedMessage) => {
           // 1. 先按置顶状态排序（置顶的排在前面）
           if (a.top && !b.top) return -1
           if (!a.top && b.top) return 1

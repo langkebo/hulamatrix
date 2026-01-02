@@ -123,46 +123,65 @@
   </n-flex>
 </template>
 <script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { uniq } from 'es-toolkit'
-import type { NoticeItem } from '@/services/types.ts'
-import { NoticeType, RequestNoticeAgreeStatus } from '@/services/types.ts'
-import { useContactStore } from '@/stores/contacts.ts'
+import type { NoticeItem } from '@/services/types'
+import { NoticeType, RequestNoticeAgreeStatus } from '@/services/types'
+import { useFriendsStore } from '@/stores/friends'
+import type { PendingItem } from '@/stores/friends'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
+import { formatTimestamp } from '@/utils/ComputedTime'
 import { useGroupStore } from '@/stores/group'
 import { getGroupInfo } from '@/utils/ImRequestUtils'
+import { logger } from '@/utils/logger'
+
+// Type definitions
+interface GroupDetails {
+  id: string
+  name: string
+  avatar: string
+  description?: string
+  type?: number
+  createTime?: number
+  memberCount?: number
+  [key: string]: unknown
+}
 
 const userStore = useUserStore()
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
 const groupStore = useGroupStore()
 const { t } = useI18n()
 const currentUserId = ref('0')
 const loadingMap = ref<Record<string, boolean>>({})
 const virtualListRef = ref()
-const isLoadingMore = ref(false)
+//
 const props = defineProps<{
   type: 'friend' | 'group'
 }>()
 
 // 新增：存储群组信息的响应式对象
-const groupDetailsMap = ref<Record<string, any>>({})
+const groupDetailsMap = ref<Record<string, GroupDetails>>({})
 const loadingGroups = ref<Set<string>>(new Set())
 
 // 检查好友申请是否已被接受
-const isAccepted = (item: any) => {
+const isAccepted = (item: NoticeItem) => {
   return item.status !== RequestNoticeAgreeStatus.UNTREATED
 }
 
 const applyList = computed(() => {
-  return contactStore.requestFriendsList.filter((item) => {
-    if (props.type === 'friend') {
-      return item.type === 2
-    } else {
-      return item.type === 1
-    }
-  })
+  if (props.type === 'friend') {
+    return (friendsStore.pending || []).map((p: PendingItem) => ({
+      applyId: p.request_id,
+      senderId: p.requester_id,
+      operateId: p.requester_id,
+      type: 2,
+      eventType: 2,
+      roomId: ''
+    }))
+  }
+  return friendsStore.pendingGroups || []
 })
 
 // 新增：获取群组信息的函数
@@ -184,11 +203,11 @@ const getGroupDetail = async (roomId: string) => {
   try {
     const groupInfo = await getGroupInfo(roomId)
     if (groupInfo) {
-      groupDetailsMap.value[roomId] = groupInfo
+      groupDetailsMap.value[roomId] = groupInfo as GroupDetails
       return groupInfo
     }
   } catch (error) {
-    console.error('获取群组信息失败:', error)
+    logger.error('获取群组信息失败:', error)
   } finally {
     loadingGroups.value.delete(roomId)
   }
@@ -269,23 +288,25 @@ const isCurrentUser = (uid: string) => {
  * 获取当前用户查询视角
  * @param item 通知消息
  */
-const getUserInfo = (item: any) => {
+const getUserInfo = (item: NoticeItem) => {
   switch (item.eventType) {
     case NoticeType.FRIEND_APPLY:
     case NoticeType.GROUP_MEMBER_DELETE:
     case NoticeType.GROUP_SET_ADMIN:
     case NoticeType.GROUP_RECALL_ADMIN:
-      return groupStore.getUserInfo(item.operateId)
+      return groupStore.getUserInfo((item as NoticeItem & { operateId?: string }).operateId || '')
     case NoticeType.ADD_ME:
     case NoticeType.GROUP_INVITE:
     case NoticeType.GROUP_INVITE_ME:
     case NoticeType.GROUP_APPLY:
       return groupStore.getUserInfo(item.senderId)
+    default:
+      return null
   }
 }
 
 // 判断是否为好友申请或者群申请、群邀请
-const isFriendApplyOrGroupInvite = (item: any) => {
+const isFriendApplyOrGroupInvite = (item: NoticeItem) => {
   return (
     item.eventType === NoticeType.FRIEND_APPLY ||
     item.eventType === NoticeType.GROUP_APPLY ||
@@ -296,43 +317,22 @@ const isFriendApplyOrGroupInvite = (item: any) => {
 }
 
 // 处理滚动事件
-const handleScroll = (e: Event) => {
-  if (isLoadingMore.value) return
-
-  const { scrollTop, scrollHeight, clientHeight } = e.target as HTMLElement
-  // 当滚动到距离底部20px以内时触发加载更多
-  if (scrollHeight - scrollTop - clientHeight < 20) {
-    loadMoreFriendRequests()
-  }
-}
+const handleScroll = (_e: Event) => {}
 
 // 加载更多好友申请
-const loadMoreFriendRequests = async () => {
-  // 如果已经是最后一页或正在加载中，则不再加载
-  if (contactStore.applyPageOptions.isLast) {
-    return
-  }
-
-  isLoadingMore.value = true
-  try {
-    await contactStore.getApplyPage(props.type, false)
-  } finally {
-    isLoadingMore.value = false
-  }
-}
+//
 
 const handleAgree = async (item: NoticeItem) => {
   const applyId = item.applyId
   loadingMap.value[applyId] = true
   try {
-    await contactStore.onHandleInvite({
-      applyId,
-      state: RequestNoticeAgreeStatus.ACCEPTED,
-      roomId: item.roomId,
-      type: item.type,
-      applyType: props.type,
-      markAsRead: true
-    })
+    if (props.type === 'friend') {
+      await friendsStore.accept(applyId)
+      await friendsStore.refreshAll()
+    } else {
+      await friendsStore.acceptGroupInvite(applyId)
+      await friendsStore.refreshGroupPending()
+    }
   } finally {
     setTimeout(() => {
       loadingMap.value[applyId] = false
@@ -345,19 +345,19 @@ const handleFriendAction = async (action: string, applyId: string) => {
   loadingMap.value[applyId] = true
   try {
     if (action === 'reject') {
-      await contactStore.onHandleInvite({
-        applyId,
-        state: RequestNoticeAgreeStatus.REJECTED,
-        applyType: props.type,
-        markAsRead: true
-      })
+      if (props.type === 'friend') {
+        await friendsStore.reject(applyId)
+        await friendsStore.refreshAll()
+      } else {
+        await friendsStore.rejectGroupInvite(applyId)
+        await friendsStore.refreshGroupPending()
+      }
     } else if (action === 'ignore') {
-      await contactStore.onHandleInvite({
-        applyId,
-        state: RequestNoticeAgreeStatus.IGNORE,
-        applyType: props.type,
-        markAsRead: true
-      })
+      if (props.type === 'friend') {
+        await friendsStore.refreshAll()
+      } else {
+        await friendsStore.refreshGroupPending()
+      }
     }
   } finally {
     setTimeout(() => {
@@ -366,9 +366,9 @@ const handleFriendAction = async (action: string, applyId: string) => {
   }
 }
 
-onMounted(() => {
-  // 组件挂载时刷新一次列表
-  contactStore.getApplyPage(props.type, true)
+onMounted(async () => {
+  await friendsStore.refreshAll()
+  await friendsStore.refreshGroupPending()
 })
 
 // 监听applyList变化，批量加载群组信息

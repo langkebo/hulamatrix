@@ -10,7 +10,7 @@
     </template>
 
     <template #container>
-      <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
+      <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
 
       <div class="flex flex-col z-1">
         <div class="flex flex-col p-20px gap-20px">
@@ -27,15 +27,21 @@
               <n-select
                 v-else-if="item.type === 'select'"
                 v-model="item.value"
-                :options="item.options"
+                :options="item.options || []"
                 placeholder="请选择"
                 class="w-40" />
             </div>
           </div>
 
           <!-- 退出登录按钮 -->
-          <div class="mt-auto flex justify-center mb-20px">
-            <n-button type="error" @click="handleLogout" :disabled="isLoggingOut" :loading="isLoggingOut">
+          <div class="mobile-action-footer">
+            <n-button tertiary class="mobile-primary-btn" @click="router.back()">取消</n-button>
+            <n-button
+              type="error"
+              class="mobile-primary-btn"
+              @click="handleLogout"
+              :disabled="isLoggingOut"
+              :loading="isLoggingOut">
               退出登录
             </n-button>
           </div>
@@ -46,18 +52,19 @@
 </template>
 
 <script setup lang="ts">
+import { reactive, computed, ref } from 'vue'
 import { info } from '@tauri-apps/plugin-log'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 import { ThemeEnum } from '@/enums'
-import { useGlobalStore } from '@/stores/global'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useLogin } from '@/hooks/useLogin'
-import { showDialog } from 'vant'
+// replaced Vant dialog with Naive dialog
 import * as ImRequestUtils from '@/utils/ImRequestUtils'
 import router from '@/router'
 
-const globalStore = useGlobalStore()
-const { isTrayMenuShow } = storeToRefs(globalStore)
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 const settingStore = useSettingStore()
 const userStore = useUserStore()
 
@@ -125,21 +132,27 @@ async function handleLogout() {
 
   let logoutSuccess = false
 
-  showDialog({
-    title: '退出登录',
-    message: '确定要退出登录吗？',
-    showCancelButton: true,
-    confirmButtonText: '确定',
-    cancelButtonText: '取消'
-  })
+  const confirm = () =>
+    new Promise<void>((resolve, reject) => {
+      window.$dialog?.warning({
+        title: '退出登录',
+        content: '确定要退出登录吗？',
+        positiveText: '确定',
+        negativeText: '取消',
+        onPositiveClick: () => resolve(),
+        onNegativeClick: () => reject()
+      })
+    })
+
+  confirm()
     .then(async () => {
       try {
         await ImRequestUtils.logout({ autoLogin: true })
         logoutSuccess = true
       } catch (error) {
-        console.error('服务器登出失败：', error)
+        logger.error('服务器登出失败：', error)
         // 即使服务器登出失败，也继续执行本地清理，但给出警告
-        window.$message.warning('服务器登出失败，但本地登录状态已清除')
+        msg.warning('服务器登出失败，但本地登录状态已清除')
       }
 
       // 无论服务器登出是否成功，都执行本地状态清理
@@ -151,15 +164,15 @@ async function handleLogout() {
 
         settingStore.toggleLogin(false, false)
         info('登出账号')
-        isTrayMenuShow.value = false
+        // 保持托盘菜单状态由全局控制，不在此强制修改
 
         if (logoutSuccess) {
-          window.$message.success('登出成功')
+          msg.success('登出成功')
         }
         await router.push('/mobile/login')
       } catch (localError) {
-        console.error('本地登出清理失败：', localError)
-        window.$message.error('本地登出清理失败，请重启应用')
+        logger.error('本地登出清理失败：', localError)
+        msg.error('本地登出清理失败，请重启应用')
       }
     })
     .catch(() => {

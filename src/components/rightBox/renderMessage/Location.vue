@@ -48,24 +48,21 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { getSettings } from '@/services/tauriCommand'
 import type { LocationBody } from '@/services/types'
 import { isWindows } from '@/utils/PlatformConstants'
 import LocationMap from '../location/LocationMap.vue'
 import LocationModal from '../location/LocationModal.vue'
+import { logger, toError } from '@/utils/logger'
 
 defineOptions({
   inheritAttrs: false
 })
 
-const props = withDefaults(
-  defineProps<{
-    body?: LocationBody
-  }>(),
-  {
-    body: undefined
-  }
-)
+const props = defineProps<{
+  body?: LocationBody | undefined
+}>()
 
 // 响应式状态
 const modalVisible = ref(false)
@@ -76,7 +73,7 @@ const apiKey = ref('')
 const locationData = computed(() => ({
   latitude: Number(props.body?.latitude),
   longitude: Number(props.body?.longitude),
-  address: props.body?.address,
+  address: props.body?.address || '',
   timestamp: Number(props.body?.timestamp) || Date.now()
 }))
 
@@ -89,7 +86,7 @@ const loadApiKey = async () => {
       showMapPreview.value = false
     }
   } catch (error) {
-    console.warn('获取地图API密钥失败:', error)
+    logger.warn('获取地图API密钥失败:', toError(error))
     showMapPreview.value = false
   }
 }

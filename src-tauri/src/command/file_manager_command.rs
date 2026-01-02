@@ -4,7 +4,6 @@ use entity::im_message;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect};
 
 use serde::{Deserialize, Serialize};
-use std::ops::Deref;
 use tauri::State;
 use tracing::info;
 
@@ -99,15 +98,15 @@ pub async fn query_files(
     let messages = match param.navigation_type.as_str() {
         "myFiles" => {
             // 查询所有房间的文件
-            query_all_files(state.db_conn.deref(), &login_uid, &param).await?
+            query_all_files(&state.db_conn, &login_uid, &param).await?
         }
         "senders" => {
             // 按发送人分组查询文件
-            query_files_by_senders(state.db_conn.deref(), &login_uid, &param).await?
+            query_files_by_senders(&state.db_conn, &login_uid, &param).await?
         }
         "sessions" | "groups" => {
             // 按会话或群聊分组查询文件
-            query_files_by_sessions(state.db_conn.deref(), &login_uid, &param).await?
+            query_files_by_sessions(&state.db_conn, &login_uid, &param).await?
         }
         _ => {
             return Err("不支持的导航类型".to_string());
@@ -117,7 +116,7 @@ pub async fn query_files(
     // 转换为文件信息
     let file_infos: Vec<FileInfo> = messages
         .into_iter()
-        .filter_map(|msg| convert_message_to_file_info(msg))
+        .filter_map(convert_message_to_file_info)
         .collect();
 
     // 提取用户列表
@@ -188,7 +187,7 @@ async fn query_files_by_senders(
             .filter(im_message::Column::Uid.eq(contact_uid))
             .all(db_conn)
             .await
-            .map_err(|e| format!("查询联系人消息失败: {}", e))?;
+            .map_err(|e| format!("查询联系人消息失败: {e}"))?;
 
         // 提取不重复的房间ID
         let mut room_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
@@ -264,24 +263,21 @@ fn convert_message_to_file_info(record: MessageWithThumbnail) -> Option<FileInfo
                 }
 
                 // 尝试获取文件名，优先使用 fileName，兼容历史数据，视频消息从URL提取
-                let file_name = file_data["fileName"].as_str().or_else(|| {
+                let file_name = if message_type == 6 {
                     // 对于视频消息，从URL中提取文件名
-                    if message_type == 6 {
-                        file_data["url"].as_str().and_then(|url| {
-                            url.split('/')
-                                .last()
-                                .map(|s| s.split('?').next().unwrap_or(s))
+                    file_data["url"]
+                        .as_str()
+                        .and_then(|url| {
+                            url.split('/').next_back().and_then(|s| s.split('?').next())
                         })
-                    } else {
-                        None
-                    }
-                });
+                        .or_else(|| file_data["fileName"].as_str())
+                } else {
+                    file_data["fileName"].as_str()
+                };
 
                 let file_name = match file_name {
                     Some(name) => name.to_string(),
-                    None => {
-                        return None;
-                    }
+                    None => return None,
                 };
                 let file_size = extract_file_size(&file_data).unwrap_or(0);
 
@@ -305,19 +301,19 @@ fn convert_message_to_file_info(record: MessageWithThumbnail) -> Option<FileInfo
                     download_url: file_data["url"]
                         .as_str()
                         .or_else(|| file_data["downloadUrl"].as_str())
-                        .map(|s| s.to_string()),
+                        .map(std::string::ToString::to_string),
                     is_downloaded: Some(false),
                     status: "completed".to_string(),
                     thumbnail_url: thumbnail_path
                         .clone()
-                        .or_else(|| file_data["thumbnailUrl"].as_str().map(|s| s.to_string())),
+                        .or_else(|| file_data["thumbnailUrl"].as_str().map(std::string::ToString::to_string)),
                 };
 
                 return Some(file_info);
             }
             Err(e) => {
-                info!("消息体不是有效的 JSON 格式，跳过: {}", e);
-                // 不再创建假数据，直接返回 None
+                info!("消息体不是有效的 JSON 格式，跳过: {e}");
+                // 不再创建假数据，直接返回 return None
             }
         }
     } else {
@@ -421,7 +417,7 @@ fn group_files_by_time(files: Vec<FileInfo>) -> Vec<TimeGroup> {
     time_groups
 }
 
-/// 解析上传时间字符串为 NaiveDateTime
+/// 解析上传时间字符串为 `NaiveDateTime`
 fn parse_upload_time(upload_time: &str) -> Option<chrono::NaiveDateTime> {
     chrono::NaiveDateTime::parse_from_str(upload_time, "%Y-%m-%d %H:%M:%S").ok()
 }
@@ -488,9 +484,9 @@ pub async fn debug_message_stats(state: State<'_, AppData>) -> Result<serde_json
     // 查询总消息数
     let total_messages = im_message::Entity::find()
         .filter(im_message::Column::LoginUid.eq(&login_uid))
-        .count(state.db_conn.deref())
+        .count(&*state.db_conn)
         .await
-        .map_err(|e| format!("查询总消息数失败: {}", e))?;
+        .map_err(|e| format!("查询总消息数失败: {e}"))?;
 
     // 查询各种类型的消息数
     let mut stats = serde_json::Map::new();
@@ -504,13 +500,13 @@ pub async fn debug_message_stats(state: State<'_, AppData>) -> Result<serde_json
         let count = im_message::Entity::find()
             .filter(im_message::Column::LoginUid.eq(&login_uid))
             .filter(im_message::Column::MessageType.eq(msg_type))
-            .count(state.db_conn.deref())
+            .count(&*state.db_conn)
             .await
-            .map_err(|e| format!("查询类型 {} 消息数失败: {}", msg_type, e))?;
+            .map_err(|e| format!("查询类型 {msg_type} 消息数失败: {e}"))?;
 
         if count > 0 {
             stats.insert(
-                format!("type_{}", msg_type),
+                format!("type_{msg_type}"),
                 serde_json::Value::Number(serde_json::Number::from(count)),
             );
         }
@@ -522,9 +518,9 @@ pub async fn debug_message_stats(state: State<'_, AppData>) -> Result<serde_json
         .filter(im_message::Column::MessageType.is_in([4, 6]))
         .order_by_desc(im_message::Column::SendTime)
         .limit(5)
-        .all(state.db_conn.deref())
+        .all(&*state.db_conn)
         .await
-        .map_err(|e| format!("查询样例消息失败: {}", e))?;
+        .map_err(|e| format!("查询样例消息失败: {e}"))?;
 
     let samples: Vec<serde_json::Value> = sample_messages
         .into_iter()
@@ -536,17 +532,23 @@ pub async fn debug_message_stats(state: State<'_, AppData>) -> Result<serde_json
                 "sender": msg.uid,
                 "nickname": msg.nickname,
                 "send_time": msg.send_time,
-                "body_length": msg.body.as_ref().map(|b| b.len()).unwrap_or(0),
+                "body_length": msg.body.as_ref().map_or(0, std::string::String::len),
                 "body_content": msg.body.as_ref().map(|b| {
-                    if b.len() > 200 { format!("{}...", &b[..200]) } else { b.clone() }
+                    if b.len() > 200 {
+                        let mut truncated = String::with_capacity(203);
+                        truncated.push_str(&b[..200]);
+                        truncated.push_str("...");
+                        truncated
+                    } else {
+                        b.clone()
+                    }
                 }).unwrap_or_else(|| "null".to_string()),
                 "has_filename": msg.body.as_ref().and_then(|body| {
                     serde_json::from_str::<serde_json::Value>(body).ok()
-                }).map(|json| {
+                }).is_some_and(|json| {
                     json["fileName"].as_str()
-                        .map(|name| !name.trim().is_empty())
-                        .unwrap_or(false)
-                }).unwrap_or(false)
+                        .is_some_and(|name| !name.trim().is_empty())
+                })
             })
         })
         .collect();

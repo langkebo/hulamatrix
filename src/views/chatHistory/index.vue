@@ -50,46 +50,86 @@
         </div>
 
         <div v-else class="px-20px py-16px">
-          <!-- 按日期分组的消息 -->
-          <div v-for="(group, date) in groupedMessages" :key="date">
-            <n-tag type="warning" class="date-tag-sticky text-12px rounded-8px">
-              {{ formatDateGroupLabel(group.timestamp) }}
-            </n-tag>
-
-            <template v-for="item in group.messages" :key="item.message.id">
-              <div class="px-4px py-12px mb-16px">
-                <!-- 消息头像和信息 -->
-                <div class="flex cursor-default">
-                  <n-avatar
-                    :size="32"
-                    :src="getAvatarSrc(item.fromUser.uid)"
-                    class="rounded-10px mr-12px"
-                    fallback-src="/default-avatar.png" />
-
-                  <div class="flex-y-center gap-12px h-fit">
-                    <p class="text-(14px #909090)">{{ getUserDisplayName(item.fromUser.uid) }}</p>
-                    <p class="text-(12px #909090)">{{ formatTime(item.message.sendTime) }}</p>
+          <n-virtual-list
+            v-if="messages.length > 500"
+            :items="flatHistoryItems"
+            :item-size="84">
+            <template #default="{ item }">
+              <template v-if="item.type === 'date'">
+                <n-tag type="warning" class="date-tag-sticky text-12px rounded-8px" data-test="history-date-tag">
+                  {{ formatDateGroupLabel(item.timestamp) }}
+                </n-tag>
+              </template>
+              <template v-else>
+                <div class="px-4px py-12px mb-16px" data-test="history-message-item">
+                  <div class="flex cursor-default">
+                    <n-avatar
+                      :size="32"
+                      :src="getAvatarSrc(item.payload.fromUser.uid)"
+                      class="rounded-10px mr-12px"
+                      fallback-src="/default-avatar.png" />
+                    <div class="flex-y-center gap-12px h-fit">
+                      <p class="text-(14px #909090)">{{ getUserDisplayName(item.payload.fromUser.uid) }}</p>
+                      <p class="text-(12px #909090)">{{ formatTime(item.payload.message.sendTime) }}</p>
+                    </div>
                   </div>
+                  <ContextMenu
+                    :content="item.payload"
+                    class="w-fit max-w-80vw break-words relative flex flex-col pl-44px text-(14px [--text-color]) leading-26px user-select-text"
+                    :data-key="item.payload.fromUser.uid === userUid ? `U${item.payload.message.id}` : `Q${item.payload.message.id}`"
+                    :special-menu="(specialMenuList(item.payload.message.type) as never)"
+                    @select="$event.click(item.payload)">
+                    <RenderMessage
+                      :message="item.payload"
+                      :from-user="item.payload.fromUser"
+                      :is-group="isGroup"
+                      :on-image-click="handleImageClick"
+                      :on-video-click="handleVideoClick"
+                      :search-keyword="searchKeyword"
+                      :history-mode="true" />
+                  </ContextMenu>
                 </div>
-
-                <ContextMenu
-                  :content="item"
-                  class="w-fit max-w-80vw break-words relative flex flex-col pl-44px text-(14px [--text-color]) leading-26px user-select-text"
-                  :data-key="item.fromUser.uid === userUid ? `U${item.message.id}` : `Q${item.message.id}`"
-                  :special-menu="specialMenuList(item.message.type)"
-                  @select="$event.click(item)">
-                  <RenderMessage
-                    :message="item"
-                    :from-user="item.fromUser"
-                    :is-group="isGroup"
-                    :on-image-click="handleImageClick"
-                    :on-video-click="handleVideoClick"
-                    :search-keyword="searchKeyword"
-                    :history-mode="true" />
-                </ContextMenu>
-              </div>
+              </template>
             </template>
-          </div>
+          </n-virtual-list>
+          <template v-else>
+            <!-- 按日期分组的消息（常规渲染） -->
+            <div v-for="(group, date) in groupedMessages" :key="date">
+              <n-tag type="warning" class="date-tag-sticky text-12px rounded-8px" data-test="history-date-tag">
+                {{ formatDateGroupLabel(group.timestamp) }}
+              </n-tag>
+              <template v-for="item in group.messages" :key="item.message.id">
+                <div class="px-4px py-12px mb-16px" data-test="history-message-item">
+                  <div class="flex cursor-default">
+                    <n-avatar
+                      :size="32"
+                      :src="getAvatarSrc(item.fromUser.uid)"
+                      class="rounded-10px mr-12px"
+                      fallback-src="/default-avatar.png" />
+                    <div class="flex-y-center gap-12px h-fit">
+                      <p class="text-(14px #909090)">{{ getUserDisplayName(item.fromUser.uid) }}</p>
+                      <p class="text-(12px #909090)">{{ formatTime(item.message.sendTime) }}</p>
+                    </div>
+                  </div>
+                  <ContextMenu
+                    :content="item"
+                    class="w-fit max-w-80vw break-words relative flex flex-col pl-44px text-(14px [--text-color]) leading-26px user-select-text"
+                    :data-key="item.fromUser.uid === userUid ? `U${item.message.id}` : `Q${item.message.id}`"
+                    :special-menu="(specialMenuList(item.message.type) as never)"
+                    @select="$event.click(item)">
+                    <RenderMessage
+                      :message="item"
+                      :from-user="item.fromUser"
+                      :is-group="isGroup"
+                      :on-image-click="handleImageClick"
+                      :on-video-click="handleVideoClick"
+                      :search-keyword="searchKeyword"
+                      :history-mode="true" />
+                  </ContextMenu>
+                </div>
+              </template>
+            </div>
+          </template>
         </div>
       </n-infinite-scroll>
     </div>
@@ -112,6 +152,9 @@ import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatDateGroupLabel } from '@/utils/ComputedTime'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
+import { computed, watch, ref, onMounted } from 'vue'
+import { NVirtualList } from 'naive-ui'
 
 type ChatHistoryResponse = {
   messages: MessageType[]
@@ -168,12 +211,7 @@ const groupedMessages = computed(() => {
 
   messages.value.forEach((i) => {
     // 排除BOT、SYSTEM以及撤回类消息
-    if (
-      i.message.sendTime &&
-      i.message.type !== MsgEnum.BOT &&
-      i.message.type !== MsgEnum.SYSTEM &&
-      i.message.type !== MsgEnum.RECALL
-    ) {
+    if (i.message.sendTime && i.message.type !== MsgEnum.SYSTEM && i.message.type !== MsgEnum.RECALL) {
       const date = new Date(i.message.sendTime).toDateString()
       if (!groups[date]) {
         groups[date] = {
@@ -186,6 +224,23 @@ const groupedMessages = computed(() => {
   })
 
   return groups
+})
+
+// 扁平化历史项以支持虚拟滚动
+type FlatHistoryItem =
+  | { type: 'date'; timestamp: number; payload?: never }
+  | { type: 'msg'; timestamp?: never; payload: MessageType }
+
+const flatHistoryItems = computed(() => {
+  const items: FlatHistoryItem[] = []
+  const groups = groupedMessages.value
+  Object.values(groups).forEach((group) => {
+    items.push({ type: 'date', timestamp: group.timestamp })
+    for (const item of group.messages) {
+      items.push({ type: 'msg', payload: item })
+    }
+  })
+  return items
 })
 
 // 防抖搜索
@@ -257,12 +312,12 @@ const formatTime = (timestamp?: number) => {
 // 获取当前页面的所有图片和表情URL
 const getAllImageUrls = computed(() => {
   const imageUrls: string[] = []
-  messages.value.forEach((message) => {
+  messages.value.forEach((message: MessageType) => {
     if (
       (message.message.type === MsgEnum.IMAGE || message.message.type === MsgEnum.EMOJI) &&
       message.message.body?.url
     ) {
-      imageUrls.push(message.message.body.url)
+      imageUrls.push(message.message.body.url as string)
     }
   })
   return imageUrls
@@ -289,6 +344,56 @@ const handleVideoClick = async (videoUrl: string) => {
 
 // 加载消息
 const loadMessages = async () => {
+  // 注入测试数据 (当路由包含 mock=true 时)
+  if (route.query.mock === 'true') {
+    loading.value = true
+    setTimeout(() => {
+      messages.value = [
+        {
+          message: {
+            id: 'mock-msg-1',
+            type: MsgEnum.TEXT,
+            body: { content: '这是测试消息 1' },
+            sendTime: 1672531200000, // 2023-01-01 08:00:00
+            status: 1,
+            senderId: 'mock-user-1',
+            roomId: 'mock-room'
+          },
+          fromUser: { uid: 'mock-user-1', name: '测试用户 A', avatar: '' },
+          payload: {}
+        },
+        {
+          message: {
+            id: 'mock-msg-2',
+            type: MsgEnum.TEXT,
+            body: { content: '这是测试消息 2' },
+            sendTime: 1672531260000, // 2023-01-01 08:01:00
+            status: 1,
+            senderId: 'mock-user-2',
+            roomId: 'mock-room'
+          },
+          fromUser: { uid: 'mock-user-2', name: '测试用户 B', avatar: '' },
+          payload: {}
+        },
+        {
+          message: {
+            id: 'mock-msg-3',
+            type: MsgEnum.IMAGE,
+            body: { url: 'https://via.placeholder.com/150', content: 'image.png' },
+            sendTime: 1672617600000, // 2023-01-02 08:00:00 (Next Day)
+            status: 1,
+            senderId: 'mock-user-1',
+            roomId: 'mock-room'
+          },
+          fromUser: { uid: 'mock-user-1', name: '测试用户 A', avatar: '' }
+        }
+      ] as unknown as MessageType[]
+      hasMore.value = false
+      loading.value = false
+    }, 100)
+    return
+  }
+
   if (!roomId.value) return
 
   loading.value = true
@@ -321,7 +426,7 @@ const loadMessages = async () => {
 
     hasMore.value = response.hasMore
   } catch (error) {
-    console.error('加载聊天记录失败:', error)
+    logger.error('加载聊天记录失败:', toError(error))
   } finally {
     loading.value = false
   }

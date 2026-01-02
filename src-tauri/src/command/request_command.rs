@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use tauri::{Emitter, State};
 use tracing::{error, info};
 
@@ -21,7 +20,7 @@ pub async fn login_command(
             info!("Attempting auto login, user ID: {}", uid);
 
             // 从数据库获取用户的 refresh_token
-            match im_user_repository::get_user_tokens(state.db_conn.deref(), uid).await {
+            match im_user_repository::get_user_tokens(&*state.db_conn, uid).await {
                 Ok(Some((_, refresh_token))) => {
                     info!(
                         "Found refresh_token for user {}, attempting to refresh login",
@@ -44,7 +43,7 @@ pub async fn login_command(
 
                             // 保存新的 token 信息到数据库
                             if let Err(e) = im_user_repository::save_user_tokens(
-                                state.db_conn.deref(),
+                                &*state.db_conn,
                                 uid,
                                 &refresh_resp.token,
                                 &refresh_resp.refresh_token,
@@ -57,7 +56,7 @@ pub async fn login_command(
                             // 转换为 LoginResp 格式返回
                             let login_resp = LoginResp {
                                 token: refresh_resp.token,
-                                client: "".to_string(), // refresh_token 响应通常不包含 client
+                                client: String::new(), // refresh_token 响应通常不包含 client
                                 refresh_token: refresh_resp.refresh_token,
                                 expire: refresh_resp.expire,
                                 uid: refresh_resp.uid,
@@ -81,11 +80,11 @@ pub async fn login_command(
                 Err(e) => {
                     error!("Failed to get token info for user {}: {}", uid, e);
                 }
-            };
+            }
             // 自动登录失败，返回错误让前端切换到手动登录
-            return Err("自动登录失败，请手动登录".to_string());
+            Err("自动登录失败，请手动登录".to_string())
         } else {
-            return Err("自动登录缺少用户ID".to_string());
+            Err("自动登录缺少用户ID".to_string())
         }
     } else {
         // 手动登录逻辑
@@ -124,7 +123,7 @@ async fn handle_login_success(
     info!("handle_login_success, user_info: {:?}", user_info);
     // 保存 token 信息到数据库
     im_user_repository::save_user_tokens(
-        state.db_conn.deref(),
+        &*state.db_conn,
         uid,
         &login_resp.token,
         &login_resp.refresh_token,
@@ -133,7 +132,7 @@ async fn handle_login_success(
     .map_err(|e| e.to_string())?;
 
     let mut client = state.rc.lock().await;
-    check_user_init_and_fetch_messages(&mut client, state.db_conn.deref(), uid, async_data, false)
+    check_user_init_and_fetch_messages(&mut client, &state.db_conn, uid, async_data, false)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -156,19 +155,19 @@ pub async fn im_request_command(
             rc.im_request(url, body, params).await;
 
         match result {
-            Ok(data) => {
-                return Ok(data);
-            }
+            Ok(data) => Ok(data),
             Err(e) => {
-                tracing::error!("Request error: {}", e);
+                tracing::error!("Request error: {e}");
                 if e.to_string().contains("请重新登录") {
-                    app_handle.emit_to("home", "relogin", ()).unwrap();
+                    if let Err(emit_err) = app_handle.emit_to("home", "relogin", ()) {
+                        tracing::error!("Failed to emit relogin event: {}", emit_err);
+                    }
                 }
-                return Err(e.to_string());
+                Err(e.to_string())
             }
         }
     } else {
-        tracing::error!("Invalid URL: {}", url);
-        return Err(format!("Invalid URL: {}", url));
+        tracing::error!("Invalid URL: {url}");
+        Err(format!("Invalid URL: {url}"))
     }
 }

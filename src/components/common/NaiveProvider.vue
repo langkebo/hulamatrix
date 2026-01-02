@@ -6,8 +6,8 @@
     :date-locale="currentNaiveDateLocale">
     <n-loading-bar-provider>
       <n-dialog-provider>
-        <n-notification-provider :max="notificMax">
-          <n-message-provider :max="messageMax">
+        <n-notification-provider :max="notificMax || 3">
+          <n-message-provider :max="messageMax || 3">
             <n-modal-provider>
               <slot></slot>
               <naive-provider-content />
@@ -29,10 +29,17 @@ import {
   type GlobalThemeOverrides,
   type NDateLocale,
   type NLocale,
+  type GlobalTheme,
   lightTheme,
-  zhCN
+  zhCN,
+  useLoadingBar,
+  useDialog,
+  useNotification,
+  useModal,
+  useMessage
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
+import { computed, ref, watchEffect, defineComponent, h } from 'vue'
 import { ThemeEnum } from '@/enums'
 import { useSettingStore } from '@/stores/setting.ts'
 
@@ -42,7 +49,7 @@ const { notificMax, messageMax } = defineProps<{
 }>()
 defineOptions({ name: 'NaiveProvider' })
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const { locale } = useI18n()
 
 type NaiveLocalePack = {
@@ -57,12 +64,12 @@ const naiveLocaleMap: Record<string, NaiveLocalePack> = {
   en: { locale: enUS, dateLocale: dateEnUS }
 }
 
-const defaultNaiveLocalePack = naiveLocaleMap['zh-CN']
+const defaultNaiveLocalePack = naiveLocaleMap['zh-CN']!
 const resolveNaiveLocale = (lang: string): NaiveLocalePack => naiveLocaleMap[lang] ?? defaultNaiveLocalePack
 const currentNaiveLocale = computed(() => resolveNaiveLocale(locale.value).locale)
 const currentNaiveDateLocale = computed(() => resolveNaiveLocale(locale.value).dateLocale)
 /**监听深色主题颜色变化*/
-const globalTheme = ref<any>(themes.value.content)
+const globalTheme = ref<GlobalTheme>(themes.value.content === ThemeEnum.DARK ? darkTheme : lightTheme)
 const prefers = matchMedia('(prefers-color-scheme: dark)')
 // 定义不需要显示消息提示的窗口
 const noMessageWindows = ['tray', 'notify', 'capture', 'update', 'checkupdate']
@@ -217,7 +224,15 @@ const registerNaiveTools = () => {
 
   // 检查当前路由是否需要禁用消息
   const shouldDisableMessage = () => {
-    return noMessageWindows.includes(getCurrentWebviewWindow().label)
+    try {
+      const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+      if (!isTauri) return false
+      const w = getCurrentWebviewWindow()
+      const label = w.label || ''
+      return noMessageWindows.includes(label)
+    } catch {
+      return false
+    }
   }
 
   // 设置消息对象

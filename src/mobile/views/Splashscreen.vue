@@ -4,6 +4,8 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSettingStore } from '@/stores/setting'
 import { useLogin } from '@/hooks/useLogin'
 import { invoke } from '@tauri-apps/api/core'

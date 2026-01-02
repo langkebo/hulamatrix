@@ -1,7 +1,9 @@
+import { logger, toError } from '@/utils/logger'
+
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import type { MsgReadUnReadCountType } from '@/services/types'
-import { getMsgReadCount } from './ImRequestUtils'
+import { requestWithFallback } from './MatrixApiBridgeAdapter'
 
 /**
  * 消息已读计数队列模块
@@ -50,12 +52,13 @@ const onRemoveReadCountTask = ({ msgId }: ReadCountTaskEvent) => {
  * 检查用户是否可以发送已读计数请求
  * 返回布尔值表示是否可以发送请求
  */
-const checkUserAuthentication = () => {
+const checkUserAuthentication = (): boolean => {
   // 1. 检查当前是否在登录窗口
   const currentWindow = WebviewWindow.getCurrent()
   if (currentWindow.label === 'login') {
     return false
   }
+  return true
 }
 
 /**
@@ -79,7 +82,7 @@ const task = async () => {
     // 检查用户是否可以发送请求
     const canSendRequest = checkUserAuthentication()
     if (!canSendRequest) {
-      console.log('用户未登录或在登录窗口，跳过消息已读计数请求')
+      logger.debug('用户未登录或在登录窗口，跳过消息已读计数请求', undefined, 'ReadCountQueue')
       // 在登录窗口时，清空队列并停止定时器
       clearQueue()
       return
@@ -87,12 +90,15 @@ const task = async () => {
 
     // 发起新的批量查询请求
     // request = apis.getMsgReadCount({ msgIds: Array.from(queue) }) as AbortableRequest
-    request = await getMsgReadCount(Array.from(queue))
+    request = (await requestWithFallback({
+      url: 'get_msg_read_count',
+      params: { msgIds: Array.from(queue) }
+    })) as AbortableRequest
     const res = await request
 
     // 验证响应数据格式
     if (!Array.isArray(res)) {
-      console.error('Invalid response format:', res)
+      logger.error('Invalid response format:', toError(res))
       return
     }
 
@@ -107,7 +113,7 @@ const task = async () => {
     // 发送已读计数更新事件
     useMitt.emit('onGetReadCount', result)
   } catch (error) {
-    console.error('无法获取消息读取计数:', error)
+    logger.error('无法获取消息读取计数:', toError(error))
   } finally {
     request = null // 清理请求引用
   }
@@ -184,7 +190,7 @@ const initWorker = () => {
 
     // 添加错误处理
     timerWorker.onerror = (error) => {
-      console.error('[ReadCountQueue Worker Error]', error)
+      logger.error('[ReadCountQueue Worker Error]', toError(error))
       isTimerActive = false
     }
   }
@@ -212,7 +218,7 @@ const startTimer = () => {
 
     isTimerActive = true
   } else {
-    console.error('[ReadCountQueue] 无法初始化Web Worker定时器')
+    logger.error('[ReadCountQueue] 无法初始化Web Worker定时器')
   }
 }
 

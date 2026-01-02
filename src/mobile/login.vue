@@ -3,7 +3,7 @@
     <div class="h-full flex-col-center gap-40px">
       <div class="flex-center absolute top-13vh left-36px">
         <p class="text-(20px #333)">HI, 欢迎来到</p>
-        <img src="@/assets/mobile/2.svg" alt="" class="w-80px h-20px" />
+        <img :src="brandSvg" alt="" class="w-80px h-20px" />
       </div>
 
       <!-- 选项卡导航 -->
@@ -40,8 +40,29 @@
 
       <!-- 登录表单 -->
       <n-flex v-if="activeTab === 'login'" class="text-center w-80%" vertical :size="16">
+        <n-flex justify="center" class="mt--10px">
+          <n-button text color="#13987f" @click="toggleServerInput()">自定义服务器</n-button>
+        </n-flex>
+        <n-collapse-transition :show="matrixStore.serverInputVisible">
+          <n-flex vertical :size="8">
+            <p class="text-12px text-center">自定义服务器</p>
+            <n-input
+              class="pl-16px centered-input"
+              size="large"
+              v-model:value="customServer"
+              type="text"
+              spellCheck="false"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              :placeholder="'例如 matrix.example.com 或 https://matrix.example.com'"
+              clearable />
+            <n-button tertiary class="w-full" @click="applyServer">连接服务器</n-button>
+          </n-flex>
+        </n-collapse-transition>
         <n-input
           :class="{ 'pl-22px': loginHistories.length > 0 }"
+          class="centered-input"
           size="large"
           v-model:value="userInfo.account"
           type="text"
@@ -87,7 +108,7 @@
         </div>
 
         <n-input
-          class="pl-22px mt-8px"
+          class="pl-22px mt-8px centered-input"
           size="large"
           show-password-on="click"
           v-model:value="userInfo.password"
@@ -127,9 +148,10 @@
         </n-flex>
       </n-flex>
 
-      <!-- 注册表单 - 第一步：昵称和密码 -->
-      <n-flex v-if="activeTab === 'register' && currentStep === 1" class="text-center w-80%" vertical :size="16">
+      <!-- 注册表单（无验证码，单步注册） -->
+      <n-flex v-if="activeTab === 'register'" class="text-center w-80%" vertical :size="16">
         <n-input
+          class="centered-input"
           size="large"
           maxlength="8"
           minlength="1"
@@ -146,7 +168,7 @@
           clearable />
 
         <n-input
-          class="pl-16px"
+          class="pl-16px centered-input"
           size="large"
           minlength="6"
           show-password-on="click"
@@ -163,7 +185,7 @@
           clearable />
 
         <n-input
-          class="pl-16px"
+          class="pl-16px centered-input"
           size="large"
           minlength="6"
           show-password-on="click"
@@ -203,59 +225,7 @@
           tertiary
           style="color: #fff"
           class="w-full mt-8px mb-50px gradient-button"
-          @click="handleRegisterStep">
-          <span>下一步</span>
-        </n-button>
-      </n-flex>
-
-      <!-- 注册表单 - 第二步：邮箱和图片验证码 -->
-      <n-flex v-if="activeTab === 'register' && currentStep === 2" class="text-center w-80%" vertical :size="16">
-        <n-auto-complete
-          size="large"
-          v-model:value="registerInfo.email"
-          :placeholder="registerEmailPH"
-          :options="commonEmailDomains"
-          :get-show="getShow"
-          clearable
-          type="text"
-          @focus="registerEmailPH = ''"
-          @blur="registerEmailPH = '输入邮箱'" />
-
-        <!-- 邮箱验证码 -->
-        <div class="flex justify-between items-center gap-10px">
-          <n-input
-            size="large"
-            maxlength="6"
-            v-model:value="registerInfo.code"
-            type="text"
-            spellCheck="false"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            :allow-input="noSideSpace"
-            :placeholder="registerCodePH"
-            @focus="registerCodePH = ''"
-            @blur="registerCodePH = '输入邮箱验证码'"
-            clearable />
-
-          <n-button
-            tertiary
-            style="color: #fff"
-            class="flex-shrink-0 gradient-button"
-            :loading="sendCodeLoading"
-            :disabled="sendCodeDisabled"
-            @click="handleSendEmailCode">
-            <span>{{ sendCodeButtonText }}</span>
-          </n-button>
-        </div>
-
-        <n-button
-          :loading="registerLoading"
-          :disabled="!isStep2Valid"
-          tertiary
-          style="color: #fff"
-          class="w-full mt-8px mb-50px gradient-button"
-          @click="handleRegisterStep">
+          @click="handleRegisterComplete">
           <span>注册</span>
         </n-button>
       </n-flex>
@@ -264,15 +234,16 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch, watchEffect, onBeforeMount, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { invoke } from '@tauri-apps/api/core'
 import Validation from '@/components/common/Validation.vue'
 import router from '@/router'
 import type { RegisterUserReq, UserInfoType } from '@/services/types'
-import { useLoginHistoriesStore } from '@/stores/loginHistory.ts'
+import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useMobileStore } from '@/stores/mobile'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { register, sendCaptcha } from '@/utils/ImRequestUtils'
+import { register } from '@/utils/ImRequestUtils'
 import { isAndroid, isIOS } from '@/utils/PlatformConstants'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import { useMitt } from '../hooks/useMitt'
@@ -280,8 +251,12 @@ import { WsResponseMessageType } from '../services/wsType'
 import { useSettingStore } from '../stores/setting'
 import { clearListener } from '../utils/ReadCountQueue'
 import { useLogin } from '../hooks/useLogin'
+import { useMatrixAuth } from '@/hooks/useMatrixAuth'
+import brandSvg from '@/assets/mobile/2.svg'
 
-// 本地注册信息类型，扩展API类型以包含确认密码
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import { secureRandomFloat } from '@/utils/secureRandom' // 本地注册信息类型，扩展API类型以包含确认密码
 interface LocalRegisterInfo extends RegisterUserReq {}
 
 const loginHistoriesStore = useLoginHistoriesStore()
@@ -289,7 +264,7 @@ const { loginHistories } = loginHistoriesStore
 const mobileStore = useMobileStore()
 const safeArea = computed(() => mobileStore.safeArea)
 const settingStore = useSettingStore()
-const { login } = storeToRefs(settingStore)
+const login = computed(() => settingStore.login)
 
 const isJumpDirectly = ref(false)
 
@@ -313,8 +288,8 @@ const registerInfo = ref<LocalRegisterInfo>({
 })
 
 // 登录相关的占位符和状态
-const accountPH = ref('输入HuLa账号')
-const passwordPH = ref('输入HuLa密码')
+const accountPH = ref('matrix账号')
+const passwordPH = ref('matrix密码')
 const protocol = ref(true)
 const arrowStatus = ref(false)
 
@@ -331,17 +306,11 @@ const sendCodeCountdown = ref(0)
 const MOBILE_EMAIL_TIMER_ID = 'mobile_register_email_timer'
 const timerWorker = new Worker(new URL('@/workers/timer.worker.ts', import.meta.url))
 const { normalLogin, loading, loginText, loginDisabled, info: userInfo } = useLogin()
-
-const sendCodeButtonText = computed(() => {
-  if (sendCodeCountdown.value > 0) {
-    return `${sendCodeCountdown.value}秒后重新发送`
-  }
-  return '发送验证码'
-})
-
-const sendCodeDisabled = computed(() => {
-  return sendCodeLoading.value || sendCodeCountdown.value > 0 || !registerInfo.value.email || !isEmailValid.value
-})
+const { toggleServerInput, applyCustomServer, store: matrixStore } = useMatrixAuth()
+const customServer = ref('')
+const applyServer = async () => {
+  await applyCustomServer(customServer.value)
+}
 
 const agreementStyle = computed(() => {
   const inset = safeArea.value.bottom || 0
@@ -360,15 +329,6 @@ const stopSendCodeCountdown = () => {
     msgId: MOBILE_EMAIL_TIMER_ID
   })
   sendCodeCountdown.value = 0
-}
-
-const startSendCodeCountdown = () => {
-  sendCodeCountdown.value = 60
-  timerWorker.postMessage({
-    type: 'startTimer',
-    msgId: MOBILE_EMAIL_TIMER_ID,
-    duration: 60 * 1000
-  })
 }
 
 timerWorker.onmessage = (e) => {
@@ -391,26 +351,10 @@ watch(activeTab, () => {
   sendCodeLoading.value = false
 })
 
-// 常用邮箱后缀
-const commonEmailDomains = computed(() => {
-  return ['@gmail.com', '@163.com', '@qq.com'].map((suffix) => {
-    const prefix = registerInfo.value.email.split('@')[0]
-    return {
-      label: prefix + suffix,
-      value: prefix + suffix
-    }
-  })
-})
-
 /** 不允许输入空格 */
 const noSideSpace = (value: string) => !value.startsWith(' ') && !value.endsWith(' ')
 
 /** 检查邮箱格式 */
-const isEmailValid = computed(() => {
-  const email = registerInfo.value.email.trim()
-  if (!email) return false
-  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
-})
 
 /** 密码验证函数 */
 const validateMinLength = (value: string) => value.length >= 6
@@ -430,18 +374,6 @@ const isStep1Valid = computed(() => {
     registerProtocol.value
   )
 })
-
-/** 检查第二步是否可以继续 */
-const isStep2Valid = computed(() => {
-  return isEmailValid.value && !!registerInfo.value.code.trim()
-})
-
-const getShow = (value: string) => {
-  if (value.endsWith('@')) {
-    return true
-  }
-  return false
-}
 
 // 监听登录表单变化
 watchEffect(() => {
@@ -513,77 +445,37 @@ const resetRegisterForm = () => {
   stopSendCodeCountdown()
 }
 
-/** 处理注册步骤 */
-const handleRegisterStep = async () => {
-  if (currentStep.value === 1) {
-    // 进入第二步
-    currentStep.value = 2
-    return
-  }
-  await handleRegisterComplete()
-}
-
-/** 发送邮箱验证码 */
-const handleSendEmailCode = async () => {
-  if (!isEmailValid.value) {
-    window.$message.warning('请输入正确的邮箱')
-    return
-  }
-
-  if (sendCodeCountdown.value > 0 || sendCodeLoading.value) {
-    return
-  }
-
-  sendCodeLoading.value = true
-  try {
-    await sendCaptcha({
-      email: registerInfo.value.email,
-      operationType: 'register',
-      templateCode: 'REGISTER_EMAIL'
-    })
-    window.$message.success('验证码已发送，请查收邮箱')
-    startSendCodeCountdown()
-  } catch (error) {
-    console.error('发送验证码错误：', error)
-    window.$message.error('验证码发送失败，请稍后再试')
-  } finally {
-    sendCodeLoading.value = false
-  }
-}
-
 /** 完成注册 */
 const handleRegisterComplete = async () => {
-  if (!isStep2Valid.value) {
-    window.$message.warning('请完善信息后再注册')
+  if (!isStep1Valid.value) {
+    msg.warning('请完善信息后再注册')
     return
   }
 
   try {
     registerLoading.value = true
-    registerInfo.value.email = registerInfo.value.email.trim()
-    registerInfo.value.code = registerInfo.value.code.trim()
+    registerInfo.value.email = (registerInfo.value.email || '').trim()
+    registerInfo.value.code = ''
+    registerInfo.value.uuid = ''
     // 随机生成头像编号
-    const avatarNum = Math.floor(Math.random() * 21) + 1
+    const avatarNum = Math.floor(secureRandomFloat() * 21) + 1
     const avatarId = avatarNum.toString().padStart(3, '0')
     registerInfo.value.avatar = avatarId
 
     // 注册 - 只传递API需要的字段
     const { ...apiRegisterInfo } = registerInfo.value
-
     await register(apiRegisterInfo)
-
-    // 关闭弹窗并切换到登录页面
-    activeTab.value = 'login'
+    msg.success('注册成功')
+    // 自动登录并跳转主页面
     userInfo.value.account = registerInfo.value.nickName || registerInfo.value.email
-
-    window.$message.success('注册成功')
-
-    // 重置注册表单
-    resetRegisterForm()
+    userInfo.value.password = registerInfo.value.password
+    await normalLogin('MOBILE', true, false)
+    router.push('/mobile/message')
   } catch (error) {
     // 处理注册失败
-    window.$message.error((error as any) || '注册失败')
-    console.error(error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    msg.error(errorMsg || '注册失败')
+    logger.error('注册失败:', error)
   } finally {
     registerLoading.value = false
   }
@@ -593,7 +485,8 @@ const handleRegisterComplete = async () => {
  * 给账号赋值
  * @param item 账户信息
  * */
-const giveAccount = (item: UserInfoType) => {
+const giveAccount = (item: UserInfoType | undefined) => {
+  if (!item) return
   const { account, avatar, name, uid } = item
   userInfo.value.account = account || ''
   userInfo.value.avatar = avatar
@@ -682,7 +575,8 @@ const refreshAvatar = useDebounceFn((newAccount: string) => {
 onMounted(async () => {
   window.addEventListener('click', closeMenu, true)
   if (isIOS()) {
-    invoke('set_webview_keyboard_adjustment', { enabled: false })
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) invoke('set_webview_keyboard_adjustment', { enabled: false })
   }
   // 只有在需要登录的情况下才显示登录窗口
   if (isJumpDirectly.value) {
@@ -692,7 +586,10 @@ onMounted(async () => {
   }
 
   // 进入登录页面时立即隐藏首屏，确保无论登录成功或失败都能看到登录界面
-  await invoke('hide_splash_screen')
+  {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) await invoke('hide_splash_screen')
+  }
 
   useMitt.on(WsResponseMessageType.NO_INTERNET, () => {
     loginDisabled.value = true
@@ -711,11 +608,27 @@ onUnmounted(() => {
   stopSendCodeCountdown()
   timerWorker.terminate()
   if (isIOS()) {
-    invoke('set_webview_keyboard_adjustment', { enabled: false })
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (isTauri) invoke('set_webview_keyboard_adjustment', { enabled: false })
   }
 })
 </script>
 
 <style scoped lang="scss">
 @use '@/styles/scss/login';
+
+/* 输入框文字居中对齐 */
+.centered-input {
+  :deep(.n-input__input-el) {
+    text-align: center;
+  }
+  :deep(.n-input__placeholder) {
+    text-align: center;
+  }
+}
+
+/* 确保按钮完全居中 */
+.gradient-button {
+  text-align: center;
+}
 </style>

@@ -53,7 +53,6 @@
           {{ t('announcement.form.actions.new') }}
         </n-button>
       </div>
-
       <!--暂无数据-->
       <div v-if="!announList || announList.length === 0" class="flex-center">
         <n-empty
@@ -69,7 +68,6 @@
           </template>
         </n-empty>
       </div>
-
       <n-scrollbar @scroll="handleScroll" v-else class="h-95%">
         <!-- 展示公告列表 -->
         <div class="w-full flex-col-x-center">
@@ -91,7 +89,7 @@
                       <div class="text-(12px [--chat-text-color])">
                         {{ groupStore.getUserInfo(announcement.uid)?.name }}
                       </div>
-                      <div class="text-(12px [#909090])">{{ formatTimestamp(announcement?.createTime) }}</div>
+                      <div class="text-(12px [#909090])">{{ formatTimestamp(announcement?.createTime != null ? Number(announcement.createTime) : 0) }}</div>
                     </n-flex>
                   </n-flex>
                   <div
@@ -100,7 +98,6 @@
                     <span>{{ t('announcement.form.pinned') }}</span>
                   </div>
                 </n-flex>
-
                 <n-flex align="center" :size="6">
                   <n-button class="rounded-6px" v-if="isAdmin" @click="handleEdit(announcement)" quaternary size="tiny">
                     <template #icon>
@@ -109,7 +106,7 @@
                       </svg>
                     </template>
                   </n-button>
-                  <n-popconfirm v-if="isAdmin" v-model:show="announcementStates[announcement.id].showDeleteConfirm">
+                  <n-popconfirm v-if="isAdmin && announcementStates[announcement.id]" v-model:show="announcementStates[announcement.id]!.showDeleteConfirm">
                     <template #icon>
                       <svg class="size-22px"><use href="#explosion"></use></svg>
                     </template>
@@ -117,13 +114,13 @@
                       <n-button
                         size="small"
                         tertiary
-                        @click.stop="announcementStates[announcement.id].showDeleteConfirm = false">
+                        @click.stop="announcementStates[announcement.id] && (announcementStates[announcement.id]!.showDeleteConfirm = false)">
                         {{ t('announcement.list.delete.cancel') }}
                       </n-button>
                       <n-button
                         size="small"
                         type="error"
-                        :loading="announcementStates[announcement.id].deleteLoading"
+                        :loading="announcementStates[announcement.id]?.deleteLoading"
                         @click="handleDel(announcement)">
                         {{ t('announcement.list.delete.confirm') }}
                       </n-button>
@@ -184,20 +181,35 @@
   </main>
 </template>
 <script setup lang="ts">
+import { computed, ref, watch, onMounted, nextTick } from 'vue'
 import { emitTo } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { info } from '@tauri-apps/plugin-log'
 import { useRoute } from 'vue-router'
 import { ThemeEnum } from '@/enums'
-import { useCachedStore } from '@/stores/cached'
-import { useGroupStore } from '@/stores/group.ts'
+import { useCachedStore } from '@/stores/dataCache'
+import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { deleteAnnouncement, editAnnouncement, pushAnnouncement } from '@/utils/ImRequestUtils'
+import { formatTimestamp } from '@/utils/ComputedTime'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { extractLinkSegments, openExternalUrl } from '@/hooks/useLinkSegments'
+import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
+
+// Type definition for announcement items
+interface AnnouncementItem {
+  id: string
+  uid: string
+  userName?: string
+  name?: string
+  content: string
+  top?: boolean
+  expanded?: boolean
+  createTime?: string | number
+}
 
 // 定义响应式变量
 const title = ref('')
@@ -205,11 +217,11 @@ const announContent = ref('')
 const roomId = ref('')
 const $route = useRoute()
 const viewType = ref('0')
-const announList = ref<any[]>([])
+const announList = ref<AnnouncementItem[]>([])
 const isBack = ref(false)
 const isTop = ref(false)
 const isEdit = ref(false)
-const editAnnoouncement = ref<any>({})
+const editAnnoouncement = ref<Partial<AnnouncementItem>>({})
 const announcementAutosize = { minRows: 20 }
 // 分页参数
 const pageSize = 10
@@ -218,19 +230,17 @@ const pageNum = ref(1)
 const isLast = ref(false)
 const isLoading = ref(false)
 const announcementStates = ref<Record<string, { showDeleteConfirm: boolean; deleteLoading: boolean }>>({})
-
 // 引入 group store
 const groupStore = useGroupStore()
 const cachedStore = useCachedStore()
 const userStore = useUserStore()
 const settingStore = useSettingStore()
 const { t } = useI18n()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 /** 判断当前用户是否拥有id为6的徽章 并且是频道 */
 const hasBadge6 = computed(() => {
   // 只有当 roomId 为 "1" 时才进行徽章判断（频道）
   if (roomId.value !== '1') return false
-
   const currentUser = groupStore.getUserInfo(userStore.userInfo!.uid)!
   return currentUser?.itemIds?.includes('6')
 })
@@ -244,47 +254,44 @@ const isAdmin = computed(() => {
   }
   return false
 })
-
 watch(
   () => viewType.value,
-  (newVal) => {
+  (newVal: string) => {
     if (newVal === '0') {
       title.value = t('announcement.title.create')
     }
   }
 )
-
 const avatarSrc = (uid: string) => AvatarUtils.getAvatarUrl(groupStore.getUserInfo(uid)!.avatar as string)
-
 // 初始化函数，获取群公告列表
 const handleInit = async () => {
   if (roomId.value) {
     try {
       pageNum.value = 1
       isLast.value = false
-      const data = await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)
+      const data = (await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)) as
+        | { records?: unknown[]; total?: string | number; pages?: string | number }
+        | undefined
       if (data) {
-        announList.value = data.records
+        announList.value = (data.records || []) as AnnouncementItem[]
         if (announList.value.length === 0) {
           viewType.value = '0'
           return
         }
-
         // 处理公告的userName getUserGroupNickname
-        announList.value.forEach((item) => {
+        announList.value.forEach((item: AnnouncementItem) => {
           const user = groupStore.getUser(roomId.value, item.uid)
-          const fallbackName = item.userName || item.name || ''
+          const fallbackName = item.userName || item?.name || ''
           item.userName = user?.myName || user?.name || fallbackName
           // 添加展开/收起状态控制
           item.expanded = false
-          announcementStates.value[item.id] = {
+          announcementStates.value[item?.id] = {
             showDeleteConfirm: false,
             deleteLoading: false
           }
         })
-
         // 处理置顶公告，置顶的公告排在列表前面
-        announList.value.sort((a, b) => {
+        announList.value.sort((a: AnnouncementItem, b: AnnouncementItem) => {
           if (a.top && !b.top) return -1
           if (!a.top && b.top) return 1
           return 0
@@ -292,11 +299,10 @@ const handleInit = async () => {
         pageNum.value++
       }
     } catch (error) {
-      console.error('获取群公告列表失败:', error)
+      logger.error('获取群公告列表失败:', toError(error))
     }
   }
 }
-
 /**
  * 处理滚动事件
  * @param event 滚动事件
@@ -304,52 +310,50 @@ const handleInit = async () => {
 const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement
   const isBottom = target.scrollHeight - target.scrollTop === target.clientHeight
-
   if (isBottom && !isLast.value) {
     handleLoadMore()
   }
 }
-
 // 加载更多公告
 const handleLoadMore = async () => {
   if (roomId.value && !isLoading.value && !isLast.value) {
     try {
       isLoading.value = true
-      const data = await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)
+      const data = (await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)) as
+        | { records?: unknown[]; total?: string | number; pages?: string | number }
+        | undefined
       if (data) {
+        const records = (data.records || []) as AnnouncementItem[]
         // 如果没有数据，标记为最后一页
-        if (!data.records) {
+        if (records.length === 0) {
           isLast.value = true
           return
         }
-
         // 检查重复数据
-        const existingIds = new Set(announList.value.map((item) => item.id))
-        const newRecords = data.records.filter((newItem: any) => !existingIds.has(newItem.id))
-
+        const existingIds = new Set(announList.value.map((item: AnnouncementItem) => item?.id))
+        const newRecords = records.filter((newItem: AnnouncementItem) => !existingIds.has(newItem.id))
         // 为新加载的公告添加展开/收起状态
-        newRecords.forEach((item: any) => {
+        newRecords.forEach((item: AnnouncementItem) => {
           item.expanded = false
-          announcementStates.value[item.id] = {
+          announcementStates.value[item?.id] = {
             showDeleteConfirm: false,
             deleteLoading: false
           }
           // 处理公告的userName
           const user = groupStore.getUser(roomId.value, item.uid)
-          const fallbackName = item.userName || item.name || ''
+          const fallbackName = item.userName || item?.name || ''
           item.userName = user?.myName || user?.name || fallbackName
         })
-
         // 添加新的非重复数据到列表中
         if (newRecords.length > 0) {
-          announList.value.push(...newRecords)
+          announList.value.push(...(newRecords as AnnouncementItem[]))
           // 判断累计加载的数据量是否达到总数
-          if (announList.value.length >= Number(data.total)) {
+          if (announList.value.length >= Number(data.total || 0)) {
             isLast.value = true
             return
           }
           pageNum.value++
-        } else if (pageNum.value < Number(data.pages)) {
+        } else if (pageNum.value < Number(data.pages || 1)) {
           // 如果当前页没有新数据但还没到最后一页，尝试加载下一页
           pageNum.value++
           handleLoadMore()
@@ -359,13 +363,12 @@ const handleLoadMore = async () => {
         }
       }
     } catch (error) {
-      console.error('加载更多公告失败:', error)
+      logger.error('加载更多公告失败:', toError(error))
     } finally {
       isLoading.value = false
     }
   }
 }
-
 // 切换到编辑公告视图
 const handleNew = () => {
   announContent.value = ''
@@ -374,7 +377,6 @@ const handleNew = () => {
   isEdit.value = false
   title.value = t('announcement.title.create')
 }
-
 // 处理取消操作
 const handleCancel = () => {
   announContent.value = ''
@@ -386,113 +388,112 @@ const handleCancel = () => {
   }
   getCurrentWebviewWindow().close()
 }
-
 // 删除公告
-const handleDel = async (announcement: any) => {
+const handleDel = async (announcement: AnnouncementItem) => {
   try {
-    announcementStates.value[announcement.id].deleteLoading = true
-
+    const st = (announcementStates.value[announcement.id] ||= { showDeleteConfirm: false, deleteLoading: false })
+    st.deleteLoading = true
     // 同时处理删除请求和最小延迟时间
-    await Promise.all([deleteAnnouncement({ id: announcement.id }), new Promise((resolve) => setTimeout(resolve, 600))])
-
+    await Promise.all([
+      requestWithFallback({
+        url: 'delete_announcement',
+        body: { id: announcement.id }
+      }),
+      new Promise((resolve) => setTimeout(resolve, 600))
+    ])
     // 重置该公告的确认框状态
-    announcementStates.value[announcement.id].showDeleteConfirm = false
-    announcementStates.value[announcement.id].deleteLoading = false
-
+    const st2 = (announcementStates.value[announcement.id] ||= { showDeleteConfirm: false, deleteLoading: false })
+    st2.showDeleteConfirm = false
+    st2.deleteLoading = false
+    st2.deleteLoading = false
     // 重新获取公告列表
     await handleInit()
-
     // 找出新的置顶公告
-    let newTopAnnouncement = null
+    let newTopAnnouncement: AnnouncementItem | null = null
     if (announList.value.length > 0) {
-      newTopAnnouncement = announList.value.find((item: any) => item.top)
+      newTopAnnouncement = announList.value.find((item: AnnouncementItem) => item.top) || null
     }
-
     // 发送刷新消息通知其他组件
     if (announList.value.length === 0) {
       // 如果没有公告了，发送清空事件
       await emitTo('home', 'announcementClear')
     }
-
     // 无论如何都要发送更新事件，携带最新状态
     await emitTo('home', 'announcementUpdated', {
       hasAnnouncements: announList.value.length > 0,
       topAnnouncement: newTopAnnouncement
     })
   } catch (error) {
-    console.error('删除公告失败:', error)
-    announcementStates.value[announcement.id].deleteLoading = false
+    logger.error('删除公告失败:', toError(error))
+    const st3 = (announcementStates.value[announcement.id] ||= { showDeleteConfirm: false, deleteLoading: false })
+    st3.deleteLoading = false
   }
 }
-
 // 编辑公告
-const handleEdit = (announcement: any) => {
+const handleEdit = (announcement: AnnouncementItem) => {
   isEdit.value = true
   editAnnoouncement.value = announcement
   announContent.value = announcement.content
-  isTop.value = announcement.top
+  isTop.value = announcement.top || false
   viewType.value = '0'
   isBack.value = true
   title.value = t('announcement.title.edit')
 }
-
 // 验证公告内容
 const validateAnnouncement = (content: string) => {
   if (content.length < 1) {
-    window.$message.error(t('announcement.toast.contentRequired'))
+    msg.error(t('announcement.toast.contentRequired'))
     return false
   }
   if (content.length > 600) {
-    window.$message.error(t('announcement.toast.contentTooLong'))
+    msg.error(t('announcement.toast.contentTooLong'))
     return false
   }
   return true
 }
-
 // 发布公告
 const handlePushAnnouncement = async () => {
   if (!validateAnnouncement(announContent.value)) {
     return
   }
-
   const apiCall = isEdit.value
     ? () =>
-        editAnnouncement({
-          id: editAnnoouncement.value.id,
-          roomId: roomId.value,
-          content: announContent.value,
-          top: isTop.value
+        requestWithFallback({
+          url: 'edit_announcement',
+          body: {
+            id: editAnnoouncement.value.id,
+            roomId: roomId.value,
+            content: announContent.value,
+            top: isTop.value
+          }
         })
     : () =>
-        pushAnnouncement({
-          roomId: roomId.value,
-          content: announContent.value,
-          top: isTop.value
+        requestWithFallback({
+          url: 'push_announcement',
+          body: {
+            roomId: roomId.value,
+            content: announContent.value,
+            top: isTop.value
+          }
         })
-
   const successMessage = isEdit.value ? t('announcement.toast.editSuccess') : t('announcement.toast.createSuccess')
   const errorMessage = isEdit.value ? t('announcement.toast.editFail') : t('announcement.toast.createFail')
-
   try {
     await apiCall()
-    window.$message.success(successMessage)
-
+    msg.success(successMessage)
     // 重新获取公告列表
     await handleInit()
-
     // 找出新的置顶公告
-    let newTopAnnouncement = null
+    let newTopAnnouncement: AnnouncementItem | null = null
     if (announList.value.length > 0) {
-      newTopAnnouncement = announList.value.find((item: any) => item.top)
+      newTopAnnouncement = announList.value.find((item: AnnouncementItem) => item.top) || null
     }
-
     info(`发送更新事件通知home: `)
     // 发送更新事件通知其他组件
     await emitTo('home', 'announcementUpdated', {
       hasAnnouncements: announList.value.length > 0,
       topAnnouncement: newTopAnnouncement
     })
-
     if (!isEdit.value) {
       setTimeout(() => {
         getCurrentWebviewWindow().close()
@@ -502,30 +503,25 @@ const handlePushAnnouncement = async () => {
       isBack.value = false
     }
   } catch (error) {
-    console.error(errorMessage, error)
-    window.$message.error(errorMessage)
+    logger.error(errorMessage, toError(error))
+    msg.error(errorMessage)
   }
 }
-
 // 控制内容展开/收起
 const needsExpansion = (content: string) => {
   return content && content.length > 80 // 根据实际情况调整，大约200px的文本量
 }
-
 // 切换展开/收起状态
-const toggleExpand = (announcement: any) => {
+const toggleExpand = (announcement: AnnouncementItem) => {
   announcement.expanded = !announcement.expanded
 }
-
 // 组件挂载时执行初始化操作
 onMounted(async () => {
   try {
     await nextTick()
     roomId.value = $route.params.roomId as string
     viewType.value = $route.params.type as string
-
     await handleInit()
-
     setTimeout(async () => {
       const currentWindow = getCurrentWebviewWindow()
       await currentWindow.show()
@@ -533,7 +529,7 @@ onMounted(async () => {
       title.value = await currentWindow.title()
     }, 200)
   } catch (error) {
-    console.error('组件挂载初始化失败:', error)
+    logger.error('组件挂载初始化失败:', toError(error))
   }
 })
 </script>
@@ -541,19 +537,16 @@ onMounted(async () => {
 [v-cloak] {
   display: none;
 }
-
 .content-wrapper {
   position: relative;
   overflow: hidden;
   transition: max-height 0.3s ease;
 }
-
 .content-collapsed {
   max-height: 100px; // 设置为约200px的显示高度
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0));
   -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0));
 }
-
 .expand-button {
   display: flex;
   align-items: center;
@@ -562,18 +555,15 @@ onMounted(async () => {
   color: #13987f;
   cursor: pointer;
   font-size: 12px;
-
   svg {
     transition: transform 0.3s ease;
   }
 }
-
 .announcement-link {
   color: #13987f;
   cursor: pointer;
   word-break: break-all;
   line-height: 2.1rem;
-
   &:hover {
     opacity: 0.8;
     text-decoration: underline;

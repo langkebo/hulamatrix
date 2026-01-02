@@ -31,7 +31,6 @@
       </div>
 
       <!-- 联系人列表 -->
-      <!-- 联系人列表 -->
       <div ref="scrollArea" class="flex-1 overflow-y-auto px-16px mt-10px" :style="{ height: scrollHeight + 'px' }">
         <n-scrollbar style="max-height: calc(100vh - 150px)">
           <n-checkbox-group v-model:value="selectedList" class="flex flex-col gap-2">
@@ -48,29 +47,23 @@
                   selectedList.includes(item.uid) ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'
                 ]">
                 <template #default>
-                  <!-- ✅ 强制一行展示 -->
                   <div class="flex items-center gap-10px px-8px py-10px">
                     <!-- 头像 -->
                     <n-avatar
                       round
                       :size="44"
-                      :src="AvatarUtils.getAvatarUrl(groupStore.getUserInfo(item.uid)!.avatar!)"
+                      :src="AvatarUtils.getAvatarUrl(item.avatar!)"
                       fallback-src="/logo.png"
                       style="border: 1px solid var(--avatar-border-color)" />
                     <!-- 文字信息 -->
                     <div class="flex flex-col leading-tight truncate">
                       <span class="text-14px font-medium truncate">
-                        {{ groupStore.getUserInfo(item.uid)!.name }}
+                        {{ item.name }}
                       </span>
                       <div class="text-12px text-gray-500 flex items-center gap-4px truncate">
-                        <template v-if="getUserState(item.uid)">
-                          <img class="size-12px rounded-50%" :src="getUserState(item.uid)?.url" alt="" />
-                          {{ getUserState(item.uid)?.title }}
-                        </template>
-                        <template v-else>
-                          <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? '#1ab292' : '#909090'" dot />
-                          {{ item.activeStatus === OnlineEnum.ONLINE ? '在线' : '离线' }}
-                        </template>
+                        <!-- 在线状态暂未同步 -->
+                        <!-- <n-badge :color="(item.activeStatus === OnlineEnum.ONLINE) ? '#1ab292' : '#909090'" dot /> -->
+                        <!-- {{ (item.activeStatus === OnlineEnum.ONLINE) ? '在线' : '离线' }} -->
                       </div>
                     </div>
                   </div>
@@ -84,48 +77,35 @@
       <!-- 底部操作栏 -->
       <div class="px-16px py-10px bg-white border-t border-gray-200 flex justify-between items-center">
         <span class="text-14px">已选择 {{ selectedList.length }} 人</span>
-        <n-button type="primary" :disabled="selectedList.length === 0" @click="createGroup">发起群聊</n-button>
+        <n-button type="primary" :disabled="selectedList.length === 0" :loading="isLoading" @click="createGroup">发起群聊</n-button>
       </div>
     </div>
   </MobileLayout>
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { OnlineEnum } from '@/enums'
-import { useContactStore } from '@/stores/contacts'
-import { useGroupStore } from '@/stores/group'
-import { useUserStatusStore } from '@/stores/userStatus'
+import { onMounted, ref, computed } from 'vue'
+import { useFriendsStore } from '@/stores/friends'
+import { useRoomStore } from '@/stores/room'
+import { useUserStore } from '@/stores/user'
+import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
-import { useChatStore } from '@/stores/chat.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-
-const userStatusStore = useUserStatusStore()
-const { stateList } = storeToRefs(userStatusStore)
-const groupStore = useGroupStore()
-const chatStore = useChatStore()
-const globalStore = useGlobalStore()
-
-/** 获取用户状态 */
-const getUserState = (uid: string) => {
-  const userInfo = groupStore.getUserInfo(uid)!
-  const userStateId = userInfo.userStateId
-
-  if (userStateId && userStateId !== '1') {
-    return stateList.value.find((state: { id: string }) => state.id === userStateId)
-  }
-  return null
-}
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import router from '@/router'
 
 // store
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
+const roomStore = useRoomStore()
+const userStore = useUserStore()
+const globalStore = useGlobalStore()
 
 // 搜索关键字
 const keyword = ref('')
 
 // 选中的联系人 uid 数组
 const selectedList = ref<string[]>([])
+const isLoading = ref(false)
 
 // 滚动高度计算
 const scrollHeight = ref(600)
@@ -139,61 +119,62 @@ const doSearch = () => {
 }
 
 const filteredContacts = computed(() => {
-  const contactsList = contactStore.contactsList.filter((c) => {
-    if (c.uid === '1') {
-      // 排除hula小管家
-      return false
-    }
-    return true
-  })
+  const contactsList = (friendsStore.friends || [])
+    .map((f: { user_id: string | number; display_name?: string; name?: string; avatar_url?: string }) => ({
+      uid: String(f.user_id),
+      name: String(f.display_name || f.name || f.user_id),
+      avatar: f.avatar_url
+    }))
+    .filter((c) => {
+      if (c.uid === '1') {
+        // 排除hula小管家
+        return false
+      }
+      return true
+    })
 
   if (!keyword.value) return contactsList
   return contactsList.filter((c) => {
-    const name = groupStore.getUserInfo(c.uid)!.name
-    if (name) {
-      name.includes(keyword.value)
-    } else {
-      false
-    }
+    return c.name.toLowerCase().includes(keyword.value.toLowerCase())
   })
 })
 
 // 点击发起群聊
 const createGroup = async () => {
-  if (selectedList.value.length < 2) {
-    window.$message.success('两个人无法建群哦')
+  if (selectedList.value.length === 0) {
+    msg.warning('请选择联系人')
     return
   }
 
+  isLoading.value = true
   try {
-    const result: any = await ImRequestUtils.createGroup({ uidList: selectedList.value })
+    const service = roomStore.getService()
+    if (!service) throw new Error('Service not initialized')
 
-    await chatStore.getSessionList(true)
+    const myName = userStore.userInfo?.name || '我'
+    const roomName = `${myName}创建的群聊`
 
-    const resultRoomId = result?.roomId != null ? String(result.roomId) : undefined
-    const resultId = result?.id != null ? String(result.id) : undefined
-
-    const matchedSession = chatStore.sessionList.find((session) => {
-      const sessionRoomId = String(session.roomId)
-      const sessionDetailId = session.detailId != null ? String(session.detailId) : undefined
-      return (
-        (resultRoomId !== undefined && sessionRoomId === resultRoomId) ||
-        (resultId !== undefined && (sessionDetailId === resultId || sessionRoomId === resultId))
-      )
+    // 创建房间
+    const roomId = await service.createRoom({
+      name: roomName,
+      invite: selectedList.value,
+      isPrivate: true
     })
 
-    if (matchedSession?.roomId) {
-      globalStore.updateCurrentSessionRoomId(matchedSession.roomId)
-      await Promise.all([
-        groupStore.addGroupDetail(matchedSession.roomId),
-        groupStore.getGroupUserList(matchedSession.roomId, true)
-      ])
-    }
+    // 进入房间
+    globalStore.updateCurrentSessionRoomId(roomId)
+    await roomStore.initRoom(roomId)
 
+    msg.success('创建群聊成功')
     resetCreateGroupState()
-    window.$message.success('创建群聊成功')
+
+    // 跳转到聊天页
+    router.push('/mobile/message/chat-room')
   } catch (error) {
-    window.$message.error('创建群聊失败')
+    logger.error('创建群聊失败:', error)
+    msg.error('创建群聊失败')
+  } finally {
+    isLoading.value = false
   }
 }
 

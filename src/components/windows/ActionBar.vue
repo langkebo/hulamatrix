@@ -111,19 +111,84 @@
 </template>
 
 <script setup lang="ts">
+import { reactive, ref, computed, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
 import { emit } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { info } from '@tauri-apps/plugin-log'
 import { exit } from '@tauri-apps/plugin-process'
 import { CloseBxEnum, EventEnum, MittEnum } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useMitt } from '@/hooks/useMitt'
+import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
-import { useAlwaysOnTopStore } from '@/stores/alwaysOnTop.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useAlwaysOnTopStore } from '@/stores/alwaysOnTop'
+import { useSettingStore } from '@/stores/setting'
 import { isCompatibility, isMac, isWindows } from '@/utils/PlatformConstants'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const noOpAsync = async (..._args: unknown[]) => {}
+
+// 定义窗口接口
+interface AppWindow {
+  label: string
+  minimize: () => Promise<void>
+  maximize: () => Promise<void>
+  unmaximize: () => Promise<void>
+  isMaximized: () => Promise<boolean>
+  isFullscreen: () => Promise<boolean>
+  setAlwaysOnTop: (value: boolean) => Promise<void>
+  hide: () => Promise<void>
+  show: () => Promise<void>
+  close: () => Promise<void>
+  toggleMaximize: () => Promise<void>
+  setTitle: (title: string) => Promise<void>
+  onResized: (cb: () => void) => Promise<(() => void) | undefined>
+  onCloseRequested: (cb: (event: { preventDefault: () => void }) => void) => Promise<(() => void) | undefined>
+  setEnabled: (enabled: boolean) => Promise<void>
+  setFocus: () => Promise<void>
+}
+
+const appWindow = ((): AppWindow => {
+  if (isTauri) {
+    const win = WebviewWindow.getCurrent()
+    return {
+      label: win.label,
+      minimize: () => win.minimize(),
+      maximize: () => win.maximize(),
+      unmaximize: () => win.unmaximize(),
+      isMaximized: () => win.isMaximized(),
+      isFullscreen: () => win.isFullscreen(),
+      setAlwaysOnTop: (value: boolean) => win.setAlwaysOnTop(value),
+      hide: () => win.hide(),
+      show: () => win.show(),
+      close: () => win.close(),
+      toggleMaximize: () => win.toggleMaximize(),
+      setTitle: (title: string) => win.setTitle(title),
+      onResized: (cb: () => void) => win.onResized(cb),
+      onCloseRequested: (cb: (event: { preventDefault: () => void }) => void) => win.onCloseRequested(cb),
+      setEnabled: (enabled: boolean) => win.setEnabled(enabled),
+      setFocus: () => win.setFocus()
+    }
+  } else {
+    return {
+      label: 'web',
+      minimize: noOpAsync,
+      maximize: noOpAsync,
+      unmaximize: noOpAsync,
+      setAlwaysOnTop: noOpAsync,
+      hide: noOpAsync,
+      show: noOpAsync,
+      close: noOpAsync,
+      toggleMaximize: noOpAsync,
+      setTitle: noOpAsync,
+      isMaximized: async () => false,
+      isFullscreen: async () => false,
+      onResized: async (_cb: () => void) => () => {},
+      onCloseRequested: async (_cb: (event: { preventDefault: () => void }) => void) => () => {},
+      setEnabled: noOpAsync,
+      setFocus: noOpAsync
+    }
+  }
+})()
 const {
   topWinLabel,
   proxy = false,
@@ -148,7 +213,8 @@ const {
 }>()
 const { getWindowTop, setWindowTop } = useAlwaysOnTopStore()
 const settingStore = useSettingStore()
-const { tips, escClose } = storeToRefs(settingStore)
+const tips = computed(() => settingStore.tips)
+const escClose = computed(() => settingStore.escClose)
 const { resizeWindow } = useWindow()
 const tipsRef = reactive({
   type: tips.value.type,
@@ -227,7 +293,7 @@ const handleConfirm = async () => {
   if (tips.value.type === CloseBxEnum.CLOSE) {
     // 设置程序内部关闭标志
     isProgrammaticClose = true
-    await emit(EventEnum.EXIT)
+    if (isTauri) await emit(EventEnum.EXIT)
   } else {
     await nextTick(() => {
       appWindow.hide()
@@ -253,7 +319,7 @@ const handleCloseWin = async () => {
       tipsRef.show = true
     } else {
       if (tips.value.type === CloseBxEnum.CLOSE) {
-        await emit(EventEnum.EXIT)
+        if (isTauri) await emit(EventEnum.EXIT)
       } else {
         await nextTick(() => {
           appWindow.hide()
@@ -261,15 +327,15 @@ const handleCloseWin = async () => {
       }
     }
   } else if (appWindow.label === 'login') {
-    await exit(0)
+    if (isTauri) await exit(0)
   } else {
     if (appWindow.label.includes('modal-')) {
-      const webviews = await WebviewWindow.getAll()
+      const webviews = isTauri ? await WebviewWindow.getAll() : []
       const need = webviews.find((item) => item.label === 'home' || item.label === 'login')
       await need?.setEnabled(true)
       await need?.setFocus()
     }
-    await emit(EventEnum.WIN_CLOSE, appWindow.label)
+    if (isTauri) await emit(EventEnum.WIN_CLOSE, appWindow.label)
     await appWindow.close()
   }
 }
@@ -280,23 +346,22 @@ onMounted(async () => {
   // 初始化状态
   await updateWindowMaximized()
 
-  unlistenResized = await appWindow.onResized?.(() => {
+  unlistenResized = (await appWindow.onResized(() => {
     updateWindowMaximized()
-  })
+  })) as (() => void) | null
 
   // 监听 home 窗口的关闭事件
-  if (appWindow.label === 'home') {
-    appWindow.onCloseRequested((event) => {
+  if (isTauri && appWindow.label === 'home') {
+    unlistenCloseRequested = (await appWindow.onCloseRequested((event: { preventDefault: () => void }) => {
       info('[ActionBar]监听[home]窗口关闭事件')
       if (isProgrammaticClose) {
-        // 清理监听器
         info('[ActionBar]清理[home]窗口的监听器')
         exit(0)
       }
       info('[ActionBar]阻止[home]窗口关闭事件')
       event.preventDefault()
       appWindow.hide()
-    })
+    })) as (() => void) | null
   }
 })
 

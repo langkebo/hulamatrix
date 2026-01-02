@@ -3,21 +3,16 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { MergeBody, MsgType } from '@/services/types'
-import type { MsgId } from '@/typings/global'
 
 const { body, message } = defineProps<{
   body: MergeBody
   message: MsgType
 }>()
 
-const msgIds = computed((): MsgId[] => {
-  return body.body.map((item) => {
-    return {
-      msgId: item.messageId,
-      fromUid: item.uid
-    }
-  })
+const msgIds = computed((): string[] => {
+  return body.body.map((item) => item.messageId)
 })
 </script>
 

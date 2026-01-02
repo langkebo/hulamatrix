@@ -136,7 +136,7 @@
                   round
                   :width="38"
                   :height="38"
-                  :src="cachedStore.badgeById(id)?.img"
+                  :src="cachedStore.badgeById(id)?.img || ''"
                   :color="themes.content === ThemeEnum.DARK ? '' : '#c8c8c8'"
                   :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                   @load="badgeLoadedMap[id] = true"
@@ -185,21 +185,22 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { computed, ref, onMounted, inject } from 'vue'
 import { MittEnum, OnlineEnum, ThemeEnum } from '@/enums/index.ts'
 import { useCommon } from '@/hooks/useCommon.ts'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import { leftHook } from '@/layout/left/hook'
-import { useCachedStore } from '@/stores/cached'
+import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat'
-import { useContactStore } from '@/stores/contacts.ts'
+import { useFriendsStore } from '@/stores/friends'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { AvatarUtils } from '@/utils/AvatarUtils'
+import { msg } from '@/utils/SafeUI'
 
 const { t } = useI18n()
 
@@ -210,15 +211,15 @@ const { uid } = defineProps<{
 const { createWebviewWindow } = useWindow()
 const { userUid, openMsgSession } = useCommon()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const globalStore = useGlobalStore()
 const groupStore = useGroupStore()
 const chatStore = useChatStore()
 const { openContent } = leftHook()
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
 const userStatusStore = useUserStatusStore()
 const cachedStore = useCachedStore()
-const { stateList } = storeToRefs(userStatusStore)
+const stateList = computed(() => userStatusStore.stateList)
 
 const resolvedUserInfo = computed(() => groupStore.getUserInfo(uid) ?? null)
 /** 头像加载状态 */
@@ -227,7 +228,9 @@ const avatarSrc = computed(() => AvatarUtils.getAvatarUrl((resolvedUserInfo.valu
 /** 是否是当前登录的用户 */
 const isCurrentUserUid = computed(() => userUid.value === uid)
 /** 是否是我的好友 */
-const isMyFriend = computed(() => !!contactStore.contactsList.find((item) => item.uid === uid))
+const isMyFriend = computed(
+  () => !!friendsStore.friends?.find((item: { user_id?: string | number }) => String(item.user_id) === String(uid))
+)
 /** 是否为群聊 */
 const isGroupChat = computed<boolean>(() => chatStore.isGroup)
 /** 当前会话 roomId */
@@ -284,11 +287,15 @@ const openEditInfo = () => {
 }
 
 // 处理复制账号
-const handleCopy = () => {
+const handleCopy = async () => {
   const account = groupStore.getUserInfo(uid)?.account
   if (account) {
-    navigator.clipboard.writeText(account)
-    window.$message.success(t('home.profile_card.notification.copy_success', { account }))
+    try {
+      await navigator.clipboard.writeText(account)
+      msg.success(t('home.profile_card.notification.copy_success', { account }))
+    } catch {
+      msg.error(t('home.profile_card.notification.copy_fail'))
+    }
   }
 }
 

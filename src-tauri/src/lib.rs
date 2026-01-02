@@ -33,7 +33,7 @@ pub mod error;
 mod im_request_client;
 pub mod pojo;
 pub mod repository;
-pub mod timeout_config;
+pub mod state;
 pub mod utils;
 mod vo;
 pub mod websocket;
@@ -77,11 +77,15 @@ use crate::command::contact_command::{hide_contact_command, list_contacts_comman
 use crate::command::file_manager_command::{
     debug_message_stats, get_navigation_items, query_files,
 };
+use crate::command::media::{
+    clear_media_cache, delete_cached_media, download_media, get_media_cache_stats, preload_media,
+};
 use crate::command::message_command::{
     delete_message, delete_room_messages, page_msg, save_msg, send_msg, sync_messages,
     update_message_recall_status,
 };
 use crate::command::message_mark_command::save_message_mark;
+use crate::state::AppState;
 
 #[cfg(desktop)]
 use tauri::Listener;
@@ -120,12 +124,10 @@ fn setup_desktop() -> Result<(), CommonError> {
         })
         .invoke_handler(get_invoke_handlers())
         .build(tauri::generate_context!())
-        .map_err(|e| {
-            CommonError::RequestError(format!("Failed to build tauri application: {}", e))
-        })?
+        .map_err(|e| CommonError::RequestError(format!("Failed to build tauri application: {e}")))?
         .run(|app_handle, event| {
             #[cfg(target_os = "macos")]
-            app_event::handle_app_event(&app_handle, event);
+            app_event::handle_app_event(app_handle, event);
             #[cfg(not(target_os = "macos"))]
             {
                 let _ = (app_handle, event);
@@ -152,7 +154,7 @@ async fn initialize_app_data(
     // 加载配置
     let configuration =
         Arc::new(Mutex::new(get_configuration(&app_handle).map_err(|e| {
-            anyhow::anyhow!("Failed to load configuration: {}", e)
+            anyhow::anyhow!("Failed to load configuration: {e}")
         })?));
 
     // 初始化数据库连接
@@ -167,18 +169,23 @@ async fn initialize_app_data(
 
     // 数据库迁移
     match Migrator::up(db.as_ref(), None).await {
-        Ok(_) => {
+        Ok(()) => {
             info!("Database migration completed");
         }
         Err(e) => {
-            eprintln!("Warning: Database migration failed: {}", e);
+            eprintln!("Warning: Database migration failed: {e}");
         }
     }
 
-    let rc: im_request_client::ImRequestClient = im_request_client::ImRequestClient::new(
+    let rc: im_request_client::ImRequestClient = match im_request_client::ImRequestClient::new(
         configuration.lock().await.backend.base_url.clone(),
-    )
-    .unwrap();
+    ) {
+        Ok(client) => client,
+        Err(e) => {
+            eprintln!("Failed to create ImRequestClient: {e}");
+            return Err(CommonError::UnexpectedError(anyhow::anyhow!("Failed to create request client: {e}")));
+        }
+    };
 
     // 创建用户信息
     let user_info = UserInfo {
@@ -202,7 +209,7 @@ pub struct UserInfo {
 pub async fn build_request_client() -> Result<reqwest::Client, CommonError> {
     let client = reqwest::Client::builder()
         .build()
-        .map_err(|e| anyhow::anyhow!("Reqwest client error: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Reqwest client error: {e}"))?;
     Ok(client)
 }
 
@@ -261,7 +268,7 @@ pub async fn handle_logout_windows(app_handle: &tauri::AppHandle) {
         // tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
 
         match window.destroy() {
-            Ok(_) => {
+            Ok(()) => {
                 tracing::info!("[LOGOUT] Successfully closed window: {}", label);
             }
             Err(error) => {
@@ -337,7 +344,10 @@ fn setup_mobile() {
 // 公共的 setup 函数
 fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let scope = app_handle.fs_scope();
-    scope.allow_directory("configuration", false).unwrap();
+    if let Err(e) = scope.allow_directory("configuration", false) {
+        eprintln!("Warning: Failed to allow configuration directory access: {e}");
+        // Continue anyway - this might not be critical
+    }
 
     #[cfg(desktop)]
     setup_logout_listener(app_handle.clone());
@@ -349,12 +359,16 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
             app_handle.manage(AppData {
                 db_conn: db.clone(),
                 user_info: user_info.clone(),
-                rc: rc,
+                rc,
                 config: settings,
                 frontend_task: Mutex::new(false),
                 // 后端任务默认完成
                 backend_task: Mutex::new(true),
             });
+
+            // 添加应用状态
+            app_handle.manage(AppState::new());
+
             APP_STATE_READY.store(true, Ordering::SeqCst);
             if let Err(e) = app_handle.emit("app-state-ready", ()) {
                 tracing::warn!("Failed to emit app-state-ready event: {}", e);
@@ -362,7 +376,7 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
         }
         Err(e) => {
             tracing::error!("Failed to initialize application data: {}", e);
-            return Err(format!("Failed to initialize app data: {}", e).into());
+            return Err(format!("Failed to initialize app data: {e}").into());
         }
     }
 
@@ -374,9 +388,7 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 // 公共的命令处理器函数
 fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static
 {
-    use crate::command::ai_command::ai_message_send_stream;
-    use crate::command::markdown_command::{get_readme_html, parse_markdown};
-    #[cfg(mobile)]
+        #[cfg(mobile)]
     use crate::command::set_complete;
     use crate::command::user_command::{
         get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
@@ -467,11 +479,12 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         im_request_command,
         get_settings,
         update_settings,
-        // AI 相关命令
-        ai_message_send_stream,
-        // Markdown 相关命令
-        parse_markdown,
-        get_readme_html,
+                // 媒体相关命令
+        download_media,
+        delete_cached_media,
+        clear_media_cache,
+        get_media_cache_stats,
+        preload_media,
         #[cfg(mobile)]
         set_complete,
         #[cfg(mobile)]

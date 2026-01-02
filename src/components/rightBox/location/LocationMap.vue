@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 type LocationData = {
   latitude: number
@@ -99,20 +100,34 @@ const markerGeometries = computed(() => [
 ])
 
 // 事件处理
-const handleMarkerClick = (event: any) => {
+const handleMarkerClick = (event: unknown) => {
   if (props.draggable) {
+    const e = event as {
+      latLng: {
+        lat: number
+        lng: number
+      }
+    }
     emit('location-change', {
-      lat: event.latLng.lat,
-      lng: event.latLng.lng
+      lat: e.latLng.lat,
+      lng: e.latLng.lng
     })
   }
 }
 
-const handleMarkerDragEnd = (event: any) => {
+const handleMarkerDragEnd = (event: unknown) => {
   if (props.draggable) {
+    const e = event as {
+      geometry: {
+        position: {
+          lat: number
+          lng: number
+        }
+      }
+    }
     emit('location-change', {
-      lat: event.geometry.position.lat,
-      lng: event.geometry.position.lng
+      lat: e.geometry.position.lat,
+      lng: e.geometry.position.lng
     })
   }
 }

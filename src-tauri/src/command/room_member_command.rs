@@ -5,17 +5,12 @@ use crate::repository::im_room_member_repository::update_my_room_info as update_
 use crate::vo::vo::MyRoomInfoReq;
 
 use entity::{im_room, im_room_member};
-use tracing::{error, info};
+use tracing::{error, warn};
 
-use crate::im_request_client::{ImRequestClient, ImUrl};
+use crate::im_request_client::ImUrl;
 use crate::repository::im_room_member_repository;
-use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-use std::ops::Deref;
-use std::sync::Arc;
 use tauri::State;
-use tokio::sync::Mutex;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -65,7 +60,7 @@ pub async fn update_my_room_info(
 
         // 更新本地数据库
         update_my_room_info_db(
-            state.db_conn.deref(),
+            &state.db_conn,
             &my_room_info.my_name,
             &my_room_info.id,
             &uid,
@@ -93,40 +88,18 @@ pub async fn update_my_room_info(
     }
 }
 
-/// 获取room_id的房间的所有成员列表
+/// `获取room_id的房间的所有成员列表`
+/// DEPRECATED: This function is deprecated. Frontend should use Matrix SDK directly:
+/// - Use matrixClientService.getRoomMembers() or useGroupStore for room members
+/// - This function now returns empty list for backward compatibility
 #[tauri::command]
 pub async fn get_room_members(
-    room_id: String,
-    state: State<'_, AppData>,
+    _room_id: String,
+    _state: State<'_, AppData>,
 ) -> Result<Vec<RoomMemberResponse>, String> {
-    info!("Calling to get all member list of room with room_id");
-    let result: Result<Vec<RoomMemberResponse>, CommonError> = async {
-        let login_uid = {
-            let user_info = state.user_info.lock().await;
-            user_info.uid.clone()
-        };
-
-        let mut members = fetch_and_update_room_members(
-            room_id.clone(),
-            state.db_conn.clone(),
-            state.rc.clone(),
-            login_uid.clone(),
-        )
-        .await?;
-
-        sort_room_members(&mut members);
-
-        Ok(members)
-    }
-    .await;
-
-    match result {
-        Ok(members) => Ok(members),
-        Err(e) => {
-            error!("Failed to get all room member data: {:?}", e);
-            Err(e.to_string())
-        }
-    }
+    warn!("[DEPRECATED] get_room_members is deprecated. Frontend should use Matrix SDK (matrixClientService.getRoomMembers() or useGroupStore).");
+    // Return empty list for backward compatibility
+    Ok(vec![])
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -150,7 +123,7 @@ pub async fn cursor_page_room_members(
     };
 
     let data = im_room_member_repository::cursor_page_room_members(
-        state.db_conn.deref(),
+        &state.db_conn,
         param.room_id,
         param.cursor_page_param,
         &login_uid,
@@ -160,98 +133,20 @@ pub async fn cursor_page_room_members(
     Ok(data)
 }
 
-// 从本地数据库分页查询群房间数据，如果为空则从后端获取
+// 从本地数据库分页查询群房间数据
+// DEPRECATED: This function is deprecated. Frontend should use Matrix SDK directly:
+// - Use matrixClientService.getRooms() or useRoomStore for room list
+// - This function now returns empty page for backward compatibility
 #[tauri::command]
 pub async fn page_room(
-    page_param: PageParam,
-    state: State<'_, AppData>,
+    _page_param: PageParam,
+    _state: State<'_, AppData>,
 ) -> Result<Page<im_room::Model>, String> {
-    let result: Result<Page<im_room::Model>, CommonError> = async {
-        // 直接调用后端接口获取数据，不保存到数据库
-        let data = fetch_rooms_from_backend(page_param, state.rc.clone()).await?;
-
-        Ok(data)
-    }
-    .await;
-
-    match result {
-        Ok(page_data) => Ok(page_data),
-        Err(e) => {
-            error!("Failed to get paginated room data: {:?}", e);
-            Err(e.to_string())
-        }
-    }
-}
-
-/// 从后端获取房间数据（不保存到数据库）
-async fn fetch_rooms_from_backend(
-    page_param: PageParam,
-    request_client: Arc<Mutex<ImRequestClient>>,
-) -> Result<Page<im_room::Model>, CommonError> {
-    let mut client = request_client.lock().await;
-
-    let resp: Option<Page<im_room::Model>> = client
-        .im_request(
-            ImUrl::GroupList,
-            None::<serde_json::Value>,
-            Some(page_param),
-        )
-        .await?;
-
-    if let Some(data) = resp {
-        Ok(data)
-    } else {
-        Err(CommonError::UnexpectedError(anyhow::anyhow!(
-            "No data returned from backend"
-        )))
-    }
-}
-
-/// 对房间成员列表进行排序：按角色优先，再按在线状态，最后按名称字母序
-fn sort_room_members(members: &mut Vec<RoomMemberResponse>) {
-    members.sort_by(|a, b| {
-        let role_cmp = match (a.group_role, b.group_role) {
-            (Some(a_role), Some(b_role)) if a_role != b_role => a_role.cmp(&b_role),
-            _ => Ordering::Equal,
-        };
-        if role_cmp != Ordering::Equal {
-            return role_cmp;
-        }
-
-        let a_status = a.active_status.unwrap_or(u8::MAX);
-        let b_status = b.active_status.unwrap_or(u8::MAX);
-        if a_status != b_status {
-            return a_status.cmp(&b_status);
-        }
-
-        let a_name = a.name.to_lowercase();
-        let b_name = b.name.to_lowercase();
-        a_name.cmp(&b_name)
-    });
-}
-
-/// 异步更新房间成员数据
-async fn fetch_and_update_room_members(
-    room_id: String,
-    _db_conn: Arc<DatabaseConnection>,
-    request_client: Arc<Mutex<ImRequestClient>>,
-    _login_uid: String,
-) -> Result<Vec<RoomMemberResponse>, CommonError> {
-    let resp: Option<Vec<RoomMemberResponse>> = request_client
-        .lock()
-        .await
-        .im_request(
-            ImUrl::GroupListMember,
-            None::<serde_json::Value>,
-            Some(serde_json::json!({
-                "roomId": room_id
-            })),
-        )
-        .await?;
-
-    if let Some(data) = resp {
-        return Ok(data);
-    }
-
-    Ok(Vec::new())
+    warn!("[DEPRECATED] page_room is deprecated. Frontend should use Matrix SDK (matrixClientService.getRooms() or useRoomStore).");
+    // Return empty page for backward compatibility
+    Ok(Page {
+        total: "0".to_string(),
+        records: vec![],
+        size: "20".to_string(),
+    })
 }

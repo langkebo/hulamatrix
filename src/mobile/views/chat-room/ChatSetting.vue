@@ -9,8 +9,8 @@
     </template>
 
     <template #container>
-      <div
-        class="bg-[url('@/assets/mobile/chat-home/background.webp')] bg-cover bg-center flex flex-col overflow-auto h-full">
+      <div class="flex flex-col overflow-auto h-full relative">
+        <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
         <div class="flex flex-col gap-15px py-15px px-20px flex-1 min-h-0">
           <div class="flex shadow py-10px bg-white rounded-10px w-full items-center gap-10px" @click="clickInfo">
             <!-- 群头像 -->
@@ -19,7 +19,7 @@
                 <n-avatar
                   class="absolute"
                   :size="38"
-                  :src="AvatarUtils.getAvatarUrl(activeItem?.avatar || '')"
+                  :src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')"
                   fallback-src="/logo.png"
                   :style="{
                     'object-fit': 'cover',
@@ -45,9 +45,9 @@
 
             <div class="text-14px flex items-center h-full gap-5px">
               <span>
-                {{ activeItem?.name || '' }}
+                {{ currentSession?.name || '' }}
               </span>
-              <span v-if="activeItem?.hotFlag === 1">
+              <span v-if="currentSession?.hotFlag === 1">
                 <svg class="w-18px h-18px iconpark-icon text-#1A9B83">
                   <use href="#auth"></use>
                 </svg>
@@ -63,7 +63,9 @@
                 <div @click="toGroupChatMember" class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
                   <div>
                     有
-                    <span class="text-#398D7E">{{ groupStore.countInfo?.memberNum || 0 }}</span>
+                    <span class="text-#398D7E">
+                      {{ formattedStats.hasData ? formattedStats.memberCount : (roomStore.currentRoom?.memberCount || 0) }}
+                    </span>
                     位成员
                   </div>
                   <div>
@@ -85,7 +87,7 @@
                   <div
                     v-if="i.activeStatus !== OnlineEnum.ONLINE"
                     class="w-36px h-36px absolute rounded-full bg-#707070 opacity-70 z-4"></div>
-                  <n-avatar class="absolute z-3" :size="36" :src="avatarSrc(i.avatar)" fallback-src="/logo.png" round />
+                  <n-avatar class="absolute z-3" :size="36" :src="avatarSrc(i.avatar || '')" fallback-src="/logo.png" round />
                 </div>
                 <div class="truncate max-w-full text-#707070">{{ i.name }}</div>
               </div>
@@ -105,7 +107,7 @@
 
           <!-- 管理群成员 -->
           <div
-            v-if="isGroup && groupStore.isAdminOrLord() && globalStore.currentSessionRoomId !== '1'"
+            v-if="isGroup && (isLord || isAdmin) && globalStore.currentSessionRoomId !== '1'"
             class="bg-white p-15px rounded-10px shadow text-14px flex cursor-pointer"
             @click="toManageGroupMember">
             管理群成员
@@ -122,11 +124,11 @@
               <!-- 群号 -->
               <div
                 style="border-bottom: 1px solid; border-color: #ebebeb"
-                @click="handleCopy(activeItem?.account || '')"
+                @click="handleCopy(currentSession?.account || '')"
                 class="flex justify-between py-15px items-center">
                 <div class="text-14px">{{ isGroup ? '群号/二维码' : 'Hula号/二维码' }}</div>
                 <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
-                  <div>{{ activeItem?.account || '' }}</div>
+                  <div>{{ currentSession?.account || '' }}</div>
                   <div>
                     <svg class="w-14px h-14px iconpark-icon">
                       <use href="#saoma-i3589iic"></use>
@@ -143,7 +145,7 @@
                 </div>
               </div>
 
-              <div v-if="isGroup && groupStore.isAdminOrLord()" class="flex justify-between py-15px items-center">
+              <div v-if="isGroup && (isLord || isAdmin)" class="flex justify-between py-15px items-center">
                 <div class="text-14px">本群昵称</div>
                 <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
                   <input
@@ -205,7 +207,7 @@
                 style="border-bottom: 1px solid; border-color: #ebebeb"
                 class="flex justify-between py-12px items-center">
                 <div class="text-14px">设置为置顶</div>
-                <n-switch :value="!!activeItem?.top" @update:value="handleTop" />
+                <n-switch :value="!!currentSession?.top" @update:value="handleTop" />
               </div>
               <div
                 style="border-bottom: 1px solid; border-color: #ebebeb"
@@ -213,7 +215,7 @@
                 <div class="text-14px">消息免打扰</div>
                 <n-switch
                   @update:value="handleNotification"
-                  :value="activeItem?.muteNotification === NotificationTypeEnum.NOT_DISTURB" />
+                  :value="currentSession?.muteNotification === NotificationTypeEnum.NOT_DISTURB" />
               </div>
             </div>
           </div>
@@ -221,8 +223,9 @@
             <div class="p-15px">删除聊天记录</div>
           </div>
           <!-- 解散群聊、退出群聊、删除好友按钮 -->
-          <div v-if="isGroup && globalStore.currentSessionRoomId !== '1'" class="mt-auto flex justify-center mb-20px">
-            <n-button type="error" @click="handleExit">
+          <div v-if="isGroup && globalStore.currentSessionRoomId !== '1'" class="mobile-action-footer">
+            <n-button tertiary class="mobile-primary-btn" @click="router.back()">取消</n-button>
+            <n-button type="error" class="mobile-primary-btn" @click="handleExit">
               {{ isGroup ? (isLord ? '解散群聊' : '退出群聊') : '删除好友' }}
             </n-button>
           </div>
@@ -233,58 +236,54 @@
 </template>
 
 <script setup lang="ts">
-import { MittEnum, NotificationTypeEnum, OnlineEnum, RoleEnum, RoomTypeEnum } from '@/enums'
+import { logger } from '@/utils/logger'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useDialog } from 'naive-ui'
+import { MittEnum, NotificationTypeEnum, OnlineEnum, RoomTypeEnum } from '@/enums'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import { useMyRoomInfoUpdater } from '@/hooks/useMyRoomInfoUpdater'
 import router from '@/router'
-import type { UserItem } from '@/services/types'
-import { useCachedStore } from '@/stores/cached'
-import { useChatStore } from '@/stores/chat.ts'
-import { useContactStore } from '@/stores/contacts.ts'
+import { useCachedStore } from '@/stores/dataCache'
+import { useChatStore } from '@/stores/chat'
+import { useFriendsStore } from '@/stores/friends'
 import { useGlobalStore } from '@/stores/global'
-import { useGroupStore } from '@/stores/group'
-import { useUserStore } from '@/stores/user'
+import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import {
-  deleteFriend,
-  getGroupDetail,
-  modifyFriendRemark,
-  notification,
-  setSessionTop,
-  shield,
-  updateRoomInfo
-} from '@/utils/ImRequestUtils'
+import { useRoomStats } from '@/composables/useRoomStats'
+import { deleteFriend, modifyFriendRemark, notification, setSessionTop, shield } from '@/utils/ImRequestUtils'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
+import { msg } from '@/utils/SafeUI'
 
 defineOptions({
   name: 'mobileChatSetting'
 })
 
 const dialog = useDialog()
-const userStore = useUserStore()
 const chatStore = useChatStore()
 const globalStore = useGlobalStore()
-const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 const cacheStore = useCachedStore()
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
 const { persistMyRoomInfo } = useMyRoomInfoUpdater()
+
+// 房间统计信息
+const { formattedStats } = useRoomStats()
 
 const title = computed(() => (isGroup.value ? '群' : '好友'))
 const isGroup = computed(() => globalStore.currentSession?.type === RoomTypeEnum.GROUP)
 
-const isLord = computed(() => {
-  const currentUser = groupStore.userList.find((user) => user.uid === useUserStore().userInfo?.uid)
-  return currentUser?.roleId === RoleEnum.LORD
-})
-const isAdmin = computed(() => {
-  const currentUser = groupStore.userList.find((user) => user.uid === useUserStore().userInfo?.uid)
-  return currentUser?.roleId === RoleEnum.ADMIN
-})
+const isLord = computed(() => roomStore.currentUserRole === 'owner')
+const isAdmin = computed(() => roomStore.currentUserRole === 'admin')
 
 const groupMemberListSliced = computed(() => {
-  const list = groupStore.memberList.slice(0, 9)
-  return list
+  return (roomStore.currentMembers || []).slice(0, 9).map((m) => ({
+    uid: m.userId,
+    name: m.displayName,
+    avatar: m.avatarUrl,
+    activeStatus: OnlineEnum.OFFLINE // RoomStore 暂未同步详细在线状态，默认离线
+  }))
 })
 
 const avatarSrc = (url: string) => AvatarUtils.getAvatarUrl(url)
@@ -292,15 +291,25 @@ const avatarSrc = (url: string) => AvatarUtils.getAvatarUrl(url)
 const announError = ref(false)
 const announNum = ref(0)
 const isAddAnnoun = ref(false)
-const announList = ref<any[]>([])
+
+interface Announcement {
+  id?: string
+  content?: string
+  title?: string
+  [key: string]: unknown
+}
+
+const announList = ref<Announcement[]>([])
 const remarkValue = ref('')
-const item = ref<any>(null)
 const nameValue = ref('')
 const avatarValue = ref('')
 const nicknameValue = ref('')
-const options = ref<Array<{ name: string; src: string }>>([])
-const { currentSession: activeItem } = storeToRefs(globalStore)
-const friend = computed(() => contactStore.contactsList.find((item) => item.uid === activeItem.value?.detailId))
+const currentSession = computed(() => globalStore.currentSession)
+const friend = computed(() =>
+  (friendsStore.friends || []).find(
+    (f: { user_id: string | number }) => String(f.user_id) === String(currentSession.value?.detailId)
+  )
+)
 
 // 保存初始值，用于判断是否真正修改了内容
 const initialRemarkValue = ref('')
@@ -318,6 +327,10 @@ const {
 } = useAvatarUpload({
   onSuccess: async (downloadUrl) => {
     avatarValue.value = downloadUrl
+    // 如果是群组，自动更新头像
+    if (isGroup.value) {
+      await handleGroupInfoUpdate()
+    }
   }
 })
 
@@ -328,7 +341,7 @@ const handleCrop = async (cropBlob: Blob) => {
 const handleCopy = (val: string) => {
   if (val) {
     navigator.clipboard.writeText(val)
-    window.$message.success(`复制成功 ${val}`)
+    msg.success(`复制成功 ${val}`)
   }
 }
 
@@ -366,53 +379,43 @@ async function handleExit() {
     positiveText: '确定',
     negativeText: '取消',
     onPositiveClick: async () => {
-      const session = activeItem.value
+      const session = currentSession.value
       if (!session) {
-        window.$message.warning('当前会话不存在')
+        msg.warning('当前会话不存在')
         return
       }
       try {
         if (isGroup.value) {
-          if (isLord.value) {
-            if (session.roomId === '1') {
-              window.$message.warning('无法解散频道')
-              return
-            }
-
-            groupStore.exitGroup(session.roomId).then(() => {
-              window.$message.success('已解散群聊')
-              // 删除当前的会话
-              useMitt.emit(MittEnum.DELETE_SESSION, session.roomId)
-            })
-          } else {
-            if (session.roomId === '1') {
-              window.$message.warning('无法退出频道')
-              return
-            }
-
-            groupStore.exitGroup(session.roomId).then(() => {
-              window.$message.success('已退出群聊')
-              // 删除当前的会话
-              useMitt.emit(MittEnum.DELETE_SESSION, session.roomId)
-            })
+          const service = roomStore.getService()
+          if (!service) {
+            msg.error('服务未初始化')
+            return
           }
+
+          // Matrix 中没有明确的"解散"，通常是踢出所有人或自己离开
+          // 这里统一调用 leaveRoom，如果是群主且想解散，逻辑可能需要更复杂（踢人），暂且先 leave
+          await service.leaveRoom(session.roomId)
+
+          msg.success(isLord.value ? '已解散群聊' : '已退出群聊')
+          // 删除当前的会话
+          useMitt.emit(MittEnum.DELETE_SESSION, session.roomId)
         } else {
           const detailId = session.detailId
           if (!detailId) {
-            window.$message.warning('无法获取好友信息')
+            msg.warning('无法获取好友信息')
             return
           }
           await deleteFriend({ targetUid: detailId })
-          window.$message.success('删除好友成功')
+          msg.success('删除好友成功')
         }
 
         router.push('/mobile/message')
       } catch (error) {
-        console.error('创建登录窗口失败:', error)
+        logger.error('退出/解散失败:', error)
       }
     },
     onNegativeClick: () => {
-      console.log('用户点击了取消')
+      logger.debug('用户点击了取消', undefined, 'ChatSetting')
     }
   })
 }
@@ -422,17 +425,24 @@ const hasBadge6 = computed(() => {
   // 只有当 roomId 为 "1" 时才进行徽章判断（频道）
   if (globalStore.currentSessionRoomId !== '1') return false
 
-  const currentUser = groupStore.getUserInfo(userStore.userInfo!.uid!)!
-  return currentUser?.itemIds?.includes('6')
+  // 徽章功能说明：
+  // - 当前返回 false，表示未启用徽章功能
+  // - 未来迁移计划：将徽章数据存储到 RoomStore 或 UserStore
+  // - 需要考虑的徽章类型：管理员、VIP、认证用户等
+  // - 迁移步骤：
+  //   1. 在 RoomStore/UserStore 中添加 badgeList 状态
+  //   2. 从 Matrix 房间状态事件中读取徽章信息
+  //   3. 根据用户权限级别返回对应的徽章状态
+  return false
 })
 
 const clickInfo = () => {
-  if (isGroup) {
+  if (isGroup.value) {
     openAvatarCropper()
   } else {
-    const detailId = activeItem.value?.detailId
+    const detailId = currentSession.value?.detailId
     if (!detailId) {
-      window.$message.warning('当前会话信息未就绪')
+      msg.warning('当前会话信息未就绪')
       return
     }
     router.push(`/mobile/mobileFriends/friendInfo/${detailId}`)
@@ -445,7 +455,7 @@ const handleLoadGroupAnnoun = async () => {
   try {
     const roomId = globalStore.currentSessionRoomId
     if (!roomId) {
-      console.error('当前会话没有roomId')
+      logger.error('当前会话没有roomId')
       return
     }
     // 设置是否可以添加公告
@@ -453,37 +463,38 @@ const handleLoadGroupAnnoun = async () => {
     // 获取群公告列表
     const data = await cacheStore.getGroupAnnouncementList(roomId, 1, 10)
     if (data) {
-      announList.value = data.records
+      const dataWithRecords = data as { records?: unknown[]; total?: string | number }
+      announList.value = (dataWithRecords.records || []) as Announcement[]
       // 处理置顶公告
       if (announList.value && announList.value.length > 0) {
-        const topAnnouncement = announList.value.find((item: any) => item.top)
+        const topAnnouncement = announList.value.find((item: Announcement) => !!item.top)
         if (topAnnouncement) {
-          announList.value = [topAnnouncement, ...announList.value.filter((item: any) => !item.top)]
+          announList.value = [topAnnouncement, ...announList.value.filter((item: Announcement) => !item.top)]
         }
       }
-      announNum.value = parseInt(data.total, 10)
+      announNum.value = parseInt(String(dataWithRecords.total ?? '0'), 10)
       announError.value = false
     } else {
       announError.value = false
     }
   } catch (error) {
-    console.error('加载群公告失败:', error)
+    logger.error('加载群公告失败:', error)
     announError.value = true
   }
 }
 
 /** 置顶 */
 const handleTop = (value: boolean) => {
-  const session = activeItem.value
+  const session = currentSession.value
   if (!session) return
   setSessionTop({ roomId: session.roomId, top: value })
     .then(() => {
       // 更新本地会话状态
       chatStore.updateSession(session.roomId, { top: value })
-      window.$message.success(value ? '已置顶' : '已取消置顶')
+      msg.success(value ? '已置顶' : '已取消置顶')
     })
     .catch(() => {
-      window.$message.error('置顶失败')
+      msg.error('置顶失败')
     })
 }
 
@@ -513,9 +524,9 @@ const handleInfoUpdate = async () => {
       return
     }
 
-    const detailId = activeItem.value?.detailId
+    const detailId = currentSession.value?.detailId
     if (!detailId) {
-      window.$message.warning('无法获取好友信息')
+      msg.warning('无法获取好友信息')
       return
     }
     await modifyFriendRemark({
@@ -524,51 +535,39 @@ const handleInfoUpdate = async () => {
     })
 
     if (friend.value) {
-      friend.value.remark = remarkValue.value
+      const friendWithRemark = friend.value as typeof friend.value & { remark?: string }
+      friendWithRemark.remark = remarkValue.value
     }
     // 更新初始值
     initialRemarkValue.value = remarkValue.value
   }
-  window.$message.success(title.value + '备注更新成功')
+  msg.success(title.value + '备注更新成功')
 }
 
 // 处理群名称更新
 const handleGroupInfoUpdate = async () => {
-  const session = activeItem.value
+  const session = currentSession.value
   if (!session) return
   // 检查群名称是否真正修改了
-  if (nameValue.value === initialNameValue.value) {
+  if (nameValue.value === initialNameValue.value && avatarValue.value === session.avatar) {
     return
   }
 
-  await updateRoomInfo({
-    id: session.roomId,
-    name: nameValue.value,
-    avatar: avatarValue.value
-  })
-  session.avatar = avatarValue.value
-
-  // 更新初始值
-  initialNameValue.value = nameValue.value
-  window.$message.success('群名称更新成功')
-}
-
-// 获取群组详情和成员信息
-const fetchGroupMembers = async (roomId: string) => {
   try {
-    // 使用每个成员的uid获取详细信息
-    const userList = groupStore.getUserListByRoomId(roomId)
-    const memberDetails = userList.map((member: UserItem) => {
-      const userInfo = groupStore.getUserInfo(member.uid)!
-      return {
-        name: userInfo.name || member.name || member.uid,
-        src: userInfo.avatar || member.avatar
-      }
-    })
+    const service = roomStore.getService()
+    if (service) {
+      await service.updateRoomInfo(session.roomId, {
+        name: nameValue.value,
+        avatar: avatarValue.value
+      })
+      session.avatar = avatarValue.value
 
-    options.value = memberDetails
-  } catch (error) {
-    console.error('获取群成员失败:', error)
+      // 更新初始值
+      initialNameValue.value = nameValue.value
+      msg.success('群信息更新成功')
+    }
+  } catch (e) {
+    logger.error('更新群信息失败', e)
   }
 }
 
@@ -581,7 +580,7 @@ const fetchGroupMembers = async (roomId: string) => {
 
 /** 处理屏蔽消息 */
 const handleShield = (value: boolean) => {
-  const session = activeItem.value
+  const session = currentSession.value
   if (!session) return
   shield({
     roomId: session.roomId,
@@ -601,16 +600,16 @@ const handleShield = (value: boolean) => {
         globalStore.updateCurrentSessionRoomId(tempRoomId)
       })
 
-      window.$message.success(value ? '已屏蔽消息' : '已取消屏蔽')
+      msg.success(value ? '已屏蔽消息' : '已取消屏蔽')
     })
     .catch(() => {
-      window.$message.error('设置失败')
+      msg.error('设置失败')
     })
 }
 
 /** 处理消息免打扰 */
 const handleNotification = (value: boolean) => {
-  const session = activeItem.value
+  const session = currentSession.value
   if (!session) return
   const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
   // 如果当前是屏蔽状态，需要先取消屏蔽
@@ -637,10 +636,10 @@ const handleNotification = (value: boolean) => {
         chatStore.updateTotalUnreadCount()
       }
 
-      window.$message.success(value ? '已设置接收消息但不提醒' : '已允许消息提醒')
+      msg.success(value ? '已设置接收消息但不提醒' : '已允许消息提醒')
     })
     .catch(() => {
-      window.$message.error('设置失败')
+      msg.error('设置失败')
     })
 }
 
@@ -663,28 +662,21 @@ const handleSearchChatContent = () => {
 onMounted(async () => {
   await handleLoadGroupAnnoun()
   if (isGroup.value) {
-    await getGroupDetail(globalStore.currentSessionRoomId)
-      .then((response: any) => {
-        item.value = response
-        nameValue.value = response.groupName || ''
-        avatarValue.value = response.avatar
-        nicknameValue.value = response.myName || ''
-        remarkValue.value = response.remark || ''
+    const roomId = globalStore.currentSessionRoomId
+    await roomStore.initRoom(roomId)
+    const room = roomStore.rooms[roomId]
 
-        // 保存初始值
-        initialNameValue.value = nameValue.value
-        initialNicknameValue.value = nicknameValue.value
-        initialRemarkValue.value = remarkValue.value
-        if (item.value && item.value.roomId) {
-          fetchGroupMembers(item.value.roomId)
-        }
-      })
-      .catch((e: any) => {
-        console.error('获取群组详情失败:', e)
-      })
+    if (room) {
+      nameValue.value = room.name || ''
+      avatarValue.value = room.avatar || ''
+
+      // 保存初始值
+      initialNameValue.value = nameValue.value
+    }
   } else {
     // 这里需要拿到好友的信息
-    remarkValue.value = friend.value?.remark || ''
+    const friendWithRemark = friend.value as (typeof friend.value & { remark?: string }) | undefined
+    remarkValue.value = friendWithRemark?.remark || ''
     // 保存初始值
     initialRemarkValue.value = remarkValue.value
   }

@@ -37,11 +37,13 @@
   </n-flex>
 </template>
 <script setup lang="tsx">
+import { onMounted, ref } from 'vue'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { check } from '@tauri-apps/plugin-updater'
 import { NCarousel, NCarouselItem } from 'naive-ui'
 import { changeColor } from 'seemly'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 const list = ref<string[]>([])
 const updating = ref(false)
@@ -66,10 +68,14 @@ interface GiteeCommitResultStruct {
 
 const fetchGiteeReleaseData = async (version: string) => {
   const apiEndpoint = new URL(`https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${version}`)
+  const token = import.meta.env.VITE_GITEE_TOKEN
 
-  apiEndpoint.search = new URLSearchParams({
-    access_token: import.meta.env.VITE_GITEE_TOKEN
-  }).toString()
+  // 只有在有 token 时才添加到查询参数
+  if (token) {
+    apiEndpoint.search = new URLSearchParams({
+      access_token: token
+    }).toString()
+  }
 
   const response = await fetch(apiEndpoint.toString())
 
@@ -89,9 +95,9 @@ const extractCommitMessages = (releaseBody: string) => {
 const setupCommitList = async (version: string) => {
   try {
     const releaseData = await fetchGiteeReleaseData(version)
-    list.value = extractCommitMessages(releaseData.body)
+    list.value = extractCommitMessages(releaseData.body).filter(Boolean) as string[]
   } catch (err) {
-    console.error(`${t('message.update_window.fetch_commit_failed', { version })}:`, err)
+    logger.error(`${t('message.update_window.fetch_commit_failed', { version })}:`, toError(err))
     list.value =
       err instanceof Error
         ? [t('message.update_window.fetch_release_error_with_reason', { reason: err.message })]
@@ -123,13 +129,9 @@ const doUpdate = async () => {
       })
       try {
         await relaunch()
-      } catch (e) {
-        console.log(e)
-      }
+      } catch {}
     })
-    .catch((e) => {
-      console.log(e)
-    })
+    .catch(() => {})
     .finally(() => {
       updating.value = false
     })

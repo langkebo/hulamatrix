@@ -5,10 +5,12 @@ use tracing::debug;
 /// 消息处理器
 /// 负责处理不同类型的 WebSocket 消息
 pub struct MessageProcessor {
+    #[allow(clippy::type_complexity)]
     message_handlers: HashMap<String, Box<dyn Fn(&Value) + Send + Sync>>,
 }
 
 impl MessageProcessor {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             message_handlers: HashMap::new(),
@@ -34,9 +36,8 @@ impl MessageProcessor {
             if let Some(handler) = self.message_handlers.get(&msg_type) {
                 handler(message);
                 return ProcessResult::Handled;
-            } else {
-                debug!("No handler found for message type {}", msg_type);
             }
+            debug!("No handler found for message type {}", msg_type);
         }
 
         ProcessResult::Unhandled
@@ -47,15 +48,14 @@ impl MessageProcessor {
         message.get("type").and_then(|t| {
             if let Some(s) = t.as_str() {
                 Some(s.to_string())
-            } else if let Some(n) = t.as_u64() {
-                Some(n.to_string())
             } else {
-                None
+                t.as_u64().map(|n| n.to_string())
             }
         })
     }
 
     /// 验证消息格式
+    #[must_use] 
     pub fn validate_message(&self, message: &Value) -> ValidationResult {
         // 基本结构验证
         if !message.is_object() {
@@ -71,6 +71,7 @@ impl MessageProcessor {
     }
 
     /// 过滤敏感信息
+    #[must_use] 
     pub fn sanitize_message(&self, mut message: Value) -> Value {
         // 移除可能的敏感字段
         if let Some(obj) = message.as_object_mut() {

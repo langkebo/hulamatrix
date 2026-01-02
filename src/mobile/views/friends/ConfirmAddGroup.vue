@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-1 flex-col">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
+    <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
     <AutoFixHeightPage :show-footer="false">
       <template #header>
         <HeaderBar
@@ -17,7 +17,7 @@
           <div class="w-full h-full box-border flex flex-col">
             <n-flex vertical justify="center" :size="20" class="p-[55px_20px] bg-white m-20px rounded-15px">
               <n-flex align="center" justify="center" :size="20">
-                <n-avatar round size="large" :src="userInfo.avatar" />
+                <n-avatar round size="large" :src="userInfo.avatar ?? ''" />
 
                 <n-flex vertical :size="10">
                   <p class="text-[--text-color]">{{ userInfo.name }}</p>
@@ -49,12 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import { useCommon } from '@/hooks/useCommon.ts'
+import { ref, watch, onMounted } from 'vue'
+import { useCommon } from '@/hooks/useCommon'
 import router from '@/router'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useUserStore } from '@/stores/user.ts'
+import { useGlobalStore } from '@/stores/global'
+import { useUserStore } from '@/stores/user'
 import { applyGroup } from '@/utils/ImRequestUtils'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
+import { msg } from '@/utils/SafeUI'
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 const { countGraphemes } = useCommon()
@@ -75,14 +78,13 @@ const addFriend = async () => {
     account: String(globalStore.addGroupModalInfo.account),
     type: 2
   })
-  window.$message.success('已发送群聊申请')
+  msg.success?.('已发送群聊申请')
   setTimeout(() => {
     router.push('/mobile/message')
   }, 2000)
 }
 
 onMounted(async () => {
-  console.log(userInfo.value)
   requestMsg.value = `我是${userStore.userInfo!.name}`
 })
 </script>

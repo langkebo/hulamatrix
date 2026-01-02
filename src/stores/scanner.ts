@@ -1,9 +1,14 @@
+import { logger } from '@/utils/logger'
+
+import { ref, computed } from 'vue'
 import type { UnlistenFn } from '@tauri-apps/api/event'
 import { listen } from '@tauri-apps/api/event'
 import { appCacheDir } from '@tauri-apps/api/path'
 import { defineStore } from 'pinia'
 import { StoresEnum } from '@/enums'
-import { ErrorType, invokeSilently, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler.ts'
+import { ErrorType, invokeSilently, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import { useTimerManager } from '@/composables/useTimerManager'
+import { msg } from '@/utils/SafeUI'
 
 type DirectoryScanProgress = {
   current_path: string
@@ -29,6 +34,7 @@ type DirectoryInfo = {
  * 提供扫描、取消扫描、清理资源等功能
  */
 export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
   const pathType = ref<'default' | 'custom'>('default')
   const defaultDirectory = ref<string>('')
   const customDirectory = ref<string>('')
@@ -66,6 +72,7 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
 
   // 方法
   const setupEventListeners = async () => {
+    if (!isTauri) return
     // 监听进度更新
     const progressListener = await listen<DirectoryScanProgress>('directory-scan-progress', (event) => {
       scanProgress.value = event.payload
@@ -79,7 +86,7 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
       scanning.value = false
 
       // 扫描完成后切换到磁盘占比显示
-      setTimeout(() => {
+      useTimerManager().setTimer(() => {
         showDiskUsage.value = true
       }, 300)
     })
@@ -87,7 +94,7 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
 
     // 监听扫描取消
     const cancelListener = await listen('directory-scan-cancelled', () => {
-      console.log('收到扫描取消事件')
+      logger.debug('收到扫描取消事件', undefined, 'scanner')
       scanning.value = false
       scanComplete.value = false
       showDiskUsage.value = false
@@ -99,9 +106,13 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
     if (isInitialized.value) return
 
     try {
-      // 获取默认目录
-      const cacheDir = await appCacheDir()
-      defaultDirectory.value = cacheDir
+      // 获取默认目录（Tauri）
+      if (isTauri) {
+        const cacheDir = await appCacheDir()
+        defaultDirectory.value = cacheDir
+      } else {
+        defaultDirectory.value = ''
+      }
 
       // 设置事件监听器
       await setupEventListeners()
@@ -113,8 +124,8 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
         await startScan()
       }
     } catch (error) {
-      console.error('初始化扫描器失败:', error)
-      window.$message?.error('初始化扫描器失败')
+      logger.error('初始化扫描器失败:', error)
+      msg.error('初始化扫描器失败')
     }
   }
 
@@ -128,7 +139,11 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
 
   const startScan = async () => {
     if (!currentDirectory.value) {
-      window.$message?.warning('请先选择目录')
+      msg.warning('请先选择目录')
+      return
+    }
+    if (!isTauri) {
+      msg.warning('网页环境不支持磁盘扫描')
       return
     }
 
@@ -165,17 +180,18 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
       scanComplete.value = true
       scanning.value = false
     } catch (error) {
-      console.error('扫描失败:', error)
+      logger.error('扫描失败:', error)
       scanning.value = false
     }
   }
 
   const cancelScan = async () => {
     try {
+      if (!isTauri) return
       await invokeSilently('cancel_directory_scan')
-      console.log('扫描已取消')
+      logger.debug('扫描已取消', undefined, 'scanner')
     } catch (error) {
-      console.error('取消扫描失败:', error)
+      logger.error('取消扫描失败:', error)
     }
   }
 
@@ -210,7 +226,7 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
       try {
         unlisten()
       } catch (error) {
-        console.warn('清理监听器失败:', error)
+        logger.warn('清理监听器失败:', error)
       }
     })
     listeners.value = []

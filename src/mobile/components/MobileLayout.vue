@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { computed } from 'vue'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { MsgEnum, NotificationTypeEnum, TauriCommand } from '@/enums'
@@ -34,7 +36,6 @@ import { useUserStore } from '@/stores/user'
 import { audioManager } from '@/utils/AudioManager'
 import { isMobile, isWindows } from '@/utils/PlatformConstants'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
-import { useRoute } from 'vue-router'
 import { lightTheme } from 'naive-ui'
 interface MobileLayoutProps {
   /** 是否应用顶部安全区域 */
@@ -49,7 +50,6 @@ interface MobileLayoutProps {
   bottomSafeAreaClass?: string
 }
 
-const route = useRoute()
 const chatStore = useChatStore()
 const fileStore = useFileStore()
 const userStore = useUserStore()
@@ -66,7 +66,7 @@ const playMessageSound = async () => {
     const audio = new Audio('/sound/message.mp3')
     await audioManager.play(audio, 'message-notification')
   } catch (error) {
-    console.warn('播放消息音效失败:', error)
+    logger.warn('播放消息音效失败:', error)
   }
 }
 
@@ -152,14 +152,26 @@ const addFileToStore = (data: MessageType) => {
 
 /** 处理收到的消息 */
 useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
-  if (chatStore.checkMsgExist(data.message.roomId, data.message.id)) {
+  // 使用统一消息接收服务处理消息
+  const { receiveWebSocketMessage } = await import('@/services/unifiedMessageReceiver')
+  const result = await receiveWebSocketMessage(data)
+
+  // 如果消息是重复的，直接返回
+  if (result.wasDuplicate) {
     return
   }
-  console.log('[mobile/layout] 收到的消息：', data)
-  chatStore.pushMsg(data, {
-    isActiveChatView: route.path.startsWith('/mobile/chatRoom'),
-    activeRoomId: globalStore.currentSessionRoomId || ''
-  })
+
+  // 处理失败，记录错误
+  if (!result.success) {
+    if (import.meta.env.MODE === 'development') {
+      logger.error('[MessageFlow] Message processing failed:', result.error)
+    }
+    return
+  }
+
+  // 消息处理成功后的后续操作
+  // 如果是图片或视频消息，添加到 file store
+  addFileToStore(data)
   data.message.sendTime = new Date(data.message.sendTime).getTime()
   await invokeSilently(TauriCommand.SAVE_MSG, {
     data
@@ -191,7 +203,7 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
             shouldPlaySound = true
           }
         } catch (error) {
-          console.warn('检查窗口状态失败:', error)
+          logger.warn('检查窗口状态失败:', error)
           // 如果检查失败，默认播放音效
           shouldPlaySound = true
         }

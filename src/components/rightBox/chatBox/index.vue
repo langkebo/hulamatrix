@@ -5,14 +5,15 @@
 
     <div class="flex-1 flex min-h-0">
       <div class="flex-1 min-h-0">
-        <!-- bot用户时显示Bot组件 -->
-        <template v-if="isBotUser">
-          <Bot />
-        </template>
+        <div v-if="isLoadingSession" class="flex-center size-full select-none">
+          <n-spin size="large">
+            <template #description>正在加载房间内容...</template>
+          </n-spin>
+        </div>
+        <template v-else>
         <n-split
-          v-else
           direction="vertical"
-          :resize-trigger-size="0"
+          :resize-trigger-size="8"
           class="h-full"
           :min="0.55"
           :max="0.74"
@@ -25,6 +26,7 @@
             <ChatFooter :detail-id="currentSession?.detailId" />
           </template>
         </n-split>
+        </template>
       </div>
       <!-- 右侧栏占位：群聊时预留宽度直至 Sidebar 挂载完成，随后由子组件控制宽度（含折叠） -->
       <ChatSidebar />
@@ -32,15 +34,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useGlobalStore } from '@/stores/global'
-import { storeToRefs } from 'pinia'
-import { UserType } from '@/enums'
 
 const globalStore = useGlobalStore()
-const { currentSession } = storeToRefs(globalStore)
-
-// 是否为bot用户
-const isBotUser = computed(() => currentSession.value?.account === UserType.BOT)
+const currentSession = computed(() => globalStore.currentSession)
+const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !currentSession.value)
 </script>
 <style scoped lang="scss">
 :deep(.n-split .n-split__resize-trigger) {

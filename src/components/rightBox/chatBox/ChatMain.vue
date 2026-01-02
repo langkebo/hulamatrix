@@ -62,28 +62,28 @@
           </div>
           <n-flex
             v-for="(item, index) in chatStore.chatMessageList"
-            :key="item.message.id"
+            :key="item.message?.id"
             vertical
             class="flex-y-center mb-12px"
-            :data-message-id="item.message.id"
+            :data-message-id="item.message?.id"
             :data-message-index="index">
             <!-- 信息间隔时间 -->
             <span class="text-(12px #909090) select-none p-4px" v-if="item.timeBlock" @click.stop>
-              {{ timeToStr(item.message.sendTime) }}
+              {{ timeToStr(item.message?.sendTime) }}
             </span>
             <!-- 消息内容容器 -->
             <div
-              @mouseenter="hoverId = item.message.id"
+              @mouseenter="hoverId = item.message?.id"
               :class="[
                 'w-full box-border',
-                item.message.type === MsgEnum.RECALL ? 'min-h-22px' : 'min-h-62px',
+                item.message?.type === MsgEnum.RECALL ? 'min-h-22px' : 'min-h-62px',
                 isGroup ? 'p-[14px_10px_14px_20px]' : 'chat-single p-[4px_10px_10px_20px]',
-                { 'active-reply': activeReply === item.message.id },
+                { 'active-reply': activeReply === item.message?.id },
                 { 'bg-#90909020': computeMsgHover(item) }
               ]"
               @click="
                 () => {
-                  if (chatStore.isMsgMultiChoose && isMessageMultiSelectEnabled(item.message.type)) {
+                  if (chatStore.isMsgMultiChoose && isMessageMultiSelectEnabled(item.message?.type)) {
                     item.isCheck = !item.isCheck
                   }
                 }
@@ -211,10 +211,21 @@ import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user.ts'
 import { audioManager } from '@/utils/AudioManager'
 import { timeToStr } from '@/utils/ComputedTime'
-import { useCachedStore } from '@/stores/cached'
+import { useCachedStore } from '@/stores/dataCache'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isMobile, isWindows } from '@/utils/PlatformConstants'
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 import FileUploadProgress from '@/components/rightBox/FileUploadProgress.vue'
+
+// Tauri WebviewWindow 扩展接口
+interface WebviewWindowWithListen {
+  listen?: (event: string, handler: (event: unknown) => void) => Promise<UnlistenFn>
+  [key: string]: unknown
+}
+
+// UnlistenFn 类型
+type UnlistenFn = () => Promise<void>
 
 const selfEmit = defineEmits(['scroll'])
 const { t } = useI18n()
@@ -231,7 +242,7 @@ type SessionChangedPayload = {
 
 // Store 实例
 const cacheStore = useCachedStore()
-const appWindow = WebviewWindow.getCurrent()
+const appWindow = typeof window !== 'undefined' && '__TAURI__' in window ? WebviewWindow.getCurrent() : null
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()
 const userStore = useUserStore()
@@ -271,7 +282,7 @@ const newMsgCountLabel = computed(() => {
 })
 const currentRoomId = computed(() => globalStore.currentSessionRoomId ?? null)
 const computeMsgHover = computed(() => (item: MessageType) => {
-  if (!chatStore.isMsgMultiChoose || !isMessageMultiSelectEnabled(item.message.type)) {
+  if (!chatStore.isMsgMultiChoose || !isMessageMultiSelectEnabled(item.message?.type)) {
     return false
   }
 
@@ -279,7 +290,7 @@ const computeMsgHover = computed(() => (item: MessageType) => {
     return false
   }
 
-  return hoverId.value === item.message.id || item.isCheck
+  return hoverId.value === item.message?.id || item.isCheck
 })
 // 是否显示悬浮页脚
 const shouldShowFloatFooter = computed<boolean>(() => {
@@ -381,8 +392,8 @@ const handleWheel = (event: WheelEvent) => {
 const stopWheelListener = useEventListener(scrollContainerRef, 'wheel', handleWheel, { passive: false })
 
 // 监听公告更新和清空事件的变量
-let announcementUpdatedListener: any = null
-let announcementClearListener: any = null
+let announcementUpdatedListener: (() => Promise<void>) | null = null
+let announcementClearListener: (() => Promise<void>) | null = null
 // 获取置顶公告
 const loadTopAnnouncement = async (roomId?: string): Promise<void> => {
   const targetRoomId = roomId ?? currentRoomId.value
@@ -393,13 +404,13 @@ const loadTopAnnouncement = async (roomId?: string): Promise<void> => {
   }
 
   try {
-    const data = await cacheStore.getGroupAnnouncementList(targetRoomId, 1, 1)
+    const data = (await cacheStore.getGroupAnnouncementList(targetRoomId, 1, 1)) as { records?: unknown[] } | undefined
     if (targetRoomId !== currentRoomId.value) {
       return
     }
 
-    if (data && data.records.length > 0) {
-      const topNotice = data.records.find((item: any) => item.top)
+    if (data && data.records && data.records.length > 0) {
+      const topNotice = (data.records as AnnouncementData[]).find((item: AnnouncementData) => item.top)
       const oldAnnouncement = topAnnouncement.value
       topAnnouncement.value = topNotice || null
 
@@ -418,7 +429,6 @@ const loadTopAnnouncement = async (roomId?: string): Promise<void> => {
       topAnnouncement.value = null
     }
   } catch (error) {
-    console.error('获取置顶公告失败:', error)
     if (targetRoomId === currentRoomId.value) {
       topAnnouncement.value = null
     }
@@ -468,7 +478,7 @@ watchPostEffect(() => {
 // 跳转到回复消息
 const jumpToReplyMsg = async (key: string): Promise<void> => {
   // 先在当前列表中尝试查找
-  let messageIndex = chatStore.chatMessageList.findIndex((msg: any) => msg.message.id === String(key))
+  let messageIndex = chatStore.chatMessageList.findIndex((msg: MessageType) => msg.message.id === String(key))
 
   // 如果找到了，直接滚动到该消息
   if (messageIndex !== -1) {
@@ -481,7 +491,7 @@ const jumpToReplyMsg = async (key: string): Promise<void> => {
   isLoadingMore.value = true
 
   // 显示加载状态
-  window.$message.info('正在查找消息...')
+  msg.info(t('home.chat_main.toast.searching'))
 
   // 尝试加载历史消息直到找到目标消息或无法再加载
   let foundMessage = false
@@ -517,7 +527,7 @@ const jumpToReplyMsg = async (key: string): Promise<void> => {
     })
   } else {
     // 如果尝试多次后仍未找到消息
-    window.$message.warning('无法找到原始消息，可能已被删除或太久远')
+    msg.warning(t('home.chat_main.toast.reply_original_not_found'))
   }
 }
 
@@ -584,7 +594,6 @@ const handleFloatButtonClick = async () => {
     }
     scrollToBottom()
   } catch (error) {
-    console.error('重置消息列表失败:', error)
     scrollToBottom()
   }
 }
@@ -728,7 +737,6 @@ const handleLoadMore = async (): Promise<void> => {
     // 恢复滚动位置
     container.scrollTop = newScrollTop
   } catch (error) {
-    console.error('加载历史消息失败:', error)
     window.$message?.error('加载历史消息失败，请稍后重试')
   } finally {
     isLoadingMore.value = false
@@ -758,16 +766,26 @@ onMounted(() => {
   // 初始化监听器
   const initListeners = async () => {
     try {
+      if (!appWindow) {
+        return
+      }
+      const windowWithListen = appWindow as unknown as WebviewWindowWithListen
+      if (typeof windowWithListen.listen !== 'function') {
+        return
+      }
       // 监听公告清空事件
-      announcementClearListener = await appWindow.listen('announcementClear', () => {
+      announcementClearListener = await windowWithListen.listen('announcementClear', () => {
         topAnnouncement.value = null
       })
 
       // 监听公告更新事件
-      announcementUpdatedListener = await appWindow.listen('announcementUpdated', async (event: any) => {
-        info(`公告更新事件: ${event.payload}`)
-        if (event.payload) {
-          const { hasAnnouncements, topAnnouncement: newTopAnnouncement } = event.payload
+      announcementUpdatedListener = await windowWithListen.listen('announcementUpdated', async (event: unknown) => {
+        const announcementEvent = event as {
+          payload?: { hasAnnouncements?: boolean; topAnnouncement?: AnnouncementData }
+        }
+        info(`公告更新事件: ${announcementEvent.payload}`)
+        if (announcementEvent.payload) {
+          const { hasAnnouncements, topAnnouncement: newTopAnnouncement } = announcementEvent.payload
           if (hasAnnouncements && newTopAnnouncement) {
             // 只有置顶公告才更新顶部提示
             if (newTopAnnouncement.top) {
@@ -782,13 +800,11 @@ onMounted(() => {
           }
         }
       })
-    } catch (error) {
-      console.error('Failed to initialize listeners:', error)
-    }
+    } catch (error) {}
   }
 
   // 异步初始化监听器（不等待结果）
-  initListeners().catch(console.error)
+  initListeners().catch((error) => logger.error('初始化监听器失败:', error))
 
   scrollToBottom()
 })

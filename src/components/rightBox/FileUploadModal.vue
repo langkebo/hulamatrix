@@ -70,6 +70,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, nextTick, ref, watch } from 'vue'
 import { formatBytes } from '@/utils/Formatting'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'

@@ -4,20 +4,17 @@
     class="size-full bg-#fff dark:bg-#202020 rounded-8px select-none cursor-default">
     <!--顶部操作栏-->
     <ActionBar :max-w="false" :shrink="false" />
-
     <n-flex vertical class="w-full size-full">
       <!-- 标题 -->
       <n-flex justify="center" class="w-full">
         <p class="text-(18px [--text-color]) select-none">{{ t('auth.forget.title') }}</p>
       </n-flex>
-
       <!-- 步骤条 -->
       <n-steps size="small" class="w-full px-40px mt-20px" :current="currentStep" :status="stepStatus">
         <n-step :title="t('auth.forget.steps.verify.title')" :description="t('auth.forget.steps.verify.desc')" />
         <n-step :title="t('auth.forget.steps.reset.title')" :description="t('auth.forget.steps.reset.desc')" />
         <n-step :title="t('auth.forget.steps.done.title')" :description="t('auth.forget.steps.done.desc')" />
       </n-steps>
-
       <!-- 第一步：验证邮箱 -->
       <div v-if="currentStep === 1" class="w-full max-w-300px mx-auto mt-30px">
         <n-form ref="formRef" :model="formData" :rules="emailRules">
@@ -34,7 +31,6 @@
               autoCapitalize="off"
               clearable />
           </n-form-item>
-
           <!-- 邮箱验证码 -->
           <n-form-item path="emailCode" :label="t('auth.forget.form.code_label')">
             <n-flex :size="8">
@@ -59,7 +55,6 @@
               </n-button>
             </n-flex>
           </n-form-item>
-
           <n-button
             :loading="verifyLoading"
             :disabled="nextDisabled"
@@ -71,7 +66,6 @@
           </n-button>
         </n-form>
       </div>
-
       <!-- 第二步：设置新密码 -->
       <div v-if="currentStep === 2" class="w-full max-w-300px mx-auto mt-30px">
         <n-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules">
@@ -107,7 +101,6 @@
               </n-flex>
             </n-flex>
           </n-form-item>
-
           <!-- 确认密码 -->
           <n-form-item path="confirmPassword" :label="t('auth.forget.form.confirm_label')">
             <n-flex vertical :size="8" class="w-full">
@@ -132,7 +125,6 @@
               </n-flex>
             </n-flex>
           </n-form-item>
-
           <n-flex :size="16" class="mt-30px">
             <n-button @click="goBack" class="flex-1">{{ t('auth.forget.buttons.prev') }}</n-button>
             <n-button
@@ -146,7 +138,6 @@
           </n-flex>
         </n-form>
       </div>
-
       <!-- 第三步：完成 -->
       <div v-if="currentStep === 3" class="w-full max-w-300px mx-auto mt-100px text-center">
         <!-- <n-icon size="64" class="text-#13987f">
@@ -155,44 +146,39 @@
           </svg>
         </n-icon> -->
         <img class="size-98px" src="/emoji/party-popper.webp" alt="" />
-
         <div class="mt-16px text-18px">{{ t('auth.forget.success.title') }}</div>
         <div class="mt-16px text-14px text-#666">{{ t('auth.forget.success.desc') }}</div>
       </div>
     </n-flex>
   </n-config-provider>
 </template>
-
 <script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { darkTheme, lightTheme } from 'naive-ui'
-import { storeToRefs } from 'pinia'
+import { darkTheme, lightTheme, type FormInst } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import Validation from '@/components/common/Validation.vue'
 import { useSettingStore } from '@/stores/setting'
-import { forgetPassword, getCaptcha, sendCaptcha } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
-
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const naiveTheme = computed(() => (themes.value.content === 'dark' ? darkTheme : lightTheme))
 const { t } = useI18n()
-
 // 导入Web Worker
 const timerWorker = new Worker(new URL('../../workers/timer.worker.ts', import.meta.url))
-
 // 步骤状态
 const currentStep = ref(1)
-const stepStatus = ref<'error' | 'finish' | 'process' | 'wait' | undefined>('process')
-
+const stepStatus = ref<'error' | 'finish' | 'process' | 'wait'>('process')
 // 第一步表单数据
-const formRef = ref(null)
+const formRef = ref<FormInst | null>(null)
 const formData = ref({
   email: '',
   emailCode: '',
   uuid: '' // 图片验证码uuid
 })
-
 // 图片验证码相关
 const captchaImage = ref('')
 const sendBtnDisabled = ref(false)
@@ -213,7 +199,6 @@ const captchaCooldownRemaining = ref(0)
 const EMAIL_TIMER_ID = 'email_verification_timer'
 // 图片验证码限制计时器ID
 const CAPTCHA_TIMER_ID = 'captcha_cooldown_timer'
-
 // 邮箱校验规则
 const emailRules = {
   email: [
@@ -229,15 +214,13 @@ const emailRules = {
     { min: 6, max: 6, message: t('auth.forget.rules.code_length'), trigger: 'blur' }
   ]
 }
-
 // 第二步密码表单
-const passwordFormRef = ref(null)
+const passwordFormRef = ref<FormInst | null>(null)
 const passwordForm = ref({
   password: '',
   confirmPassword: ''
 })
 const submitLoading = ref(false)
-
 // 密码校验规则
 const passwordRules = {
   password: [
@@ -247,7 +230,7 @@ const passwordRules = {
   confirmPassword: [
     { required: true, message: t('auth.forget.rules.confirm_required'), trigger: 'blur' },
     {
-      validator: (_: any, value: string) => {
+      validator: (_: unknown, value: string) => {
         return value === passwordForm.value.password
       },
       message: t('auth.forget.rules.confirm_mismatch'),
@@ -255,36 +238,31 @@ const passwordRules = {
     }
   ]
 }
-
 // 下一步按钮禁用状态
 const nextDisabled = computed(() => {
   return !(formData.value.email && formData.value.emailCode)
 })
-
 /** 不允许输入空格 */
 const noSideSpace = (value: string) => !value.startsWith(' ') && !value.endsWith(' ')
-
 /** 密码验证函数 */
 const validateMinLength = (value: string) => value.length >= 6
-
 // 获取图片验证码
 const getCaptchaImage = async () => {
   // 检查是否可以获取新的验证码
   if (captchaInCooldown.value) {
     // 显示剩余冷却时间
-    window.$message.warning(t('auth.forget.messages.captcha_cooldown', { seconds: captchaCooldownRemaining.value }))
+    msg.warning(t('auth.forget.messages.captcha_cooldown', { seconds: captchaCooldownRemaining.value }))
     return
   }
-
   try {
     // 更新上次获取时间并设置冷却状态
     lastCaptchaTime.value = Date.now()
     captchaInCooldown.value = true
-
-    const result = await getCaptcha()
-    captchaImage.value = result.img
-    formData.value.uuid = result.uuid
-
+    const result = (await requestWithFallback({
+      url: 'get_captcha'
+    })) as { img?: string; uuid?: string }
+    captchaImage.value = result.img || ''
+    formData.value.uuid = result.uuid || ''
     // 获取成功后，启动冷却计时器
     timerWorker.postMessage({
       type: 'startTimer',
@@ -292,43 +270,39 @@ const getCaptchaImage = async () => {
       duration: captchaInterval // 使用设定的冷却时间
     })
   } catch (error) {
-    console.error('获取验证码失败', error)
+    logger.error('获取验证码失败', error instanceof Error ? error : new Error(String(error)))
     // 获取失败时解除冷却状态，允许重试
     captchaInCooldown.value = false
   }
 }
-
 // 发送邮箱验证码
 const sendEmailCode = async () => {
   // 邮箱校验
   if (!formData.value.email) {
-    window.$message.warning(t('auth.forget.messages.enter_email'))
+    msg.warning(t('auth.forget.messages.enter_email'))
     return
   }
-
   if (!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(formData.value.email)) {
-    window.$message.warning(t('auth.forget.messages.email_format'))
+    msg.warning(t('auth.forget.messages.email_format'))
     return
   }
-
   // 设置loading状态
   sendingEmailCode.value = true
-
   try {
-    await sendCaptcha({
-      email: formData.value.email,
-      uuid: formData.value.uuid,
-      operationType: 'forgot',
-      templateCode: 'PASSWORD_EDIT'
+    await requestWithFallback({
+      url: 'send_captcha',
+      body: {
+        email: formData.value.email,
+        uuid: formData.value.uuid,
+        operationType: 'forgot',
+        templateCode: 'PASSWORD_EDIT'
+      }
     })
-
-    window.$message.success(t('auth.forget.messages.code_sent'))
-
+    msg.success(t('auth.forget.messages.code_sent'))
     // 接口成功返回后才开始倒计时 - 使用 Web Worker
     sendBtnDisabled.value = true
     countDown.value = 60
     emailCodeBtnText.value = t('auth.forget.actions.retry_in', { seconds: countDown.value })
-
     // 发送消息给 Worker 开始计时
     timerWorker.postMessage({
       type: 'startTimer',
@@ -336,7 +310,7 @@ const sendEmailCode = async () => {
       duration: 60 * 1000 // 60秒，单位毫秒
     })
   } catch (error) {
-    console.error('发送验证码失败', error)
+    logger.error('发送验证码失败', error instanceof Error ? error : new Error(String(error)))
     // 验证码可能错误，刷新图片验证码
     getCaptchaImage()
   } finally {
@@ -344,61 +318,54 @@ const sendEmailCode = async () => {
     sendingEmailCode.value = false
   }
 }
-
 // 验证邮箱
 const verifyEmail = async () => {
   if (!formRef.value) return
-
   try {
-    await (formRef.value as any).validate()
+    await formRef.value.validate()
     verifyLoading.value = true
-
     // 这里只是验证表单，实际上不需要调用后端接口，直接进入下一步
     setTimeout(() => {
       currentStep.value = 2
       verifyLoading.value = false
     }, 500)
   } catch (error) {
-    console.error('表单验证失败', error)
+    logger.error('表单验证失败', error instanceof Error ? error : new Error(String(error)))
   }
 }
-
 // 返回上一步
 const goBack = () => {
   currentStep.value = 1
 }
-
 // 提交新密码
 const submitNewPassword = async () => {
   if (!passwordFormRef.value) return
-
   try {
-    await (passwordFormRef.value as any).validate()
+    await passwordFormRef.value.validate()
     submitLoading.value = true
-
     // 调用忘记密码接口
-    await forgetPassword({
-      email: formData.value.email,
-      code: formData.value.emailCode,
-      uuid: formData.value.uuid,
-      password: passwordForm.value.password,
-      confirmPassword: passwordForm.value.confirmPassword,
-      key: 'PASSWORD_EDIT'
+    await requestWithFallback({
+      url: 'forget_password',
+      body: {
+        email: formData.value.email,
+        code: formData.value.emailCode,
+        uuid: formData.value.uuid,
+        password: passwordForm.value.password,
+        confirmPassword: passwordForm.value.confirmPassword,
+        key: 'PASSWORD_EDIT'
+      }
     })
-
     currentStep.value = 3
     stepStatus.value = 'finish'
     submitLoading.value = false
   } catch (error) {
-    console.error('重置密码失败', error)
+    logger.error('重置密码失败', error instanceof Error ? error : new Error(String(error)))
     submitLoading.value = false
   }
 }
-
 // 监听 Worker 消息
 timerWorker.onmessage = (e) => {
   const { type, msgId, remainingTime } = e.data
-
   if (msgId === EMAIL_TIMER_ID) {
     // 邮箱验证码计时器消息处理
     if (type === 'debug') {
@@ -423,21 +390,19 @@ timerWorker.onmessage = (e) => {
     }
   }
 }
-
 // Worker 错误处理
 timerWorker.onerror = (error) => {
-  console.error('[Timer Worker Error]', error)
+  const e = error as ErrorEvent
+  logger.error('[Timer Worker Error]', new Error(e.message))
   // 发生错误时恢复按钮状态
   sendBtnDisabled.value = false
   emailCodeBtnText.value = t('auth.forget.actions.resend')
 }
-
 // 页面加载时获取验证码
 onMounted(async () => {
   await getCurrentWebviewWindow().show()
   getCaptchaImage()
 })
-
 // 组件销毁时清除定时器
 onBeforeUnmount(() => {
   // 清除Web Worker计时器
@@ -445,20 +410,17 @@ onBeforeUnmount(() => {
     type: 'clearTimer',
     msgId: EMAIL_TIMER_ID
   })
-
   // 清除图片验证码冷却计时器
   timerWorker.postMessage({
     type: 'clearTimer',
     msgId: CAPTCHA_TIMER_ID
   })
-
   // 可选：终止Worker (如果不需要在其他地方使用)
   timerWorker.terminate()
 })
 </script>
 <style scoped lang="scss">
 @use '@/styles/scss/login';
-
 :deep(.no-indent-input.n-input .n-input__input),
 :deep(.no-indent-input.n-input .n-input__textarea) {
   margin-left: 0 !important;

@@ -88,9 +88,20 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { NCard, NSpin, NButton, NSpace, NAvatar, NTooltip, NEmpty, useMessage } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import { useRouter } from 'vue-router'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { useGlobalStore } from '@/stores/global'
 import { logger } from '@/utils/logger'
+import type { MatrixEventLike } from '@/types/matrix'
+
+const router = useRouter()
+
+/** Extended Matrix event type with raw properties */
+interface MatrixEventExtended extends MatrixEventLike {
+  sender?: string
+  origin_server_ts?: number
+  content?: { body?: string }
+}
 
 interface ThreadInfo {
   rootEventId: string
@@ -131,7 +142,8 @@ async function loadThreads() {
       throw new Error('Matrix client not initialized')
     }
 
-    const room = client.getRoom(roomId)
+    const getRoomMethod = client.getRoom as ((roomId: string) => Record<string, unknown> | null) | undefined
+    const room = getRoomMethod?.(roomId)
     if (!room) {
       logger.warn('[ThreadsPanel] Room not found:', roomId)
       threads.value = []
@@ -141,24 +153,35 @@ async function loadThreads() {
     logger.info('[ThreadsPanel] Loading threads for room:', roomId)
 
     // Get all events in the room timeline
-    const timeline = room.getLiveTimeline?.()
+    const getLiveTimelineMethod = room.getLiveTimeline as (() => { getEvents?: () => unknown[] }) | undefined
+    const timeline = getLiveTimelineMethod?.()
     const events = timeline?.getEvents ? timeline.getEvents() : []
 
     // Collect unique threads
     const threadMap = new Map<string, ThreadInfo>()
 
     for (const event of events) {
-      const eventId = event.getId ? event.getId() : event.event_id
+      const eventLike = event as Record<string, unknown>
+      const getIdMethod = eventLike.getId as (() => string) | undefined
+      const eventId = getIdMethod ? getIdMethod() : (eventLike.event_id as string | undefined)
       if (!eventId) continue
 
       // Get thread for this event
-      const thread = room.getThread()?.findThreadForEvent(eventId)
+      const getThreadMethod = room.getThread as
+        | (() => { findThreadForEvent?: (eventId: string) => unknown })
+        | undefined
+      const thread = getThreadMethod?.()?.findThreadForEvent?.(eventId) as
+        | { rootEvent?: { getId?: () => string; event_id?: string }; liveTimeline?: { getEvents?: () => unknown[] } }
+        | undefined
 
       if (thread && thread.rootEvent) {
-        const rootEventId = thread.rootEvent.getId ? thread.rootEvent.getId() : thread.rootEvent.event_id
+        const rootEventGetIdMethod = thread.rootEvent.getId as (() => string) | undefined
+        const rootEventId = rootEventGetIdMethod
+          ? rootEventGetIdMethod()
+          : (thread.rootEvent.event_id as string | undefined)
 
-        // Skip if we already have this thread
-        if (threadMap.has(rootEventId)) continue
+        // Skip if we already have this thread or rootEventId is undefined
+        if (!rootEventId || threadMap.has(rootEventId)) continue
 
         // Get thread timeline
         const threadTimeline = thread.liveTimeline
@@ -166,16 +189,18 @@ async function loadThreads() {
 
         // Get unique participants
         const participants = new Set<string>()
-        threadEvents.forEach((e: any) => {
-          const sender = e.getSender ? e.getSender() : e.sender
+        threadEvents.forEach((e: unknown) => {
+          const evt = e as MatrixEventExtended
+          const sender = evt.getSender ? evt.getSender() : evt.sender
           if (sender) participants.add(sender)
         })
 
         // Get latest timestamp
         let latestTimestamp = 0
-        threadEvents.forEach((e: any) => {
-          const ts = e.getTs ? e.getTs() : e.origin_server_ts
-          if (ts > latestTimestamp) latestTimestamp = ts
+        threadEvents.forEach((e: unknown) => {
+          const evt = e as MatrixEventExtended
+          const ts = evt.getTs ? evt.getTs() : evt.origin_server_ts
+          if (ts && ts > latestTimestamp) latestTimestamp = ts
         })
 
         // Get root content
@@ -209,7 +234,7 @@ async function loadThreads() {
 /**
  * Extract message content from event
  */
-function extractContent(event: any): string {
+function extractContent(event: MatrixEventExtended): string {
   const content = event.getContent ? event.getContent() : event.content
   return content?.body || '*Empty message*'
 }
@@ -231,13 +256,26 @@ function getAvatarUrl(userId: string): string {
   const client = matrixClientService.getClient()
   if (!client) return ''
 
-  const room = client.getRoom(roomId)
+  const getRoomMethod = client.getRoom as ((roomId: string) => Record<string, unknown> | null) | undefined
+  const room = getRoomMethod?.(roomId)
   if (!room) return ''
 
-  const member = room.getMember?.(userId)
+  const getMemberMethod = room.getMember as ((userId: string) => Record<string, unknown> | undefined) | undefined
+  const member = getMemberMethod?.(userId)
   if (!member) return ''
 
-  return member.getAvatarUrl?.(client.baseUrl, 32, 32, 'scale', false, true) || ''
+  return (
+    (
+      member.getAvatarUrl as (
+        baseUrl: string,
+        width: number,
+        height: number,
+        resizeMethod: string,
+        allowDefault: boolean,
+        allowDirectLinks: boolean
+      ) => string | undefined
+    )?.(client.baseUrl as string, 32, 32, 'scale', false, true) || ''
+  )
 }
 
 /**
@@ -267,9 +305,19 @@ function refreshThreads() {
  * Open a thread
  */
 function openThread(thread: ThreadInfo) {
-  // TODO: Implement thread detail view
-  logger.info('[ThreadsPanel] Opening thread:', thread.rootEventId)
-  message.info('Thread detail view coming soon')
+  // Navigate to thread detail view with query params
+  router
+    .push({
+      path: '/thread-detail',
+      query: {
+        threadId: thread.rootEventId,
+        roomId: thread.roomId
+      }
+    })
+    .catch((error) => {
+      logger.error('[ThreadsPanel] Failed to navigate to thread detail:', error)
+      message.error('Failed to open thread')
+    })
 }
 
 // Watch for room changes

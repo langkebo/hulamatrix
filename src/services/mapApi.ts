@@ -1,5 +1,6 @@
 import { getSettings } from '@/services/tauriCommand'
 import { wgs84ToGcj02 } from '@/utils/CoordinateTransform'
+import { logger } from '@/utils/logger'
 
 type TransformedCoordinate = {
   lat: number
@@ -29,10 +30,13 @@ type ReverseGeocodeResult = {
 }
 
 // JSONP回调函数存储
-const jsonpCallbacks: { [key: string]: (data: any) => void } = {}
+const jsonpCallbacks: { [key: string]: (data: unknown) => void } = {}
+
+// Window type for JSONP callbacks - use type intersection instead of interface extension
+type WindowWithJsonpCallbacks = Window & Record<string, ((data: unknown) => void) | undefined>
 
 // 创建JSONP请求
-const createJsonpRequest = (url: string, callbackName: string): Promise<any> => {
+const createJsonpRequest = (url: string, callbackName: string): Promise<unknown> => {
   return new Promise((resolve, reject) => {
     // 创建script标签
     const script = document.createElement('script')
@@ -45,17 +49,20 @@ const createJsonpRequest = (url: string, callbackName: string): Promise<any> => 
       if (script.parentNode) {
         script.parentNode.removeChild(script)
       }
-      delete (window as any)[callbackName]
+      // Safe cast to unknown first, then to WindowWithJsonpCallbacks
+      const extendedWindow = window as unknown as WindowWithJsonpCallbacks
+      delete extendedWindow[callbackName]
       delete jsonpCallbacks[callbackName]
       clearTimeout(timeoutId)
     }
 
     // 设置全局回调函数
-    jsonpCallbacks[callbackName] = (data: any) => {
+    jsonpCallbacks[callbackName] = (data: unknown) => {
       cleanup()
       resolve(data)
     }
-    ;(window as any)[callbackName] = jsonpCallbacks[callbackName]
+    const extendedWindow = window as unknown as WindowWithJsonpCallbacks
+    extendedWindow[callbackName] = jsonpCallbacks[callbackName]
 
     script.onerror = () => {
       cleanup()
@@ -65,6 +72,22 @@ const createJsonpRequest = (url: string, callbackName: string): Promise<any> => 
     script.src = `${url}&callback=${callbackName}`
     document.head.appendChild(script)
   })
+}
+
+// 腾讯地图API响应类型
+interface TencentMapCoordResponse {
+  status: number
+  message?: string
+  locations?: Array<{
+    lat: number
+    lng: number
+  }>
+}
+
+interface TencentMapGeocodeResponse {
+  status: number
+  message?: string
+  result?: ReverseGeocodeResult
 }
 
 // 坐标系转换（WGS84 -> GCJ-02）
@@ -94,14 +117,21 @@ export const transformCoordinates = async (lat: number, lng: number): Promise<Tr
   }
 
   try {
-    const queryString = new URLSearchParams(params).toString()
+    // URLSearchParams only accepts string values, so we need to ensure all values are strings
+    const stringParams: Record<string, string> = {
+      locations: params.locations,
+      type: params.type,
+      key: params.key,
+      output: params.output,
+      from: params.from,
+      to: params.to
+    }
+    const queryString = new URLSearchParams(stringParams).toString()
     const url = `https://apis.map.qq.com/ws/coord/v1/translate?${queryString}`
 
-    console.log('腾讯地图坐标转换API请求:', { url, params, callbackName })
+    const data = (await createJsonpRequest(url, callbackName)) as TencentMapCoordResponse
 
-    const data = await createJsonpRequest(url, callbackName)
-
-    console.log('腾讯地图API响应:', data)
+    logger.debug('腾讯地图API响应:', { data, component: 'mapApi' })
 
     if (data.status !== 0) {
       const errorMsg = data.message || `状态码: ${data.status}`
@@ -123,11 +153,9 @@ export const transformCoordinates = async (lat: number, lng: number): Promise<Tr
       lng: location.lng
     }
 
-    console.debug('坐标转换成功:', { original: { lat, lng }, transformed })
-
     return transformed
   } catch (error) {
-    console.warn('腾讯地图API坐标转换失败，使用本地算法转换:', error)
+    logger.warn('腾讯地图API坐标转换失败，使用本地算法转换:', error)
 
     // 降级方案：使用本地坐标转换算法
     const localTransformed = wgs84ToGcj02(lat, lng)
@@ -160,18 +188,25 @@ export const reverseGeocode = async (lat: number, lng: number): Promise<ReverseG
   }
 
   try {
-    const queryString = new URLSearchParams(params as any).toString()
+    // URLSearchParams only accepts string values
+    const stringParams: Record<string, string> = {
+      location: params.location,
+      key: params.key,
+      get_poi: params.get_poi,
+      output: params.output
+    }
+    const queryString = new URLSearchParams(stringParams).toString()
     const url = `https://apis.map.qq.com/ws/geocoder/v1/?${queryString}`
 
-    const data = await createJsonpRequest(url, callbackName)
+    const data = (await createJsonpRequest(url, callbackName)) as TencentMapGeocodeResponse
 
     if (data.status !== 0) {
       throw new Error(`API错误: ${data.status} - ${data.message || '未知错误'}`)
     }
 
-    return data.result
+    return data.result || null
   } catch (error) {
-    console.warn('腾讯地图API逆地理编码失败:', error)
+    logger.warn('腾讯地图API逆地理编码失败:', error)
     return null
   }
 }

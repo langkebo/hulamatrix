@@ -109,14 +109,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { writeImage } from '@tauri-apps/plugin-clipboard-manager'
 import type { Ref } from 'vue'
 import { useCanvasTool } from '@/hooks/useCanvasTool'
 import { isMac } from '@/utils/PlatformConstants'
-import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler.ts'
+import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+
+import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 type ScreenConfig = {
   startX: number
@@ -146,7 +150,26 @@ const maskCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
 // 绘图层
 const drawCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const drawCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
-let drawTools: any
+
+/** Canvas tool return type */
+interface CanvasTool {
+  draw: (type: string) => void
+  drawMosaicBrushSize: (size: number) => void
+  drawRectangle: (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => void
+  drawCircle: (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => void
+  drawArrow: (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => void
+  undo: () => void
+  redo: () => void
+  clearAll: () => void
+  resetState: () => void
+  stopDrawing: () => void
+  clearEvents: () => void
+  canUndo: { value: boolean }
+  startDrawing?: () => void
+  [key: string]: unknown
+}
+
+let drawTools: CanvasTool | null
 // 是否可撤回
 const canUndo = ref(false)
 
@@ -164,12 +187,12 @@ const showButtonGroup: Ref<boolean> = ref(false) // 控制按钮组显示
 
 // 选区拖动区域
 const selectionArea: Ref<HTMLDivElement | null> = ref(null)
-const selectionAreaStyle: Ref<any> = ref({})
+const selectionAreaStyle: Ref<Record<string, string>> = ref({})
 const isDragging: Ref<boolean> = ref(false)
 const dragOffset: Ref<{ x: number; y: number }> = ref({ x: 0, y: 0 })
 
 // 圆角控制器样式
-const borderRadiusControllerStyle: Ref<any> = ref({})
+const borderRadiusControllerStyle: Ref<Record<string, string>> = ref({})
 
 // resize相关
 const isResizing: Ref<boolean> = ref(false)
@@ -222,7 +245,7 @@ const restoreWindowState = async () => {
  */
 const drawImgCanvas = (type: string) => {
   if (!drawTools) {
-    console.warn('绘图工具未初始化')
+    logger.warn('绘图工具未初始化')
     return
   }
 
@@ -255,9 +278,8 @@ const drawImgCanvas = (type: string) => {
     // 调用绘图方法，确保绘图工具被正确激活
     try {
       drawTools.draw(type)
-      console.log(`绘图工具已激活: ${type}`)
     } catch (error) {
-      console.error(`绘图工具激活失败: ${type}`, error)
+      logger.error(`绘图工具激活失败: ${type}`, error)
       currentDrawTool.value = null
       // 激活失败时也要禁用事件
       if (drawCanvas.value) {
@@ -277,14 +299,14 @@ const drawImgCanvas = (type: string) => {
       drawCanvas.value.style.pointerEvents = 'none'
       drawCanvas.value.style.zIndex = '5'
     }
-    console.log('已清空全部涂鸦 (通过重做按钮)')
+    logger.debug('已清空全部涂鸦 (通过重做按钮)', undefined, 'Screenshot')
   } else if (type === 'undo') {
     // 没有可撤回的内容时直接忽略点击
     if (!canUndo.value) return
     // 先停止可能正在进行的绘制，确保一次点击立即生效
     drawTools.stopDrawing && drawTools.stopDrawing()
     drawTools.undo && drawTools.undo()
-    console.log('执行撤销')
+    logger.debug('执行撤销', undefined, 'Screenshot')
   }
 }
 
@@ -303,7 +325,7 @@ const resetDrawTools = () => {
   // 清除绘图canvas的内容
   if (drawCtx.value && drawCanvas.value) {
     drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-    console.log('绘图内容已清除')
+    logger.debug('绘图内容已清除', undefined, 'Screenshot')
   }
 
   // 重置时禁用绘图canvas事件，让事件穿透到选区
@@ -312,7 +334,7 @@ const resetDrawTools = () => {
     drawCanvas.value.style.zIndex = '5'
   }
 
-  console.log('绘图工具已重置')
+  logger.debug('绘图工具已重置', undefined, 'Screenshot')
 }
 
 /**
@@ -344,7 +366,7 @@ const initCanvas = async () => {
     height: `${canvasHeight}`
   }
 
-  const screenshotData = await invokeWithErrorHandler('screenshot', config, {
+  const screenshotData = await invokeWithErrorHandler<string>('screenshot', config, {
     customErrorMessage: '截图失败',
     errorType: ErrorType.Client
   })
@@ -364,7 +386,6 @@ const initCanvas = async () => {
     // 清除绘图canvas的内容
     if (drawCtx.value) {
       drawCtx.value.clearRect(0, 0, canvasWidth, canvasHeight)
-      console.log('绘图canvas已清除')
     }
 
     // 获取屏幕缩放比例
@@ -397,17 +418,22 @@ const initCanvas = async () => {
             drawCanvas.value.style.pointerEvents = 'none'
             drawCanvas.value.style.zIndex = '5'
             // 同步 canUndo 状态到本组件用于禁用撤回按钮
-            if (drawTools?.canUndo) {
-              watch(drawTools.canUndo, (val: boolean) => (canUndo.value = val), { immediate: true })
+            const currentDrawTools = drawTools
+            if (currentDrawTools?.canUndo) {
+              watch(
+                () => currentDrawTools.canUndo?.value,
+                (val) => (canUndo.value = val ?? false),
+                { immediate: true }
+              )
             }
-            console.log('绘图工具初始化完成 (备用方式)')
+            logger.debug('绘图工具初始化完成 (备用方式)', undefined, 'Screenshot')
           }
           isImageLoaded = true
         } catch (error) {
-          console.error('绘制图像到canvas失败:', error)
+          logger.error('绘制图像到canvas失败:', error)
         }
       } else {
-        console.error('imgCtx.value为空')
+        logger.error('imgCtx.value为空')
       }
     }
 
@@ -443,10 +469,15 @@ const initCanvas = async () => {
           drawCanvas.value.style.pointerEvents = 'none'
           drawCanvas.value.style.zIndex = '5'
           // 同步 canUndo 状态到本组件用于禁用撤回按钮
-          if (drawTools?.canUndo) {
-            watch(drawTools.canUndo, (val: boolean) => (canUndo.value = val), { immediate: true })
+          const currentDrawTools = drawTools
+          if (currentDrawTools?.canUndo) {
+            watch(
+              () => currentDrawTools.canUndo?.value,
+              (val) => (canUndo.value = val ?? false),
+              { immediate: true }
+            )
           }
-          console.log('绘图工具初始化完成')
+          logger.debug('绘图工具初始化完成', undefined, 'Screenshot')
         }
         isImageLoaded = true
       } catch (error) {
@@ -563,7 +594,12 @@ const handleMagnifierMouseMove = (event: MouseEvent) => {
 const handleMaskMouseDown = (event: MouseEvent) => {
   // 如果已经显示按钮组，则不执行任何操作
   if (showButtonGroup.value) return
-  const offsetEvent = event as any
+  // MouseEvent扩展接口，包含offsetX和offsetY
+  interface MouseEventWithOffset extends MouseEvent {
+    offsetX: number
+    offsetY: number
+  }
+  const offsetEvent = event as MouseEventWithOffset
   screenConfig.value.startX = offsetEvent.offsetX * screenConfig.value.scaleX
   screenConfig.value.startY = offsetEvent.offsetY * screenConfig.value.scaleY
   screenConfig.value.isDrawing = true
@@ -576,7 +612,12 @@ const handleMaskMouseMove = (event: MouseEvent) => {
   handleMagnifierMouseMove(event)
   if (!screenConfig.value.isDrawing || !maskCtx.value || !maskCanvas.value) return
 
-  const offsetEvent = event as any
+  // MouseEvent扩展接口，包含offsetX和offsetY
+  interface MouseEventWithOffset extends MouseEvent {
+    offsetX: number
+    offsetY: number
+  }
+  const offsetEvent = event as MouseEventWithOffset
 
   // 只在 macOS 上应用性能优化
   if (isMac()) {
@@ -640,7 +681,12 @@ const handleMaskMouseUp = (event: MouseEvent) => {
   if (!screenConfig.value.isDrawing) return
   screenConfig.value.isDrawing = false
   // 记录矩形区域的结束坐标
-  const offsetEvent = event as any
+  // MouseEvent扩展接口，包含offsetX和offsetY
+  interface MouseEventWithOffset extends MouseEvent {
+    offsetX: number
+    offsetY: number
+  }
+  const offsetEvent = event as MouseEventWithOffset
   screenConfig.value.endX = offsetEvent.offsetX * screenConfig.value.scaleX
   screenConfig.value.endY = offsetEvent.offsetY * screenConfig.value.scaleY
 
@@ -809,7 +855,7 @@ const handleSelectionDragStart = (event: MouseEvent) => {
   document.addEventListener('mousemove', handleSelectionDragMove)
   document.addEventListener('mouseup', handleSelectionDragEnd)
 
-  console.log('开始拖动，隐藏按钮组')
+  logger.debug('开始拖动，隐藏按钮组', undefined, 'Screenshot')
 }
 
 // 选区拖动移动
@@ -868,7 +914,7 @@ const handleSelectionDragEnd = () => {
     updateButtonGroupPosition()
   })
 
-  console.log('拖动结束，显示按钮组')
+  logger.debug('拖动结束，显示按钮组', undefined, 'Screenshot')
 }
 
 // resize开始
@@ -1152,7 +1198,7 @@ const confirmSelection = async () => {
 
   // 检查图像是否已加载
   if (!isImageLoaded) {
-    console.error('图像尚未加载完成，请稍后再试')
+    logger.error('图像尚未加载完成，请稍后再试')
     await resetScreenshot()
     return
   }
@@ -1162,7 +1208,7 @@ const confirmSelection = async () => {
   const height = Math.abs(endY - startY)
 
   if (width < 1 || height < 1) {
-    console.error('❌选区尺寸无效:', { width, height })
+    logger.error('❌选区尺寸无效:', { width, height })
     await resetScreenshot()
     return
   }
@@ -1241,7 +1287,7 @@ const confirmSelection = async () => {
         try {
           offscreenCtx.getImageData(0, 0, Math.min(10, width), Math.min(10, height))
         } catch (error) {
-          console.error('获取ImageData失败,可能是安全限制:', error)
+          logger.error('获取ImageData失败,可能是安全限制:', error)
         }
 
         offscreenCanvas.toBlob(async (blob) => {
@@ -1258,31 +1304,31 @@ const confirmSelection = async () => {
                   mimeType: 'image/png'
                 })
               } catch (e) {
-                console.warn('发送截图到主窗口失败:', e)
+                logger.warn('发送截图到主窗口失败:', e)
               }
 
               try {
                 await writeImage(buffer)
-                window.$message?.success(t('message.screenshot.save_success'))
+                msg.success(t('message.screenshot.save_success'))
               } catch (clipboardError) {
-                console.error('复制到剪贴板失败:', clipboardError)
-                window.$message?.error(t('message.screenshot.save_failed'))
+                logger.error('复制到剪贴板失败:', clipboardError)
+                msg.error(t('message.screenshot.save_failed'))
               }
 
               await resetScreenshot()
             } catch (error) {
-              window.$message?.error(t('message.screenshot.save_failed'))
+              msg.error(t('message.screenshot.save_failed'))
               await resetScreenshot()
             }
           } else {
-            window.$message?.error(t('message.screenshot.save_failed'))
+            msg.error(t('message.screenshot.save_failed'))
             await resetScreenshot()
           }
         }, 'image/png')
       }
     } catch (error) {
-      console.error('Canvas操作失败:', error)
-      window.$message?.error(t('message.screenshot.save_failed'))
+      logger.error('Canvas操作失败:', error)
+      msg.error(t('message.screenshot.save_failed'))
       await resetScreenshot()
     }
   }
@@ -1391,7 +1437,6 @@ onMounted(async () => {
   appWindow.listen('capture-reset', () => {
     resetDrawTools()
     resetScreenshot()
-    console.log('📷 Screenshot组件已重置')
   })
 
   // 监听自定义截图事件

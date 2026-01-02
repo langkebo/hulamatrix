@@ -43,6 +43,7 @@ export const useSessionUnreadStore = defineStore(StoresEnum.SESSION_UNREAD, () =
     }
 
     sessions.forEach((session) => {
+      if (!session || !session.roomId) return
       const cached = cache[session.roomId]
       const serverCount = sanitizeCount(session.unreadCount)
       if (typeof cached === 'number') {

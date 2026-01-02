@@ -1,12 +1,16 @@
+import { logger } from '@/utils/logger'
+
+import { computed, nextTick } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { LogicalSize } from '@tauri-apps/api/dpi'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { UserAttentionType } from '@tauri-apps/api/window'
-import { info } from '@tauri-apps/plugin-log'
+
 import { assign } from 'es-toolkit/compat'
 import { CallTypeEnum, EventEnum, RoomTypeEnum } from '@/enums'
 import { useGlobalStore } from '@/stores/global'
 import { isCompatibility, isDesktop, isMac, isWindows } from '@/utils/PlatformConstants'
+import { msg } from '@/utils/SafeUI'
 
 /** 判断是兼容的系统 */
 const isCompatibilityMode = computed(() => isCompatibility())
@@ -85,13 +89,22 @@ export const useWindow = () => {
     minW = 330,
     minH = 495,
     transparent?: boolean,
-    visible = false,
+    visible = true,
     queryParams?: Record<string, string | number | boolean>
   ) => {
     // 移动端不支持窗口管理，直接返回空对象
     if (!isDesktop()) {
       return null
     }
+
+    // 首先检查窗口是否已存在
+    const existingWindow = await WebviewWindow.getByLabel(label)
+    if (existingWindow) {
+      logger.debug('窗口已存在，聚焦到现有窗口', { label }, 'useWindow')
+      await checkWinExist(label)
+      return existingWindow
+    }
+
     const originalLabel = label
     const isMultiMsgWindow = originalLabel.includes(EventEnum.MULTI_MSG)
 
@@ -143,9 +156,9 @@ export const useWindow = () => {
       }
     })
 
-    await webview.once('tauri://error', async () => {
-      info('窗口创建失败')
-      // TODO 这里利用错误处理的方式来查询是否是已经创建了窗口,如果一开始就使用WebviewWindow.getByLabel来查询在刷新的时候就会出现问题 (nyh -> 2024-03-06 23:54:17)
+    await webview.once('tauri://error', async (e) => {
+      logger.warn('窗口创建失败', { error: e, label }, 'useWindow')
+      // 窗口可能已存在，尝试获取现有窗口
       await checkWinExist(label)
     })
 
@@ -159,12 +172,12 @@ export const useWindow = () => {
    * @param payload - 要发送的 JSON 数据对象，不限制字段内容。
    * @returns 返回一个 Promise，表示调用 Rust 后端命令的完成情况。
    */
-  const sendWindowPayload = async (windowLabel: string, payload: any) => {
+  const sendWindowPayload = async (windowLabel: string, payload: unknown) => {
     // 移动端不支持窗口管理
     if (!isDesktop()) {
       return Promise.resolve()
     }
-    console.log('新窗口的载荷：', payload)
+    logger.debug('新窗口的载荷：', { payload, component: 'useWindow' })
     return invoke<void>('push_window_payload', {
       label: windowLabel,
       // 这个payload只要是json就能传，不限制字段
@@ -188,8 +201,8 @@ export const useWindow = () => {
    * const payload = await getWindowPayload<MyPayload>('my-window')
    */
   const getWindowPayload = async <T>(windowLabel: string, once: boolean = true) => {
-    // 移动端不支持窗口管理
-    if (!isDesktop()) {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (!isDesktop() || !isTauri) {
       return Promise.resolve({} as T)
     }
     return await invoke<T>('get_window_payload', { label: windowLabel, once })
@@ -205,13 +218,12 @@ export const useWindow = () => {
    *
    * @example
    * const unlisten = await getWindowPayloadListener<MyPayload>('my-window', (event) => {
-   *   console.log('收到 payload 更新：', event.payload)
    * })
    *
    * // 需要时手动取消监听
    * unlisten()
    */
-  // async function getWindowPayloadListener<T>(this: any, windowLabel: string, callback: (event: any) => void) {
+  // async function getWindowPayloadListener<T>(this: unknown, windowLabel: string, callback: (event: unknown) => void) {
   //   const listenLabel = `${windowLabel}:update`
 
   //   return addListener(
@@ -237,27 +249,49 @@ export const useWindow = () => {
     width: number,
     height: number,
     parent: string,
-    payload?: Record<string, any>,
+    payload?: Record<string, unknown>,
     options?: {
       minWidth?: number
       minHeight?: number
     }
   ) => {
-    // 移动端不支持窗口管理
-    if (!isDesktop()) {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (!isDesktop() || !isTauri) {
       return null
     }
-    // 检查窗口是否已存在
-    const existingWindow = await WebviewWindow.getByLabel(label)
-    const parentWindow = parent ? await WebviewWindow.getByLabel(parent) : null
 
-    if (existingWindow) {
-      if (isMac()) {
-        attachMacModalOverlay(label)
+    let existingWindow: WebviewWindow | null = null
+    let parentWindow: WebviewWindow | null = null
+
+    try {
+      // 检查窗口是否已存在
+      existingWindow = await WebviewWindow.getByLabel(label)
+
+      if (existingWindow) {
+        logger.debug('模态窗口已存在，激活现有窗口', { label }, 'useWindow')
+
+        if (isMac()) {
+          attachMacModalOverlay(label)
+        }
+
+        // 激活现有窗口
+        await checkWinExist(label)
+
+        // 请求用户注意
+        try {
+          await existingWindow.requestUserAttention(UserAttentionType.Critical)
+        } catch (e) {
+          logger.warn('请求用户注意失败:', { error: e, label, component: 'useWindow' })
+        }
+
+        return existingWindow
       }
-      // 如果窗口已存在，则聚焦到现有窗口并使其闪烁
-      existingWindow.requestUserAttention(UserAttentionType.Critical)
-      return existingWindow
+
+      // 获取父窗口引用
+      parentWindow = parent ? await WebviewWindow.getByLabel(parent) : null
+    } catch (error) {
+      logger.error('检查模态窗口是否存在时出错', { error, label, parent }, 'useWindow')
+      return null
     }
 
     // 创建新窗口
@@ -302,7 +336,7 @@ export const useWindow = () => {
             movable: false
           })
         } catch (error) {
-          console.error('设置子窗口不可拖动失败:', error)
+          logger.error('设置子窗口不可拖动失败:', error)
         }
         attachMacModalOverlay(label)
       }
@@ -310,8 +344,8 @@ export const useWindow = () => {
 
     // 监听错误事件
     modalWindow.once('tauri://error', async (e) => {
-      console.error(`${title}窗口创建失败:`, e)
-      window.$message?.error(`创建${title}窗口失败`)
+      logger.error(`${title}窗口创建失败:`, e)
+      msg.error?.(`创建${title}窗口失败`)
       await parentWindow?.setEnabled(true)
     })
 
@@ -323,7 +357,7 @@ export const useWindow = () => {
         try {
           await parentWindow?.setEnabled(true)
         } catch (error) {
-          console.error('重新启用父窗口失败:', error)
+          logger.error('重新启用父窗口失败:', error)
         }
       }
     })
@@ -338,8 +372,8 @@ export const useWindow = () => {
    * @param height 窗口高度
    * */
   const resizeWindow = async (label: string, width: number, height: number) => {
-    // 移动端不支持窗口管理
-    if (!isDesktop()) {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (!isDesktop() || !isTauri) {
       return Promise.resolve()
     }
     const webview = await WebviewWindow.getByLabel(label)
@@ -347,36 +381,74 @@ export const useWindow = () => {
     const newSize = new LogicalSize(width, height)
     // 调用窗口的 setSize 方法进行尺寸调整
     await webview?.setSize(newSize).catch((error) => {
-      console.error('无法调整窗口大小:', error)
+      logger.error('无法调整窗口大小:', error)
     })
   }
 
   /**
-   * 检查窗口是否存在
+   * 检查窗口是否存在并激活
    * @param L 窗口标签
    */
   const checkWinExist = async (L: string) => {
-    // 移动端不支持窗口管理
-    if (!isDesktop()) {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (!isDesktop() || !isTauri) {
       return Promise.resolve()
     }
-    const isExistsWinds = await WebviewWindow.getByLabel(L)
-    if (isExistsWinds) {
-      nextTick().then(async () => {
-        // 如果窗口已存在，首先检查是否最小化了
-        const minimized = await isExistsWinds.isMinimized()
-        // 检查是否是隐藏
-        const hidden = await isExistsWinds.isVisible()
-        if (!hidden) {
-          await isExistsWinds.show()
+
+    try {
+      const isExistsWinds = await WebviewWindow.getByLabel(L)
+      if (isExistsWinds) {
+        logger.debug('找到已存在的窗口，准备激活', { label: L }, 'useWindow')
+
+        // 使用 nextTick 确保 DOM 更新完成
+        await nextTick()
+
+        try {
+          // 检查窗口状态并恢复
+          const minimized = await isExistsWinds.isMinimized()
+          const visible = await isExistsWinds.isVisible()
+
+          if (!visible) {
+            await isExistsWinds.show()
+          }
+
+          if (minimized) {
+            await isExistsWinds.unminimize()
+          }
+
+          // 聚焦窗口
+          await isExistsWinds.setFocus()
+
+          logger.debug('窗口激活成功', { label: L }, 'useWindow')
+        } catch (stateError) {
+          logger.warn(
+            '获取窗口状态失败，尝试直接聚焦',
+            {
+              error: stateError,
+              label: L
+            },
+            'useWindow'
+          )
+
+          // 如果获取状态失败，直接尝试聚焦
+          try {
+            await isExistsWinds.setFocus()
+          } catch (focusError) {
+            logger.error(
+              '聚焦窗口失败',
+              {
+                error: focusError,
+                label: L
+              },
+              'useWindow'
+            )
+          }
         }
-        if (minimized) {
-          // 如果已最小化，恢复窗口
-          await isExistsWinds.unminimize()
-        }
-        // 如果窗口已存在，则给它焦点，使其在最前面显示
-        await isExistsWinds.setFocus()
-      })
+      } else {
+        logger.debug('窗口不存在', { label: L }, 'useWindow')
+      }
+    } catch (error) {
+      logger.error('检查窗口是否存在时出错', { error, label: L }, 'useWindow')
     }
   }
 
@@ -393,7 +465,7 @@ export const useWindow = () => {
     const webview = await WebviewWindow.getByLabel(label)
     if (webview) {
       await webview.setResizable(resizable).catch((error) => {
-        console.error('设置窗口可调整大小失败:', error)
+        logger.error('设置窗口可调整大小失败:', error)
       })
     }
   }
@@ -402,24 +474,24 @@ export const useWindow = () => {
     try {
       const currentSession = globalStore.currentSession
       if (!currentSession) {
-        window.$message?.warning?.('当前会话尚未准备好')
+        msg.warning('当前会话尚未准备好')
         return
       }
       // 判断是否为群聊，如果是群聊则跳过
       if (currentSession.type === RoomTypeEnum.GROUP) {
-        window.$message.warning('群聊暂不支持音视频通话')
+        msg.warning('群聊暂不支持音视频通话')
         return
       }
 
       // 获取当前房间好友的ID（单聊时使用detailId作为remoteUid）
       const remoteUid = currentSession.detailId
       if (!remoteUid) {
-        window.$message.error('无法获取对方用户信息')
+        msg.error('无法获取对方用户信息')
         return
       }
       await createRtcCallWindow(false, remoteUid, globalStore.currentSessionRoomId, callType)
     } catch (error) {
-      console.error('创建视频通话窗口失败:', error)
+      logger.error('创建视频通话窗口失败:', error)
     }
   }
 

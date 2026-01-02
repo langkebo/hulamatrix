@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-1 flex-col">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% fixed z-0 top-0" alt="hula" />
+    <img :src="bgImage" class="w-100% fixed z-0 top-0" alt="hula" />
     <AutoFixHeightPage :show-footer="false" class="z-1">
       <template #header>
         <HeaderBar
@@ -40,101 +40,48 @@
                 @crop="handleCrop" />
             </div>
             <!-- 个人信息 -->
-            <van-form @submit="saveEditInfo">
-              <van-cell-group class="shadow" inset>
+            <form @submit.prevent="saveEditInfo">
+              <div class="shadow rounded-8px p-12px bg-white">
                 <!-- 昵称 -->
-                <van-field
-                  :disabled="true"
-                  v-model="localUserInfo.name"
-                  name="昵称"
-                  label="昵称"
-                  placeholder="请输入昵称"
-                  :rules="[{ required: true, message: '请填写昵称' }]" />
+                <n-form-item label="昵称">
+                  <n-input :value="localUserInfo.name ?? ''" disabled placeholder="请输入昵称" />
+                </n-form-item>
 
                 <!-- 性别 -->
-                <van-field
-                  v-model="genderText"
-                  is-link
-                  readonly
-                  name="picker"
-                  label="性别"
-                  placeholder="点击选择性别"
-                  @click="pickerState.gender = true" />
-
-                <van-popup v-model:show="pickerState.gender" position="bottom">
-                  <van-picker
-                    :columns="pickerColumn.gender"
-                    @confirm="pickerConfirm.gender"
-                    @cancel="pickerState.gender = false" />
-                </van-popup>
+                <n-form-item label="性别">
+                  <n-select :options="pickerColumn.gender || []" :value="localUserInfo.sex ?? null" />
+                </n-form-item>
 
                 <!-- 生日 -->
-                <van-field
-                  v-model="birthday"
-                  name="生日"
-                  label="生日"
-                  placeholder="请选择生日"
-                  is-link
-                  readonly
-                  @click="toEditBirthday" />
+                <n-form-item label="生日">
+                  <n-input v-model:value="birthday" readonly placeholder="请选择生日" @click="toEditBirthday" />
+                </n-form-item>
 
                 <!-- 地区 -->
-                <van-field
-                  v-model="region"
-                  is-link
-                  readonly
-                  name="area"
-                  label="地区选择"
-                  placeholder="点击选择省市区"
-                  @click="pickerState.region = true" />
-                <van-popup v-model:show="pickerState.region" position="bottom">
-                  <van-area
-                    :area-list="areaList"
-                    @confirm="pickerConfirm.region"
-                    @cancel="pickerState.region = false" />
-                </van-popup>
+                <n-form-item label="地区选择">
+                  <n-input v-model:value="region" readonly placeholder="点击选择省市区" />
+                </n-form-item>
 
                 <!-- 手机号 -->
-                <van-field
-                  :disabled="true"
-                  v-model="localUserInfo.phone"
-                  type="tel"
-                  name="手机号"
-                  label="手机号"
-                  placeholder="请输入手机号"
-                  :rules="[{ required: false, message: '请填写手机号' }]" />
+                <n-form-item label="手机号">
+                  <n-input :value="localUserInfo.phone ?? ''" disabled type="text" placeholder="请输入手机号" />
+                </n-form-item>
 
                 <!-- 简介 -->
-                <van-field
-                  v-model="localUserInfo.resume"
-                  name="简介"
-                  label="简介"
-                  type="textarea"
-                  placeholder="请输入个人简介"
-                  rows="3"
-                  autosize
-                  @click="toEditBio" />
-              </van-cell-group>
+                <n-form-item label="简介">
+                  <n-input
+                    :value="localUserInfo.resume ?? ''"
+                    type="textarea"
+                    placeholder="请输入个人简介"
+                    rows="3"
+                    @click="toEditBio" />
+                </n-form-item>
+              </div>
 
               <div class="flex justify-center mt-20px">
-                <button
-                  class=""
-                  style="
-                    background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
-                    border-radius: 30px;
-                    padding: 10px 30px;
-                    color: white;
-                    font-weight: 500;
-                    border: none;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-                    text-align: center;
-                    display: inline-block;
-                  "
-                  type="submit">
-                  保存
-                </button>
+                <n-button type="primary" class="mobile-primary-btn" attr-type="submit">保存</n-button>
               </div>
-            </van-form>
+            </form>
           </div>
         </div>
       </template>
@@ -143,21 +90,19 @@
 </template>
 
 <script setup lang="ts">
-import { areaList } from '@vant/area-data'
+import { ref, onMounted } from 'vue'
+// removed @vant/area-data
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 import router from '@/router'
-import type { ModifyUserInfoType, UserInfoType } from '@/services/types.ts'
+import type { ModifyUserInfoType, UserInfoType } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
-import { useUserStore } from '@/stores/user.ts'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { ModifyUserInfo } from '@/utils/ImRequestUtils'
 
-const genderText = computed(() => {
-  const item = pickerColumn.value.gender.find((i) => i.value === localUserInfo.value.sex)
-  return item ? item.text : ''
-})
-
+import { msg } from '@/utils/SafeUI'
 const region = ref('')
 
 const birthday = ref('')
@@ -169,24 +114,12 @@ const pickerColumn = ref({
   ]
 })
 
-const pickerConfirm = {
-  gender: (data: { selectedOptions: any }) => {
-    const selected = data.selectedOptions[0].value
-    localUserInfo.value.sex = selected
-    pickerState.value.gender = false
-  },
-  region: (data: { selectedOptions: any }) => {
-    const selected = data.selectedOptions
-    region.value = selected.map((item: { text: any }) => item.text).join('/')
-    pickerState.value.region = false
-  }
-}
-
-const pickerState = ref({
-  gender: false,
-  region: false,
-  date: false
-})
+// pickerState 暂时未使用
+// const pickerState = ref({
+//   gender: false,
+//   region: false,
+//   date: false
+// })
 
 const {
   fileInput,
@@ -201,11 +134,16 @@ const {
     // 更新编辑信息
     localUserInfo.value.avatar = downloadUrl
     // 更新用户信息
-    userStore.userInfo!.avatar = downloadUrl
-    // 更新头像更新时间
-    userStore.userInfo!.avatarUpdateTime = Date.now()
+    if (userStore.userInfo) {
+      userStore.userInfo.avatar = downloadUrl
+      // 更新头像更新时间
+      userStore.userInfo.avatarUpdateTime = Date.now()
+    }
     // 更新登录历史记录
-    loginHistoriesStore.loginHistories.filter((item) => item.uid === userStore.userInfo!.uid)[0].avatar = downloadUrl
+    const userHistory = loginHistoriesStore.loginHistories.find((item) => item.uid === userStore.userInfo?.uid)
+    if (userHistory) {
+      userHistory.avatar = downloadUrl
+    }
     // 更新缓存里面的用户信息
     updateCurrentUserCache('avatar', downloadUrl)
   }
@@ -236,20 +174,23 @@ const toEditBio = () => {
   router.push('/mobile/mobileMy/editBio')
 }
 
-const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: any) => {
-  const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
-  if (currentUser) {
-    currentUser[key] = value // 更新缓存里面的用户信息
+const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: string) => {
+  const uid = userStore.userInfo?.uid
+  if (uid) {
+    const currentUser = groupStore.getUserInfo(uid)
+    if (currentUser) {
+      currentUser[key] = value // 更新缓存里面的用户信息
+    }
   }
 }
 
 const saveEditInfo = () => {
   if (!localUserInfo.value.name || localUserInfo.value.name.trim() === '') {
-    window.$message.error('昵称不能为空')
+    msg.error('昵称不能为空')
     return
   }
   // if (localUserInfo.value.modifyNameChance === 0) {
-  //   window.$message.error('改名次数不足')
+  //   msg.error('改名次数不足')
   //   return
   // }
 
@@ -262,26 +203,30 @@ const saveEditInfo = () => {
     modifyNameChance: localUserInfo.value.modifyNameChance!
   }).then(() => {
     // 更新本地缓存的用户信息
-    userStore.userInfo!.name = localUserInfo.value.name!
-    userStore.userInfo!.sex = localUserInfo.value.sex!
-    userStore.userInfo!.phone = localUserInfo.value.phone!
-    loginHistoriesStore.updateLoginHistory(<UserInfoType>userStore.userInfo) // 更新登录历史记录
-    updateCurrentUserCache('name', localUserInfo.value.name) // 更新缓存里面的用户信息
+    if (userStore.userInfo) {
+      userStore.userInfo.name = localUserInfo.value.name ?? userStore.userInfo.name
+      userStore.userInfo.sex = localUserInfo.value.sex ?? userStore.userInfo.sex
+      userStore.userInfo.phone = localUserInfo.value.phone ?? userStore.userInfo.phone
+      loginHistoriesStore.updateLoginHistory(userStore.userInfo as UserInfoType) // 更新登录历史记录
+      updateCurrentUserCache('name', localUserInfo.value.name ?? '') // 更新缓存里面的用户信息
+    }
     if (!localUserInfo.value.modifyNameChance) return
     localUserInfo.value.modifyNameChance -= 1
-    window.$message.success('修改成功')
+    msg.success('修改成功')
   })
 }
 
-onMounted(async () => {
-  localUserInfo.value = { ...userStore.userInfo! }
+onMounted(() => {
+  if (userStore.userInfo) {
+    localUserInfo.value = { ...userStore.userInfo }
+  }
 })
 </script>
 
 <style lang="scss" scoped>
 @use '@/styles/scss/form-item.scss';
 
-@use 'vant/lib/index.css';
+/* removed vant styles */
 
 .custom-border-b-1 {
   border-bottom: 1px solid;

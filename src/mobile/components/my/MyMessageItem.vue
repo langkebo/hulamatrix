@@ -24,6 +24,8 @@
 </template>
 
 <script setup lang="ts">
+import type { PropType } from 'vue'
+
 const props = defineProps({
   message: {
     type: Object as PropType<{

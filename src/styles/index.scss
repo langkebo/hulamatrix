@@ -1,0 +1,49 @@
+/* ==========================================================================
+   主样式入口文件
+   ========================================================================== */
+
+// 引入字体
+@use './scss/global/fonts';
+
+// 引入全局变量和基础样式
+@use './scss/global/variables';
+@use './scss/global/variable';
+
+// 引入主题系统（确保变量先加载）
+@use './scss/themes/index';
+
+// 引入HuLa主题（覆盖默认主题）
+@use './scss/themes/hula';
+@use './scss/global/hula-theme';
+
+// 修复聊天界面显示问题
+@use './scss/global/fix-chat-display';
+@use './scss/global/chat-display';
+
+// 引入全局样式
+@use './scss/global/desktop';
+@use './scss/global/mobile';
+@use './scss/global/driver';
+@use './scss/global/login-bg';
+@use './scss/global/naive-ui-overrides';
+@use './scss/global/animations';
+@use './scss/global/dark-mode-enhancements';
+@use './scss/global/performance-optimizations';
+
+// 引入组件样式
+@use './scss/components/message-bubble';
+@use './scss/components/chat-input';
+@use './scss/components/button';
+@use './scss/chat-sidebar';
+@use './scss/message';
+@use './scss/msg-input';
+@use './scss/render-message';
+@use './scss/form-item';
+@use './scss/chat-header';
+@use './scss/chatBot/code-block';
+@use './scss/agreement';
+@use './scss/login';
+
+// 引入布局样式
+@use '../layout/left/style' as left-style;
+@use '../layout/center/style' as center-style;

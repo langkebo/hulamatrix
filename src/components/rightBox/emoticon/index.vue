@@ -9,7 +9,7 @@
         <!-- 最近使用 -->
         <div v-if="activeIndex === 0">
           <div v-if="emojiRef.historyList?.length > 0">
-            <span v-if="!checkIsUrl(emojiRef.historyList[0])" class="text-12px text-[--text-color]">
+            <span v-if="!checkIsUrl(emojiRef.historyList[0] || '')" class="text-12px text-[--text-color]">
               {{ t('emoticon.recent.title') }}
             </span>
             <n-flex align="center" :class="isMobile() ? 'emoji-grid-mobile mt-12px mb-12px' : 'mt-12px mb-12px'">
@@ -19,7 +19,7 @@
                 class="emoji-item"
                 v-for="(item, index) in [...new Set(emojiRef.historyList)].filter((emoji) => !checkIsUrl(emoji))"
                 :key="index"
-                @click.stop="chooseEmoji(item)">
+                @click.stop="chooseEmoji((typeof item === 'string' ? item : '') || '')">
                 {{ item }}
               </n-flex>
             </n-flex>
@@ -36,7 +36,7 @@
                   class="emoji-item"
                   v-for="(item, index) in items.value"
                   :key="index"
-                  @click.stop="chooseEmoji(item)">
+                  @click.stop="chooseEmoji(String(item || ''))">
                   {{ item }}
                 </n-flex>
               </n-flex>
@@ -143,6 +143,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, reactive, onMounted, onBeforeUnmount } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
@@ -151,13 +152,46 @@ import HulaEmojis from 'hula-emojis'
 import type { EmojiItem as EmojiListItem } from '@/services/types'
 import { useIntersectionTaskQueue } from '@/hooks/useIntersectionTaskQueue'
 import { useEmojiStore } from '@/stores/emoji'
-import { useHistoryStore } from '@/stores/history.ts'
+import { useHistoryStore } from '@/stores/history'
+
+// Local type definitions for hula-emojis package (not exported)
+interface HulaEmojiItem {
+  name: string
+  identifier: string
+  url: string
+  staticUrl?: string
+  id?: number
+  sortOrder?: number
+}
+
+interface HulaEmojiSeries {
+  name: string
+  identifier: string
+  num: number
+  cover: string
+  sortOrder?: number
+  id?: number
+  emojis: HulaEmojiItem[]
+}
+
+interface HulaEmojiData {
+  name: string
+  version: string
+  identifier: string
+  updateTime: number
+  series: HulaEmojiSeries[]
+}
+
+type HulaEmojisType = Record<string, HulaEmojiData>
 import { useUserStore } from '@/stores/user'
-import { getAllTypeEmojis } from '@/utils/Emoji.ts'
+import { getAllTypeEmojis } from '@/utils/Emoji'
 import { md5FromString } from '@/utils/Md5Util'
 import { detectRemoteFileType, getUserEmojiDir } from '@/utils/PathUtil'
 import { isMobile } from '@/utils/PlatformConstants'
+
+import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 type TabItem = {
   id: number
@@ -169,7 +203,7 @@ type TabItem = {
 
 interface EmojiGroupItem {
   name: string
-  value: any[]
+  value: unknown[]
 }
 
 type EmojiType = {
@@ -194,7 +228,7 @@ const emojiStore = useEmojiStore()
 const userStore = useUserStore()
 const { t } = useI18n()
 /** 获取米游社的表情包 */
-const emojisBbs = HulaEmojis.MihoyoBbs
+const emojisBbs = (HulaEmojis as unknown as HulaEmojisType).MihoyoBbs
 const activeIndex = ref(lastEmojiTabIndex)
 const currentSeriesIndex = ref(0)
 // 设置当前右键点击的表情项ID
@@ -224,7 +258,7 @@ const tabList = computed<TabItem[]>(() => {
   ]
 
   // 添加米游社表情包系列
-  const seriesItems: TabItem[] = emojisBbs.series.map((series, index) => ({
+  const seriesItems: TabItem[] = emojisBbs.series.map((series: HulaEmojiSeries, index: number) => ({
     id: index + 1,
     type: 'series',
     name: series.name,
@@ -250,7 +284,7 @@ const emojiObj = ref<EmojiType>({
 } as EmojiType)
 
 if (props.all) {
-  emojiObj.value = res
+  emojiObj.value = res as EmojiType
 } else {
   emojiObj.value = {
     expressionEmojis: res.expressionEmojis,
@@ -293,6 +327,7 @@ const inferExtFromUrl = (url: string) => {
     }
   } catch {
     const clean = url.split('?')[0]
+    if (!clean) return ''
     const index = clean.lastIndexOf('.')
     if (index !== -1) {
       return clean.slice(index + 1)
@@ -311,7 +346,7 @@ const resolveEmojiExtension = async (url: string) => {
     const info = await detectRemoteFileType({ url, fileSize: 1 })
     ext = info?.ext || ''
   } catch (error) {
-    console.warn('识别表情类型失败:', error)
+    logger.warn('识别表情类型失败:', error)
   }
   if (!ext) {
     ext = inferExtFromUrl(url) || 'png'
@@ -354,7 +389,7 @@ const ensureEmojiCacheEnvironment = async () => {
     emojiCacheEnv.value = env
     return env
   } catch (error) {
-    console.error('初始化表情缓存目录失败:', error)
+    logger.error('初始化表情缓存目录失败:', error)
     return null
   }
 }
@@ -390,7 +425,9 @@ const downloadEmojiFile = async (url: string) => {
   }
 
   return await new Promise<Uint8Array>((resolve, reject) => {
-    const handleMessage = (event: MessageEvent<any>) => {
+    const handleMessage = (
+      event: MessageEvent<{ url: string; success: boolean; buffer?: ArrayBuffer; error?: string }>
+    ) => {
       const data = event.data
       if (!data || data.url !== url) {
         return
@@ -459,7 +496,7 @@ const handleEmojiVisibility = async (emojiItem: EmojiListItem) => {
   try {
     await ensureEmojiCached(emojiItem, env.emojiDir, env.baseDir, env.baseDirPath)
   } catch (error) {
-    console.error('缓存表情失败:', emojiItem.expressionUrl, error)
+    logger.error('缓存表情失败:', emojiItem.expressionUrl, 'emoticon')
   } finally {
     cachingEmojiIds.delete(id)
     releaseEmojiObserver(id)
@@ -541,7 +578,7 @@ const checkIsUrl = (str: string) => {
  * @param event 鼠标事件
  * @param item 表情项
  */
-const handleContextMenu = (event: MouseEvent, item: any) => {
+const handleContextMenu = (event: MouseEvent, item: EmojiListItem) => {
   // 阻止原生右键菜单
   event.preventDefault()
   activeMenuId.value = item.id
@@ -554,12 +591,12 @@ const handleContextMenu = (event: MouseEvent, item: any) => {
 const deleteMyEmoji = async (id: string) => {
   try {
     await emojiStore.deleteEmoji(id)
-    window.$message.success(t('emoticon.favorites.deleteSuccess'))
+    msg.success(t('emoticon.favorites.deleteSuccess'))
     // 关闭菜单
     activeMenuId.value = ''
   } catch (error) {
-    console.error('删除表情失败:', error)
-    window.$message.error(t('emoticon.favorites.deleteFail'))
+    logger.error('删除表情失败:', error)
+    msg.error(t('emoticon.favorites.deleteFail'))
   }
 }
 

@@ -20,36 +20,28 @@
     </RouterLink>
   </div>
 </template>
-
 <script setup lang="ts">
-import { useFeedStore } from '@/stores/feed'
-import { storeToRefs } from 'pinia'
-
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+// REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
 type NavItem = {
   label: string
   path: string
   icon: string
   actionIcon: string
 }
-
 const route = useRoute()
-const feedStore = useFeedStore()
-const { unreadCount: feedUnreadCount } = storeToRefs(feedStore)
-
-const getUnReadCount = (label: string) => {
-  if (label === '社区') {
-    return feedUnreadCount.value
-  }
-  return 0
-
+// REMOVED: feedStore and unreadCount - Moments/Feed feature removed
+const getUnReadCount = (_label: string) => {
+  // REMOVED: Feed unread count for '房间' label
   // 其他未读计数暂时关闭（message页面有问题）
   // if (label === '消息') {
   //   return unReadMark.value.newMsgUnreadCount
   // } else if (label === '联系人') {
   //   return unReadMark.value.newFriendUnreadCount
   // }
+  return 0
 }
-
 const navItems: NavItem[] = [
   {
     label: '消息',
@@ -59,15 +51,15 @@ const navItems: NavItem[] = [
   },
   {
     label: '联系人',
-    path: '/mobile/friends',
+    path: '/mobile/mobileFriends',
     icon: 'avatar',
     actionIcon: 'avatar-action'
   },
   {
-    label: '社区',
-    path: '/mobile/community',
-    icon: 'fire',
-    actionIcon: 'fire-action'
+    label: '空间',
+    path: '/mobile/spaces',
+    icon: 'rectangle-small',
+    actionIcon: 'rectangle-small'
   },
   {
     label: '我的',
@@ -77,7 +69,6 @@ const navItems: NavItem[] = [
   }
 ]
 </script>
-
 <style scoped lang="scss">
 .tab-bar {
   border-top: 0.5px solid #e3e3e3;

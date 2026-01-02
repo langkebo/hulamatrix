@@ -1,0 +1,330 @@
+@use 'fonts';
+
+/* ==========================================================================
+   CSS VARIABLES - 设计系统基础
+   ========================================================================== */
+
+:root {
+  /* ==========================================================================
+      过渡动画定义
+     ========================================================================== */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==========================================================================
+      主色调系统
+     ========================================================================== */
+  --primary-color: #13987f;
+  --primary-hover: rgba(19, 152, 127, 0.8);
+  --primary-active: rgba(19, 152, 127, 0.4);
+  --primary-light: #64a29c;
+
+  /* ==========================================================================
+      背景色系统
+     ========================================================================== */
+  --app-bg-color: #FAFAFA;
+  --center-bg-color: #fff;
+  --right-bg-color: #f1f1f1;
+  --left-bg-color: #f1f1f1;
+
+  /* ==========================================================================
+      文字色系统
+     ========================================================================== */
+  --text-primary: #18181c;
+  --text-secondary: #666;
+  --text-tertiary: #999;
+  --text-disabled: #c1c1c1;
+  --text-color: var(--text-primary); /* 向后兼容 */
+
+  /* ==========================================================================
+      边框色系统
+     ========================================================================== */
+  --border-color: #e3e3e3;
+  --border-light: #f0f0f0;
+  --border-hover: #13987f;
+
+  /* ==========================================================================
+      间距系统
+     ========================================================================== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  --spacing-xxxl: 48px;
+
+  /* ==========================================================================
+      圆角系统
+     ========================================================================== */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px; /* 主要圆角 */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  /* ==========================================================================
+      阴影系统
+     ========================================================================== */
+  --shadow-enabled: 1;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow-box-color: rgba(0, 0, 0, 0.08);
+
+  /* ==========================================================================
+      字体系统 - Phase 4 优化
+      使用系统字体优先以优化首屏加载
+     ========================================================================== */
+  --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+
+  /* ==========================================================================
+      状态色系统
+     ========================================================================== */
+  --success-color: #28a745;
+  --success-bg: rgba(40, 167, 69, 0.1);
+
+  --warning-color: #f7b668;
+  --warning-bg: rgba(247, 182, 104, 0.1);
+
+  --danger-color: #c14053;
+  --danger-bg: rgba(193, 64, 83, 0.1);
+
+  --info-color: #17a2b8;
+  --info-bg: rgba(23, 162, 184, 0.1);
+
+  /* ==========================================================================
+      交互状态
+     ========================================================================== */
+  --bg-hover: rgba(19, 152, 127, 0.05);
+  --bg-selected: rgba(19, 152, 127, 0.1);
+  --bg-active: rgba(19, 152, 127, 0.15);
+  --bg-disabled: #f5f5f5;
+
+  /* ==========================================================================
+      组件特定变量
+     ========================================================================== */
+
+  /* 按钮系统 */
+  --button-bg: var(--primary-color);
+  --button-bg-hover: var(--primary-hover);
+  --button-bg-active: var(--primary-active);
+  --button-text: #fff;
+  --button-height: 36px;
+  --button-height-lg: 40px;
+  --button-height-sm: 32px;
+
+  /* 输入框系统 */
+  --input-bg: #fff;
+  --input-bg-disabled: #f5f5f5;
+  --input-border: var(--border-color);
+  --input-border-hover: var(--primary-color);
+  --input-border-focus: var(--primary-color);
+  --input-padding-x: var(--spacing-md);
+  --input-padding-y: var(--spacing-sm);
+  --input-height: 36px;
+
+  /* 搜索框 */
+  --search-bg-color: #EAEAEA;
+  --search-placeholder: #999;
+
+  /* 消息系统 */
+  --msg-list-bg: #fff;
+  --msg-hover: #f3f3f3;
+  --msg-active: var(--primary-color);
+  --msg-active-text: #fff;
+
+  /* 聊天气泡 */
+  --chat-bubble-max-width: clamp(240px, 32vw, 720px);
+  --chat-bubble-padding-x: clamp(10px, 2vw, 16px);
+  --chat-bubble-padding-y: clamp(6px, 1.2vw, 10px);
+  --chat-bubble-radius: clamp(14px, 2vw, 18px);
+  --chat-left-bg: #cef9ec;
+  --chat-right-bg: #f1f1f1;
+  --chat-text-color: #505050;
+
+  /* 头像系统 */
+  --avatar-xs: 24px;
+  --avatar-sm: 32px;
+  --avatar-md: 40px;
+  --avatar-lg: 56px;
+  --avatar-xl: 80px;
+  --avatar-2xl: 120px;
+  --avatar-border-color: #fff;
+
+  /* 弹窗系统 */
+  --modal-bg: rgba(0, 0, 0, 0.5);
+  --popover-bg: #fff;
+  --tooltip-bg: rgba(0, 0, 0, 0.8);
+  --tooltip-text: #fff;
+
+  /* 菜单系统 */
+  --menu-bg: linear-gradient(45deg, rgba(255, 255, 255, 0.45) 40%, rgba(255, 255, 255, 0.65) 60%);
+  --menu-item-height: 36px;
+  --menu-item-padding-x: var(--spacing-md);
+  --menu-hover: rgba(10, 20, 28, 0.1);
+
+  /* 图标系统 */
+  --icon-color: #000;
+  --icon-color-hover: var(--primary-color);
+  --icon-color-disabled: var(--text-disabled);
+  --icon-size-xs: 14px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+
+  /* 特殊用途 */
+  --blur-enabled: 1;
+  --caret-color: var(--primary-color);
+  --selection-bg: rgba(19, 152, 127, 0.3);
+
+  /* 响应式尺寸 */
+  --sz-avatar-xl: clamp(96px, 25vw, 146px);
+  --sz-avatar-lg: clamp(80px, 22vw, 106px);
+  --pad-container-x: clamp(16px, 3vw, 40px);
+  --touch-min-h: clamp(44px, 6vh, 56px);
+  --sz-chat-input-min-h: clamp(36px, 6vh, 62px);
+  --sz-chat-input-pad-x: clamp(8px, 1.5vw, 16px);
+  --sz-chat-input-pad-y: clamp(4px, 1vh, 8px);
+}
+
+/* ==========================================================================
+   暗色主题
+   ========================================================================== */
+
+html[data-theme='dark'] {
+  /* 背景色系统 */
+  --app-bg-color: #1b1b1b;
+  --center-bg-color: #1b1b1b;
+  --right-bg-color: #161616;
+  --left-bg-color: #1b1b1b;
+
+  /* 文字色系统 */
+  --text-primary: #fff;
+  --text-secondary: #ccc;
+  --text-tertiary: #999;
+  --text-disabled: #575757;
+
+  /* 边框色系统 */
+  --border-color: #404040;
+  --border-light: #333;
+
+  /* 阴影系统 */
+  --shadow-box-color: rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+
+  /* 交互状态 */
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-selected: rgba(19, 152, 127, 0.15);
+  --bg-active: rgba(19, 152, 127, 0.2);
+  --bg-disabled: #2a2a2a;
+
+  /* 组件特定变量 */
+  --input-bg: #2a2a2a;
+  --input-bg-disabled: #1f1f1f;
+  --input-border: #404040;
+  --search-bg-color: #282828;
+
+  /* 消息系统 */
+  --msg-list-bg: #1b1b1b;
+  --msg-hover: #2d2d2d;
+  --msg-active: rgba(19, 152, 127, 0.6);
+
+  /* 聊天气泡 */
+  --chat-left-bg: #355b55;
+  --chat-right-bg: #161616;
+  --chat-text-color: #b1b1b1;
+
+  /* 头像系统 */
+  --avatar-border-color: #1b1b1b;
+
+  /* 弹窗系统 */
+  --popover-bg: #303030;
+  --modal-bg: rgba(0, 0, 0, 0.7);
+
+  /* 菜单系统 */
+  --menu-bg: linear-gradient(45deg, rgba(33, 33, 33, 0.65) 60%, rgba(33, 33, 33, 0.95) 90%);
+  --menu-hover: #323232;
+
+  /* 图标系统 */
+  --icon-color: #c1c1c1;
+  --icon-color-disabled: #575757;
+}
+
+/* ==========================================================================
+   主题切换过渡
+   ========================================================================== */
+
+* {
+  transition: background-color var(--transition-base) !important,
+              color var(--transition-base) !important,
+              border-color var(--transition-base) !important;
+}
+
+/* 不参与过渡的元素 */
+.no-theme-transition {
+  transition: none !important;
+}
+
+/* ==========================================================================
+   主题特定背景
+   ========================================================================== */
+
+/* 默认主题 - 渐变背景 */
+:root[data-theme="default"] {
+  --right-theme-bg: radial-gradient(
+    circle at top left,
+    rgba(255, 209, 255, 0.3) 20%,
+    rgba(130, 193, 187, 0.3) 100%
+  );
+}
+
+:root[data-theme="dark"][data-theme-style="default"] {
+  --right-theme-bg: radial-gradient(
+    circle at top left,
+    rgba(19, 152, 127, 0.2) 20%,
+    rgba(19, 152, 127, 0.05) 100%
+  );
+}
+
+/* 简洁主题 - 纯色背景 */
+:root[data-theme="simple"] {
+  --right-theme-bg: #f1f1f1;
+}
+
+:root[data-theme="dark"][data-theme-style="simple"] {
+  --right-theme-bg: #161616;
+}
+
+/* ==========================================================================
+   基础样式重置
+   ========================================================================== */
+
+* {
+  font-family: var(--font-family), sans-serif !important;
+  caret-color: var(--caret-color) !important;
+}
+
+html,
+body,
+svg {
+  &::selection {
+    background: var(--selection-bg);
+  }
+  outline: none;
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: var(--selection-bg);
+}

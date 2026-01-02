@@ -1,12 +1,19 @@
+import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { PiniaSharedState } from 'pinia-shared-state' // 标签页共享存储状态
 
 export const pinia = createPinia()
+
 // 默认开启持久化存储
 pinia
   .use(
     createPersistedState({
-      auto: true
+      auto: true,
+      // 为新的Core Store配置特殊的持久化策略
+      serializer: {
+        serialize: JSON.stringify,
+        deserialize: JSON.parse
+      }
     })
   )
   .use(
@@ -20,3 +27,19 @@ pinia
       type: 'native'
     })
   )
+
+// 导出核心Store
+export { useAppStore } from './core'
+
+// 导出兼容层（用于渐进式迁移）
+export * from './compatibility'
+
+// 为了兼容性，暂时导出旧的Store（逐步迁移）
+export * from './matrixAuth'
+export * from './chat'
+export * from './userStatus'
+export * from './friends'
+export * from './rtc'
+export * from './search'
+export * from './setting'
+export * from './global'

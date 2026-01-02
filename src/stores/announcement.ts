@@ -1,9 +1,19 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import { StoresEnum } from '@/enums'
-import { useCachedStore } from '@/stores/cached'
+import { useCachedStore } from '@/stores/dataCache'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
+import { logger } from '@/utils/logger'
+
+/** Announcement item */
+interface Announcement {
+  id?: string
+  content?: string
+  top?: boolean
+  [key: string]: unknown
+}
 
 export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
   const globalStore = useGlobalStore()
@@ -12,7 +22,7 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
   const cachedStore = useCachedStore()
 
   // 公告相关状态
-  const announList = ref<any[]>([])
+  const announList = ref<Announcement[]>([])
   const announNum = ref(0)
   const announError = ref(false)
   const isAddAnnoun = ref(false)
@@ -46,7 +56,7 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
     announError.value = false
   }
 
-  const formatRecords = (records: any[]) => {
+  const formatRecords = (records: Announcement[]) => {
     if (!records || records.length === 0) return []
     const topAnnouncement = records.find((item) => item.top)
     if (!topAnnouncement) return records
@@ -56,7 +66,7 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
   const loadGroupAnnouncements = async (roomId?: string) => {
     const targetRoomId = roomId ?? globalStore.currentSessionRoomId
     if (!targetRoomId) {
-      console.error('当前会话没有roomId')
+      logger.error('当前会话没有roomId')
       return
     }
 
@@ -73,8 +83,9 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
       }
 
       if (data) {
-        announList.value = formatRecords([...(data.records ?? [])])
-        announNum.value = parseInt(data.total, 10)
+        const dataWithRecords = data as { records?: unknown[]; total?: string | number }
+        announList.value = formatRecords((dataWithRecords.records ?? []) as Announcement[])
+        announNum.value = parseInt(String(dataWithRecords.total ?? '0'), 10)
         announError.value = false
       } else {
         announList.value = []
@@ -82,7 +93,7 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
         announError.value = false
       }
     } catch (error) {
-      console.error('加载群公告失败:', error)
+      logger.error('加载群公告失败:', error)
       if (targetRoomId === globalStore.currentSessionRoomId) {
         announError.value = true
       }

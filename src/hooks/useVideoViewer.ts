@@ -5,14 +5,15 @@ import { MsgEnum } from '@/enums'
 import { useWindow } from '@/hooks/useWindow'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
-import { useVideoViewer as useVideoViewerStore } from '@/stores/videoViewer'
+import { useMediaViewerStore, type MediaItem } from '@/stores/mediaViewer'
 import { isMobile } from '@/utils/PlatformConstants'
+import { logger } from '@/utils/logger'
 
 /** 视频处理 */
 export const useVideoViewer = () => {
   const { createWebviewWindow } = useWindow()
-  const VideoViewerStore = useVideoViewerStore()
   const userStore = useUserStore()
+  const mediaViewerStore = useMediaViewerStore()
 
   // 获取视频文件名
   const getVideoFilename = (url: string) => {
@@ -72,7 +73,7 @@ export const useVideoViewer = () => {
         return await exists(localPath, { baseDir })
       }
     } catch (error) {
-      console.error('检查视频下载状态失败:', error)
+      logger.error('检查视频下载状态失败:', error)
     }
     return false
   }
@@ -156,12 +157,15 @@ export const useVideoViewer = () => {
     const processedIndex = processedList.findIndex((path) => path === currentVideoPath || path === url)
     const finalIndex = processedIndex !== -1 ? processedIndex : index
 
-    // 统一使用列表模式，不再区分单视频模式
-    VideoViewerStore.resetVideoListOptimized(processedList, finalIndex)
-    VideoViewerStore.$patch({
-      videoList: [...processedList],
-      currentVideoIndex: finalIndex
-    })
+    // 使用 mediaViewerStore API 管理状态
+    const mediaItems: MediaItem[] = processedList.map((videoPath) => ({
+      id: videoPath,
+      url: videoPath,
+      type: 'video'
+    }))
+
+    mediaViewerStore.showViewer(mediaItems[finalIndex], mediaItems)
+    logger.info('准备播放视频列表，索引:', finalIndex)
 
     // 检查现有窗口
     const existingWindow = await WebviewWindow.getByLabel('videoViewer')

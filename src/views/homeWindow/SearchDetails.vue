@@ -68,13 +68,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { MittEnum, RoomTypeEnum } from '@/enums'
-import { useCommon } from '@/hooks/useCommon.ts'
+import { useCommon } from '@/hooks/useCommon'
 import { useMitt } from '@/hooks/useMitt'
-import { useChatStore } from '@/stores/chat.ts'
+import { useChatStore } from '@/stores/chat'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 type SessionItem = {
   avatar: string
@@ -107,9 +109,9 @@ const HISTORY_STORAGE_KEY = 'HULA_SEARCH_HISTORY'
 const historyList = ref<HistoryItem[]>([])
 
 // 监听搜索框输入变化
-useMitt.on('search_input_change', (value) => {
-  searchQuery.value = value
-  handleSearch(value)
+useMitt.on('search_input_change', (value: unknown) => {
+  searchQuery.value = value as string
+  handleSearch(value as string)
 })
 
 // 处理搜索
@@ -119,7 +121,7 @@ const handleSearch = (value: string) => {
     return
   }
   // 根据名称和最后一条消息内容进行搜索匹配
-  searchResults.value = chatStore.sessionList.filter((session) => {
+  searchResults.value = chatStore.sessionList.filter((session: SessionItem) => {
     // 在名称中搜索
     const nameMatch = session.name.toLowerCase().includes(value.toLowerCase())
     return nameMatch
@@ -152,7 +154,7 @@ const loadHistory = () => {
       }
     }
   } catch (error) {
-    console.error('加载历史记录失败:', error)
+    logger.error('加载历史记录失败:', error instanceof Error ? error : new Error(String(error)))
     // 如果加载失败，重置为空数组
     historyList.value = []
   }
@@ -163,14 +165,15 @@ const saveHistoryToStorage = () => {
   try {
     localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyList.value))
   } catch (error) {
-    console.error('保存历史记录失败:', error)
+    logger.error('保存历史记录失败:', error instanceof Error ? error : new Error(String(error)))
   }
 }
 
 // 保存搜索关键词到历史记录
 const saveToHistory = (term: string) => {
-  console.log(`保存搜索记录: ${term}`)
-  // 可以实现关键词搜索记录的保存
+  try {
+    localStorage.setItem('HULA_SEARCH_TERM_LAST', String(term))
+  } catch {}
 }
 
 // 保存会话到历史记录
@@ -240,3 +243,4 @@ onMounted(() => {
   loadHistory()
 })
 </script>
+import { ref, onMounted, nextTick } from 'vue'

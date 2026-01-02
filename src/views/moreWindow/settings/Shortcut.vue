@@ -131,14 +131,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
+import type { Ref } from 'vue'
 import { emit, listen } from '@tauri-apps/api/event'
 import { isRegistered } from '@tauri-apps/plugin-global-shortcut'
 import { MacOsKeyEnum } from '@/enums'
-import { useGlobalShortcut } from '@/hooks/useGlobalShortcut.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useGlobalShortcut } from '@/hooks/useGlobalShortcut'
+import { useSettingStore } from '@/stores/setting'
 import { isMac } from '@/utils/PlatformConstants'
-import { useSendOptions } from './config.ts'
+
+import { msg } from '@/utils/SafeUI'
+import { useSendOptions } from './config'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/utils/logger'
 
 const { t } = useI18n()
 const sendOptions = useSendOptions()
@@ -160,7 +165,7 @@ const { getDefaultShortcuts } = useGlobalShortcut()
 const isMacPlatform = isMac()
 
 // 统一的快捷键配置
-const shortcutConfigs: Record<string, ShortcutConfig> = {
+const shortcutConfigs: { screenshot: ShortcutConfig; openMainPanel: ShortcutConfig } = {
   screenshot: {
     key: 'screenshot',
     value: ref(settingStore.shortcuts?.screenshot),
@@ -197,6 +202,7 @@ const shortcutRegistered = shortcutConfigs.screenshot.isRegistered
 const openMainPanelShortcutRegistered = shortcutConfigs.openMainPanel.isRegistered
 
 // 全局快捷键开关状态
+// settingStore already declared above
 const globalShortcutEnabled = ref(settingStore.shortcuts?.globalEnabled ?? false)
 
 // 发送消息快捷键单独处理
@@ -371,14 +377,12 @@ const createFocusHandler = (config: ShortcutConfig) => {
 
     config.isCapturing.value = true
     config.original.value = config.value.value
-    console.log(`开始编辑${config.displayName}`)
   }
 }
 
 const createBlurHandler = (config: ShortcutConfig, saveFunction: () => Promise<void>) => {
   return async () => {
     config.isCapturing.value = false
-    console.log(`结束编辑${config.displayName}`)
 
     // 如果快捷键有变化，则保存
     if (config.value.value !== config.original.value) {
@@ -404,8 +408,6 @@ const handleSendMessageBlur = async () => {
 const createSaveShortcutFunction = (config: ShortcutConfig) => {
   return async () => {
     try {
-      console.log(`[Settings] 开始保存${config.displayName}: ${config.value.value}`)
-
       // 根据快捷键类型调用对应的store方法
       if (config.key === 'screenshot') {
         settingStore.setScreenshotShortcut(config.value.value)
@@ -414,17 +416,14 @@ const createSaveShortcutFunction = (config: ShortcutConfig) => {
       }
 
       config.original.value = config.value.value
-      console.log(`[Settings] 已保存到 Pinia store`)
 
       // 通知主窗口更新快捷键（跨窗口事件）
-      console.log(`[Settings] 发送 ${config.eventName} 事件到主窗口`)
       await emit(config.eventName, { shortcut: config.value.value })
-      console.log(`[Settings] ${config.eventName} 事件已发送`)
 
-      window.$message.success(t('config.shortcut.shortcut_update_result', { name: config.displayName }))
+      msg.success(t('config.shortcut.shortcut_update_result', { name: config.displayName }))
     } catch (error) {
-      console.error(`Failed to save ${config.key} shortcut:`, error)
-      window.$message.error(t('config.shortcut.shortcut_setting_failed', { name: config.displayName }))
+      logger.error(`Failed to save ${config.key} shortcut:`, error instanceof Error ? error : new Error(String(error)))
+      msg.error(t('config.shortcut.shortcut_setting_failed', { name: config.displayName }))
 
       // 恢复原来的快捷键
       config.value.value = config.original.value
@@ -460,18 +459,16 @@ const handleOpenMainPanelBlur = createBlurHandler(shortcutConfigs.openMainPanel,
 // 处理全局快捷键开关切换
 const handleGlobalShortcutToggle = async (enabled: boolean) => {
   try {
-    console.log(`[Settings] 全局快捷键开关切换为: ${enabled ? '开启' : '关闭'}`)
-
     // 保存到 store
     settingStore.setGlobalShortcutEnabled(enabled)
 
     // 通知主窗口更新全局快捷键状态
     await emit('global-shortcut-enabled-changed', { enabled })
 
-    window.$message.success(enabled ? t('setting.shortcut.global_enable') : t('setting.shortcut.global_disable'))
+    msg.success(enabled ? t('setting.shortcut.global_enable') : t('setting.shortcut.global_disable'))
   } catch (error) {
-    console.error('Failed to toggle global shortcut:', error)
-    window.$message.error(t('setting.shortcut.global_toggle_failed'))
+    logger.error('Failed to toggle global shortcut:', error instanceof Error ? error : new Error(String(error)))
+    msg.error(t('setting.shortcut.global_toggle_failed'))
 
     // 恢复原来的值
     globalShortcutEnabled.value = !enabled
@@ -484,11 +481,11 @@ const saveSendMessageShortcut = async () => {
     // 保存到 pinia store
     settingStore.setSendMessageShortcut(sendMessageShortcut.value)
 
-    window.$message.success(t('setting.shortcut.send_message_updated'))
+    msg.success(t('setting.shortcut.send_message_updated'))
   } catch (error) {
-    console.error('Failed to save send message shortcut:', error)
-    window.$message.error('发送消息快捷键设置失败')
-    window.$message.success(t('setting.shortcut.send_message_failed'))
+    logger.error('Failed to save send message shortcut:', error instanceof Error ? error : new Error(String(error)))
+    msg.error('发送消息快捷键设置失败')
+    msg.success(t('setting.shortcut.send_message_failed'))
 
     // 恢复原来的值
     sendMessageShortcut.value = settingStore.chat?.sendKey || 'Enter'
@@ -497,16 +494,13 @@ const saveSendMessageShortcut = async () => {
 
 // 通用的事件监听器创建
 const createRegistrationListener = (config: ShortcutConfig) => {
-  return listen(config.registrationEventName, (event: any) => {
+  return listen(config.registrationEventName, (event: { payload: { shortcut: string; registered: boolean } }) => {
     const { shortcut, registered } = event.payload
-    console.log(`[Settings] 收到${config.displayName}状态更新: ${shortcut} -> ${registered ? '已绑定' : '未绑定'}`)
 
     // 只有当前快捷键匹配时才更新状态
     if (shortcut === config.value.value) {
-      console.log(`[Settings] ${config.displayName}匹配，更新状态为: ${registered ? '已绑定' : '未绑定'}`)
       config.isRegistered.value = registered
     } else {
-      console.log(`[Settings] ${config.displayName}不匹配，忽略状态更新`)
     }
   })
 }

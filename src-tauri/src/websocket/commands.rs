@@ -1,6 +1,6 @@
 use crate::AppData;
 
-use super::{client::WebSocketClient, types::*};
+use super::{client::WebSocketClient, types::{WebSocketConfig, ConnectionState, ConnectionHealth}};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, OnceLock};
 use tauri::{AppHandle, State};
@@ -49,11 +49,18 @@ pub struct SuccessResponse {
 }
 
 impl SuccessResponse {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             success: true,
             message: None,
         }
+    }
+}
+
+impl Default for SuccessResponse {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -102,7 +109,7 @@ pub async fn ws_init_connection(
 
     tokio::spawn(async move {
         match client.connect(config).await {
-            Ok(_) => {
+            Ok(()) => {
                 info!("WebSocket connection initialized successfully");
             }
             Err(e) => {
@@ -141,10 +148,10 @@ pub async fn ws_send_message(
 
     if let Some(client) = client_guard.as_ref() {
         match client.send_message(params.data).await {
-            Ok(_) => Ok(SuccessResponse::new()),
+            Ok(()) => Ok(SuccessResponse::new()),
             Err(e) => {
-                error!(" Failed to send message: {}", e);
-                Err(format!("发送失败: {}", e))
+                error!(" Failed to send message: {e}");
+                Err(format!("发送失败: {e}"))
             }
         }
     } else {
@@ -189,13 +196,13 @@ pub async fn ws_force_reconnect(_app_handle: AppHandle) -> Result<SuccessRespons
 
     if let Some(client) = client_guard.as_ref() {
         match client.force_reconnect().await {
-            Ok(_) => {
+            Ok(()) => {
                 info!("WebSocket reconnected successfully");
                 Ok(SuccessResponse::new())
             }
             Err(e) => {
-                error!(" WebSocket reconnection failed: {}", e);
-                Err(format!("重连失败: {}", e))
+                error!(" WebSocket reconnection failed: {e}");
+                Err(format!("重连失败: {e}"))
             }
         }
     } else {

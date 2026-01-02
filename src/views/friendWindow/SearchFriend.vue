@@ -5,15 +5,13 @@
       class="absolute right-0 w-full z-999"
       :shrink="false"
       :max-w="false"
-      :current-label="WebviewWindow.getCurrent().label" />
-
+      :current-label="currentLabel" />
     <!-- 标题 -->
     <p
       class="absolute-x-center h-fit pt-6px text-(13px [--text-color]) select-none cursor-default"
       data-tauri-drag-region>
       {{ t('home.search_window.title') }}
     </p>
-
     <!-- 主要内容 -->
     <n-flex vertical :size="14" class="p-[45px_0_18px]" data-tauri-drag-region>
       <!-- 搜索框 -->
@@ -23,7 +21,7 @@
           type="text"
           size="small"
           style="border-radius: 8px; border: 1px solid #ccc"
-          :placeholder="searchPlaceholder[searchType]"
+          :placeholder="getPlaceholder"
           :maxlength="20"
           round
           spellCheck="false"
@@ -42,24 +40,22 @@
           </template>
         </n-input>
       </div>
-
       <!-- 搜索类型切换 -->
       <n-tabs v-model:value="searchType" animated size="small" @update:value="handleTypeChange">
-        <n-tab-pane v-for="tab in tabs" :key="tab.name" :name="tab.name" :tab="tab.label">
-          <template>
-            <span>{{ tab.label }}</span>
+        <n-tab-pane v-for="tab in tabs" :key="tab.name" :name="tab.name">
+          <template #tab>
+            <RouterLink v-if="tab.name === 'group'" to="/rooms/manage">房间</RouterLink>
+            <span v-else>{{ tab.label }}</span>
           </template>
-
           <!-- 初始加载状态 -->
           <template v-if="initialLoading">
             <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
           </template>
-
           <!-- 搜索结果 -->
           <template v-else-if="searchResults.length">
             <FloatBlockList
               :data-source="searchResults"
-              item-key="id"
+              item-key="uid"
               :item-height="64"
               max-height="calc(100vh / var(--page-scale, 1) - 128px)"
               style-id="search-hover-classes">
@@ -95,7 +91,6 @@
                         </n-tooltip>
                       </n-flex>
                     </n-flex>
-
                     <!-- 三种状态的按钮 -->
                     <n-button
                       secondary
@@ -110,12 +105,10 @@
               </template>
             </FloatBlockList>
           </template>
-
           <!-- 搜索中状态 -->
           <template v-else-if="loading">
             <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
           </template>
-
           <!-- 搜索无结果状态 -->
           <template v-else-if="hasSearched">
             <n-empty
@@ -123,7 +116,6 @@
               style="height: calc(100vh / var(--page-scale, 1) - 200px)"
               :description="t('home.search_window.empty.no_result')" />
           </template>
-
           <!-- 默认空状态 -->
           <template v-else>
             <n-empty
@@ -140,42 +132,105 @@
         </n-tab-pane>
       </n-tabs>
     </n-flex>
+    
+    <!-- 添加好友对话框 -->
+    <AddFriendModal
+      v-model:show="showAddFriendModal"
+      :user-id="addFriendTarget.userId"
+      :display-name="addFriendTarget.displayName"
+      :avatar="addFriendTarget.avatar"
+      @success="handleAddFriendSuccess"
+    />
   </div>
 </template>
-
 <script setup lang="ts">
+import { ref, computed, onMounted, reactive } from 'vue'
 import { emitTo } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useDebounceFn } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import FloatBlockList from '@/components/common/FloatBlockList.vue'
-import { ThemeEnum } from '@/enums'
-import { RoomTypeEnum } from '@/enums/index.ts'
+import AddFriendModal from '@/components/friends/AddFriendModal.vue'
+import { ThemeEnum, MittEnum } from '@/enums'
+import { RoomTypeEnum } from '@/enums/index'
 import { useWindow } from '@/hooks/useWindow'
-import type { FriendItem, GroupDetailReq } from '@/services/types'
-import { useCachedStore } from '@/stores/cached'
-import { useContactStore } from '@/stores/contacts'
+import type { GroupDetailReq } from '@/services/types'
+import { useCachedStore } from '@/stores/dataCache'
+import { useFriendsStore } from '@/stores/friends'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
+import { useMitt } from '@/hooks/useMitt'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { searchFriend, searchGroup } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { msg } from '@/utils/SafeUI'
+import router from '@/router'
+import { searchUsers as synapseSearchUsers, sendRequest } from '@/integrations/synapse/friends'
+import { searchUsers as matrixSearchUsers } from '@/integrations/matrix/search'
+import { useMatrixAuthStore } from '@/stores/matrixAuth'
+import { logger } from '@/utils/logger'
+import { matrixClientService } from '@/integrations/matrix/client'
+
+// Type definitions for search results
+interface SearchResultItem {
+  uid: string
+  account: string
+  name: string
+  avatar: string
+  roomId?: string // For groups
+  itemIds?: string[] // Badges
+  deleteStatus?: boolean
+  extJson?: Record<string, unknown>
+}
+
+interface FriendStoreItem {
+  user_id: string
+  [key: string]: unknown
+}
+
+interface GroupSearchResult {
+  roomId?: string
+  account: string
+  name: string
+  avatar: string
+  deleteStatus?: boolean
+  extJson?: Record<string, unknown>
+}
+
+interface MatrixUserSearchResult {
+  id: string
+  title?: string
+  avatar?: string
+}
+
+interface SynapseUserSearchResult {
+  user_id: string
+  display_name?: string
+}
+
+interface LegacyUserSearchResult {
+  uid: string
+  name: string
+  avatar: string
+  account: string
+}
 
 const { createWebviewWindow } = useWindow()
-const contactStore = useContactStore()
+const friendsStore = useFriendsStore()
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
 const settingStore = useSettingStore()
 const cachedStore = useCachedStore()
-const { themes } = storeToRefs(settingStore)
-
+const themes = computed(() => settingStore.themes)
+const isTauriEnv = typeof window !== 'undefined' && '__TAURI__' in window
+const currentLabel = computed(() => (isTauriEnv ? WebviewWindow.getCurrent().label : 'web'))
 // 定义标签页
 const { t } = useI18n()
 const tabs = computed(() => [
   { name: 'recommend', label: t('home.search_window.tabs.recommend') },
   { name: 'user', label: t('home.search_window.tabs.user') },
-  { name: 'group', label: t('home.search_window.tabs.group') }
+  { name: 'group', label: '房间' }
 ])
 // 搜索类型
 const searchType = ref<'recommend' | 'user' | 'group'>('recommend')
@@ -185,10 +240,11 @@ const searchPlaceholder = computed(() => ({
   user: t('home.search_window.placeholder.user'),
   group: t('home.search_window.placeholder.group')
 }))
+const getPlaceholder = computed(() => searchPlaceholder.value[searchType.value])
 // 搜索值
 const searchValue = ref('')
 // 搜索结果
-const searchResults = ref<any[]>([])
+const searchResults = ref<SearchResultItem[]>([])
 // 是否已经搜索过
 const hasSearched = ref(false)
 // 加载状态
@@ -196,12 +252,18 @@ const loading = ref(false)
 // 初始加载状态
 const initialLoading = ref(true)
 
+// 添加好友对话框状态
+const showAddFriendModal = ref(false)
+const addFriendTarget = reactive({
+  userId: '',
+  displayName: '',
+  avatar: ''
+})
+
 // 从缓存存储中获取用户数据
 const getCachedUsers = () => {
   // 从缓存中获取所有用户
   const users = groupStore.allUserInfo
-  console.log(users)
-
   // 筛选出需要显示的用户（ID在20016-20030之间的用户）
   return sortSearchResults(
     users
@@ -214,35 +276,30 @@ const getCachedUsers = () => {
         account: user.account,
         name: user.name,
         avatar: user.avatar,
-        itemIds: user.itemIds || null
+        itemIds: user.itemIds || undefined
       })),
     'recommend'
   )
 }
-
 // 清空搜索结果
 const clearSearchResults = () => {
   searchResults.value = []
   hasSearched.value = false
   searchValue.value = ''
 }
-
 // 处理复制账号
 const handleCopy = (account: string) => {
   navigator.clipboard.writeText(account)
-  window.$message.success(t('home.search_window.notification.copy_success', { account }))
+  msg.success(t('home.search_window.notification.copy_success', { account }))
 }
-
 // 处理清空按钮点击
 const handleClear = () => {
   clearSearchResults()
-
   // 如果是推荐标签，重新加载推荐用户
   if (searchType.value === 'recommend') {
     searchResults.value = getCachedUsers()
   }
 }
-
 // 处理搜索
 const handleSearch = useDebounceFn(async () => {
   if (!searchValue.value.trim()) {
@@ -252,15 +309,17 @@ const handleSearch = useDebounceFn(async () => {
     }
     return
   }
-
   loading.value = true
   hasSearched.value = true
-
   try {
     if (searchType.value === 'group') {
       // 调用群聊搜索接口
-      const res = await searchGroup({ account: searchValue.value })
-      searchResults.value = res.map((group: any) => ({
+      const res = (await requestWithFallback({
+        url: 'search_group',
+        params: { account: searchValue.value }
+      })) as GroupSearchResult[]
+      searchResults.value = (res || []).map((group: GroupSearchResult) => ({
+        uid: group.roomId || group.account, // Use roomId or account as unique key
         account: group.account,
         name: group.name,
         avatar: group.avatar,
@@ -269,14 +328,101 @@ const handleSearch = useDebounceFn(async () => {
         roomId: group.roomId
       }))
     } else if (searchType.value === 'user') {
-      // 调用好友搜索接口
-      const res = await searchFriend({ key: searchValue.value })
-      searchResults.value = res.map((user: any) => ({
-        uid: user.uid,
-        name: user.name,
-        avatar: user.avatar,
-        account: user.account
-      }))
+      // SDK Integration: Prioritize Matrix SDK's searchUserDirectory (standard API)
+      let searchSucceeded = false
+      try {
+        logger.info('[SearchFriend] Trying Matrix user directory search (SDK preferred)')
+        const matrixResults = await matrixSearchUsers(searchValue.value, 20)
+        if (matrixResults && matrixResults.length > 0) {
+          searchResults.value = matrixResults.map((user: MatrixUserSearchResult) => {
+            // 尝试获取用户头像 URL
+            let avatar = ''
+            if (user.avatar) {
+              try {
+                const client = matrixClientService.getClient()
+                if (client && user.avatar.startsWith('mxc://')) {
+                  const mxcUrlToHttpMethod = client.mxcUrlToHttp as
+                    | ((mxcUrl: string, width: number, height: number, method: string) => string | undefined)
+                    | undefined
+                  avatar = mxcUrlToHttpMethod?.(user.avatar, 64, 64, 'crop') || ''
+                } else {
+                  avatar = user.avatar
+                }
+              } catch {}
+            }
+            return {
+              uid: user.id,
+              name: user.title || user.id.split(':')[0].substring(1),
+              avatar,
+              account: user.id
+            }
+          })
+          searchSucceeded = true
+        }
+      } catch (matrixError) {
+        logger.warn('[SearchFriend] Matrix user directory search failed', { error: matrixError })
+      }
+
+      // Fallback to Synapse Friends API (custom extension)
+      if (!searchSucceeded) {
+        try {
+          const searchResult = await synapseSearchUsers(searchValue.value)
+          if (searchResult.status === 'ok' && searchResult.users && searchResult.users.length > 0) {
+            // Synapse API 返回结果
+            searchResults.value = await Promise.all(
+              searchResult.users.map(async (user: SynapseUserSearchResult) => {
+                // 提取用户名部分（去掉服务器后缀）
+                const userName = user.user_id.split(':')[0].substring(1)
+                // 尝试获取用户头像
+                let avatar = ''
+                try {
+                  const client = matrixClientService.getClient()
+                  if (client) {
+                    const getProfileInfoMethod = client.getProfileInfo as
+                      | ((userId: string) => Promise<{ avatar_url?: string } | undefined>)
+                      | undefined
+                    const profile = await getProfileInfoMethod?.(user.user_id)
+                    if (profile?.avatar_url) {
+                      const mxcUrlToHttpMethod = client.mxcUrlToHttp as
+                        | ((mxcUrl: string, width: number, height: number, method: string) => string | undefined)
+                        | undefined
+                      avatar = mxcUrlToHttpMethod?.(profile.avatar_url, 64, 64, 'crop') || ''
+                    }
+                  }
+                } catch {}
+                return {
+                  uid: user.user_id,
+                  name: user.display_name || userName,
+                  avatar,
+                  account: user.user_id
+                }
+              })
+            )
+            searchSucceeded = true
+          }
+        } catch (synapseError) {
+          logger.warn('[SearchFriend] Synapse search failed', { error: synapseError })
+        }
+      }
+
+      // Final fallback to legacy search interface
+      if (!searchSucceeded) {
+        try {
+          const res = (await requestWithFallback({
+            url: 'search_friend',
+            params: { key: searchValue.value }
+          })) as LegacyUserSearchResult[]
+          searchResults.value = (res || []).map((user: LegacyUserSearchResult) => ({
+            uid: user.uid,
+            name: user.name,
+            avatar: user.avatar,
+            account: user.account
+          }))
+        } catch (fallbackError) {
+          logger.warn('[SearchFriend] Fallback search also failed', { error: fallbackError })
+          searchResults.value = []
+        }
+      }
     } else {
       // 推荐标签搜索结果
       const cachedUsers = getCachedUsers()
@@ -288,17 +434,15 @@ const handleSearch = useDebounceFn(async () => {
     // 通用排序函数
     searchResults.value = sortSearchResults(searchResults.value, searchType.value)
   } catch (error) {
-    window.$message.error(t('home.search_window.notification.search_fail'))
+    msg.error(t('home.search_window.notification.search_fail'))
     searchResults.value = []
   } finally {
     loading.value = false
   }
 }, 300)
-
 // 处理选项卡切换
 const handleTypeChange = () => {
   clearSearchResults()
-
   if (searchType.value === 'recommend') {
     searchResults.value = getCachedUsers()
   }
@@ -308,14 +452,13 @@ const groupStore = useGroupStore()
 const isInGroup = (roomId: string) => {
   return groupStore.groupDetails.some((group: GroupDetailReq) => group.roomId === roomId)
 }
-
 // 通用排序函数
-const sortSearchResults = (items: any[], type: 'user' | 'group' | 'recommend') => {
+const sortSearchResults = (items: SearchResultItem[], type: 'user' | 'group' | 'recommend') => {
   if (type === 'group') {
     // 群聊排序逻辑：已加入的群聊排在前面
     return items.sort((a, b) => {
-      const aInGroup = isInGroup(a.roomId)
-      const bInGroup = isInGroup(b.roomId)
+      const aInGroup = isInGroup(a.roomId || '')
+      const bInGroup = isInGroup(b.roomId || '')
       if (aInGroup && !bInGroup) return -1
       if (!aInGroup && bInGroup) return 1
       return 0
@@ -326,32 +469,26 @@ const sortSearchResults = (items: any[], type: 'user' | 'group' | 'recommend') =
       // 处理uid可能是string或number的情况
       const aUid = String(a.uid)
       const bUid = String(b.uid)
-
       // 自己排在最前面
       if (isCurrentUser(aUid)) return -1
       if (isCurrentUser(bUid)) return 1
-
       // 好友排在第二位
       const aIsFriend = isFriend(aUid)
       const bIsFriend = isFriend(bUid)
       if (aIsFriend && !bIsFriend) return -1
       if (!aIsFriend && bIsFriend) return 1
-
       return 0
     })
   }
 }
-
 // 判断是否已经是好友
 const isFriend = (uid: string) => {
-  return contactStore.contactsList.some((contact: FriendItem) => contact.uid === uid)
+  return (friendsStore.friends || []).some((f: FriendStoreItem) => String(f.user_id) === String(uid))
 }
-
 // 判断是否是当前登录用户
 const isCurrentUser = (uid: string) => {
   return userStore.userInfo!.uid === uid
 }
-
 // 获取按钮文本
 const getButtonText = (uid: string, roomId: string) => {
   // 群聊逻辑
@@ -363,7 +500,6 @@ const getButtonText = (uid: string, roomId: string) => {
   if (isFriend(uid)) return t('home.search_window.buttons.message')
   return t('home.search_window.buttons.add')
 }
-
 // 获取按钮类型
 const getButtonType = (uid: string, roomId: string) => {
   // 群聊逻辑
@@ -375,18 +511,23 @@ const getButtonType = (uid: string, roomId: string) => {
   if (isFriend(uid)) return 'info'
   return 'primary'
 }
-
 // 处理按钮点击
-const handleButtonClick = (item: any) => {
+const handleButtonClick = (item: SearchResultItem) => {
+  logger.info('[SearchFriend] handleButtonClick called', {
+    item,
+    searchType: searchType.value,
+    isCurrentUser: isCurrentUser(item.uid),
+    isFriend: isFriend(item.uid)
+  })
+
   if (searchType.value === 'group') {
-    if (isInGroup(item.roomId)) {
+    if (isInGroup(item.roomId || '')) {
       handleSendGroupMessage(item)
     } else {
       handleAddFriend(item)
     }
     return
   }
-
   // 用户逻辑保持不变
   if (isCurrentUser(item.uid)) {
     handleEditProfile()
@@ -396,64 +537,143 @@ const handleButtonClick = (item: any) => {
     handleAddFriend(item)
   }
 }
-
 // 处理添加好友或群聊
-const handleAddFriend = async (item: any) => {
+const handleAddFriend = async (item: SearchResultItem) => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  logger.info('[SearchFriend] handleAddFriend called', {
+    item,
+    searchType: searchType.value,
+    isTauri
+  })
+
   if (searchType.value === 'user' || searchType.value === 'recommend') {
-    await createWebviewWindow(
-      t('home.search_window.modal.add_friend'),
-      'addFriendVerify',
-      380,
-      300,
-      '',
-      false,
-      380,
-      300
-    )
-    globalStore.addFriendModalInfo.show = true
-    globalStore.addFriendModalInfo.uid = item.uid
+    if (isTauri) {
+      await createWebviewWindow(
+        t('home.search_window.modal.add_friend'),
+        'addFriendVerify',
+        380,
+        300,
+        '',
+        false,
+        380,
+        300
+      )
+      globalStore.addFriendModalInfo.show = true
+      globalStore.addFriendModalInfo.uid = item.uid
+    } else {
+      // Web 环境：显示添加好友对话框
+      const targetUserId =
+        typeof item.account === 'string' && item.account.startsWith('@') ? item.account : String(item.uid)
+      logger.info('[SearchFriend] Opening AddFriendModal', {
+        targetUserId,
+        displayName: item.name,
+        avatar: item.avatar
+      })
+      addFriendTarget.userId = targetUserId
+      addFriendTarget.displayName = item.name || ''
+      addFriendTarget.avatar = item.avatar || ''
+      showAddFriendModal.value = true
+      logger.info('[SearchFriend] showAddFriendModal set to', showAddFriendModal.value)
+    }
   } else {
-    await createWebviewWindow(t('home.search_window.modal.add_group'), 'addGroupVerify', 380, 400, '', false, 380, 400)
-    globalStore.addGroupModalInfo.show = true
-    globalStore.addGroupModalInfo.account = item.account
-    globalStore.addGroupModalInfo.name = item.name
-    globalStore.addGroupModalInfo.avatar = item.avatar
+    if (isTauri) {
+      await createWebviewWindow(
+        t('home.search_window.modal.add_group'),
+        'addGroupVerify',
+        380,
+        400,
+        '',
+        false,
+        380,
+        400
+      )
+      globalStore.addGroupModalInfo.show = true
+      globalStore.addGroupModalInfo.account = item.account
+      globalStore.addGroupModalInfo.name = item.name
+      globalStore.addGroupModalInfo.avatar = item.avatar
+    } else {
+      try {
+        await router.push('/rooms/manage')
+      } catch {
+        msg.error(t('home.search_window.notification.search_fail'))
+      }
+    }
+  }
+}
+// 处理编辑个人资料
+const handleEditProfile = async () => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+  if (isTauri) {
+    // Tauri 环境：使用跨窗口事件
+    const homeWindow = await WebviewWindow.getByLabel('home')
+    await homeWindow?.setFocus()
+    emitTo('home', 'open_edit_info')
+  } else {
+    // Web 环境：使用 Mitt 事件
+    useMitt.emit(MittEnum.OPEN_EDIT_INFO)
+  }
+}
+// 处理发送消息
+const handleSendMessage = async (item: SearchResultItem) => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+  if (isTauri) {
+    // Tauri 环境：使用跨窗口事件
+    emitTo('home', 'search_to_msg', { uid: item.uid, roomType: RoomTypeEnum.SINGLE })
+  } else {
+    // Web 环境：使用路由和 Mitt 事件
+    await router.push('/message')
+    // 发送消息定位事件
+    useMitt.emit(MittEnum.LOCATE_SESSION, { roomId: item.uid })
+    useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
+  }
+}
+// 处理发送群消息
+const handleSendGroupMessage = async (item: SearchResultItem) => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+  if (isTauri) {
+    // Tauri 环境：使用跨窗口事件
+    emitTo('home', 'search_to_msg', {
+      uid: item.roomId,
+      roomType: RoomTypeEnum.GROUP
+    })
+  } else {
+    // Web 环境：使用路由和 Mitt 事件
+    await router.push('/message')
+    // 发送消息定位事件
+    useMitt.emit(MittEnum.LOCATE_SESSION, { roomId: item.roomId })
+    useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
   }
 }
 
-// 处理编辑个人资料
-const handleEditProfile = async () => {
-  // 获取主窗口
-  const homeWindow = await WebviewWindow.getByLabel('home')
-  // 激活主窗口
-  await homeWindow?.setFocus()
-  // 打开个人资料编辑窗口
-  emitTo('home', 'open_edit_info')
-}
-
-// 处理发送消息
-const handleSendMessage = async (item: any) => {
-  emitTo('home', 'search_to_msg', { uid: item.uid, roomType: RoomTypeEnum.SINGLE })
-}
-
-// 处理发送群消息
-const handleSendGroupMessage = async (item: any) => {
-  emitTo('home', 'search_to_msg', {
-    uid: item.roomId,
-    roomType: RoomTypeEnum.GROUP
-  })
+// 添加好友成功处理
+const handleAddFriendSuccess = async () => {
+  // 刷新好友列表
+  await friendsStore.refreshAll()
+  // 重新搜索以更新按钮状态
+  if (searchValue.value) {
+    await handleSearch()
+  }
 }
 
 onMounted(async () => {
-  await getCurrentWebviewWindow().show()
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+  // 只在 Tauri 环境下调用 webview API
+  if (isTauri) {
+    try {
+      await getCurrentWebviewWindow().show()
+    } catch (e) {
+      logger.warn('[SearchFriend] Failed to show webview window', { error: e })
+    }
+  }
 
   try {
-    // 初始化联系人列表
-    await contactStore.getContactList(true)
-
+    await friendsStore.refreshAll()
     // 从缓存中获取推荐用户
     const cachedUsers = getCachedUsers()
-
     // 默认展示推荐用户
     if (searchType.value === 'recommend') {
       searchResults.value = cachedUsers
@@ -463,28 +683,24 @@ onMounted(async () => {
   }
 })
 </script>
-
 <style scoped lang="scss">
 .action-button {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.9;
+  color: var(--text-color);
 }
-
 .action-button:hover {
   opacity: 1;
   transform: scale(1.06);
   box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.25);
 }
-
 .action-button:active {
   transform: scale(0.98);
 }
-
 /* 移除标签内容的内边距 */
 :deep(.n-tab-pane) {
   padding: 0 !important;
 }
-
 :deep(.n-tabs .n-tabs-nav-scroll-wrapper) {
   padding: 0 20px 10px !important;
 }

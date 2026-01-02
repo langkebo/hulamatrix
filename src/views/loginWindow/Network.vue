@@ -107,17 +107,31 @@
   </n-config-provider>
 </template>
 <script setup lang="ts">
+import { onMounted, reactive, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { darkTheme, lightTheme } from 'naive-ui'
-import { storeToRefs } from 'pinia'
 import router from '@/router'
 import { updateSettings } from '@/services/tauriCommand'
 import { useSettingStore } from '@/stores/setting'
-import type { ProxySettings } from '@/typings/global'
+
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+
+interface ProxySettings {
+  apiType: string
+  apiIp: string
+  apiPort: string
+  apiSuffix: string
+  wsType: string
+  wsIp: string
+  wsPort: string
+  wsSuffix: string
+  [key: string]: string
+}
 
 const { t } = useI18n()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const naiveTheme = computed(() => (themes.value.content === 'dark' ? darkTheme : lightTheme))
 
 const apiOptions = computed(() => [
@@ -193,7 +207,7 @@ const handleSave = async () => {
       (savedProxy.apiType && (!savedProxy.apiIp || !savedProxy.apiPort)) ||
       (savedProxy.wsType && (!savedProxy.wsIp || !savedProxy.wsPort))
     ) {
-      window.$message.warning(t('login.network.messages.incomplete'))
+      msg.warning(t('login.network.messages.incomplete'))
       return
     }
     let proxySettings
@@ -219,11 +233,11 @@ const handleSave = async () => {
     const settings = JSON.stringify(proxySettings)
     localStorage.setItem('proxySettings', settings)
     await updateTauriSettings(proxySettings)
-    console.log('settings', proxySettings)
+    logger.debug('settings', proxySettings)
 
-    window.$message.success(t('login.network.messages.save_success'))
+    msg.success(t('login.network.messages.save_success'))
   } catch (error) {
-    window.$message.error(t('login.network.messages.save_failed', { error }))
+    msg.error(t('login.network.messages.save_failed', { error }))
   }
 }
 
@@ -233,7 +247,7 @@ const updateTauriSettings = async (proxySettings: ProxySettings) => {
   const wsUrl = proxySettings.wsType + '://' + proxySettings.wsIp + ':' + proxySettings.wsPort + proxySettings.wsSuffix
 
   await updateSettings({ baseUrl, wsUrl }).catch((err) => {
-    window.$message.error(t('login.network.messages.save_failed', { error: err }))
+    msg.error(t('login.network.messages.save_failed', { error: err }))
   })
 }
 </script>

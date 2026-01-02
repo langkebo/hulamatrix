@@ -1,4 +1,14 @@
-const QINIU_HOST_KEYWORDS = ['cdn.hulaspark.com']
+/**
+ * @deprecated 七牛云图片处理工具已废弃
+ *
+ * 项目已迁移到 Matrix 媒体服务器，此文件仅用于兼容历史数据。
+ * 新功能请使用 Matrix 的缩略图 API (buildThumbnailUrl from @/integrations/matrix/mxc)
+ *
+ * 注意：由于 QINIU_HOST_KEYWORDS 为空，此工具实际上不会匹配任何 URL。
+ * 如果需要支持历史七牛云链接，请在配置中添加相应的 host keywords。
+ */
+
+const QINIU_HOST_KEYWORDS: string[] = []
 
 const isQiniuHost = (hostname: string) => {
   const lowerHost = hostname.toLowerCase()

@@ -1,5 +1,6 @@
 import { computed, type ComputedRef, type Ref, unref } from 'vue'
 import { open } from '@tauri-apps/plugin-shell'
+import { logger } from '@/utils/logger'
 
 export type LinkSegment = {
   text: string
@@ -61,7 +62,7 @@ export const openExternalUrl = async (url: string) => {
   try {
     await open(normalizedUrl)
   } catch (error) {
-    console.error('打开链接失败:', error)
+    logger.error('打开链接失败:', error)
     if (typeof window !== 'undefined') {
       window.open(normalizedUrl, '_blank', 'noreferrer')
     }

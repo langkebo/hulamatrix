@@ -12,8 +12,22 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { NCard, NSpin, NButton, NSpace, NAvatar, NTooltip, NEmpty } from 'naive-ui'
-import { matrixClientService } from '@/services/matrixClientService'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
+
+// Type definitions for Matrix events
+interface MatrixEvent {
+  getType?: () => string
+  type?: string
+  getContent?: () => { body?: string }
+  content?: { body?: string }
+  getSender?: () => string
+  sender?: string
+  getTs?: () => number
+  origin_server_ts?: number
+  getId?: () => string
+  event_id?: string
+}
 
 interface Props {
   roomId: string
@@ -34,8 +48,8 @@ const emit = defineEmits<{
 
 // State
 const loading = ref(true)
-const threadEvents = ref<any[]>([])
-const threadRoot = ref<any>(null)
+const threadEvents = ref<MatrixEvent[]>([])
+const threadRoot = ref<MatrixEvent | null>(null)
 const participantIds = ref<string[]>([])
 const isExpanded = ref(!props.inline)
 const replyCount = ref(0)
@@ -68,7 +82,8 @@ async function loadThread() {
       throw new Error('Matrix client not initialized')
     }
 
-    const room = client.getRoom(props.roomId)
+    const getRoomMethod = client.getRoom as ((roomId: string) => Record<string, unknown> | null) | undefined
+    const room = getRoomMethod?.(props.roomId)
     if (!room) {
       throw new Error(`Room not found: ${props.roomId}`)
     }
@@ -79,12 +94,16 @@ async function loadThread() {
     })
 
     // Use SDK's native getThread() method
-    const thread = room.getThread()?.findThreadForEvent(props.rootEventId)
+    const getThreadMethod = room.getThread as (() => { findThreadForEvent?: (eventId: string) => unknown }) | undefined
+    const thread = getThreadMethod?.()?.findThreadForEvent?.(props.rootEventId) as
+      | { rootEvent?: unknown; liveTimeline?: { getEvents?: () => unknown[] } }
+      | undefined
 
     if (!thread) {
       logger.warn('[ThreadTimeline] Thread not found for event:', props.rootEventId)
       // Fall back to loading just the root event
-      const rootEvent = room.findEventById?.(props.rootEventId)
+      const findEventByIdMethod = room.findEventById as ((eventId: string) => unknown) | undefined
+      const rootEvent = findEventByIdMethod?.(props.rootEventId)
       if (rootEvent) {
         threadRoot.value = rootEvent
       }
@@ -92,15 +111,15 @@ async function loadThread() {
     }
 
     // Get thread root event
-    threadRoot.value = thread.rootEvent
+    threadRoot.value = (thread.rootEvent as MatrixEvent) || null
 
     // Get thread timeline (replies)
     const timeline = thread.liveTimeline
     if (timeline) {
-      const events = timeline.getEvents ? timeline.getEvents() : []
+      const events = (timeline.getEvents ? timeline.getEvents() : []) as MatrixEvent[]
 
       // Filter for message events only
-      threadEvents.value = events.filter((event: any) => {
+      threadEvents.value = events.filter((event: MatrixEvent) => {
         const type = event.getType ? event.getType() : event.type
         return type === 'm.room.message'
       })
@@ -110,7 +129,7 @@ async function loadThread() {
 
       // Get participant user IDs
       const participants = new Set<string>()
-      threadEvents.value.forEach((event: any) => {
+      threadEvents.value.forEach((event: MatrixEvent) => {
         const sender = event.getSender ? event.getSender() : event.sender
         if (sender) participants.add(sender)
       })
@@ -143,13 +162,24 @@ function getAvatarUrl(userId: string): string {
   const client = matrixClientService.getClient()
   if (!client) return ''
 
-  const room = client.getRoom(props.roomId)
+  const getRoomMethod = client.getRoom as ((roomId: string) => Record<string, unknown> | null) | undefined
+  const room = getRoomMethod?.(props.roomId)
   if (!room) return ''
 
-  const member = room.getMember?.(userId)
+  const getMemberMethod = room.getMember as ((userId: string) => Record<string, unknown> | undefined) | undefined
+  const member = getMemberMethod?.(userId)
   if (!member) return ''
 
-  const avatarUrl = member.getAvatarUrl?.(client.baseUrl, 32, 32, 'scale', false, true)
+  const avatarUrl = (
+    member.getAvatarUrl as (
+      baseUrl: string,
+      width: number,
+      height: number,
+      resizeMethod: string,
+      allowDefault: boolean,
+      allowDirectLinks: boolean
+    ) => string | undefined
+  )?.(client.baseUrl as string, 32, 32, 'scale', false, true)
 
   return avatarUrl || ''
 }
@@ -157,7 +187,7 @@ function getAvatarUrl(userId: string): string {
 /**
  * Extract message content
  */
-function getMessageContent(event: any): string {
+function getMessageContent(event: MatrixEvent): string {
   const content = event.getContent ? event.getContent() : event.content
   return content?.body || ''
 }
@@ -165,7 +195,7 @@ function getMessageContent(event: any): string {
 /**
  * Format timestamp
  */
-function formatTimestamp(event: any): string {
+function formatTimestamp(event: MatrixEvent): string {
   const ts = event.getTs ? event.getTs() : event.origin_server_ts
   if (!ts) return ''
 
@@ -183,8 +213,9 @@ function formatTimestamp(event: any): string {
 /**
  * Handle click on event (navigate to it)
  */
-function handleEventClick(event: any) {
-  const eventId = event.getId ? event.getId() : event.event_id
+function handleEventClick(event: MatrixEvent) {
+  const eventId = event.getId ? event.getId() : event.event_id || ''
+  if (!eventId) return
   emit('navigateToMessage', eventId)
 }
 
@@ -263,13 +294,13 @@ watch(
       <!-- Replies -->
       <div
         v-for="event in visibleEvents"
-        :key="event.getId?.() || event.event_id"
+        :key="event.getId?.() || event.event_id || ''"
         class="thread-reply"
         @click="handleEventClick(event)">
         <div class="message message--reply">
           <div class="message__header">
             <span class="message__sender">
-              {{ getDisplayName(event.getSender?.() || event.sender) }}
+              {{ getDisplayName(event.getSender?.() || event.sender || '') }}
             </span>
             <span class="message__time">
               {{ formatTimestamp(event) }}

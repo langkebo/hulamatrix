@@ -1,12 +1,15 @@
-﻿import { save } from '@tauri-apps/plugin-dialog'
+import { save } from '@tauri-apps/plugin-dialog'
 import type { useDownload } from '@/hooks/useDownload'
+
+import { msg } from '@/utils/SafeUI'
 import { extractFileName } from './Formatting'
+import { logger, toError } from '@/utils/logger'
 
 const VIDEO_FILE_EXTENSIONS = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'] as const
 
 type DownloadFileFn = ReturnType<typeof useDownload>['downloadFile']
 
-type SaveAttachmentOptions = {
+export type SaveAttachmentOptions = {
   url?: string
   downloadFile: DownloadFileFn
   defaultFileName?: string
@@ -26,17 +29,18 @@ const saveAttachmentAs = async ({
   errorMessage
 }: SaveAttachmentOptions) => {
   if (!url) {
-    window.$message.error('未找到下载链接')
+    msg.error('未找到下载链接')
     return
   }
 
   const filename = defaultFileName || extractFileName(url)
 
   try {
-    const savePath = await save({
-      defaultPath: filename,
-      filters
-    })
+    const dialogOpts: { defaultPath: string; filters?: Array<{ name: string; extensions: string[] }> } = {
+      defaultPath: filename
+    }
+    if (filters) dialogOpts.filters = filters
+    const savePath = await save(dialogOpts)
 
     if (!savePath) return
 
@@ -44,12 +48,12 @@ const saveAttachmentAs = async ({
     await downloadFile(url, normalizedPath)
 
     if (successMessage) {
-      window.$message.success(successMessage)
+      msg.success(successMessage)
     }
   } catch (error) {
-    console.error(errorMessage || '保存文件失败:', error)
+    logger.error(errorMessage || '保存文件失败:', toError(error))
     if (errorMessage) {
-      window.$message.error(errorMessage)
+      msg.error(errorMessage)
     }
   }
 }

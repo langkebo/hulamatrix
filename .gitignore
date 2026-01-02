@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .DS_Store
 *.suo
@@ -41,3 +46,19 @@ GEMINI.md
 
 src/typings/components.pc.d.ts
 src/typings/components.mobile.d.ts
+
+# Test results and reports
+test-results/
+reports/
+*.optimized.json
+
+# Temporary directories
+true/
+.trae/
+
+# Type check logs
+typecheck-errors.log
+rust-clippy-errors.log
+
+# Migration reports
+imrequest-migration-report.json

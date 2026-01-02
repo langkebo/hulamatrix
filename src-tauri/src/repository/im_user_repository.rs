@@ -4,7 +4,7 @@ use entity::prelude::ImUserEntity;
 use sea_orm::{ActiveValue::Set, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter};
 use tracing::{error, info};
 
-/// 更新用户的 is_init 状态
+/// 更新用户的 `is_init` 状态
 pub async fn update_user_init_status<C>(
     db: &C,
     login_uid: &str,

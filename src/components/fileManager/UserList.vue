@@ -42,7 +42,7 @@
           <component
             :is="getItemComponent()"
             v-for="item in filteredList"
-            :key="(item as any).id || (item as any).roomId || (item as any).uid"
+            :key="getItemKey(item)"
             :user="item"
             :room="item"
             :contact="item"
@@ -72,16 +72,33 @@
 </template>
 
 <script setup lang="ts">
-import { invoke } from '@tauri-apps/api/core'
-import { useContactStore } from '@/stores/contacts.ts'
+import { ref, inject, computed, watch, type Ref } from 'vue'
 import { useGroupStore } from '@/stores/group'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import UserItem from './UserItem.vue'
 import { useI18n } from 'vue-i18n'
 
+// Phase 4 Migration: 移除对 Tauri WebSocket 命令的依赖
+// 改用 enhancedFriendsService (基于 Synapse 扩展 API)
+import { enhancedFriendsService } from '@/services/enhancedFriendsService'
+import type { Friend } from '@/services/enhancedFriendsService'
+
+// Unified list item interface for different navigation types
+interface ListItem {
+  id?: string | number
+  uid?: string | number
+  roomId?: string | number
+  name?: string
+  roomName?: string
+  groupName?: string
+  nickname?: string
+  avatar?: string
+  [key: string]: unknown
+}
+
 type FileManagerState = {
   activeNavigation: Ref<string>
-  userList: Ref<any[]>
+  userList: Ref<ListItem[]>
   selectedUser: Ref<string>
   selectedRoom: Ref<string>
   setSearchKeyword: (keyword: string) => void
@@ -94,14 +111,16 @@ const fileManagerState = inject<FileManagerState>('fileManagerState')!
 const { activeNavigation, selectedUser, selectedRoom, setSelectedUser, setSelectedRoom } = fileManagerState
 
 // Store 实例
-const contactStore = useContactStore()
+import { useFriendsStore } from '@/stores/friends'
+import { logger } from '@/utils/logger'
+const friendsStore = useFriendsStore()
 const groupStore = useGroupStore()
 
 // 本地状态
 const searchKeyword = ref('')
 const loading = ref(false)
-const contactList = ref<any[]>([])
-const sessionList = ref<any[]>([])
+// Phase 4 Migration: 移除 contactList，改用 friendsStore
+const sessionList = ref<ListItem[]>([])
 
 // 是否显示用户列表
 const shouldShowUserList = computed(() => {
@@ -124,13 +143,14 @@ const currentList = computed(() => {
 
 // 丰富好友数据
 const enrichedContactsList = computed(() => {
-  return contactStore.contactsList.map((item) => {
-    const userInfo = groupStore.getUserInfo(item.uid)
+  return (friendsStore.friends || []).map((item: { user_id?: string | number }) => {
+    const uid = String(item.user_id)
+    const userInfo = groupStore.getUserInfo(uid)
     return {
-      ...item,
-      name: userInfo?.name || item.remark || t('fileManager.common.unknownUser'),
+      uid,
+      name: userInfo?.name || t('fileManager.common.unknownUser'),
       avatar: AvatarUtils.getAvatarUrl(userInfo?.avatar || '/logoD.png'),
-      activeStatus: item.activeStatus
+      activeStatus: userInfo?.activeStatus
     }
   })
 })
@@ -156,8 +176,14 @@ const filteredList = computed(() => {
     return currentList.value
   }
 
-  return currentList.value.filter((item: any) => {
-    const name = item.name || item.roomName || item.groupName || item.nickname || ''
+  return currentList.value.filter((item: unknown) => {
+    const i = item as {
+      name?: string
+      roomName?: string
+      groupName?: string
+      nickname?: string
+    }
+    const name = i.name || i.roomName || i.groupName || i.nickname || ''
     return name.toLowerCase().includes(searchKeyword.value.toLowerCase())
   })
 })
@@ -212,16 +238,27 @@ const getItemComponent = () => {
 }
 
 // 判断项目是否被选中
-const isItemSelected = (item: any) => {
+const isItemSelected = (item: unknown) => {
+  const i = item as {
+    id?: string | number
+    uid?: string | number
+    roomId?: string | number
+  }
   switch (activeNavigation.value) {
     case 'senders':
-      return selectedUser.value === (item.id || item.uid)
+      return selectedUser.value === String(i.id || i.uid)
     case 'sessions':
     case 'groups':
-      return selectedRoom.value === (item.roomId || item.id)
+      return selectedRoom.value === String(i.roomId || i.id)
     default:
       return false
   }
+}
+
+// 获取列表项的唯一标识
+const getItemKey = (item: unknown): string | number => {
+  const i = item as ListItem
+  return String(i.id ?? i.roomId ?? i.uid ?? Math.random())
 }
 
 // 获取空状态消息
@@ -239,54 +276,55 @@ const getEmptyMessage = () => {
 }
 
 // 处理项目点击
-const handleItemClick = (item: any) => {
+const handleItemClick = (item: unknown) => {
+  const i = item as {
+    uid?: string | number
+    id?: string | number
+    roomId?: string | number
+  }
   switch (activeNavigation.value) {
     case 'senders':
-      setSelectedUser(item.uid || item.id || '')
+      setSelectedUser(String(i.uid || i.id || ''))
       break
     case 'sessions':
     case 'groups':
-      setSelectedRoom(item.roomId || item.id || '')
+      setSelectedRoom(String(i.roomId || i.id || ''))
       break
   }
 }
 
 // 加载联系人列表
+// Phase 4 Migration: 使用 enhancedFriendsService 代替 Tauri WebSocket 命令
 const loadContacts = async () => {
   try {
     loading.value = true
-    await contactStore.getContactList()
+    await friendsStore.refreshAll()
   } catch (error) {
-    console.error('加载联系人失败:', error)
+    logger.error('加载联系人失败:', error)
   } finally {
     loading.value = false
   }
 }
 
-// 加载联系人列表 (恢复原始方式)
-const loadContactsOriginal = async () => {
-  try {
-    loading.value = true
-    const contacts = (await invoke('list_contacts_command')) as any[]
-    contactList.value = contacts
-  } catch (error) {
-    console.error('加载联系人失败:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-// 加载会话列表 (恢复原始方式)
+// 加载会话列表
+// Phase 4 Migration: 使用 friendsStore 而不是 contactList
 const loadSessions = async () => {
   try {
     loading.value = true
-    // 使用联系人作为会话列表，并处理头像
-    sessionList.value = contactList.value.map((item) => ({
-      ...item,
-      avatar: AvatarUtils.getAvatarUrl(item.avatar)
-    }))
+    // 使用好友列表作为会话列表，并处理头像
+    const friends = friendsStore.friends || []
+    sessionList.value = friends.map((item: { user_id?: string | number; avatar?: string }) => {
+      const uid = String(item.user_id || '')
+      const userInfo = groupStore.getUserInfo(uid)
+      return {
+        uid,
+        roomId: uid,
+        roomName: userInfo?.name || t('fileManager.common.unknownUser'),
+        avatar: AvatarUtils.getAvatarUrl(userInfo?.avatar || item.avatar || '/logoD.png')
+      }
+    })
   } catch (error) {
-    console.error('加载会话失败:', error)
+    logger.error('加载会话失败:', error)
   } finally {
     loading.value = false
   }
@@ -299,7 +337,7 @@ const loadGroups = async () => {
     // 群组数据已经在 groupStore 中管理，无需额外加载
     // 如果需要刷新群组数据，可以调用相应的 store 方法
   } catch (error) {
-    console.error('加载群聊失败:', error)
+    logger.error('加载群聊失败:', error)
   } finally {
     loading.value = false
   }
@@ -314,13 +352,14 @@ watch(
     switch (newNav) {
       case 'senders':
         // 发送人列表使用好友列表，确保联系人数据已加载
-        if (contactStore.contactsList.length === 0) {
+        if ((friendsStore.friends || []).length === 0) {
           await loadContacts()
         }
         break
       case 'sessions':
-        if (contactList.value.length === 0) {
-          await loadContactsOriginal()
+        // Phase 4 Migration: 直接使用 loadContacts 和 loadSessions
+        if ((friendsStore.friends || []).length === 0) {
+          await loadContacts()
         }
         await loadSessions()
         break

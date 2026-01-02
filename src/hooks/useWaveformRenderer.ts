@@ -1,7 +1,9 @@
+import { ref, computed, watch } from 'vue'
 import { useThrottleFn } from '@vueuse/core'
 import type { Ref } from 'vue'
+import { logger } from '@/utils/logger'
 
-/**
+import { secureRandomFloat } from '@/utils/secureRandom' /**
  * 波形颜色配置接口
  */
 export type WaveformColors = {
@@ -147,8 +149,8 @@ export const useWaveformRenderer = (
         let sum = 0
         let max = 0
 
-        for (let j = start; j < end && j < channelData.length; j++) {
-          const value = Math.abs(channelData[j])
+        for (let j = start; j < end && j < (channelData?.length || 0); j++) {
+          const value = Math.abs(channelData[j]!)
           sum += value
           max = Math.max(max, value)
         }
@@ -162,9 +164,9 @@ export const useWaveformRenderer = (
       shouldUpdateCache.value = true
       drawWaveform()
     } catch (error) {
-      console.error('生成波形数据失败:', error)
+      logger.error('生成波形数据失败:', error)
       // 生成默认波形
-      waveformData.value = Array.from({ length: waveformSamples.value }, () => Math.random() * 0.8 + 0.2)
+      waveformData.value = Array.from({ length: waveformSamples.value }, () => secureRandomFloat() * 0.8 + 0.2)
       shouldUpdateCache.value = true
       drawWaveform()
     }
@@ -204,7 +206,7 @@ export const useWaveformRenderer = (
       if (offscreenCtx) {
         waveformData.value.forEach((intensity, index) => {
           const x = index * barWidth
-          const barHeight = Math.max(2, intensity * height * 0.8)
+          const barHeight = Math.max(2, (intensity || 0) * height * 0.8)
           const y = (height - barHeight) / 2
 
           offscreenCtx.fillStyle = colors.unplayedColor
@@ -239,14 +241,14 @@ export const useWaveformRenderer = (
           // 只绘制在进度线左侧的部分
           const barRight = x + Math.max(1, barWidth - 1)
           if (barRight <= progressX) {
-            const barHeight = Math.max(2, intensity * height * 0.8)
+            const barHeight = Math.max(2, (intensity || 0) * height * 0.8)
             const y = (height - barHeight) / 2
 
             ctx.fillStyle = colors.playedColor
             ctx.fillRect(x, y, Math.max(1, barWidth - 1), barHeight)
           } else if (x < progressX) {
             // 部分在进度线左侧的柱子
-            const barHeight = Math.max(2, intensity * height * 0.8)
+            const barHeight = Math.max(2, (intensity || 0) * height * 0.8)
             const y = (height - barHeight) / 2
             const clippedWidth = progressX - x
 
@@ -255,7 +257,7 @@ export const useWaveformRenderer = (
           }
         }
       } catch (error) {
-        console.error('绘制播放进度失败:', error)
+        logger.error('绘制播放进度失败:', error)
       }
     }
   }

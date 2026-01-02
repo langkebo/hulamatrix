@@ -23,13 +23,18 @@
         </div>
 
         <ContextMenu class="w-full flex-1 min-h-0" @select="$event.click()" :menu="menuList">
+          <div v-if="!isMobile() && isTyping" class="px-10px py-4px text-12px text-#606060 flex items-center gap-6px">
+            <span class="dot-online" v-if="onlineCount > 0"></span>
+            正在输入…
+          </div>
           <n-scrollbar @click="focusInput">
             <div
               id="message-input"
               ref="messageInputDom"
               :style="{
-                minHeight: isMobile() ? '2rem' : '36px',
-                lineHeight: isMobile() && !msgInput ? '2rem' : '20px',
+                minHeight: isMobile() ? 'var(--sz-chat-input-min-h-mobile)' : 'var(--sz-chat-input-min-h)',
+                lineHeight:
+                  isMobile() && !msgInput ? 'var(--sz-chat-input-line-h-mobile)' : 'var(--sz-chat-input-line-h)',
                 outline: 'none'
               }"
               contenteditable
@@ -145,42 +150,6 @@
           </n-virtual-list>
         </div>
 
-        <!-- / 提及框  -->
-        <div
-          v-if="aiDialogVisible && activeItem?.type === RoomTypeEnum.GROUP && groupedAIModels.length > 0"
-          class="AI-options">
-          <n-virtual-list
-            ref="virtualListInst-AI"
-            style="max-height: 180px"
-            :item-size="36"
-            :items="groupedAIModels"
-            v-model:selectedKey="selectedAIKey">
-            <template #default="{ item }">
-              <n-flex
-                @mouseover="() => (selectedAIKey = item.uid)"
-                :class="{ active: selectedAIKey === item.uid }"
-                @click="handleAI(item)"
-                align="center"
-                class="AI-item">
-                <n-flex align="center" justify="space-between" class="w-full pr-6px">
-                  <n-flex align="center">
-                    <img class="size-18px object-contain" :src="item.avatar" alt="" />
-                    <p class="text-(14px [--chat-text-color])">{{ item.name }}</p>
-                  </n-flex>
-
-                  <n-flex align="center" :size="6">
-                    <div
-                      class="ml-6px p-[4px_8px] size-fit bg-[--bate-bg] rounded-6px text-(11px [--bate-color] center)">
-                      Beta
-                    </div>
-                    <n-tag size="small" class="text-10px" :bordered="false" type="success">128k</n-tag>
-                  </n-flex>
-                </n-flex>
-              </n-flex>
-            </template>
-          </n-virtual-list>
-        </div>
-
         <div
           v-if="isMobile()"
           class="grid gap-2 h-2.5rem items-center"
@@ -222,52 +191,101 @@
   </div>
 </template>
 <script setup lang="ts">
-import { emit } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { onKeyStroke } from '@vueuse/core'
 import { darkTheme, lightTheme, type VirtualListInst } from 'naive-ui'
-import { storeToRefs } from 'pinia'
+import { computed, nextTick, onMounted, onUnmounted, readonly, ref, useTemplateRef, watch } from 'vue'
 import type { Ref } from 'vue'
 import { MacOsKeyEnum, MittEnum, RoomTypeEnum, ThemeEnum, WinKeyEnum } from '@/enums'
-import { useCommon } from '@/hooks/useCommon.ts'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { useMsgInput } from '@/hooks/useMsgInput.ts'
+import { useCommon } from '@/hooks/useCommon'
+import { useMitt } from '@/hooks/useMitt'
+import { useMsgInput } from '@/hooks/useMsgInput'
 import { useGlobalStore } from '@/stores/global'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useSettingStore } from '@/stores/setting'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
-import { useSendOptions } from '@/views/moreWindow/settings/config.ts'
+import { useSendOptions } from '@/views/moreWindow/settings/config'
 import { useGroupStore } from '@/stores/group'
 import { MobilePanelStateEnum } from '@/enums'
 import { useI18n, I18nT } from 'vue-i18n'
+import { useTypingStore } from '@/integrations/matrix/typing'
+import { usePresenceStore } from '@/stores/presence'
+import { useUserStore } from '@/stores/user'
+import { matrixClientService } from '@/integrations/matrix/client'
+import { getRoom } from '@/utils/matrixClientUtils'
+// 手动导入VoiceRecorder组件以避免命名冲突
+import VoiceRecorder from './VoiceRecorder.vue'
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 
-interface Props {
-  isAIMode?: boolean
+// Matrix成员接口
+interface MatrixMember {
+  userId?: string
+  user_id?: string
+  membership?: string
+  [key: string]: unknown
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  isAIMode: false
-})
+// 用户项接口
+interface UserItem {
+  uid: string | number
+  account?: string
+  name?: string
+  avatar?: string
+  [key: string]: unknown
+}
+
+// Tauri事件接口
+interface TauriEvent<T = unknown> {
+  payload: T
+}
+
+interface ScreenshotEventPayload {
+  buffer: ArrayBuffer
+  mimeType: string
+}
 
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const appWindow = isTauri ? WebviewWindow.getCurrent() : null
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const { handlePaste, processFiles } = useCommon()
 const sendOptions = useSendOptions()
 /** 发送按钮旁的箭头 */
 const arrow = ref(false)
 /** 输入框dom元素 */
-const messageInputDom = ref<HTMLElement>()
+const messageInputDom = useTemplateRef<HTMLElement>('message-input')
 const gloabalStore = useGlobalStore()
-const { currentSession: activeItem } = storeToRefs(gloabalStore)
+const currentSession = computed(() => gloabalStore.currentSession)
+const activeItem = computed(() => currentSession.value ?? { type: RoomTypeEnum.SINGLE })
 /** ait 虚拟列表 */
 const virtualListInstAit = useTemplateRef<VirtualListInst>('virtualListInst-ait')
-/** AI 虚拟列表 */
-const virtualListInstAI = useTemplateRef<VirtualListInst>('virtualListInst-AI')
 // 录音模式状态
 const isVoiceMode = ref(false)
 const groupStore = useGroupStore()
+const typingStore = useTypingStore()
+const presenceStore = usePresenceStore()
+const userStore = useUserStore()
+
+const typingUsers = computed(() => {
+  const list = typingStore.get(gloabalStore.currentSessionRoomId)
+  const selfIds = [userStore.userInfo?.uid, userStore.userInfo?.account].filter(Boolean)
+  return list.filter((u) => !selfIds.includes(u))
+})
+const isTyping = computed(() => typingUsers.value.length > 0)
+const onlineCount = computed(() => {
+  try {
+    const client = matrixClientService.getClient()
+    const room = getRoom(client, gloabalStore.currentSessionRoomId) as {
+      getJoinedMembers?: () => MatrixMember[]
+    } | null
+    const members = (room?.getJoinedMembers?.()?.map((m: MatrixMember) => m.userId || m.user_id) as string[]) || []
+    return members.filter((uid: string) => uid && presenceStore.isOnline(uid)).length
+  } catch {
+    return 0
+  }
+})
 
 // 文件上传弹窗状态
 const showFileModal = ref(false)
@@ -277,7 +295,6 @@ const pendingFiles = ref<File[]>([])
 const {
   inputKeyDown,
   handleAit,
-  handleAI,
   handleInput,
   msgInput,
   send,
@@ -288,12 +305,9 @@ const {
   personList,
   disabledSend,
   ait,
-  aiDialogVisible,
-  selectedAIKey,
   chatKey,
   menuList,
   selectedAitKey,
-  groupedAIModels,
   updateSelectionRange,
   focusOn,
   getCursorSelectionRange
@@ -333,25 +347,20 @@ watch(activeItem, () => {
 /** 当ait人员列表发生变化的时候始终select第一个 */
 watch(personList, (newList) => {
   if (newList.length > 0) {
-    /** 先设置滚动条滚动到第一个 */
-    virtualListInstAit.value?.scrollTo({ key: newList[0].uid })
-    selectedAitKey.value = newList[0].uid
+    const firstUser = newList[0]
+    if (firstUser) {
+      /** 先设置滚动条滚动到第一个 */
+      virtualListInstAit.value?.scrollTo({ key: firstUser.uid })
+      selectedAitKey.value = firstUser.uid
+    }
   } else {
     // 无匹配用户时立即关闭@状态，放开回车键让用户可以发送消息
     ait.value = false
   }
 })
 
-// /** 当AI列表发生变化的时候始终select第一个 */
-// watch(groupedAIModels, (newList) => {
-//   if (newList.length > 0) {
-//     /** 先设置滚动条滚动到第一个 */
-//     virtualListInstAI.value?.scrollTo({ key: newList[0].uid })
-//     selectedAIKey.value = newList[0].uid
-//   }
-// })
 const handleInternalInput = (e: Event) => {
-  handleInput(e)
+  handleInput(e as InputEvent)
   selfEmitter('input', e)
 }
 
@@ -370,7 +379,7 @@ const handleFileConfirm = async (files: File[]) => {
   try {
     await sendFilesDirect(files)
   } catch (error) {
-    console.error('弹窗发送文件失败:', error)
+    logger.error('弹窗发送文件失败:', error instanceof Error ? error : new Error(String(error)))
   }
   showFileModal.value = false
   pendingFiles.value = []
@@ -383,14 +392,14 @@ const handleFileCancel = () => {
 }
 
 /** 位置选择完成的回调 */
-const handleLocationSelected = async (locationData: any) => {
+const handleLocationSelected = async (locationData: unknown) => {
   await sendLocationDirect(locationData)
 }
 
 /** 处理键盘上下键切换提及项 */
 const handleAitKeyChange = (
   direction: 1 | -1,
-  list: Ref<any[]>,
+  list: Ref<UserItem[]>,
   virtualListInst: VirtualListInst,
   key: Ref<number | string | null>
 ) => {
@@ -401,9 +410,10 @@ const handleAitKeyChange = (
   virtualListInst?.scrollTo({ index: newIndex })
 }
 
-const closeMenu = (event: any) => {
+const closeMenu = (event: Event) => {
   /** 需要判断点击如果不是.context-menu类的元素的时候，menu才会关闭 */
-  if (!event.target.matches('#message-input, #message-input *')) {
+  const target = event.target as Element
+  if (!target.matches('#message-input, #message-input *')) {
     ait.value = false
   }
 }
@@ -436,10 +446,6 @@ interface ClickState {
   panelState: MobilePanelStateEnum
 }
 
-interface AISendData {
-  content: string
-}
-
 /**
  * 自定义事件
  * clickMore: 点击更多按钮
@@ -453,7 +459,6 @@ const selfEmitter = defineEmits<{
   (e: 'customFocus', data: ClickState): void
   (e: 'send', data: ClickState): void
   (e: 'input', event: Event): void
-  (e: 'send-ai', data: AISendData): void
 }>()
 
 /** 设置聚焦状态 */
@@ -508,51 +513,27 @@ const handleVoiceClick = () => {
 }
 
 const getInputContent = (): string => {
-  if (messageInputDom.value) {
-    const innerHTML = messageInputDom.value.innerHTML || ''
-
-    // 检查是否有表情包
-    if (innerHTML.includes('data-type="emoji"')) {
-      return 'emoji' // 返回非空字符串表示有内容
-    }
-
-    // 检查是否有图片
-    if (innerHTML.includes('<img') || innerHTML.includes('data-type=')) {
-      return 'image' // 返回非空字符串表示有内容
-    }
-
-    // 返回文本内容
-    return messageInputDom.value.textContent?.trim() || ''
-  }
-  return ''
-}
-
-/**
- * 判断逻辑：
- * 1. 如果有选中的AI模型 -> AI发送 [暂不实现]
- * 2. 如果当前是AI对话模式 -> AI发送
- * 3. 默认 -> IM发送
- */
-const determineSendType = (): 'ai' | 'im' => {
-  if (props.isAIMode) {
-    return 'ai'
-  }
-  return 'im'
+  const el = messageInputDom.value
+  if (!el) return ''
+  const html = el.innerHTML || ''
+  if (html.includes('data-type="emoji"')) return 'emoji'
+  if (html.includes('<img') || html.includes('data-type=')) return 'image'
+  const temp = document.createElement('div')
+  temp.innerHTML = html
+  let text = (temp.textContent || temp.innerText || '').replace(/\u00A0|\u200B|\uFEFF/g, ' ')
+  text = text.replace(/\s+/g, ' ').trim()
+  return text
 }
 
 // 手机端发送逻辑
 const handleMobileSend = async () => {
   const content = getInputContent()
   if (!content.trim()) {
-    window.$message.warning('请输入消息内容')
+    msg.warning('请输入消息内容')
     return
   }
 
-  if (determineSendType() === 'ai') {
-    await handleAISend()
-  } else {
-    await send()
-  }
+  await send()
 
   // 发送后不关闭面板，保持当前状态
   selfEmitter('send', {
@@ -565,53 +546,19 @@ const handleMobileSend = async () => {
   }
 }
 
-// 清空输入框
-const clearInput = () => {
-  if (messageInputDom.value) {
-    messageInputDom.value.textContent = ''
-    // 触发输入事件更新状态
-    const event = new Event('input', { bubbles: true })
-    messageInputDom.value.dispatchEvent(event)
-  }
-}
-
-// AI发送逻辑
-const handleAISend = async () => {
-  const content = getInputContent()
-  if (!content.trim()) {
-    window.$message.warning('请输入消息内容')
-    return
-  }
-
-  selfEmitter('send-ai', {
-    content: content
-  })
-  clearInput()
-}
-
 // 桌面端发送逻辑
 const handleDesktopSend = async () => {
   const content = getInputContent()
   if (!content.trim()) {
-    window.$message.warning('请输入消息内容')
+    msg.warning('请输入消息内容')
     return
   }
 
-  if (determineSendType() === 'ai') {
-    await handleAISend()
-  } else {
-    await send()
-  }
+  await send()
 }
 
 const handleEnterKey = (e: KeyboardEvent) => {
-  if (determineSendType() === 'ai') {
-    e.preventDefault()
-    e.stopPropagation()
-    handleAISend()
-  } else {
-    inputKeyDown(e)
-  }
+  inputKeyDown(e)
 }
 
 /** 监听移动端关闭面板 */
@@ -652,48 +599,78 @@ onMounted(async () => {
   }
   onKeyStroke('Enter', () => {
     if (ait.value && Number(selectedAitKey.value) > -1) {
-      const item = personList.value.find((item) => item.uid === selectedAitKey.value)
+      const item = personList.value.find((it: UserItem) => it.uid === selectedAitKey.value)
       if (item) {
         handleAit(item)
       }
     }
-    // } else if (aiDialogVisible.value && Number(selectedAIKey.value) > -1) {
-    //   const item = groupedAIModels.value.find((item) => item.uid === selectedAIKey.value)
-    //   if (item) {
-    //     handleAI(item)
-    //   }
-    // }
   })
   onKeyStroke('ArrowUp', (e) => {
     e.preventDefault()
     if (ait.value) {
       handleAitKeyChange(-1, personList, virtualListInstAit.value!, selectedAitKey)
-    } else if (aiDialogVisible.value) {
-      handleAitKeyChange(-1, groupedAIModels, virtualListInstAI.value!, selectedAIKey)
     }
   })
   onKeyStroke('ArrowDown', (e) => {
     e.preventDefault()
     if (ait.value) {
       handleAitKeyChange(1, personList, virtualListInstAit.value!, selectedAitKey)
-    } else if (aiDialogVisible.value) {
-      handleAitKeyChange(1, groupedAIModels, virtualListInstAI.value!, selectedAIKey)
     }
   })
-  // TODO: 暂时已经关闭了独立窗口聊天功能
-  emit('aloneWin')
+  // 暂时关闭独立窗口聊天功能（网页环境不触发 Tauri emit）
+  if (isTauri) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { emit: tauriEmit } = require('@tauri-apps/api/event')
+    try {
+      await tauriEmit('aloneWin')
+    } catch {}
+  }
   nextTick(() => {
     // 移动端不自动聚焦
     if (!isMobile()) {
-      const inputDiv = document.getElementById('message-input')
+      const inputDiv = document.getElementById('message-input') as HTMLDivElement
       inputDiv?.focus()
       setIsFocus(true)
     }
   })
-  // TODO 应该把打开的窗口的item给存到set中，需要修改输入框和消息展示的搭配，输入框和消息展示模块应该是一体并且每个用户独立的，这样当我点击这个用户框输入消息的时候就可以暂存信息了并且可以判断每个消息框是什么类型是群聊还是单聊，不然会导致比如@框可以在单聊框中出现 (nyh -> 2024-04-09 01:03:59)
+
+  // 输入框状态管理架构改进说明：
+  //
+  // 当前问题：
+  // - 输入框和消息展示模块是分离的，没有独立的会话状态管理
+  // - 当切换不同聊天时，输入框内容可能保留到错误的聊天窗口
+  // - @提及功能在单聊中也会出现（不应该出现）
+  // - 无法暂存输入内容，切换聊天后丢失
+  //
+  // 建议的架构改进：
+  // 1. 创建独立的会话输入状态管理
+  //    - 使用 Map<roomId, InputState> 存储每个会话的输入状态
+  //    - InputState 包含：输入内容、@提及列表、草稿、光标位置等
+  //
+  // 2. 输入框组件改进
+  //    - 输入框组件应该绑定到当前选中的 roomId
+  //    - 切换聊天时，自动保存当前输入状态并加载新聊天的输入状态
+  //    - @提及功能应该根据聊天类型（单聊/群聊）启用/禁用
+  //
+  // 3. 与消息展示模块集成
+  //    - 消息展示和输入框应该是同一个组件或共享状态
+  //    - 每个 Tab/窗口有独立的输入状态
+  //
+  // 实现步骤：
+  // - 步骤1：创建 useChatInputStore 管理会话输入状态
+  // - 步骤2：修改输入框组件使用 store 中的状态
+  // - 步骤3：切换聊天时自动保存/恢复输入状态
+  // - 步骤4：根据聊天类型（单聊/群聊）控制 @按钮显示
+  //
+  // (nyh -> 2024-04-09 01:03:59)
   /** 当不是独立窗口的时候也就是组件与组件之间进行通信然后监听信息对话的变化 */
-  useMitt.on(MittEnum.AT, (event: any) => {
-    handleAit(groupStore.getUserInfo(event)!)
+  useMitt.on(MittEnum.AT, (event: unknown) => {
+    if (typeof event === 'string') {
+      const userInfo = groupStore.getUserInfo(event)
+      if (userInfo) {
+        handleAit(userInfo)
+      }
+    }
   })
   // 监听录音模式切换事件
   useMitt.on(MittEnum.VOICE_RECORD_TOGGLE, () => {
@@ -706,22 +683,24 @@ onMounted(async () => {
       isVoiceMode.value = false
     }
   })
-  appWindow.listen('screenshot', async (e: any) => {
-    // 确保输入框获得焦点
-    if (messageInputDom.value) {
-      messageInputDom.value.focus()
-      try {
-        // 从 ArrayBuffer 数组重建 Blob 对象
-        const buffer = new Uint8Array(e.payload.buffer)
-        const blob = new Blob([buffer], { type: e.payload.mimeType })
-        const file = new File([blob], 'screenshot.png', { type: e.payload.mimeType })
+  if (appWindow && 'listen' in appWindow && typeof appWindow.listen === 'function') {
+    appWindow.listen('screenshot', async (e: TauriEvent<ScreenshotEventPayload>) => {
+      // 确保输入框获得焦点
+      if (messageInputDom.value) {
+        messageInputDom.value.focus()
+        try {
+          // 从 ArrayBuffer 数组重建 Blob 对象
+          const buffer = new Uint8Array(e.payload.buffer)
+          const blob = new Blob([buffer], { type: e.payload.mimeType })
+          const file = new File([blob], 'screenshot.png', { type: e.payload.mimeType })
 
-        await processFiles([file], messageInputDom.value, showFileModalCallback)
-      } catch (error) {
-        console.error('处理截图失败:', error)
+          await processFiles([file], messageInputDom.value, showFileModalCallback)
+        } catch (error) {
+          logger.error('处理截图失败:', error instanceof Error ? error : new Error(String(error)))
+        }
       }
-    }
-  })
+    })
+  }
   window.addEventListener('click', closeMenu, true)
   window.addEventListener('keydown', disableSelectAll)
 })
@@ -734,15 +713,6 @@ onUnmounted(() => {
     removeMobileClosePanel()
   }
 })
-
-watch(
-  () => props.isAIMode,
-  (newValue) => {
-    if (!newValue) {
-      selectedAIKey.value = null
-    }
-  }
-)
 </script>
 
 <style scoped lang="scss">
@@ -750,5 +720,12 @@ watch(
 // 传递 props 到子组件是新增了一个div 适配样式
 .msg-input-container {
   display: contents;
+}
+.dot-online {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #1aaa55;
 }
 </style>

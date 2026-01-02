@@ -11,13 +11,17 @@ use sea_orm::{
     TryIntoModel,
 };
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use tokio::sync::Mutex as TokioMutex;
 
 use tracing::{debug, error, info};
 
 lazy_static! {
     static ref DELETED_TABLE_INITIALIZED: AtomicBool = AtomicBool::new(false);
     static ref ROOM_CLEAR_TABLE_INITIALIZED: AtomicBool = AtomicBool::new(false);
+    static ref INSERT_CONFLICT_TOTAL: AtomicUsize = AtomicUsize::new(0);
+    static ref INSERT_CONFLICT_BY_ROOM: TokioMutex<HashMap<String, usize>> =
+        TokioMutex::new(HashMap::new());
 }
 
 #[derive(Clone)]
@@ -27,6 +31,7 @@ pub struct MessageWithThumbnail {
 }
 
 impl MessageWithThumbnail {
+    #[must_use] 
     pub fn new(message: im_message::Model, thumbnail_path: Option<String>) -> Self {
         Self {
             message,
@@ -34,6 +39,7 @@ impl MessageWithThumbnail {
         }
     }
 
+    #[must_use] 
     pub fn key(&self) -> (String, String) {
         (self.message.id.clone(), self.message.login_uid.clone())
     }
@@ -133,22 +139,18 @@ async fn should_skip_message_insert<C: ConnectionTrait>(
 
     if let Some(row) = conn.query_one(clear_stmt).await? {
         let cleared_at: i64 = row.try_get("", "cleared_at")?;
-        if let Some(send_time) = send_time {
-            if send_time <= cleared_at {
+        if let Some(send_time) = send_time
+            && send_time <= cleared_at {
                 return Ok(true);
             }
-        }
 
         let last_id: Option<String> = row.try_get("", "last_cleared_msg_id")?;
-        if let Some(last_id) = last_id {
-            if let (Some(current), Ok(threshold)) =
+        if let Some(last_id) = last_id
+            && let (Some(current), Ok(threshold)) =
                 (parse_message_id(message_id), last_id.parse::<i64>())
-            {
-                if current <= threshold {
+                && current <= threshold {
                     return Ok(true);
                 }
-            }
-        }
     }
 
     Ok(false)
@@ -279,14 +281,11 @@ where
     // 为批量数据库操作添加超时机制
     let timeout_duration = tokio::time::Duration::from_secs(120); // 2分钟超时
 
-    match tokio::time::timeout(timeout_duration, save_all_internal(db, messages)).await {
-        Ok(result) => result,
-        Err(_) => {
-            error!("Batch save messages timeout");
-            Err(CommonError::UnexpectedError(anyhow::anyhow!(
-                "Batch save messages operation timeout, please check database connection status"
-            )))
-        }
+    if let Ok(result) = tokio::time::timeout(timeout_duration, save_all_internal(db, messages)).await { result } else {
+        error!("Batch save messages timeout");
+        Err(CommonError::UnexpectedError(anyhow::anyhow!(
+            "Batch save messages operation timeout, please check database connection status"
+        )))
     }
 }
 
@@ -349,7 +348,7 @@ where
     }
 
     let mut filtered_messages = Vec::with_capacity(messages.len());
-    for message in messages.into_iter() {
+    for message in messages {
         let skip = should_skip_message_insert(
             db,
             &message.message.id,
@@ -373,11 +372,10 @@ where
     let existing_thumbnail_map = fetch_thumbnail_map(db, &message_keys).await?;
 
     for message in &mut messages {
-        if message.thumbnail_path.is_none() {
-            if let Some(path) = existing_thumbnail_map.get(&message.key()) {
+        if message.thumbnail_path.is_none()
+            && let Some(path) = existing_thumbnail_map.get(&message.key()) {
                 message.thumbnail_path = Some(path.clone());
             }
-        }
     }
 
     // 查询已存在的消息
@@ -394,7 +392,7 @@ where
         .filter(condition)
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query existing messages: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query existing messages: {e}"))?;
 
     if !existing_messages.is_empty() {
         let mut delete_condition = sea_orm::Condition::any();
@@ -410,7 +408,7 @@ where
             .filter(delete_condition)
             .exec(db)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to delete existing messages: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to delete existing messages: {e}"))?;
 
         debug!("Deleted {} existing messages", existing_messages.len());
     }
@@ -421,10 +419,27 @@ where
         .map(|message| message.message.clone().into_active_model())
         .collect();
 
-    im_message::Entity::insert_many(active_models)
+    match im_message::Entity::insert_many(active_models)
         .exec(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to batch insert messages: {}", e))?;
+    {
+        Ok(_) => {}
+        Err(e) => {
+            let msg = e.to_string();
+            if msg.contains("UNIQUE") || msg.contains("constraint failed") {
+                INSERT_CONFLICT_TOTAL.fetch_add(1, Ordering::SeqCst);
+                let mut map = INSERT_CONFLICT_BY_ROOM.lock().await;
+                for m in &messages {
+                    let cnt = map.get(&m.message.room_id).copied().unwrap_or(0);
+                    map.insert(m.message.room_id.clone(), cnt + 1);
+                }
+            } else {
+                return Err(CommonError::UnexpectedError(anyhow::anyhow!(
+                    "Failed to batch insert messages: {e}"
+                )));
+            }
+        }
+    }
 
     for message in &messages {
         update_thumbnail_path(db, &message.key(), message.thumbnail_path.as_deref()).await?;
@@ -446,14 +461,14 @@ pub async fn cursor_page_messages(
         .filter(im_message::Column::LoginUid.eq(login_uid))
         .count(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query message count: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query message count: {e}"))?;
 
     // 先查询消息主表，按 id 数值降序排序
     let mut message_query = im_message::Entity::find()
         .filter(im_message::Column::RoomId.eq(&room_id))
         .filter(im_message::Column::LoginUid.eq(login_uid))
         .order_by_desc(Expr::col(im_message::Column::Id).cast_as(Alias::new("INTEGER")))
-        .limit(cursor_page_param.page_size as u64);
+        .limit(u64::from(cursor_page_param.page_size));
 
     // 如果提供了游标，添加过滤条件
     if !cursor_page_param.cursor.is_empty() {
@@ -465,7 +480,7 @@ pub async fn cursor_page_messages(
     let messages = message_query
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to query message list: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to query message list: {e}"))?;
 
     // 如果没有消息，直接返回空结果
     if messages.is_empty() {
@@ -523,7 +538,7 @@ pub async fn save_message(
     ))
     .one(db)
     .await
-    .map_err(|e| anyhow::anyhow!("Failed to find message: {}", e))?;
+    .map_err(|e| anyhow::anyhow!("Failed to find message: {e}"))?;
 
     if record.thumbnail_path.is_none() {
         record.thumbnail_path =
@@ -538,12 +553,12 @@ pub async fn save_message(
         ))
         .exec(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to delete existing message: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to delete existing message: {e}"))?;
     }
 
     // 如果缺少，就填充time_block，使用统一的计算函数
-    if record.message.time_block.is_none() {
-        if let Some(current_send_time) = record.message.send_time {
+    if record.message.time_block.is_none()
+        && let Some(current_send_time) = record.message.send_time {
             // 使用统一的 time_block 计算函数
             record.message.time_block = calculate_time_block(
                 db,
@@ -554,12 +569,29 @@ pub async fn save_message(
             )
             .await?;
         }
-    }
 
     let active_model = record.message.clone().into_active_model();
-    im_message::Entity::insert(active_model).exec(db).await?;
+    if let Err(e) = im_message::Entity::insert(active_model).exec(db).await {
+        let msg = e.to_string();
+        if msg.contains("UNIQUE") || msg.contains("constraint failed") {
+            INSERT_CONFLICT_TOTAL.fetch_add(1, Ordering::SeqCst);
+            let mut map = INSERT_CONFLICT_BY_ROOM.lock().await;
+            let cnt = map.get(&record.message.room_id).copied().unwrap_or(0);
+            map.insert(record.message.room_id.clone(), cnt + 1);
+        } else {
+            return Err(e.into());
+        }
+    }
     update_thumbnail_path(db, &record.key(), record.thumbnail_path.as_deref()).await?;
     Ok(record)
+}
+
+pub async fn get_insert_conflict_total() -> usize {
+    INSERT_CONFLICT_TOTAL.load(Ordering::SeqCst)
+}
+
+pub async fn get_insert_conflict_by_room() -> HashMap<String, usize> {
+    INSERT_CONFLICT_BY_ROOM.lock().await.clone()
 }
 
 pub async fn delete_message_by_id(
@@ -676,7 +708,7 @@ pub async fn record_room_clear(
     Ok(())
 }
 
-/// 计算消息的 time_block
+/// 计算消息的 `time_block`
 /// 判断当前消息与前一条消息的时间间隔，如果超过10分钟则返回间隔值
 /// 如果是房间的第一条消息，返回 Some(1) 表示始终显示时间
 pub async fn calculate_time_block<C>(
@@ -699,7 +731,7 @@ where
         .limit(1)
         .one(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to find last message: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to find last message: {e}"))?;
 
     if let Some(last_msg) = last_message {
         if let Some(last_send_time) = last_msg.send_time {
@@ -730,7 +762,7 @@ pub async fn update_message_status(
         im_message::Entity::find_by_id((record.message.id.clone(), login_uid.clone()))
             .one(db)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to find message: {}", e))?
+            .map_err(|e| anyhow::anyhow!("Failed to find message: {e}"))?
             .ok_or_else(|| CommonError::UnexpectedError(anyhow::anyhow!("Message not found")))?
             .into_active_model();
 
@@ -795,7 +827,7 @@ pub async fn update_message_recall_status(
         .filter(im_message::Column::LoginUid.eq(login_uid))
         .one(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to find message: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to find message: {e}"))?;
 
     let message = existing_message
         .ok_or_else(|| CommonError::UnexpectedError(anyhow::anyhow!("Message not found")))?;
@@ -812,7 +844,7 @@ pub async fn update_message_recall_status(
     im_message::Entity::update(active_model)
         .exec(db)
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to update message recall status: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to update message recall status: {e}"))?;
 
     info!(
         "[RECALL] Successfully updated message recall status in database, message_id: {}",
@@ -850,13 +882,13 @@ pub async fn query_chat_history(
     if let Some(ref keyword) = condition.search_keyword {
         let trimmed = keyword.trim();
         if !trimmed.is_empty() {
-            let keyword_pattern = format!("%{}%", trimmed);
+            let keyword_pattern = format!("%{trimmed}%");
             let keyword_pattern_lower = format!("%{}%", trimmed.to_lowercase());
 
             let mut keyword_condition = Condition::any();
             for json_path in ["$.content", "$.fileName", "$.url"] {
                 keyword_condition = keyword_condition.add(Expr::cust_with_values(
-                    &format!("JSON_EXTRACT(body, '{}') LIKE ?", json_path),
+                    format!("JSON_EXTRACT(body, '{json_path}') LIKE ?"),
                     [Value::from(keyword_pattern.clone())],
                 ));
             }
@@ -873,15 +905,11 @@ pub async fn query_chat_history(
     // 日期范围筛选
     if let Some(ref date_range) = condition.date_range {
         if let Some(start_time) = date_range.start_time {
-            chrono::DateTime::from_timestamp_millis(start_time)
-                .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
-                .unwrap_or_else(|| "无效时间".to_string());
+            chrono::DateTime::from_timestamp_millis(start_time).map_or_else(|| "无效时间".to_string(), |dt| dt.format("%Y-%m-%d %H:%M:%S").to_string());
             conditions = conditions.add(im_message::Column::SendTime.gte(start_time));
         }
         if let Some(end_time) = date_range.end_time {
-            chrono::DateTime::from_timestamp_millis(end_time)
-                .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
-                .unwrap_or_else(|| "无效时间".to_string());
+            chrono::DateTime::from_timestamp_millis(end_time).map_or_else(|| "无效时间".to_string(), |dt| dt.format("%Y-%m-%d %H:%M:%S").to_string());
             conditions = conditions.add(im_message::Column::SendTime.lte(end_time));
         }
     }
@@ -902,14 +930,14 @@ pub async fn query_chat_history(
     // 应用分页
     let offset = (condition.pagination.page.saturating_sub(1)) * condition.pagination.page_size;
     query = query
-        .offset(offset as u64)
-        .limit(condition.pagination.page_size as u64);
+        .offset(u64::from(offset))
+        .limit(u64::from(condition.pagination.page_size));
 
     // 执行查询
     let messages = query
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("查询聊天历史记录失败: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("查询聊天历史记录失败: {e}"))?;
 
     enrich_models_with_thumbnails(db, messages).await
 }
@@ -947,7 +975,7 @@ pub async fn query_file_messages(
         let trimmed_keyword = keyword.trim();
         if !trimmed_keyword.is_empty() {
             let keyword_lower = trimmed_keyword.to_lowercase();
-            let keyword_pattern = format!("%{}%", keyword_lower);
+            let keyword_pattern = format!("%{keyword_lower}%");
             use sea_orm::sea_query::Value;
 
             let json_paths = [
@@ -967,7 +995,7 @@ pub async fn query_file_messages(
             let mut keyword_condition = Condition::any();
 
             for path in json_paths {
-                let expr = format!("LOWER(JSON_EXTRACT(body, '{}')) LIKE ?", path);
+                let expr = format!("LOWER(JSON_EXTRACT(body, '{path}')) LIKE ?");
                 keyword_condition = keyword_condition.add(Expr::cust_with_values(
                     expr,
                     [Value::from(keyword_pattern.clone())],
@@ -992,13 +1020,13 @@ pub async fn query_file_messages(
 
     // 应用分页
     let offset = (page.saturating_sub(1)) * page_size;
-    query = query.offset(offset as u64).limit(page_size as u64);
+    query = query.offset(u64::from(offset)).limit(u64::from(page_size));
 
     // 执行查询
     let messages = query
         .all(db)
         .await
-        .map_err(|e| anyhow::anyhow!("查询文件消息失败: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("查询文件消息失败: {e}"))?;
 
     enrich_models_with_thumbnails(db, messages).await
 }

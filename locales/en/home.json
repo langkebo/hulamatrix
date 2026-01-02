@@ -148,7 +148,8 @@
       "screen_share": "Screen share",
       "remote_assist": "Remote assist",
       "invite_to_group": "Invite to group",
-      "start_group_chat": "Start group chat"
+      "start_group_chat": "Start group chat",
+      "private_chat": "Private chat"
     },
     "sidebar": {
       "single": {
@@ -268,7 +269,8 @@
       "add_friend": "Add friend"
     },
     "notification": {
-      "copy_success": "Copied {account}"
+      "copy_success": "Copied {account}",
+      "copy_fail": "Copy failed, please try again"
     },
     "modal": {
       "add_friend": "Add friend request"
@@ -375,11 +377,17 @@
     "cancel": "Cancel",
     "group_nickname": {
       "title": "Edit group nickname",
-      "placeholder": "Enter a group nickname"
+      "placeholder": "Enter a group nickname",
+      "errors": {
+        "empty": "Group nickname cannot be empty",
+        "room_error": "Invalid group chat",
+        "update_fail": "Failed to update group nickname, please try again"
+      }
     },
     "toast": {
       "searching": "Searching for messages...",
-      "not_found": "Failed to load history, please try again"
+      "not_found": "Failed to load history, please try again",
+      "reply_original_not_found": "Original message not found. It may have been deleted or is too old."
     }
   },
   "friends_list": {

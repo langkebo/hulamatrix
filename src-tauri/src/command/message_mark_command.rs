@@ -85,7 +85,7 @@ fn get_new_message_marks(
 ) -> Result<String, CommonError> {
     let mut message_marks: HashMap<String, MessageMark> =
         serde_json::from_str::<HashMap<String, MessageMark>>(message_marks)
-            .map_err(|e| anyhow::anyhow!("Failed to parse message marks: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to parse message marks: {e}"))?;
 
     match message_marks.entry(mark_type.clone()) {
         Entry::Occupied(entry) => {
@@ -105,6 +105,6 @@ fn get_new_message_marks(
     }
 
     let new_message_marks = serde_json::to_string(&message_marks)
-        .map_err(|e| anyhow::anyhow!("序列化消息标记错误: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("序列化消息标记错误: {e}"))?;
     Ok(new_message_marks)
 }

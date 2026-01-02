@@ -38,6 +38,67 @@
     "processing": "正在处理音频",
     "error": "录音失败"
   },
+  "toast": {
+    "feature_not_ready": "功能暂未开放",
+    "copy_empty": "没有可复制的内容",
+    "no_content_to_translate": "没有可翻译的内容",
+    "deleted_success": "消息已删除",
+    "file_saved": "文件已保存到本地",
+    "file_download_failed": "文件下载失败，请重试",
+    "file_not_downloaded_hint": "文件未下载，请先下载后再打开",
+    "image_saved": "图片已保存到本地",
+    "image_download_failed": "图片下载失败，请重试",
+    "image_locate_failed": "暂时无法定位该图片"
+  },
+  "selfDestruct": {
+    "seconds": "秒",
+    "minutes": "分钟",
+    "hours": "小时",
+    "willDestroy": "消息将自毁",
+    "aboutToDestroy": "即将自毁",
+    "warningMessage": "警告：消息即将自毁",
+    "privateMessage": "私密消息",
+    "setTimer": "设置自毁时间",
+    "sendMessage": "发送自毁消息",
+    "createPrivateChat": "创建私密聊天",
+    "participants": "参与者",
+    "selectParticipants": "选择聊天对象",
+    "chatName": "聊天名称",
+    "chatNamePlaceholder": "输入私密聊天名称",
+    "securitySettings": "安全设置",
+    "defaultSelfDestruct": "默认消息自毁",
+    "selectTime": "选择自毁时间",
+    "topic": "聊天描述",
+    "topicPlaceholder": "输入聊天描述（可选）",
+    "createChat": "创建私密聊天",
+    "chatCreatedSuccess": "私密聊天创建成功",
+    "createChatFailed": "创建私密聊天失败",
+    "standardDesc": "适用于一般私密对话，7天密钥轮换",
+    "highDesc": "适用于高度敏感对话，50条消息后密钥轮换",
+    "messageDestroyed": "消息已自毁",
+    "remainingTime": "剩余 {time}",
+    "destroyedAt": "已于 {time} 自毁",
+    "encryptedMessage": "端到端加密消息",
+    "countdown": {
+      "days": "天",
+      "hours": "小时",
+      "minutes": "分钟",
+      "seconds": "秒"
+    },
+    "timeOptions": {
+      "30s": "30秒",
+      "1m": "1分钟",
+      "5m": "5分钟",
+      "30m": "30分钟",
+      "1h": "1小时",
+      "1d": "1天",
+      "1w": "1周"
+    },
+    "encryptionLevel": {
+      "standard": "标准加密",
+      "high": "高级加密"
+    }
+  },
   "call_window": {
     "incoming": "来电",
     "video_call": "视频通话",
@@ -98,7 +159,9 @@
     "dissolve_group_success": "已解散群聊",
     "quit_group_success": "已退出群聊",
     "notification_allowed": "已允许消息提醒",
-    "notification_silent": "已设置接收消息但不提醒"
+    "notification_silent": "已设置接收消息但不提醒",
+    "mark_unread_success": "已标记为未读",
+    "clear_all_unread_success": "已清空所有未读消息"
   },
   "image_viewer": {
     "zoom_out": "缩小",
@@ -257,5 +320,101 @@
     "forward_success": "消息转发成功",
     "forward_failed": "消息转发失败",
     "non_text_message": "［非文本消息］"
+  },
+  "migration": {
+    "prompt": {
+      "title": "架构升级通知",
+      "subtitle": "HuLa 正在升级到新的架构",
+      "description": "我们正在将系统升级到基于 Matrix 协议的去中心化架构，这将带来更好的性能、安全性和跨平台体验。",
+      "benefits": {
+        "title": "升级收益",
+        "improved_security": "端到端加密，保护您的隐私安全",
+        "better_performance": "优化的同步机制，更快的消息传输",
+        "cross_platform": "全平台支持，无缝切换设备",
+        "decentralized": "去中心化架构，无单点故障",
+        "end_to_end_encryption": "端到端加密通信"
+      },
+      "options": {
+        "later": "稍后提醒",
+        "now": "立即升级",
+        "schedule": "定时升级"
+      },
+      "schedule": {
+        "placeholder": "选择升级时间"
+      },
+      "confirm": {
+        "later": "稍后提醒",
+        "now": "立即开始",
+        "schedule": "定时开始",
+        "default": "确认"
+      },
+      "dismiss": "忽略",
+      "learn_more": "了解更多"
+    },
+    "steps": {
+      "prerequisites": "验证升级条件",
+      "backup": "备份当前数据",
+      "profile": "迁移用户资料",
+      "rooms": "迁移房间列表",
+      "messages": "迁移历史消息",
+      "files": "迁移文件资源",
+      "settings": "更新系统设置",
+      "verification": "验证升级结果",
+      "in_progress": "进行中",
+      "completed": "已完成"
+    },
+    "phases": {
+      "preparation": "准备阶段",
+      "data_migration": "数据迁移",
+      "service_migration": "服务迁移",
+      "verification": "验证阶段",
+      "completed": "迁移完成"
+    },
+    "progress": {
+      "remaining_minutes": "约 {count} 分钟",
+      "soon": "即将完成"
+    },
+    "error": {
+      "title": "迁移失败"
+    },
+    "start": "开始迁移",
+    "cancel": "取消迁移",
+    "close": "关闭",
+    "rollback": "回滚",
+    "show_details": "显示详情",
+    "hide_details": "隐藏详情",
+    "settings": {
+      "title": "架构迁移",
+      "section_title": "系统架构",
+      "description": "升级到 Matrix 协议架构，享受更安全、更高效的通信体验。",
+      "status": {
+        "migrated": "已升级",
+        "migrating": "升级中",
+        "websocket": "未升级"
+      },
+      "start": "开始升级",
+      "view_details": "查看详情",
+      "view_report": "查看报告",
+      "learn_more": "了解更多",
+      "history": {
+        "title": "迁移历史"
+      }
+    },
+    "stats": {
+      "total_rooms": "房间总数",
+      "migrated": "已迁移",
+      "failed": "失败"
+    },
+    "history": {
+      "success": "成功",
+      "failed": "失败",
+      "cancelled": "已取消"
+    },
+    "report": {
+      "success_message": "恭喜！系统已成功升级到新的架构。"
+    },
+    "status": {
+      "indicator": "升级中 {progress}%"
+    }
   }
 }

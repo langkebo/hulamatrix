@@ -1,4 +1,19 @@
 {
+  "panel": {
+    "title": "Settings",
+    "subtitle": "Settings",
+    "menu": {
+      "profile": "Account",
+      "sessions": "Sessions",
+      "notification": "Notifications",
+      "encryption": "Encryption",
+      "appearance": "Appearance",
+      "privacy": "Privacy & Security",
+      "keyboard": "Keyboard Shortcuts",
+      "audio": "Voice & Audio",
+      "labs": "Labs"
+    }
+  },
   "common": {
     "provider_label": "Provider",
     "provider_name": "HuLa",
