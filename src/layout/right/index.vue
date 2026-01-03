@@ -11,7 +11,7 @@
       <!-- 需要判断当前路由是否是信息详情界面 -->
       <div class="flex-1 min-h-0 flex flex-col">
         <ChatBox v-if="isChatRoute" />
-        <TypingIndicator v-if="isChatRoute" />
+        <FloatingTypingHint v-if="isChatRoute" />
 
         <Details :content="detailsContent" v-else-if="detailsShow && isDetails && isSessionItem(detailsContent)" />
 
@@ -54,7 +54,7 @@ import type { DetailsContent, SessionItem } from '@/services/types'
 import { useSettingStore } from '@/stores/setting'
 import { useGlobalStore } from '@/stores/global'
 import Details from '@/components/rightBox/Details.vue'
-import TypingIndicator from '@/components/rightBox/TypingIndicator.vue'
+import FloatingTypingHint from '@/components/rightBox/FloatingTypingHint.vue'
 import ChatBox from '@/components/rightBox/chatBox/index.vue'
 import ApplyList from '@/components/rightBox/ApplyList.vue'
 
