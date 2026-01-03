@@ -54,8 +54,6 @@ use mobiles::splash;
 
 #[derive(Debug)]
 pub struct AppData {
-    #[allow(dead_code)]
-    db_conn: Arc<DatabaseConnection>,
     user_info: Arc<Mutex<UserInfo>>,
     pub config: Arc<Mutex<Settings>>,
     frontend_task: Mutex<bool>,
@@ -325,10 +323,9 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 
     // 异步初始化应用数据，避免阻塞主线程
     match tauri::async_runtime::block_on(initialize_app_data(app_handle.clone())) {
-        Ok((db, user_info, settings)) => {
+        Ok((_db, user_info, settings)) => {
             // 使用 manage 方法在运行时添加状态
             app_handle.manage(AppData {
-                db_conn: db.clone(),
                 user_info: user_info.clone(),
                 config: settings,
                 frontend_task: Mutex::new(false),
