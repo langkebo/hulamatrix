@@ -1000,6 +1000,17 @@ export class MatrixCallService {
   }
 
   /**
+   * Set mute state directly
+   */
+  async setMuted(callId: string, muted: boolean): Promise<void> {
+    if (muted) {
+      await this.muteMic(callId)
+    } else {
+      await this.unmuteMic(callId)
+    }
+  }
+
+  /**
    * Enable camera
    */
   async enableCamera(callId: string): Promise<void> {
@@ -1090,6 +1101,29 @@ export class MatrixCallService {
     }
 
     return false
+  }
+
+  /**
+   * Set video enabled state directly
+   */
+  async setVideoEnabled(callId: string, enabled: boolean): Promise<void> {
+    const stream = this.mediaStreams.localVideo
+    if (!stream) {
+      throw new Error('No video stream available')
+    }
+
+    const videoTrack = stream.getVideoTracks()[0]
+    if (!videoTrack) {
+      throw new Error('No video track available')
+    }
+
+    videoTrack.enabled = enabled
+
+    // Update call state
+    const call = this.activeCalls.get(callId)
+    if (call) {
+      call.isCameraOff = !enabled
+    }
   }
 
   /**

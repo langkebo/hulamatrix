@@ -1463,8 +1463,8 @@ export const useAppStore = defineStore('app', (): AppStoreState => {
     // 如果有活跃通话，同步状态到通话服务
     if (callState.value.isInCall && callState.value.roomId) {
       try {
-        // TODO: 需要在 matrixCallService 中实现 setMuted 方法
-        // await (await import('@/services/matrixCallService')).matrixCallService.setMuted(callState.value.isMuted)
+        const { matrixCallService } = await import('@/services/matrixCallService')
+        await matrixCallService.setMuted(callState.value.roomId, callState.value.isMuted)
         logger.info('[HuLaStore] Audio toggled', { muted: callState.value.isMuted })
       } catch (error) {
         logger.error('[HuLaStore] Failed to toggle audio:', error)
@@ -1481,8 +1481,8 @@ export const useAppStore = defineStore('app', (): AppStoreState => {
     // 如果有活跃通话，同步状态到通话服务
     if (callState.value.isInCall && callState.value.roomId) {
       try {
-        // TODO: 需要在 matrixCallService 中实现 setVideoEnabled 方法
-        // await (await import('@/services/matrixCallService')).matrixCallService.setVideoEnabled(callState.value.isVideoEnabled)
+        const { matrixCallService } = await import('@/services/matrixCallService')
+        await matrixCallService.setVideoEnabled(callState.value.roomId, callState.value.isVideoEnabled)
         logger.info('[HuLaStore] Video toggled', { enabled: callState.value.isVideoEnabled })
       } catch (error) {
         logger.error('[HuLaStore] Failed to toggle video:', error)

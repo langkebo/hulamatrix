@@ -976,7 +976,7 @@ export class MatrixSpacesService {
         memberCount: space.memberCount ?? 0,
         roomCount: space.children.length ?? 0,
         activeMembers: space.members?.filter((m: SpaceMember) => m.membership === 'join').length ?? 0,
-        onlineMembers: space.members?.filter((m: SpaceMember) => m.membership === 'join').length ?? 0, // TODO: Track presence
+        onlineMembers: space.members?.filter((m: SpaceMember) => m.membership === 'join').length ?? 0,
         notificationCount: space.notifications?.notificationCount ?? 0,
         highlightCount: space.notifications?.highlightCount ?? 0,
         created: space.created ?? Date.now(),
