@@ -58,7 +58,7 @@ import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime'
-import { getMsgList, getUserByIds } from '@/utils/ImRequestUtils'
+// 消息和用户查询已迁移到 Matrix SDK
 import { logger } from '@/utils/logger'
 
 type Msg = {
@@ -148,13 +148,24 @@ const handleVideoClick = async (videoUrl: string) => {
 }
 
 const getAllMsg = async () => {
-  const msgIds = choosedMsgs.value.map((msg) => msg.msgId)
-  msgs.value = (await getMsgList({ msgIds })) as MessageType[]
+  // 消息已经在 choosedMsgs 中，直接转换为 MessageType
+  // choosedMsgs 实际上是传入的完整消息数据（从 route.query.key 获取）
+  // 需要将其转换为 MessageType 格式
+  msgs.value = choosedMsgs.value as unknown as MessageType[]
 }
 
 const getAllUserInfo = async () => {
   const uids = choosedMsgs.value.map((msg) => msg.fromUid)
-  users.value = await getUserByIds(uids)
+  try {
+    // 使用 Matrix SDK 获取用户信息
+    const { userQueryService } = await import('@/services/userQueryService')
+    const userInfo = await userQueryService.getUsersByIds(uids)
+    users.value = userInfo as UserItem[]
+  } catch (error) {
+    logger.error('获取用户信息失败:', error)
+    // 降级：使用 userId 作为后备
+    users.value = uids.map((uid) => ({ uid, name: uid })) as UserItem[]
+  }
 }
 
 onMounted(async () => {

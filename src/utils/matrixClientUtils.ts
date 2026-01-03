@@ -10,6 +10,8 @@
 interface MatrixClientMethods {
   mxcUrlToHttp?: (mxcUrl: string, width?: number, height?: number, resizeMethod?: string) => string
   getProfileInfo?: (userId: string) => Promise<{ avatar_url?: string; displayname?: string } | null>
+  setDisplayName?: (displayName: string) => Promise<void>
+  setAvatarUrl?: (mxcUrl: string) => Promise<void>
   getUserId?: () => string
   getRoom?: (roomId: string) => Record<string, unknown> | null
   sendMessage?: (roomId: string, content: Record<string, unknown>, type?: string) => Promise<string>
@@ -183,4 +185,24 @@ export async function decryptEvent(
  */
 export function isFunction(value: unknown): value is (...args: unknown[]) => unknown {
   return typeof value === 'function'
+}
+
+/**
+ * Safely set user display name
+ */
+export async function setDisplayName(client: Record<string, unknown> | null, displayName: string): Promise<void> {
+  if (!hasMethod(client, 'setDisplayName')) {
+    throw new Error('setDisplayName method not available on client')
+  }
+  return client.setDisplayName(displayName)
+}
+
+/**
+ * Safely set user avatar URL
+ */
+export async function setAvatarUrl(client: Record<string, unknown> | null, mxcUrl: string): Promise<void> {
+  if (!hasMethod(client, 'setAvatarUrl')) {
+    throw new Error('setAvatarUrl method not available on client')
+  }
+  return client.setAvatarUrl(mxcUrl)
 }

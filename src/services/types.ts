@@ -270,19 +270,6 @@ export const ROOM_POWER_LEVELS = {
   DEFAULT: 50 // 默认邀请用户权限
 } as const
 
-export type CacheBadgeItem = {
-  /** 是否需要更新数据源。 */
-  needRefresh?: boolean
-  /** 最后更新时间 更新超过 10 分钟异步去更新。 */
-  lastModifyTime: number
-  /** 徽章说明 */
-  describe: string
-  /** 徽章图标 */
-  img: string
-  /** 徽章 ID */
-  itemId: string
-}
-
 export type CacheUserReq = {
   /** 最后更新时间 更新超过 10 分钟异步去更新。 */
   lastModifyTime?: number
@@ -295,10 +282,6 @@ export type CacheUserItem = {
   needRefresh?: boolean
   /** 最后更新时间 更新超过 10 分钟异步去更新。 */
   lastModifyTime: number
-  /** 获得的徽章 */
-  itemIds: string[]
-  /** 佩戴的徽章 */
-  wearingItemId: string
   /** 归属地 */
   locPlace: string
   /** 头像 */
@@ -411,19 +394,6 @@ export type UserInfoType = {
   client: string
   /** 个人简介 */
   resume: string
-}
-
-export type BadgeType = {
-  // 徽章描述
-  describe: string
-  // 徽章id
-  id: string
-  // 徽章图标
-  img: string
-  // 是否拥有 0否 1是
-  obtain: IsYesEnum
-  // 是否佩戴 0否 1是
-  wearing: IsYesEnum
 }
 
 export type MarkItemType = {

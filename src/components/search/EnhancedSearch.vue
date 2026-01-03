@@ -751,7 +751,7 @@ defineExpose({
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--hula-gray-200, #e0e0e0);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
@@ -764,8 +764,8 @@ defineExpose({
   font-size: 12px;
   font-weight: 500;
   color: #666;
-  background: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--hula-gray-100, #f5f5f5);
+  border-bottom: 1px solid var(--hula-gray-200, #e0e0e0);
 }
 
 .suggestion-item {
@@ -867,7 +867,7 @@ defineExpose({
   align-items: flex-start;
   padding: 12px;
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--hula-gray-200, #e0e0e0);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1027,7 +1027,7 @@ defineExpose({
   }
 
   .suggestions-header {
-    background: #2a2a2a;
+    background: var(--hula-gray-800, #2a2a2a);
     border-bottom-color: #333;
     color: #ccc;
   }

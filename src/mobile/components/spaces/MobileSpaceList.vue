@@ -651,7 +651,11 @@ const toggleQuickFilter = (key: string) => {
 }
 
 const handleSortSelect = (key: string) => {
-  currentSort.value = key as any
+  // Type guard to ensure key is a valid sort option
+  const validSorts = ['name', 'members', 'activity'] as const
+  if (validSorts.includes(key as (typeof validSorts)[number])) {
+    currentSort.value = key as 'name' | 'members' | 'activity'
+  }
 }
 
 const clearFilters = () => {

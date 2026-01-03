@@ -660,7 +660,7 @@ watch(
   }
 
   .members-card {
-    background: #2a2a2a;
+    background: var(--hula-gray-800, #2a2a2a);
   }
 
   .member-name {

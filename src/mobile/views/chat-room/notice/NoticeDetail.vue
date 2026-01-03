@@ -84,7 +84,7 @@ import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { formatTimestamp } from '@/utils/ComputedTime'
-import { getAnnouncementDetail } from '@/utils/ImRequestUtils'
+import { getAnnouncementDetail } from '@/services/matrixAnnouncementService'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 import { logger } from '@/utils/logger'
 
@@ -99,7 +99,8 @@ const globalStore = useGlobalStore()
 const userStore = useUserStore()
 
 interface Announcement {
-  uid: string
+  creatorId: string
+  uid?: string // For backward compatibility, same as creatorId
   id: string
   title?: string
   content?: string
@@ -115,13 +116,15 @@ const error = ref<string | null>(null)
 // 获取发布者信息
 const publisherName = computed(() => {
   if (!announcement.value) return '未知用户'
-  const userInfo = groupStore.getUserInfo(announcement.value.uid)
+  const publisherId = announcement.value.uid || announcement.value.creatorId
+  const userInfo = groupStore.getUserInfo(publisherId)
   return userInfo?.name || userInfo?.myName || '未知用户'
 })
 
 const publisherAvatar = computed(() => {
   if (!announcement.value) return ''
-  const userInfo = groupStore.getUserInfo(announcement.value.uid)
+  const publisherId = announcement.value.uid || announcement.value.creatorId
+  const userInfo = groupStore.getUserInfo(publisherId)
   return userInfo?.avatar || ''
 })
 
@@ -135,7 +138,8 @@ const canEdit = computed(() => {
 
   // 当前用户是公告发布者
   const currentUid = userStore.userInfo?.uid
-  const isPublisher = announcement.value.uid === currentUid
+  const publisherId = announcement.value.uid || announcement.value.creatorId
+  const isPublisher = publisherId === currentUid
 
   // 当前用户是群主或管理员
   const isLord = currentUid ? groupStore.isCurrentLord(currentUid) : false
@@ -152,7 +156,16 @@ const fetchAnnouncementDetail = async () => {
       roomId: globalStore.currentSessionRoomId,
       announcementId: route.params.id as string
     })
-    announcement.value = data as Announcement
+    if (!data) {
+      throw new Error('Announcement not found')
+    }
+    announcement.value = {
+      uid: data.creatorId,
+      creatorId: data.creatorId,
+      id: data.id,
+      content: data.content,
+      createTime: data.createTime
+    } as Announcement
   } catch (err) {
     logger.error('获取公告详情失败:', err)
     error.value = '获取公告详情失败，请重试'

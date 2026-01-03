@@ -129,7 +129,7 @@ const formatDestructTime = (seconds: number): string => {
     gap: 8px;
 
     .lock-icon {
-      color: #13987f;
+      color: var(--hula-accent, #13987f);
       font-size: 16px;
     }
 

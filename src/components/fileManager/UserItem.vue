@@ -148,12 +148,12 @@ const handleAvatarError = (event: Event) => {
   user-select: none;
 
   &:hover:not(&--selected) {
-    background-color: #f5f5f5;
+    background-color: var(--hula-gray-100, #f5f5f5);
   }
 
   &--selected {
     background-color: #e8f4f1;
-    box-shadow: inset 0 0 0 1px #13987f;
+    box-shadow: inset 0 0 0 1px var(--hula-accent, #13987f);
   }
 }
 
@@ -177,7 +177,7 @@ const handleAvatarError = (event: Event) => {
   right: 2px;
   width: 8px;
   height: 8px;
-  background-color: #13987f;
+  background-color: var(--hula-accent, #13987f);
   border-radius: 50%;
   border: 2px solid var(--center-bg-color);
 }
@@ -215,7 +215,7 @@ html[data-theme='dark'] {
 
     &--selected {
       background-color: rgba(19, 152, 127, 0.2);
-      border-color: #13987f;
+      border-color: var(--hula-accent, #13987f);
     }
   }
 }

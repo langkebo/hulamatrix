@@ -485,13 +485,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f5f5;
+  background: var(--hula-gray-100, #f5f5f5);
 }
 
 .thread-detail__header {
   padding: 16px;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--hula-white, #fff);
+  border-bottom: 1px solid var(--hula-gray-200, #e0e0e0);
 }
 
 .header-content {
@@ -605,7 +605,7 @@ onMounted(() => {
   content: '';
   flex: 1;
   height: 1px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200, #e0e0e0);
 }
 
 .thread-divider__text {
@@ -640,8 +640,8 @@ onMounted(() => {
 
 .hint kbd {
   padding: 2px 6px;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  background: var(--hula-gray-100, #f5f5f5);
+  border: 1px solid var(--hula-gray-200, #e0e0e0);
   border-radius: 4px;
   font-family: monospace;
   font-size: 11px;
@@ -654,12 +654,12 @@ onMounted(() => {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .thread-detail {
-    background: #1a1a1a;
+    background: var(--hula-gray-900, #1a1a1a);
   }
 
   .thread-detail__header,
   .thread-detail__input {
-    background: #2a2a2a;
+    background: var(--hula-gray-800, #2a2a2a);
     border-color: #444;
   }
 

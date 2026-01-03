@@ -12,9 +12,9 @@ import { requestWithFallback } from './MatrixApiBridgeAdapter'
 
 // 类型定义
 type ReadCountQueue = Set<number> // 使用 Set 存储消息ID，自动去重
-interface AbortableRequest extends Promise<MsgReadUnReadCountType[]> {
-  abort: () => void // 可中断的请求类型，继承自 Promise
-}
+// AbortableRequest 功能已废弃，旧的后端 API 已移除
+// 现在使用普通 Promise，无法中断请求
+type ReadCountRequest = Promise<MsgReadUnReadCountType[]>
 
 // 常量定义
 const INTERVAL_DELAY = 10000 // 轮询间隔时间：10秒
@@ -22,7 +22,7 @@ const INTERVAL_DELAY = 10000 // 轮询间隔时间：10秒
 // 状态变量
 const queue: ReadCountQueue = new Set<number>() // 待处理的消息ID队列
 let timerWorker: Worker | null = null // Web Worker定时器
-let request: AbortableRequest | null = null // 当前正在进行的请求
+let request: ReadCountRequest | null = null // 当前正在进行的请求
 let isTimerActive = false // 标记定时器是否活跃
 
 // 事件类型定义
@@ -70,9 +70,9 @@ const checkUserAuthentication = (): boolean => {
  */
 const task = async () => {
   try {
-    // 如果存在未完成的请求，中断它
+    // 注意：旧的后端 API 已移除，无法中断正在进行的请求
+    // 如果存在未完成的请求，让它自然完成
     if (request) {
-      request.abort()
       request = null
     }
 
@@ -89,11 +89,11 @@ const task = async () => {
     }
 
     // 发起新的批量查询请求
-    // request = apis.getMsgReadCount({ msgIds: Array.from(queue) }) as AbortableRequest
-    request = (await requestWithFallback({
+    // 旧 API: apis.getMsgReadCount({ msgIds: Array.from(queue) })
+    request = requestWithFallback<MsgReadUnReadCountType[]>({
       url: 'get_msg_read_count',
       params: { msgIds: Array.from(queue) }
-    })) as AbortableRequest
+    })
     const res = await request
 
     // 验证响应数据格式
@@ -136,11 +136,8 @@ export const initListener = () => {
 export const clearListener = () => {
   useMitt.off('onAddReadCountTask', onAddReadCountTask)
   useMitt.off('onRemoveReadCountTask', onRemoveReadCountTask)
-  // 取消当前请求
-  if (request) {
-    request.abort()
-    request = null
-  }
+  // 旧 API 已移除，无法中断请求，仅清空引用
+  request = null
   stopTimer()
   // 终止Worker
   terminateWorker()

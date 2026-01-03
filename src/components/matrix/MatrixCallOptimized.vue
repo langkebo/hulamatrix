@@ -280,6 +280,11 @@ interface NavigatorWithConnection extends Navigator {
   webkitConnection?: NetworkInformation
 }
 
+// Extended HTMLMediaElement interface with setSinkId (Audio Output Devices API)
+interface HTMLMediaElementWithSinkId extends HTMLMediaElement {
+  setSinkId(sinkId: string): Promise<void>
+}
+
 // Matrix call invite event interface
 interface MatrixInviteEvent {
   getSender?(): string
@@ -735,7 +740,7 @@ const changeAudioOutput = async (deviceId: string) => {
   try {
     // 更新远程视频元素的音频输出
     if (remoteVideoRef.value) {
-      await (remoteVideoRef.value as any).setSinkId(deviceId)
+      await (remoteVideoRef.value as unknown as HTMLMediaElementWithSinkId).setSinkId(deviceId)
       selectedAudioOutput.value = deviceId
       message.success('音频输出已切换')
     }

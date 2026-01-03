@@ -176,7 +176,7 @@ const versatileModel: JSX.Element = (() => (
       </div>
 
       <div class="flex-y-center gap-4px ml-a">
-        <div class="bg-#13987f w-78px h-16px rounded-4px"></div>
+        <div class="bg-[var(--hula-accent,#13987f)] w-78px h-16px rounded-4px"></div>
         <div class="bg-[--bg-bubble] w-16px h-16px rounded-50%"></div>
       </div>
     </div>

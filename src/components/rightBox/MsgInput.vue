@@ -64,10 +64,10 @@
           class="flex-shrink-0 max-h-52px p-4px pr-12px border-t border-gray-200/50 flex justify-end mb-4px">
           <n-config-provider :theme="lightTheme">
             <n-button-group size="small">
-              <n-button color="#13987f" :disabled="disabledSend" class="w-65px" @click="handleDesktopSend">
+              <n-button :color="'var(--hula-accent, #13987f)'" :disabled="disabledSend" class="w-65px" @click="handleDesktopSend">
                 {{ t('editor.send') }}
               </n-button>
-              <n-button color="#13987f" class="p-[0_6px]">
+              <n-button :color="'var(--hula-accent, #13987f)'" class="p-[0_6px]">
                 <template #icon>
                   <n-config-provider :theme="themes.content === ThemeEnum.DARK ? darkTheme : lightTheme">
                     <n-popselect
@@ -164,7 +164,7 @@
             class="flex-shrink-0 max-h-62px h-full border-t border-gray-200/50 flex items-center justify-end">
             <n-config-provider class="h-full" :theme="lightTheme">
               <n-button-group size="small" :class="isMobile() ? 'h-full' : 'pr-20px'">
-                <n-button color="#13987f" :disabled="disabledSend" class="w-3rem h-full" @click="handleMobileSend">
+                <n-button :color="'var(--hula-accent, #13987f)'" :disabled="disabledSend" class="w-3rem h-full" @click="handleMobileSend">
                   发送
                 </n-button>
               </n-button-group>

@@ -77,11 +77,10 @@ interface MappedMessageResult {
   loading: boolean
 }
 
-export async function markRoomRead(roomId: string): Promise<unknown> {
-  return await requestWithFallback({
-    url: 'mark_msg_read',
-    params: { roomId }
-  })
+export async function markRoomRead(roomId: string): Promise<void> {
+  // Use unified message service for Matrix SDK integration
+  const { unifiedMessageService } = await import('@/services/unified-message-service')
+  await unifiedMessageService.markRoomRead(roomId)
 }
 
 export async function getSessionDetail(params: { id: string }): Promise<unknown> {

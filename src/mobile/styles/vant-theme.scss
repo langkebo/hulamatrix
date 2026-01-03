@@ -1,0 +1,322 @@
+/* ==========================================================================
+   Vant UI 主题覆盖 - HuLa 主题
+   将 Vant 组件的主题色映射到 HuLa 品牌色
+   ========================================================================== */
+
+/* ==================== Vant CSS 变量映射 ==================== */
+:root {
+  /* 主要颜色 */
+  --van-primary-color: var(--hula-accent, #13987f);
+  --van-success-color: var(--hula-success, #13987f);
+  --van-warning-color: var(--hula-warning, #ff976a);
+  --van-danger-color: var(--hula-error, #ee0a24);
+  --van-info-color: var(--hula-info, #1989fa);
+
+  /* 文字颜色 */
+  --van-text-color: var(--hula-text-primary, #18212c);
+  --van-text-color-link: var(--hula-accent, #13987f);
+  --van-text-color-base: var(--hula-text-primary, #18212c);
+  --van-text-color-2: var(--hula-text-regular, #576b95);
+  --van-text-color-3: var(--hula-text-secondary, #9fa1a9);
+
+  /* 背景颜色 */
+  --van-background-color: var(--hula-bg-page, #f7f8fa);
+  --van-background-color-light: var(--hula-bg-component, #ffffff);
+
+  /* 边框颜色 */
+  --van-border-color: var(--hula-border-light, #ebedf0);
+  --van-border-color-2: var(--hula-border-base, #dcdee0);
+
+  /* 活动状态 */
+  --van-active-color: var(--hula-bg-page, #f7f8fa);
+  --van-active-color-opacity: 0.7;
+
+  /* 禁用状态 */
+  --van-disabled-color: var(--hula-text-disabled, #dcdde0);
+  --van-disabled-opacity: 0.5;
+
+  /* 白色（用于遮罩等） */
+  --van-white: #ffffff;
+
+  /* 黑色 */
+  --van-black: #000000;
+
+  /* 圆角 */
+  --van-radius-sm: var(--hula-radius-sm, 4px);
+  --van-radius-md: var(--hula-radius-md, 8px);
+  --van-radius-lg: var(--hula-radius-lg, 12px);
+  --van-radius-xl: var(--hula-radius-xl, 16px);
+  --van-radius-max: var(--hula-radius-round, 9999px);
+
+  /* 字体大小 */
+  --van-font-size-xs: 10px;
+  --van-font-size-sm: 12px;
+  --van-font-size-md: 14px;
+  --van-font-size-lg: 16px;
+  --van-font-size-xl: 18px;
+
+  /* 动画时长 */
+  --van-duration-base: 0.3s;
+  --van-duration-fast: 0.2s;
+  --van-easing-base: cubic-bezier(0.4, 0, 0.2, 1);
+  --van-easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --van-easing-out: cubic-bezier(0, 0, 0.2, 1);
+  --van-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 阴影 */
+  --van-shadow-sm: var(--hula-shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.05));
+  --van-shadow-md: var(--hula-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+  --van-shadow-lg: var(--hula-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+/* ==================== 深色模式 ==================== */
+html[data-theme='dark'] {
+  /* 主要颜色（深色模式） */
+  --van-primary-color: var(--hula-accent, #1ec29f);
+  --van-success-color: var(--hula-success, #1ec29f);
+  --van-warning-color: var(--hula-warning, #ffb88a);
+  --van-danger-color: var(--hula-error, #f54a5f);
+
+  /* 文字颜色（深色模式） */
+  --van-text-color: var(--hula-text-primary, #ffffff);
+  --van-text-color-link: var(--hula-accent, #1ec29f);
+  --van-text-color-base: var(--hula-text-primary, #ffffff);
+  --van-text-color-2: var(--hula-text-regular, rgba(255, 255, 255, 0.75));
+  --van-text-color-3: var(--hula-text-secondary, rgba(255, 255, 255, 0.55));
+
+  /* 背景颜色（深色模式） */
+  --van-background-color: var(--hula-bg-page, #1a1a1a);
+  --van-background-color-light: var(--hula-bg-component, #242424);
+
+  /* 边框颜色（深色模式） */
+  --van-border-color: var(--hula-border-light, #3a3a3a);
+  --van-border-color-2: var(--hula-border-base, #4a4a4a);
+
+  /* 活动状态（深色模式） */
+  --van-active-color: var(--hula-bg-component, #242424);
+
+  /* 禁用状态（深色模式） */
+  --van-disabled-color: var(--hula-text-disabled, rgba(255, 255, 255, 0.25));
+}
+
+/* ==================== Vant 组件特定样式覆盖 ==================== */
+
+/* Button 按钮 */
+.van-button--primary {
+  background: var(--hula-accent) !important;
+  border-color: var(--hula-accent) !important;
+
+  &:active {
+    background: var(--hula-accent-active) !important;
+    border-color: var(--hula-accent-active) !important;
+  }
+}
+
+.van-button--success {
+  background: var(--hula-success) !important;
+  border-color: var(--hula-success) !important;
+}
+
+/* Popup 弹出层 */
+.van-popup {
+  background: var(--hula-bg-component) !important;
+}
+
+/* Dialog 对话框 */
+.van-dialog {
+  background: var(--hula-bg-component) !important;
+  border-radius: var(--hula-radius-lg) !important;
+}
+
+.van-dialog__header {
+  color: var(--hula-text-primary) !important;
+}
+
+.van-dialog__message {
+  color: var(--hula-text-regular) !important;
+}
+
+/* Toast 轻提示 */
+.van-toast {
+  background: var(--hula-bg-component) !important;
+  color: var(--hula-text-primary) !important;
+  border-radius: var(--hula-radius-md) !important;
+}
+
+.van-toast--success {
+  background: var(--hula-success) !important;
+  color: #fff !important;
+}
+
+.van-toast--fail {
+  background: var(--hula-error) !important;
+  color: #fff !important;
+}
+
+/* Field 输入框 */
+.van-field__control {
+  color: var(--hula-text-primary) !important;
+}
+
+.van-field__label {
+  color: var(--hula-text-regular) !important;
+}
+
+.van-field__placeholder {
+  color: var(--hula-text-placeholder) !important;
+}
+
+/* Cell 单元格 */
+.van-cell {
+  background: var(--hula-bg-component) !important;
+  color: var(--hula-text-primary) !important;
+}
+
+.van-cell__label {
+  color: var(--hula-text-secondary) !important;
+}
+
+.van-cell__title {
+  color: var(--hula-text-primary) !important;
+}
+
+.van-cell__value {
+  color: var(--hula-text-regular) !important;
+}
+
+/* Navbar 导航栏 */
+.van-nav-bar {
+  background: var(--hula-bg-component) !important;
+  color: var(--hula-text-primary) !important;
+}
+
+.van-nav-bar__title {
+  color: var(--hula-text-primary) !important;
+}
+
+/* Tabbar 标签栏 */
+.van-tabbar {
+  background: var(--hula-bg-component) !important;
+  border-top-color: var(--hula-border-light) !important;
+}
+
+.van-tabbar-item {
+  color: var(--hula-text-secondary) !important;
+}
+
+.van-tabbar-item--active {
+  color: var(--hula-accent) !important;
+}
+
+/* Card 卡片 */
+.van-card {
+  background: var(--hula-bg-component) !important;
+  color: var(--hula-text-primary) !important;
+}
+
+.van-card__title {
+  color: var(--hula-text-primary) !important;
+}
+
+.van-card__desc {
+  color: var(--hula-text-secondary) !important;
+}
+
+/* Tag 标签 */
+.van-tag--primary {
+  background: var(--hula-accent) !important;
+  color: #fff !important;
+}
+
+.van-tag--success {
+  background: var(--hula-success) !important;
+  color: #fff !important;
+}
+
+/* Switch 开关 */
+.van-switch--on {
+  background: var(--hula-accent) !important;
+}
+
+/* Progress 进度条 */
+.van-progress__portion {
+  background: var(--hula-accent) !important;
+}
+
+/* Radio 单选框 */
+.van-radio__icon--checked .van-icon {
+  background: var(--hula-accent) !important;
+  border-color: var(--hula-accent) !important;
+}
+
+/* Checkbox 复选框 */
+.van-checkbox__icon--checked .van-icon {
+  background: var(--hula-accent) !important;
+  border-color: var(--hula-accent) !important;
+}
+
+/* Loading 加载 */
+.van-loading-text {
+  color: var(--hula-text-secondary) !important;
+}
+
+.van-loading-spinner {
+  color: var(--hula-accent) !important;
+}
+
+/* Search 搜索 */
+.van-search__content {
+  background: var(--hula-bg-page) !important;
+}
+
+/* DropdownMenu 下拉菜单 */
+.van-dropdown-menu__bar {
+  background: var(--hula-bg-component) !important;
+}
+
+.van-dropdown-menu__title {
+  color: var(--hula-text-primary) !important;
+}
+
+/* PullRefresh 下拉刷新 */
+.van-pull-refresh__track {
+  color: var(--hula-text-secondary) !important;
+}
+
+/* List 列表 */
+.van-list__finished-text {
+  color: var(--hula-text-secondary) !important;
+}
+
+/* Empty 空状态 */
+.van-empty__description {
+  color: var(--hula-text-secondary) !important;
+}
+
+/* ActionSheet 上拉菜单 */
+.van-action-sheet {
+  background: var(--hula-bg-component) !important;
+}
+
+.van-action-sheet__item {
+  color: var(--hula-text-primary) !important;
+}
+
+.van-action-sheet__cancel {
+  color: var(--hula-text-secondary) !important;
+}
+
+/* Overlay 遮罩层 */
+.van-overlay {
+  background: var(--hula-bg-overlay) !important;
+}
+
+/* Sticky 粘性布局 */
+.van-sticky--fixed {
+  background: var(--hula-bg-component) !important;
+}
+
+/* Badge 徽标 */
+.van-badge--dot {
+  background: var(--hula-accent) !important;
+}

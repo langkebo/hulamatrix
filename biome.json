@@ -52,7 +52,7 @@
         "noUnusedImports": "warn"
       },
       "style": {
-        "useNodejsImportProtocol": "off",
+        "useNodejsImportProtocol": "warn",
         "noNonNullAssertion": "off",
         "useNamingConvention": "off",
         "useTemplate": "off",

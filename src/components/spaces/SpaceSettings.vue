@@ -204,6 +204,24 @@
 </template>
 
 <script setup lang="ts">
+// Extended Matrix Client interface with room management methods
+interface MatrixClientWithRoomMethods {
+  getUserId?(): string
+  getRoom?(roomId: string): {
+    currentState?: {
+      getStateEvents?(
+        eventType: string,
+        stateKey: string
+      ): {
+        getContent?(): Record<string, unknown>
+      }
+    }
+  } | null
+  setRoomName?(roomId: string, name: string): Promise<void>
+  setRoomTopic?(roomId: string, topic: string): Promise<void>
+  createAlias?(alias: string, roomId: string): Promise<void>
+}
+
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -237,7 +255,7 @@ import {
 } from 'naive-ui'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { Hash, Upload, Download, AlertTriangle } from '@vicons/tabler'
-import { matrixSpacesService } from '@/services/matrixSpacesService'
+import { matrixSpacesService, type SpaceInfo } from '@/services/matrixSpacesService'
 import { useSpacesStore } from '@/stores/spaces'
 import { logger } from '@/utils/logger'
 import { msg } from '@/utils/SafeUI'
@@ -251,7 +269,7 @@ const spacesStore = useSpacesStore()
 // State
 const loading = ref(true)
 const error = ref<string | null>(null)
-const spaceInfo = ref<any>(null)
+const spaceInfo = ref<SpaceInfo | null>(null)
 const memberCount = ref(0)
 const canEdit = ref(false)
 const isOwner = ref(false)
@@ -295,9 +313,50 @@ const loadSpaceInfo = async () => {
     if (space) {
       spaceInfo.value = space
       memberCount.value = space.memberCount || 0
-      // Determine permissions
-      canEdit.value = true // TODO: Check actual permissions
-      isOwner.value = spaceInfo.value.roomId === spaceInfo.value.creatorId
+
+      // Check permissions based on Matrix power levels
+      const client = matrixClientService.getClient() as unknown as MatrixClientWithRoomMethods | null
+      if (client && spaceInfo.value.roomId) {
+        const currentUserId = client.getUserId?.()
+        const room = client.getRoom?.(spaceInfo.value.roomId)
+
+        if (room && currentUserId) {
+          // Get power levels for the current user
+          const powerLevelsEvent = room.currentState?.getStateEvents?.('m.room.power_levels', '')
+          if (powerLevelsEvent) {
+            const powerLevels = powerLevelsEvent.getContent?.()
+            if (powerLevels) {
+              const users = (powerLevels.users || {}) as Record<string, number>
+              const usersDefault = (powerLevels.users_default || 0) as number
+              const stateDefault = (powerLevels.state_default || 50) as number
+
+              // Get current user's power level
+              const userPowerLevel = users[currentUserId] ?? usersDefault
+
+              // User can edit if they have sufficient power level (typically 50 or higher)
+              canEdit.value = userPowerLevel >= stateDefault
+
+              // Check if user is the creator/owner
+              isOwner.value = spaceInfo.value.roomId === (spaceInfo.value.creator || '') || userPowerLevel >= 100
+            } else {
+              canEdit.value = spaceInfo.value.roomId === (spaceInfo.value.creator || '')
+              isOwner.value = canEdit.value
+            }
+          } else {
+            // Fallback: check if user is the creator
+            canEdit.value = spaceInfo.value.roomId === (spaceInfo.value.creator || '')
+            isOwner.value = canEdit.value
+          }
+        } else {
+          // Room not found, fallback to creator check
+          canEdit.value = spaceInfo.value.roomId === (spaceInfo.value.creator || '')
+          isOwner.value = canEdit.value
+        }
+      } else {
+        // No client available, default to true (for UI display purposes)
+        canEdit.value = true
+        isOwner.value = spaceInfo.value.roomId === (spaceInfo.value.creator || '')
+      }
     } else {
       error.value = '空间不存在'
     }
@@ -356,9 +415,9 @@ const handleNameChange = async () => {
   if (!spaceId.value || !spaceInfo.value?.name) return
 
   try {
-    const client = matrixClientService.getClient()
-    if (client && (client as any).setRoomName) {
-      await (client as any).setRoomName(spaceId.value, spaceInfo.value.name)
+    const client = matrixClientService.getClient() as unknown as MatrixClientWithRoomMethods | null
+    if (client && client.setRoomName) {
+      await client.setRoomName(spaceId.value, spaceInfo.value.name)
       msg.success('空间名称已更新')
     }
   } catch (err) {
@@ -368,12 +427,12 @@ const handleNameChange = async () => {
 }
 
 const handleTopicChange = async () => {
-  if (!spaceId.value) return
+  if (!spaceId.value || !spaceInfo.value) return
 
   try {
-    const client = matrixClientService.getClient()
-    if (client && (client as any).setRoomTopic) {
-      await (client as any).setRoomTopic(spaceId.value, spaceInfo.value.topic || '')
+    const client = matrixClientService.getClient() as unknown as MatrixClientWithRoomMethods | null
+    if (client && client.setRoomTopic) {
+      await client.setRoomTopic(spaceId.value, spaceInfo.value.topic || '')
       msg.success('空间描述已更新')
     }
   } catch (err) {
@@ -397,9 +456,9 @@ const handleAliasUpdate = async () => {
 
   updatingAlias.value = true
   try {
-    const client = matrixClientService.getClient()
-    if (client && (client as any).createAlias) {
-      await (client as any).createAlias(`#space-${spaceAlias.value}:matrix.cjystx.top`, spaceId.value)
+    const client = matrixClientService.getClient() as unknown as MatrixClientWithRoomMethods | null
+    if (client && client.createAlias) {
+      await client.createAlias(`#space-${spaceAlias.value}:matrix.cjystx.top`, spaceId.value)
       msg.success('空间地址已更新')
     }
   } catch (err) {

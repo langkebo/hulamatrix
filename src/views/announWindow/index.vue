@@ -193,16 +193,22 @@ import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { extractLinkSegments, openExternalUrl } from '@/hooks/useLinkSegments'
 import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
 import { logger, toError } from '@/utils/logger'
+import {
+  getAnnouncementList,
+  pushAnnouncement,
+  editAnnouncement,
+  deleteAnnouncement
+} from '@/services/matrixAnnouncementService'
 
 // Type definition for announcement items
 interface AnnouncementItem {
   id: string
-  uid: string
+  uid: string // For backward compatibility, same as creatorId
+  creatorId?: string // New field from Matrix service
   userName?: string
   name?: string
   content: string
@@ -237,19 +243,12 @@ const userStore = useUserStore()
 const settingStore = useSettingStore()
 const { t } = useI18n()
 const themes = computed(() => settingStore.themes)
-/** 判断当前用户是否拥有id为6的徽章 并且是频道 */
-const hasBadge6 = computed(() => {
-  // 只有当 roomId 为 "1" 时才进行徽章判断（频道）
-  if (roomId.value !== '1') return false
-  const currentUser = groupStore.getUserInfo(userStore.userInfo!.uid)!
-  return currentUser?.itemIds?.includes('6')
-})
 const isAdmin = computed(() => {
   const LordId = groupStore.currentLordId
   const adminUserTds = groupStore.adminUidList
   const uid = useUserStore().userInfo?.uid
   // 由于 uid 可能为 undefined，需要进行类型检查，确保其为 string 类型
-  if (uid && (uid === LordId || adminUserTds.includes(uid) || hasBadge6.value)) {
+  if (uid && (uid === LordId || adminUserTds.includes(uid))) {
     return true
   }
   return false
@@ -269,11 +268,16 @@ const handleInit = async () => {
     try {
       pageNum.value = 1
       isLast.value = false
-      const data = (await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)) as
-        | { records?: unknown[]; total?: string | number; pages?: string | number }
-        | undefined
-      if (data) {
-        announList.value = (data.records || []) as AnnouncementItem[]
+      // Use new Matrix announcement service
+      const data = await getAnnouncementList(roomId.value)
+      if (data && data.length > 0) {
+        // Map Matrix service response to AnnouncementItem format
+        announList.value = data.map((item) => ({
+          ...item,
+          // Map creatorId to uid for backward compatibility
+          uid: item.creatorId || ''
+        })) as AnnouncementItem[]
+
         if (announList.value.length === 0) {
           viewType.value = '0'
           return
@@ -290,13 +294,18 @@ const handleInit = async () => {
             deleteLoading: false
           }
         })
-        // 处理置顶公告，置顶的公告排在列表前面
+        // 处理置顶公告，置顶的公告排在列表前面 (already sorted by service, but sort again for safety)
         announList.value.sort((a: AnnouncementItem, b: AnnouncementItem) => {
           if (a.top && !b.top) return -1
           if (!a.top && b.top) return 1
           return 0
         })
         pageNum.value++
+        // Since Matrix service returns all announcements, we're on the last page
+        isLast.value = true
+      } else {
+        announList.value = []
+        viewType.value = '0'
       }
     } catch (error) {
       logger.error('获取群公告列表失败:', toError(error))
@@ -314,60 +323,10 @@ const handleScroll = (event: Event) => {
     handleLoadMore()
   }
 }
-// 加载更多公告
+// 加载更多公告 (No-op for Matrix service - all announcements loaded at once)
 const handleLoadMore = async () => {
-  if (roomId.value && !isLoading.value && !isLast.value) {
-    try {
-      isLoading.value = true
-      const data = (await cachedStore.getGroupAnnouncementList(roomId.value, pageNum.value, pageSize)) as
-        | { records?: unknown[]; total?: string | number; pages?: string | number }
-        | undefined
-      if (data) {
-        const records = (data.records || []) as AnnouncementItem[]
-        // 如果没有数据，标记为最后一页
-        if (records.length === 0) {
-          isLast.value = true
-          return
-        }
-        // 检查重复数据
-        const existingIds = new Set(announList.value.map((item: AnnouncementItem) => item?.id))
-        const newRecords = records.filter((newItem: AnnouncementItem) => !existingIds.has(newItem.id))
-        // 为新加载的公告添加展开/收起状态
-        newRecords.forEach((item: AnnouncementItem) => {
-          item.expanded = false
-          announcementStates.value[item?.id] = {
-            showDeleteConfirm: false,
-            deleteLoading: false
-          }
-          // 处理公告的userName
-          const user = groupStore.getUser(roomId.value, item.uid)
-          const fallbackName = item.userName || item?.name || ''
-          item.userName = user?.myName || user?.name || fallbackName
-        })
-        // 添加新的非重复数据到列表中
-        if (newRecords.length > 0) {
-          announList.value.push(...(newRecords as AnnouncementItem[]))
-          // 判断累计加载的数据量是否达到总数
-          if (announList.value.length >= Number(data.total || 0)) {
-            isLast.value = true
-            return
-          }
-          pageNum.value++
-        } else if (pageNum.value < Number(data.pages || 1)) {
-          // 如果当前页没有新数据但还没到最后一页，尝试加载下一页
-          pageNum.value++
-          handleLoadMore()
-          return
-        } else {
-          isLast.value = true
-        }
-      }
-    } catch (error) {
-      logger.error('加载更多公告失败:', toError(error))
-    } finally {
-      isLoading.value = false
-    }
-  }
+  // Matrix service returns all announcements at once, no pagination needed
+  isLast.value = true
 }
 // 切换到编辑公告视图
 const handleNew = () => {
@@ -393,14 +352,11 @@ const handleDel = async (announcement: AnnouncementItem) => {
   try {
     const st = (announcementStates.value[announcement.id] ||= { showDeleteConfirm: false, deleteLoading: false })
     st.deleteLoading = true
-    // 同时处理删除请求和最小延迟时间
-    await Promise.all([
-      requestWithFallback({
-        url: 'delete_announcement',
-        body: { id: announcement.id }
-      }),
-      new Promise((resolve) => setTimeout(resolve, 600))
-    ])
+    // Use new Matrix announcement service
+    await deleteAnnouncement({
+      roomId: roomId.value,
+      announcementId: announcement.id
+    })
     // 重置该公告的确认框状态
     const st2 = (announcementStates.value[announcement.id] ||= { showDeleteConfirm: false, deleteLoading: false })
     st2.showDeleteConfirm = false
@@ -456,25 +412,20 @@ const handlePushAnnouncement = async () => {
   if (!validateAnnouncement(announContent.value)) {
     return
   }
+  // Use new Matrix announcement service
   const apiCall = isEdit.value
     ? () =>
-        requestWithFallback({
-          url: 'edit_announcement',
-          body: {
-            id: editAnnoouncement.value.id,
-            roomId: roomId.value,
-            content: announContent.value,
-            top: isTop.value
-          }
+        editAnnouncement({
+          id: editAnnoouncement.value.id!,
+          roomId: roomId.value,
+          content: announContent.value,
+          top: isTop.value
         })
     : () =>
-        requestWithFallback({
-          url: 'push_announcement',
-          body: {
-            roomId: roomId.value,
-            content: announContent.value,
-            top: isTop.value
-          }
+        pushAnnouncement({
+          roomId: roomId.value,
+          content: announContent.value,
+          top: isTop.value
         })
   const successMessage = isEdit.value ? t('announcement.toast.editSuccess') : t('announcement.toast.createSuccess')
   const errorMessage = isEdit.value ? t('announcement.toast.editFail') : t('announcement.toast.createFail')
@@ -552,7 +503,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: flex-end;
   margin-top: 4px;
-  color: #13987f;
+  color: var(--hula-accent, #13987f);
   cursor: pointer;
   font-size: 12px;
   svg {
@@ -560,7 +511,7 @@ onMounted(async () => {
   }
 }
 .announcement-link {
-  color: #13987f;
+  color: var(--hula-accent, #13987f);
   cursor: pointer;
   word-break: break-all;
   line-height: 2.1rem;

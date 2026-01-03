@@ -22,7 +22,8 @@ import { useMitt } from '@/hooks/useMitt'
 import router from '@/router'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { getGroupDetail, scanQRCodeAPI } from '@/utils/ImRequestUtils'
+import { useGroupStore } from '@/stores/group'
+import { scanQRCodeAPI } from '@/utils/ImRequestUtils'
 import { msg } from '@/utils/SafeUI'
 
 const route = useRoute()
@@ -63,6 +64,7 @@ const handleScanLogin = async (data: ScanData) => {
 
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
+const groupStore = useGroupStore()
 
 const handleScanAddFriend = async (data: ScanData) => {
   logger.debug('尝试扫码添加好友::', { data, component: 'MyLayout' })
@@ -110,15 +112,16 @@ const handleScanEnterGroup = async (data: ScanData) => {
 
   const roomId = data.roomId as string
 
-  // 可能是扫码出来的
-  const groupDetail = (await getGroupDetail(roomId)) as { account?: string; groupName?: string; avatar?: string }
+  // 使用 groupStore 获取群组信息
+  const groupDetail = await groupStore.fetchGroupDetailSafely(roomId)
 
   // Handle exactOptionalPropertyTypes by creating a new object with all required properties
   globalStore.addGroupModalInfo = {
     show: globalStore.addGroupModalInfo?.show || false,
     account: groupDetail.account || '',
     name: groupDetail.groupName || '',
-    avatar: groupDetail.avatar || ''
+    avatar: groupDetail.avatar || '',
+    roomId: roomId
   }
 
   setTimeout(() => {

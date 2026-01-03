@@ -754,8 +754,13 @@ const openItem = (item: CacheItem) => {
   window.open(item.url, '_blank')
 }
 
-const handleFilterSelect = (key: string) => {
-  currentFilter.value = key as any
+const handleFilterSelect = (key: string | number) => {
+  // Ensure key is a valid filter type
+  const validFilters = ['all', 'image', 'video', 'audio', 'file']
+  const filterKey = String(key)
+  if (validFilters.includes(filterKey)) {
+    currentFilter.value = filterKey as 'all' | 'image' | 'video' | 'audio' | 'file'
+  }
   currentPage.value = 1
 }
 

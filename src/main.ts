@@ -2,7 +2,13 @@ import { logger } from '@/utils/logger'
 import { createApp } from 'vue'
 import 'uno.css'
 import '@unocss/reset/eric-meyer.css' // unocss提供的浏览器默认样式重置
+// 引入 HuLa 统一主题变量（必须在最前面）
+import './styles/scss/global/theme-variables.scss'
 import '@/styles/index.scss' // 引入自定义样式
+// 引入全局通用工具类
+import './styles/scss/global/utilities.scss'
+// 引入 Vant 主题覆盖（移动端）
+import './mobile/styles/vant-theme.scss'
 // TlbsMap已移除 - 如需地图功能可考虑替代方案
 import { setupI18n } from '@/services/i18n'
 import { AppException } from '@/common/exception'
@@ -66,7 +72,8 @@ interface WindowWithCleanup extends Window {
 
 initializePlatform()
 startWebVitalObserver()
-import('@/services/webSocketRust')
+// WebSocket 已废弃，使用 Matrix SDK
+// import('@/services/webSocketRust')
 
 // 在开发环境下引入调试器
 if (import.meta.env.DEV) {

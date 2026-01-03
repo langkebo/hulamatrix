@@ -31,9 +31,6 @@ pinia
 // 导出核心Store
 export { useAppStore } from './core'
 
-// 导出兼容层（用于渐进式迁移）
-export * from './compatibility'
-
 // 为了兼容性，暂时导出旧的Store（逐步迁移）
 export * from './matrixAuth'
 export * from './chat'

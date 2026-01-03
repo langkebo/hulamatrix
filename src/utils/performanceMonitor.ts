@@ -14,6 +14,15 @@ import { logger } from '@/utils/logger'
 
 // ==================== Types ====================
 
+// Extended Performance interface with memory API (Chrome-specific)
+interface PerformanceWithMemory extends Performance {
+  memory?: {
+    usedJSHeapSize: number
+    totalJSHeapSize: number
+    jsHeapSizeLimit: number
+  }
+}
+
 export interface PerformanceMetrics {
   fps: number
   memory: {
@@ -129,7 +138,8 @@ export class MemoryMonitor {
 
   start(interval: number = 1000, callback?: (memory: PerformanceMetrics['memory']) => void) {
     if (this.isRunning) return
-    if (!(performance as any).memory) {
+    const perf = performance as unknown as PerformanceWithMemory
+    if (!perf.memory) {
       logger.warn('[MemoryMonitor] Memory API not available')
       return
     }
@@ -157,7 +167,8 @@ export class MemoryMonitor {
   }
 
   private measure() {
-    const memory = (performance as any).memory
+    const perf = performance as unknown as PerformanceWithMemory
+    const memory = perf.memory
     if (!memory) return null
 
     const used = memory.usedJSHeapSize
@@ -185,7 +196,8 @@ export class MemoryMonitor {
   }
 
   getMemory(): PerformanceMetrics['memory'] {
-    const memory = (performance as any).memory
+    const perf = performance as unknown as PerformanceWithMemory
+    const memory = perf.memory
     if (!memory) return null
 
     return {
@@ -490,6 +502,7 @@ export function usePerformanceMonitor() {
   }
 
   const isMonitoring = ref(false)
+  const monitoringInterval = ref<ReturnType<typeof setInterval> | null>(null)
   const metrics = ref<PerformanceMetrics>({
     fps: 0,
     memory: null,
@@ -504,12 +517,9 @@ export function usePerformanceMonitor() {
     isMonitoring.value = true
 
     // Update metrics periodically
-    const interval = setInterval(() => {
+    monitoringInterval.value = setInterval(() => {
       metrics.value = globalAnalyzer!.getMetrics()
     }, 1000)
-
-    // Store interval ID for cleanup
-    ;(startMonitoring as any).intervalId = interval
   }
 
   const stopMonitoring = () => {
@@ -518,9 +528,8 @@ export function usePerformanceMonitor() {
     globalAnalyzer!.stop()
     isMonitoring.value = false
 
-    const intervalId = (startMonitoring as any).intervalId
-    if (intervalId) {
-      clearInterval(intervalId)
+    if (monitoringInterval.value) {
+      clearInterval(monitoringInterval.value)
     }
   }
 

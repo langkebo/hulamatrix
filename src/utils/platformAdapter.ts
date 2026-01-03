@@ -125,11 +125,13 @@ export const messageActionAdapter = {
     if (isMobile()) {
       // 移动端实现 - 使用Tauri的文件保存API
       const { invoke } = await import('@tauri-apps/api/core')
-      const url = (message.message.body as any)?.url || ''
+      const body = message.message.body
+      const url = body && typeof body === 'object' && 'url' in body ? body.url : ''
       await invoke('save_media_to_gallery', { url })
     } else {
       // 桌面端实现 - 使用浏览器下载API或Tauri对话框
-      const url = (message.message.body as any)?.url || ''
+      const body = message.message.body
+      const url = body && typeof body === 'object' && 'url' in body ? body.url : ''
       if (url) {
         // 创建临时链接触发下载
         const a = document.createElement('a')
@@ -361,8 +363,8 @@ function extractMessageText(message: MessageType): string {
     if ('text' in body) return body.text as string
     if ('body' in body) return body.body as string
     if ('info' in body && typeof body.info === 'object') {
-      const info = body.info as any
-      if (info.body) return info.body
+      const info = body.info as Record<string, unknown>
+      if (info.body) return String(info.body)
     }
   }
   return String(body || '')

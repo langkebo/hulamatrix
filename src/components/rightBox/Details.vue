@@ -22,7 +22,7 @@
     <span class="text-(20px [--text-color])">{{ item.name }}</span>
 
     <template v-if="!isBotUser">
-      <span class="text-(14px #909090)">{{ t('home.chat_details.single.empty_signature') }}</span>
+      <span class="text-(14px [--hula-gray-500,#909090])">{{ t('home.chat_details.single.empty_signature') }}</span>
 
       <n-flex align="center" justify="space-between" :size="30" class="text-#606060 select-none cursor-default">
         <span>
@@ -32,17 +32,6 @@
             })
           }}
         </span>
-        <n-flex align="center">
-          <span>{{ t('home.chat_details.single.badge_label') }}</span>
-          <template v-for="badge in item.itemIds" :key="badge">
-            <n-popover trigger="hover">
-              <template #trigger>
-                <img class="size-34px" :src="cacheStore.badgeById(badge)?.img" alt="" />
-              </template>
-              <span>{{ cacheStore.badgeById(badge)?.describe }}</span>
-            </n-popover>
-          </template>
-        </n-flex>
       </n-flex>
       <!-- 选项按钮 -->
       <n-flex align="center" justify="space-between" :size="40" class="w-full max-w-420px">
@@ -53,7 +42,7 @@
           class="cursor-pointer"
           :size="32"
           :border-radius="10"
-          :color="'#13987f'">
+          :color="'var(--hula-accent, #13987f)'">
           <n-popover trigger="hover">
             <template #trigger>
               <n-icon :size="20">
@@ -92,7 +81,7 @@
             <span class="text-(20px [--text-color])">{{ groupDetail.groupName || groupDetail.name }}</span>
             <n-popover trigger="hover" v-if="groupDetail.roomId === '1'">
               <template #trigger>
-                <svg class="size-20px color-#13987f select-none outline-none cursor-pointer">
+                <svg class="size-20px text-brand select-none outline-none cursor-pointer">
                   <use href="#auth"></use>
                 </svg>
               </template>
@@ -100,10 +89,10 @@
             </n-popover>
           </n-flex>
           <n-flex align="center" :size="12">
-            <span class="text-(14px #909090)">{{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}</span>
+            <span class="text-(14px [--hula-gray-500,#909090])">{{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}</span>
             <n-tooltip trigger="hover">
               <template #trigger>
-                <svg class="size-12px cursor-pointer color-#909090" @click="handleCopy(groupDetail.uid || groupDetail.roomId || '')">
+                <svg class="size-12px cursor-pointer text-gray-500" @click="handleCopy(groupDetail.uid || groupDetail.roomId || '')">
                   <use href="#copy"></use>
                 </svg>
               </template>
@@ -118,7 +107,7 @@
         class="cursor-pointer"
         :size="40"
         :border-radius="10"
-        :color="'#13987f'">
+        :color="'var(--hula-accent, #13987f)'">
         <n-icon :size="22">
           <svg class="color-#fff"><use href="#message"></use></svg>
         </n-icon>
@@ -137,7 +126,7 @@
             ref="remarkInputRef"
             v-model:value="editingRemarkValue"
             size="tiny"
-            class="border-(1px solid #90909080)"
+            class="border-(1px solid [--hula-gray-500-rgb,144,144,144]/0.5)"
             :placeholder="t('home.chat_details.group.remark.placeholder')"
             clearable
             spellCheck="false"
@@ -163,7 +152,7 @@
             ref="nicknameInputRef"
             v-model:value="nicknameValue"
             size="tiny"
-            class="border-(1px solid #90909080)"
+            class="border-(1px solid [--hula-gray-500-rgb,144,144,144]/0.5)"
             :placeholder="t('home.chat_details.group.nickname.placeholder')"
             clearable
             spellCheck="false"
@@ -174,7 +163,7 @@
             @keydown.enter="handleNicknameUpdate" />
         </div>
         <span v-else class="flex items-center cursor-pointer" @click="startEditNickname">
-          <p class="text-#909090">{{ displayNickname || t('home.chat_details.group.nickname.empty') }}</p>
+          <p class="text-[--hula-gray-500,#909090]">{{ displayNickname || t('home.chat_details.group.nickname.empty') }}</p>
           <n-icon v-if="!groupDetail.myName" size="16" class="ml-1">
             <svg><use href="#right"></use></svg>
           </n-icon>
@@ -185,7 +174,7 @@
         <span>{{ t('home.chat_details.group.announcement.label') }}</span>
         <span class="flex items-center cursor-pointer gap-4px" @click="handleOpenAnnouncement">
           <p
-            class="text-#909090 max-w-[clamp(160px,40vw,320px)] truncate leading-tight"
+            class="text-[--hula-gray-500,#909090] max-w-[clamp(160px,40vw,320px)] truncate leading-tight"
             :title="announcementContent || t('home.chat_details.group.announcement.empty')">
             {{ announcementContent || t('home.chat_details.group.announcement.empty') }}
           </p>
@@ -238,7 +227,6 @@ import { useGroupStore } from '@/stores/group'
 import { useMediaStore } from '@/stores/useMediaStore'
 import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
 import { useRoomStats } from '@/composables/useRoomStats'
@@ -391,15 +379,16 @@ watchEffect(async () => {
     nicknameSnapshot.value = ''
     announcementContent.value = ''
   } else {
-    await requestWithFallback({ url: 'get_group_detail', params: { id: content.detailId } })
-      .then((response: unknown) => {
-        const res = response as GroupDetail
-        item.value = res
+    // Use groupStore instead of deprecated API
+    try {
+      const groupDetail = groupStore.getGroupDetailByRoomId(content.detailId)
+      if (groupDetail) {
+        item.value = groupDetail as GroupDetail
         const normalizedNickname = resolveMyRoomNickname({
-          roomId: res.roomId || '',
-          myName: res.myName || ''
+          roomId: groupDetail.roomId || '',
+          myName: groupDetail.myName || ''
         })
-        const normalizedRemark = res.remark || ''
+        const normalizedRemark = groupDetail.remark || ''
         nicknameValue.value = normalizedNickname
         nicknameSnapshot.value = normalizedNickname
         remarkSnapshot.value = normalizedRemark
@@ -408,11 +397,14 @@ watchEffect(async () => {
           fetchRoomStats(item.value.roomId)
           void loadAnnouncement(item.value.roomId)
         }
-      })
-      .catch((e) => {
-        logger.error('获取群组详情失败:', e)
+      } else {
+        logger.warn('[Details.vue] Group detail not found for roomId:', content.detailId)
         announcementContent.value = ''
-      })
+      }
+    } catch (e) {
+      logger.error('获取群组详情失败:', e)
+      announcementContent.value = ''
+    }
   }
 })
 

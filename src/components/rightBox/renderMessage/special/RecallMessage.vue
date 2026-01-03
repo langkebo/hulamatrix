@@ -6,7 +6,7 @@
         <p class="text-(12px #909090) select-none cursor-default">{{ message.body.content }}</p>
         <p
           v-if="canReEdit(message.id)"
-          class="text-(12px #13987f) select-none cursor-pointer"
+          class="text-(12px) text-brand select-none cursor-pointer"
           @click="handleReEdit(message.id)">
           重新编辑
         </p>
@@ -20,7 +20,7 @@
         </p>
         <p
           v-if="canReEdit(message.id)"
-          class="text-(12px #13987f) select-none cursor-pointer"
+          class="text-(12px) text-brand select-none cursor-pointer"
           @click="handleReEdit(message.id)">
           重新编辑
         </p>

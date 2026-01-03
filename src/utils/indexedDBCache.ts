@@ -21,12 +21,6 @@ interface CacheEntry {
   headers?: Record<string, string>
 }
 
-interface CacheMetadata {
-  url: string
-  size: number
-  timestamp: number
-}
-
 interface CacheStats {
   totalSize: number
   itemCount: number

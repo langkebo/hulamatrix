@@ -65,7 +65,13 @@ export const useGlobalStore = defineStore(
     })
 
     // 添加群聊模态框信息
-    const addGroupModalInfo = ref<{ show: boolean; name?: string; avatar?: string; account?: string }>({
+    const addGroupModalInfo = ref<{
+      show: boolean
+      name?: string
+      avatar?: string
+      account?: string
+      roomId?: string
+    }>({
       show: false,
       name: '',
       avatar: '',

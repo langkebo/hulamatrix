@@ -14,7 +14,7 @@
           <span class="text-(24px #70938c) textFont">{{ t('auth.register.title') }}</span>
         </n-flex>
         <n-flex justify="center" class="mt-6px">
-          <n-button text class="color-#13987f" @click="toggleServerInput()">自定义服务器</n-button>
+          <n-button text class="text-brand" @click="toggleServerInput()">自定义服务器</n-button>
         </n-flex>
         <n-collapse-transition :show="matrixStore.serverInputVisible">
           <n-flex vertical :size="8">
@@ -131,11 +131,11 @@
               <n-checkbox v-model:checked="protocol" />
               <div class="text-12px color-#909090 cursor-default lh-14px">
                 <span>{{ t('login.term.checkout.text1') }}</span>
-                <span class="color-#13987f cursor-pointer" @click.stop="openServiceAgreement">
+                <span class="text-brand cursor-pointer" @click.stop="openServiceAgreement">
                   {{ t('login.term.checkout.text2') }}
                 </span>
                 <span>{{ t('login.term.checkout.text3') }}</span>
-                <span class="color-#13987f cursor-pointer" @click.stop="openPrivacyAgreement">
+                <span class="text-brand cursor-pointer" @click.stop="openPrivacyAgreement">
                   {{ t('login.term.checkout.text4') }}
                 </span>
               </div>
@@ -353,7 +353,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .gradient-button {
-  background: linear-gradient(145deg, #acd7da, #13987f);
+  background: linear-gradient(145deg, #acd7da, var(--hula-accent, #13987f));
   border: none;
   transition: all 0.3s ease;
 

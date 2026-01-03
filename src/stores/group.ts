@@ -1238,6 +1238,7 @@ export const useGroupStore = defineStore(
       groupDetails,
       getGroupDetailByRoomId,
       getGroupDetail,
+      fetchGroupDetailSafely,
       loadGroupDetails,
       updateGroupNumber,
       removeGroupDetail,

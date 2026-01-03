@@ -40,17 +40,6 @@
             </p>
           </n-popover>
         </n-flex>
-        <!-- 当前佩戴的徽章 -->
-        <n-flex v-if="currentBadge" align="center" justify="center">
-          <span class="text-(14px #707070)">{{ t('home.profile_edit.badge.current') }}</span>
-          <n-popover trigger="hover">
-            <template #trigger>
-              <img :src="currentBadge?.img" alt="" class="size-22px" />
-            </template>
-            <span>{{ currentBadge?.describe }}</span>
-          </n-popover>
-        </n-flex>
-
         <!-- 昵称编辑输入框 -->
         <n-popover placement="top-start" trigger="click">
           <template #trigger>
@@ -70,7 +59,7 @@
               show-count
               type="text">
               <template #prefix>
-                <span class="pr-6px text-#909090">{{ t('home.profile_edit.form.nickname.label') }}</span>
+                <span class="pr-6px text-[--hula-gray-500,#909090]">{{ t('home.profile_edit.form.nickname.label') }}</span>
               </template>
             </n-input>
           </template>
@@ -78,48 +67,12 @@
             {{ t('home.profile_edit.form.nickname.remaining', { count: editInfo.content.modifyNameChance || 0 }) }}
           </span>
         </n-popover>
-
-        <!-- 徽章列表  -->
-        <n-flex :size="[56, 20]" align="center">
-          <template v-for="item in editInfo.badgeList" :key="item.id">
-            <div class="badge-item">
-              <n-image
-                :class="{ 'grayscale-0': item.obtain === IsYesEnum.YES }"
-                :src="item.img"
-                alt="badge"
-                class="flex-center grayscale"
-                width="100"
-                height="100"
-                preview-disabled
-                round />
-              <div class="tip">
-                <template v-if="item.obtain === IsYesEnum.YES">
-                  <n-button
-                    style="color: #fff"
-                    v-if="item.wearing === IsYesEnum.NO"
-                    color="#13987f"
-                    @click="toggleWarningBadge(item)">
-                    {{ t('home.profile_edit.badge.wear') }}
-                  </n-button>
-                </template>
-                <n-popover trigger="hover">
-                  <template #trigger>
-                    <svg class="size-24px outline-none">
-                      <use href="#tips"></use>
-                    </svg>
-                  </template>
-                  <span>{{ item.describe }}</span>
-                </n-popover>
-              </div>
-            </div>
-          </template>
-        </n-flex>
       </n-flex>
       <n-flex class="p-12px" align="center" justify="center">
         <n-button
           style="color: #fff"
           :disabled="editInfo.content.name === localUserInfo.name || !backendConnected"
-          color="#13987f"
+          :color="'var(--hula-accent, #13987f)'"
           @click="saveEditInfo(localUserInfo as ModifyUserInfoType)">
           {{ t('home.profile_edit.actions.save') }}
         </n-button>
@@ -151,19 +104,11 @@ import type { ModifyUserInfoType } from '@/services/types'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { getBadgeList, uploadAvatar } from '@/utils/ImRequestUtils'
+import { userProfileService } from '@/services/userProfileService'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 
 import { msg } from '@/utils/SafeUI'
 import { useDevConnectivity } from '@/hooks/useDevConnectivity'
-
-interface BadgeItem {
-  describe: string
-  id: string
-  img: string
-  obtain: IsYesEnum
-  wearing: IsYesEnum
-}
 
 // WebWindowLike interface for cross-platform compatibility
 interface WebWindowLike {
@@ -180,7 +125,7 @@ const localUserInfo = ref<Partial<ModifyUserInfoType>>({})
 const userStore = useUserStore()
 const { addListener } = useTauriListener()
 const loginHistoriesStore = useLoginHistoriesStore()
-const { editInfo, currentBadge, updateCurrentUserCache, saveEditInfo, toggleWarningBadge } = leftHook()
+const { editInfo, updateCurrentUserCache, saveEditInfo } = leftHook()
 const { countGraphemes } = useCommon()
 const { backendConnected } = useDevConnectivity()
 // 使用自定义hook处理头像上传
@@ -193,22 +138,22 @@ const {
   handleFileChange,
   handleCrop: onCrop
 } = useAvatarUpload({
-  onSuccess: async (downloadUrl) => {
-    // 调用更新头像的API TODO 这里准备删除
-    await uploadAvatar({ avatar: downloadUrl })
+  onSuccess: async (mxcUrl) => {
+    // 使用 Matrix SDK 设置头像 URL
+    await userProfileService.setAvatarUrl(mxcUrl)
     // 更新编辑信息
-    editInfo.value.content.avatar = downloadUrl
+    editInfo.value.content.avatar = mxcUrl
     // 更新用户信息
-    userStore.userInfo!.avatar = downloadUrl
+    userStore.userInfo!.avatar = mxcUrl
     // 更新头像更新时间
     userStore.userInfo!.avatarUpdateTime = Date.now()
     // 更新登录历史记录
     const historyItem = loginHistoriesStore.loginHistories.find((item) => item.uid === userStore.userInfo!.uid)
     if (historyItem) {
-      historyItem.avatar = downloadUrl
+      historyItem.avatar = mxcUrl
     }
     // 更新缓存里面的用户信息
-    updateCurrentUserCache('avatar', downloadUrl)
+    updateCurrentUserCache('avatar', mxcUrl)
     msg.success(t('home.profile_edit.toast.avatar_update_success'))
   }
 })
@@ -225,10 +170,6 @@ const openEditInfo = () => {
   editInfo.value.show = true
   editInfo.value.content = userStore.userInfo!
   localUserInfo.value = { ...userStore.userInfo! }
-  /** 获取徽章列表 */
-  getBadgeList().then((res) => {
-    editInfo.value.badgeList = res as BadgeItem[]
-  })
 }
 
 onMounted(async () => {
@@ -252,19 +193,6 @@ onMounted(async () => {
 })
 </script>
 <style scoped lang="scss">
-.badge-item {
-  .tip {
-    transition: opacity 0.4s ease-in-out;
-    @apply absolute top-0 left-0 w-full h-full flex-center gap-4px z-999 opacity-0;
-  }
-
-  @apply bg-#ccc relative rounded-50% size-fit p-4px cursor-pointer;
-
-  &:hover .tip {
-    @apply opacity-100;
-  }
-}
-
 .mac-close:hover {
   svg {
     display: block;

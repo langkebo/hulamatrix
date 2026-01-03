@@ -66,7 +66,7 @@ import { logger } from '@/utils/logger'
               <template v-for="(segment, index) in announcementSegments" :key="index">
                 <span
                   v-if="segment.isLink"
-                  class="cursor-pointer hover:underline hover:opacity-80 text-#13987f"
+                  class="cursor-pointer hover:underline hover:opacity-80 text-brand"
                   @click.stop="openAnnouncementLink(segment.text)">
                   {{ segment.text }}
                 </span>

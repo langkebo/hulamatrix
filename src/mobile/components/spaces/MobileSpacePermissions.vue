@@ -9,20 +9,21 @@
 
     <!-- Permission Level Tabs -->
     <div class="tabs-section">
-      <n-tabs
-        v-model:value="activeTab"
-        type="segment"
+      <van-tabs
+        v-model:active="activeTab"
+        type="card"
         animated
+        swipeable
       >
-        <n-tab-pane name="default" tab="默认权限">
+        <van-tab title="默认权限" name="default">
           <DefaultPermissions
             :power-levels="powerLevels"
             :loading="loading"
             @update="handleUpdateDefault"
           />
-        </n-tab-pane>
+        </van-tab>
 
-        <n-tab-pane name="users" tab="用户权限">
+        <van-tab title="用户权限" name="users">
           <UserPermissions
             :permissions="userPermissions"
             :members="members"
@@ -30,29 +31,29 @@
             @update="handleUpdateUser"
             @remove="handleRemoveUser"
           />
-        </n-tab-pane>
+        </van-tab>
 
-        <n-tab-pane name="events" tab="事件权限">
+        <van-tab title="事件权限" name="events">
           <EventPermissions
             :power-levels="powerLevels"
             :loading="loading"
             @update="handleUpdateEvent"
           />
-        </n-tab-pane>
+        </van-tab>
 
-        <n-tab-pane name="rooms" tab="房间权限">
+        <van-tab title="房间权限" name="rooms">
           <RoomPermissions
             :room-permissions="roomPermissions"
             :loading="loading"
             @update="handleUpdateRoom"
           />
-        </n-tab-pane>
-      </n-tabs>
+        </van-tab>
+      </van-tabs>
     </div>
 
     <!-- Save Button -->
     <div class="footer-section">
-      <n-button
+      <van-button
         type="primary"
         size="large"
         block
@@ -60,35 +61,44 @@
         @click="handleSaveAll"
       >
         保存所有更改
-      </n-button>
+      </van-button>
     </div>
 
     <!-- Unsaved Changes Warning -->
-    <n-modal
-      v-model:show="showUnsavedWarning"
-      preset="dialog"
-      title="未保存的更改"
-      type="warning"
+    <van-popup
+      :show="showUnsavedWarning"
+      position="center"
+      :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
     >
-      <div class="warning-content">
-        <p>您有 {{ pendingChanges.length }} 项未保存的更改。</p>
-        <n-list bordered>
-          <n-list-item v-for="change in pendingChanges" :key="change.id">
-            {{ change.description }}
-          </n-list-item>
-        </n-list>
+      <div class="warning-dialog">
+        <div class="warning-header">
+          <van-icon name="warning-o" :size="24" color="#f0a020" />
+          <span class="warning-title">未保存的更改</span>
+        </div>
+
+        <div class="warning-content">
+          <p>您有 {{ pendingChanges.length }} 项未保存的更改。</p>
+          <van-cell-group inset :border="true">
+            <van-cell
+              v-for="change in pendingChanges"
+              :key="change.id"
+              :title="change.description"
+            />
+          </van-cell-group>
+        </div>
+
+        <div class="warning-actions">
+          <van-button @click="discardChanges">放弃更改</van-button>
+          <van-button type="primary" @click="showUnsavedWarning = false">继续编辑</van-button>
+        </div>
       </div>
-      <template #action>
-        <n-button @click="discardChanges">放弃更改</n-button>
-        <n-button type="primary" @click="showUnsavedWarning = false">继续编辑</n-button>
-      </template>
-    </n-modal>
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NTabs, NTabPane, NButton, NModal, NList, NListItem, useMessage, useDialog } from 'naive-ui'
+import { useMessage, useDialog } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import DefaultPermissions from './permissions/DefaultPermissions.vue'
@@ -365,9 +375,9 @@ const discardChanges = () => {
   dialog.warning({
     title: '确认放弃更改',
     content: '所有未保存的更改将被丢弃',
-    positiveText: '放弃',
-    negativeText: '取消',
-    onPositiveClick: () => {
+    confirmText: '放弃',
+    cancelText: '取消',
+    onConfirm: () => {
       pendingChanges.value = []
       showUnsavedWarning.value = false
       loadPermissions()
@@ -442,11 +452,11 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
 
-  :deep(.n-tabs) {
+  :deep(.van-tabs) {
     height: 100%;
   }
 
-  :deep(.n-tab-pane) {
+  :deep(.van-tab__panel) {
     height: 100%;
     overflow-y: auto;
   }
@@ -463,11 +473,45 @@ defineExpose({
   z-index: 100;
 }
 
+.warning-dialog {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-color, #ffffff);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 70vh;
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+
+  .warning-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color-1);
+  }
+}
+
 .warning-content {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 300px;
+
   p {
     margin-bottom: 12px;
     color: var(--text-color-2);
   }
+}
+
+.warning-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--border-color, #f0f0f0);
 }
 
 // Safe area for mobile

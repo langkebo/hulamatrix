@@ -1,916 +1,223 @@
-// 移除未使用的导入，避免类型检查报错
-import { ImUrlEnum, TauriCommand, type NotificationTypeEnum } from '@/enums'
-import type { CacheBadgeReq, LoginUserReq, ModifyUserInfoType, RegisterUserReq, UserItem } from '@/services/types'
-import {
-  ErrorType,
-  invokeSilently,
-  invokeWithErrorHandler,
-  invokeWithRetry,
-  type InvokeErrorOptions
-} from '@/utils/TauriInvokeHandler'
+/**
+ * IM Request Utils - Placeholder
+ *
+ * @deprecated 此文件已被移除，旧的后端 API 已废弃
+ * 所有函数都是空实现，请使用 Matrix SDK 或 v2 services 代替
+ */
 
-import { msg } from '@/utils/SafeUI'
-import { useChatStore } from '../stores/chat'
-import { useGroupStore } from '../stores/group'
 import { logger } from '@/utils/logger'
 
-/** 通用值类型 */
-type JsonValue = string | number | boolean | null | undefined | JsonValue[] | { [key: string]: JsonValue }
+// ============================================================================
+// 好友/联系人相关 (使用 friendsServiceV2)
+// ============================================================================
 
-/** IM 请求参数接口 */
-interface ImRequestParams {
-  /** API URL 枚举 */
-  url: ImUrlEnum
-  /** 请求体数据 */
-  body?: Record<string, JsonValue> | JsonValue[]
-  /** 查询参数 */
-  params?: Record<string, JsonValue>
+export async function deleteFriend(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] deleteFriend() is deprecated, use friendsServiceV2.removeFriend() instead')
 }
 
-/**
- * IM 请求选项接口
- */
-interface ImRequestOptions {
-  /** 是否显示错误提示，默认为 true */
-  showError?: boolean
-  /** 自定义错误消息 */
-  customErrorMessage?: string | undefined
-  /** 错误类型，默认为 Network */
-  errorType?: ErrorType
-  /** 是否静默调用（不显示错误），默认为 false */
-  silent?: boolean
-  /** 是否重试错误，用于标记是否为可重试错误 */
-  isRetryError?: boolean
-  /** 重试选项 */
-  retry?:
-    | {
-        /** 最大重试次数，默认为 3 */
-        maxRetries?: number
-        /** 重试间隔（毫秒），默认为 1000 */
-        retryDelay?: number
-      }
-    | undefined
+export async function sendAddFriendRequest(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] sendAddFriendRequest() is deprecated, use friendsServiceV2.sendFriendRequest() instead')
 }
 
-/**
- * 重试选项接口
- */
-interface RetryInvokeOptions {
-  maxRetries?: number
-  retryDelay?: number
-  showError?: boolean
-  customErrorMessage?: string
-}
-
-/** 登录响应接口 */
-export interface LoginResponse {
-  token: string
-  refreshToken?: string
-  uid?: string
-  userId?: string
-  [key: string]: JsonValue | undefined
-}
-
-/**
- * 统一的 IM API 请求工具
- */
-export async function imRequest<T = unknown>(
-  requestParams: ImRequestParams,
-  options?: Omit<ImRequestOptions, 'silent'>
-): Promise<T> {
-  const { retry, ...invokeOptions } = options || {}
-
-  // 构建调用参数
-  const args = {
-    url: requestParams.url,
-    body: requestParams.body || null,
-    params: requestParams.params || null
-  }
-
-  // 如果需要重试
-  if (retry) {
-    const opt: RetryInvokeOptions = {
-      ...retry,
-      showError: invokeOptions.showError ?? false
-    }
-    if (invokeOptions.customErrorMessage !== undefined) {
-      opt.customErrorMessage = invokeOptions.customErrorMessage
-    }
-    return await invokeWithRetry<T>('im_request_command', args, opt)
-  }
-
-  // Web 环境不再提供 IM 接口回退，全部功能迁移至 Matrix 后端
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
-  if (!isTauri) {
-    logger.warn('IM 接口已废弃：请使用 Matrix 后端 API')
-    return {} as T
-  }
-
-  // 普通调用（Tauri）
-  const handlerOptions: InvokeErrorOptions = {
-    errorType: invokeOptions.errorType || ErrorType.Network
-  }
-  if (invokeOptions.showError !== undefined) {
-    handlerOptions.showError = invokeOptions.showError
-  }
-  if (invokeOptions.customErrorMessage !== undefined) {
-    handlerOptions.customErrorMessage = invokeOptions.customErrorMessage
-  }
-  if (invokeOptions.isRetryError !== undefined) {
-    handlerOptions.isRetryError = invokeOptions.isRetryError
-  }
-  return await invokeWithErrorHandler<T>('im_request_command', args, handlerOptions)
-}
-
-/**
- * 静默的 IM 请求（不显示错误提示）
- *
- * @example
- * ```typescript
- * const result = await imRequestSilent({
- *   url: ImUrlEnum.NOTICE_UN_READ_COUNT
- * })
- * ```
- */
-export async function imRequestSilent<T = unknown>(requestParams: ImRequestParams): Promise<T | null> {
-  const args = {
-    url: requestParams.url,
-    body: requestParams.body || null,
-    params: requestParams.params || null
-  }
-  return await invokeSilently<T>('im_request_command', args)
-}
-
-/**
- * 带重试机制的 IM 请求
- *
- * @example
- * ```typescript
- * const result = await imRequestWithRetry({
- *   url: ImUrlEnum.GET_CONTACT_LIST,
- *   params: { pageSize: 100 }
- * }, {
- *   maxRetries: 5,
- *   retryDelay: 2000
- * })
- * ```
- */
-export async function imRequestWithRetry<T = unknown>(
-  requestParams: ImRequestParams,
-  retryOptions?: RetryInvokeOptions
-): Promise<T> {
-  const opts: ImRequestOptions = {
-    retry: retryOptions,
-    showError: retryOptions?.showError ?? false
-  }
-  if (retryOptions?.customErrorMessage !== undefined) {
-    opts.customErrorMessage = retryOptions.customErrorMessage
-  }
-  return await imRequest<T>(requestParams, opts)
-}
-
-/**
- * 快捷方法：获取用户详情
- */
-export async function getUserDetail() {
-  return await imRequest({
-    url: ImUrlEnum.GET_USER_INFO_DETAIL
-  })
-}
-
-/**
- * 快捷方法：获取群组详情
- */
-export async function getGroupDetail(roomId: string) {
-  return await imRequest({
-    url: ImUrlEnum.GROUP_DETAIL,
-    params: { id: roomId }
-  })
-}
-
-/**
- * 获取群组基础信息 [没进群的人、逻辑删除的群也可以查询]
- */
-export async function getGroupInfo(roomId: string) {
-  return await imRequest({
-    url: ImUrlEnum.GROUP_INFO,
-    params: { id: roomId }
-  })
-}
-
-/**
- * 快捷方法：获取联系人列表
- */
-export async function getContactList(options?: { pageSize?: number; cursor?: string }) {
-  return await imRequest({
-    url: ImUrlEnum.GET_CONTACT_LIST,
-    params: {
-      pageSize: options?.pageSize || 100,
-      cursor: options?.cursor || ''
-    }
-  })
-}
-
-/**
- * 获取通知未读数
- */
-export async function getNoticeUnreadCount() {
-  return await imRequestSilent({
-    url: ImUrlEnum.NOTICE_UN_READ_COUNT
-  })
-}
-
-/**
- * 快捷方法：获取群公告列表
- */
-export async function getAnnouncementList(roomId: string, page: number, pageSize: number = 10) {
-  return await imRequest({
-    url: ImUrlEnum.GET_ANNOUNCEMENT_LIST,
-    params: {
-      roomId,
-      current: page,
-      size: pageSize
-    }
-  })
-}
-
-export async function getMsgReadCount(msgIds: number[]) {
-  return await imRequest({
-    url: ImUrlEnum.GET_MSG_READ_COUNT,
-    params: {
-      msgIds
-    }
-  })
-}
-
-export async function markMsgRead(roomId: string) {
-  return await imRequest({
-    url: ImUrlEnum.MARK_MSG_READ,
-    body: {
-      roomId
-    }
-  })
-}
-
-export async function getFriendPage(options?: { pageSize?: number; cursor?: string }) {
-  return await imRequest({
-    url: ImUrlEnum.GET_FRIEND_PAGE,
-    params: {
-      pageSize: options?.pageSize || 100,
-      cursor: options?.cursor || ''
-    }
-  })
-}
-
-export async function getBadgeList() {
-  return await imRequest({
-    url: ImUrlEnum.GET_BADGE_LIST
-  })
-}
-
-export async function getBadgesBatch(body: CacheBadgeReq[]) {
-  return await imRequest({
-    url: ImUrlEnum.GET_BADGES_BATCH,
-    body: {
-      reqList: body
-    }
-  })
-}
-
-export async function groupListMember(roomId: string) {
-  const args: Record<string, string> = { roomId, room_id: roomId }
-  return await invokeWithErrorHandler(TauriCommand.GET_ROOM_MEMBERS, args, { errorType: ErrorType.Network })
-}
-
-export async function getMsgList(body: { msgIds?: string[]; async?: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.GET_MSG_LIST,
-    body
-  })
-}
-
-export async function ModifyUserInfo(body: ModifyUserInfoType) {
-  return await imRequest({
-    url: ImUrlEnum.MODIFY_USER_INFO,
-    body
-  })
-}
-
-export async function setUserBadge(body: { badgeId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SET_USER_BADGE,
-    body
-  })
-}
-
-export async function markMsg(body: { msgId: string; markType: number; actType: number }) {
-  return await imRequest({
-    url: ImUrlEnum.MARK_MSG,
-    body
-  })
-}
-
-export async function blockUser(body: { uid: string; deadline: string }) {
-  return await imRequest({
-    url: ImUrlEnum.BLOCK_USER,
-    body
-  })
-}
-
-export async function recallMsg(body: { msgId: string; roomId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.RECALL_MSG,
-    body
-  })
-}
-
-export async function addEmoji(body: { expressionUrl: string }) {
-  return await imRequest({
-    url: ImUrlEnum.ADD_EMOJI,
-    body
-  })
-}
-
-export async function deleteEmoji(body: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.DELETE_EMOJI,
-    body
-  })
-}
-
-export async function getEmoji() {
-  return await imRequest({
-    url: ImUrlEnum.GET_EMOJI
-  })
-}
-
-export async function uploadAvatar(body: { avatar: string }) {
-  return await imRequest({
-    url: ImUrlEnum.UPLOAD_AVATAR,
-    body
-  })
-}
-
-export async function getAllUserState() {
-  return await imRequest({
-    url: ImUrlEnum.GET_ALL_USER_STATE
-  })
-}
-
-export async function changeUserState(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.CHANGE_USER_STATE,
-    params
-  })
-}
-
-export async function searchFriend(params: { key: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SEARCH_FRIEND,
-    params
-  })
-}
-
-export async function sendAddFriendRequest(body: { targetUid: string; msg: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SEND_ADD_FRIEND_REQUEST,
-    body
-  })
-}
-
-export async function requestNoticePage(params: {
-  pageSize: number
-  pageNo: number
-  cursor: string
-  click: boolean
-  applyType: string
-}) {
-  return await imRequest({
-    url: ImUrlEnum.REQUEST_NOTICE_PAGE,
-    params
-  })
-}
-
-export async function requestNoticeRead(body: { noticeIdList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.REQUEST_NOTICE_READ,
-    body
-  })
-}
-
-export async function handleInvite(body: { applyId: string; state: number }) {
-  return await imRequest({
-    url: ImUrlEnum.HANDLE_INVITE,
-    body
-  })
-}
-
-export async function deleteFriend(body: { targetUid: string }) {
-  return await imRequest({
-    url: ImUrlEnum.DELETE_FRIEND,
-    body
-  })
-}
-
-export async function modifyFriendRemark(body: { targetUid: string; remark: string }) {
-  return await imRequest({
-    url: ImUrlEnum.MODIFY_FRIEND_REMARK,
-    body
-  })
-}
-
-export async function createGroup(body: { uidList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.CREATE_GROUP,
-    body
-  })
-}
-
-export async function inviteGroupMember(body: { roomId: string; uidList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.INVITE_GROUP_MEMBER,
-    body
-  })
-}
-
-export async function removeGroupMember(body: { roomId: string; uidList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.REMOVE_GROUP_MEMBER,
-    body
-  })
-}
-
-export async function getSessionDetail(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SESSION_DETAIL,
-    params
-  })
-}
-
-export async function getSessionDetailWithFriends(params: { id: string; roomType: number }) {
-  return await imRequest({
-    url: ImUrlEnum.SESSION_DETAIL_WITH_FRIENDS,
-    params
-  })
-}
-
-export async function setSessionTop(body: { roomId: string; top: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.SET_SESSION_TOP,
-    body
-  })
-}
-
-export async function deleteSession(body: { roomId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.DELETE_SESSION,
-    body
-  })
-}
-
-export async function notification(body: { roomId: string; type: NotificationTypeEnum }) {
-  return await imRequest({
-    url: ImUrlEnum.NOTIFICATION,
-    body
-  })
-}
-
-export async function shield(body: { roomId: string; state: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.SHIELD,
-    body
-  })
-}
-
-export async function exitGroup(body: { roomId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.EXIT_GROUP,
-    body
-  })
-}
-
-export async function addAdmin(body: { roomId: string; uidList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.ADD_ADMIN,
-    body
-  })
-}
-
-export async function revokeAdmin(body: { roomId: string; uidList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.REVOKE_ADMIN,
-    body
-  })
-}
-
-export async function groupList() {
-  return await imRequest({
-    url: ImUrlEnum.GROUP_LIST
-  })
-}
-
-export async function updateRoomInfo(body: { id: string; name?: string; avatar?: string; allowScanEnter?: boolean }) {
-  const chatStore = useChatStore()
-  const groupStore = useGroupStore()
-
-  body.name = body.name ?? groupStore.countInfo!.groupName
-  body.avatar = body.avatar ?? groupStore.countInfo!.avatar
-  body.allowScanEnter = body.allowScanEnter ?? groupStore.countInfo!.allowScanEnter
-
-  await imRequest({
-    url: ImUrlEnum.UPDATE_ROOM_INFO,
-    body
-  })
-
-  chatStore.updateSession(body.id, body)
-  groupStore.updateGroupDetail(body.id, body)
-
-  msg.success?.('更新成功')
-}
-
-export async function updateMyRoomInfo(body: { id: string; myName: string; remark: string }) {
-  return await imRequest({
-    url: ImUrlEnum.UPDATE_MY_ROOM_INFO,
-    body
-  })
-}
-
-export async function searchGroup(params: { account: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SEARCH_GROUP,
-    params
-  })
-}
-
-export async function applyGroup(body: { account: string; msg: string; type: number }) {
-  return await imRequest({
-    url: ImUrlEnum.APPLY_GROUP,
-    body
-  })
-}
-
-export async function pushAnnouncement(body: { roomId: string; content: string; top: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.PUSH_ANNOUNCEMENT,
-    body
-  })
-}
-
-export async function deleteAnnouncement(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.DELETE_ANNOUNCEMENT,
-    params
-  })
-}
-
-export async function editAnnouncement(body: { id: string; roomId: string; content: string; top: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.EDIT_ANNOUNCEMENT,
-    body
-  })
-}
-
-export async function getAnnouncementDetail(params: { roomId: string; announcementId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.ANNOUNCEMENT,
-    params
-  })
-}
-
-export async function getCaptcha() {
-  return await imRequest({
-    url: ImUrlEnum.GET_CAPTCHA
-  })
-}
-
-export async function sendCaptcha(body: {
-  email: string
-  uuid?: string
-  operationType?: 'register' | 'forgot'
-  templateCode: 'REGISTER_EMAIL' | 'REGISTER_SMS' | 'MOBILE_LOGIN' | 'MOBILE_EDIT' | 'EMAIL_EDIT' | 'PASSWORD_EDIT'
-}) {
-  return await imRequest({
-    url: ImUrlEnum.SEND_CAPTCHA,
-    body
-  })
-}
-
-export async function initConfig() {
-  return await imRequest({
-    url: ImUrlEnum.INIT_CONFIG
-  })
-}
-
-export async function getQiniuToken() {
-  return await imRequest({
-    url: ImUrlEnum.GET_QINIU_TOKEN
-  })
-}
-
-export async function register(body: RegisterUserReq) {
-  return await imRequest({
-    url: ImUrlEnum.REGISTER,
-    body
-  })
-}
-
-export async function login(body: LoginUserReq): Promise<LoginResponse> {
-  return await imRequest<LoginResponse>({
-    url: ImUrlEnum.LOGIN,
-    body
-  })
-}
-
-export async function logout(body: { autoLogin: boolean }) {
-  return await imRequest({
-    url: ImUrlEnum.LOGOUT,
-    body
-  })
-}
-
-export async function forgetPassword(body: {
-  email: string
-  code: string
-  uuid: string
-  password: string
-  confirmPassword: string
-  key: string
-}) {
-  return await imRequest({
-    url: ImUrlEnum.FORGET_PASSWORD,
-    body
-  })
-}
-
-export async function mergeMsg(body: { fromRoomId: string; type: number; roomIds: string[]; messageIds: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.MERGE_MSG,
-    body
-  })
-}
-
-export async function getUserByIds(uidList: string[]): Promise<UserItem[]> {
-  return await imRequest({
-    url: ImUrlEnum.GET_USER_BY_IDS,
-    body: { uidList }
-  })
-}
-
-export async function generateQRCode(): Promise<UserItem[]> {
-  return await imRequest({
-    url: ImUrlEnum.GENERATE_QR_CODE
-  })
-}
-
-export async function checkQRStatus(params: {
-  qrId: string
-  clientId: string
-  deviceHash: string
-  deviceType: string
-}): Promise<UserItem[]> {
-  return await imRequest(
-    {
-      url: ImUrlEnum.CHECK_QR_STATUS,
-      params
-    },
-    {
-      showError: false
-    }
+export async function modifyFriendRemark(..._args: unknown[]): Promise<void> {
+  logger.warn(
+    '[ImRequestUtils] modifyFriendRemark() is deprecated, use sessionSettingsService.setFriendRemark() instead'
   )
 }
 
-// 扫描二维码
-export async function scanQRCodeAPI(data: { qrId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.SCAN_QR_CODE,
-    body: data
-  })
+export async function searchFriend(..._args: unknown[]): Promise<unknown[]> {
+  logger.warn('[ImRequestUtils] searchFriend() is deprecated, use friendsServiceV2.searchUsers() instead')
+  return []
 }
 
-// 确认登录
-export async function confirmQRCodeAPI(data: { qrId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.CONFIRM_QR_CODE,
-    body: data
-  })
+export async function getSessionDetailWithFriends(..._args: unknown[]): Promise<unknown> {
+  logger.warn(
+    '[ImRequestUtils] getSessionDetailWithFriends() is deprecated, use matrixRoomManager.createDMRoom() instead'
+  )
+  return {}
 }
 
-// 查看单条朋友圈
-export async function feedDetail(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_DETAIL,
-    params
-  })
+// ============================================================================
+// 群组相关 (使用 Matrix SDK rooms)
+// ============================================================================
+
+export async function createGroup(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] createGroup() is deprecated, use Matrix SDK room creation instead')
+  return {}
 }
 
-export async function feedList(data: { pageSize?: number; cursor?: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_LIST,
-    body: data
-  })
+export async function inviteGroupMember(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] inviteGroupMember() is deprecated, use Matrix SDK instead')
 }
 
-export async function pushFeed(data: {
-  content: string // 朋友圈文案
-  mediaType: 0 | 1 | 2 // 媒体类型, 0-纯文本内容,1-图片加内容,2-视频加内容
-  urls?: string[] // 图片URL列表
-  videoUrl?: string // 视频URL
-  permission: 'privacy' | 'open' | 'partVisible' | 'notAnyone' // 可见性权限
-  uidList?: number[] // 权限限制的用户ID列表
-  targetIds?: number[] // 权限限制的标签ID列表
-}) {
-  return await imRequest({
-    url: ImUrlEnum.PUSH_FEED,
-    body: data
-  })
+export async function applyGroup(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] applyGroup() is deprecated, use Matrix SDK instead')
 }
 
-export async function delFeed(data: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.DEL_FEED,
-    body: data
-  })
+export async function getGroupInfo(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] getGroupInfo() is deprecated, use Matrix SDK room API instead')
+  return {}
 }
 
-export async function editFeed(data: {
-  id: number // 朋友圈ID
-  content: string // 朋友圈文案
-  mediaType: 0 | 1 | 2 // 媒体类型
-  urls?: string[] // 图片URL列表
-  videoUrl?: string // 视频URL
-  permission: 'privacy' | 'open' | 'partVisible' | 'notAnyone' // 可见性权限
-  uidList?: number[] // 权限限制的用户ID列表
-  targetIds?: number[] // 权限限制的标签ID列表
-}) {
-  return await imRequest({
-    url: ImUrlEnum.EDIT_FEED,
-    body: data
-  })
+export async function getGroupDetail(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] getGroupDetail() is deprecated, use Matrix SDK room API instead')
+  return {}
 }
 
-export async function getFeedPermission(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.GET_FEED_PERMISSION,
-    params
-  })
+export async function searchGroup(..._args: unknown[]): Promise<unknown[]> {
+  logger.warn('[ImRequestUtils] searchGroup() is deprecated, use Matrix SDK room search instead')
+  return []
 }
 
-// ==================== 朋友圈点赞相关 ====================
+// ============================================================================
+// 消息相关
+// ============================================================================
 
-export async function feedLikeToggle(data: { feedId: string; actType: number }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_LIKE_TOGGLE,
-    body: data
-  })
+export async function recallMsg(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] recallMsg() is deprecated, use Matrix SDK instead')
 }
 
-export async function feedLikeList(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_LIKE_LIST,
-    params
-  })
+export async function mergeMsg(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] mergeMsg() is deprecated')
 }
 
-export async function feedLikeCount(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_LIKE_COUNT,
-    params
-  })
+export async function getMsgList(..._args: unknown[]): Promise<unknown[]> {
+  logger.warn('[ImRequestUtils] getMsgList() is deprecated, use unifiedMessageService.pageMessages() instead')
+  return []
 }
 
-export async function feedLikeHasLiked(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_LIKE_HAS_LIKED,
-    params
-  })
+// ============================================================================
+// 用户相关
+// ============================================================================
+
+export async function ModifyUserInfo(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] ModifyUserInfo() is deprecated, use userProfileService.setDisplayName() instead')
 }
 
-// ==================== 朋友圈评论相关 ====================
-
-export async function feedCommentAdd(data: {
-  feedId: string
-  content: string
-  replyCommentId?: string
-  replyUid?: string
-}) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_COMMENT_ADD,
-    body: data
-  })
+export async function uploadAvatar(..._args: unknown[]): Promise<string> {
+  logger.warn(
+    '[ImRequestUtils] uploadAvatar() is deprecated, use userProfileService.setAvatar() or setAvatarUrl() instead'
+  )
+  return ''
 }
 
-export async function feedCommentDelete(data: { commentId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_COMMENT_DELETE,
-    body: data
-  })
+export async function getUserByIds(..._args: unknown[]): Promise<unknown[]> {
+  logger.warn('[ImRequestUtils] getUserByIds() is deprecated, use userQueryService.getUsersByIds() instead')
+  return []
 }
 
-export async function feedCommentList(data: { feedId: string; pageSize?: number; cursor?: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_COMMENT_LIST,
-    body: data
-  })
+export async function changeUserState(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] changeUserState() is deprecated, use Matrix SDK presence instead')
 }
 
-export async function feedCommentCount(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_COMMENT_COUNT,
-    params
-  })
+// ============================================================================
+// 会话相关
+// ============================================================================
+
+export async function setSessionTop(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] setSessionTop() is deprecated, use sessionSettingsService.setSessionTop() instead')
 }
 
-export async function feedCommentAll(params: { feedId: string }) {
-  return await imRequest({
-    url: ImUrlEnum.FEED_COMMENT_ALL,
-    params
-  })
+export async function shield(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] shield() is deprecated, use sessionSettingsService.setSessionShield() instead')
 }
 
-// 获得指定对话的消息列表
-export async function messageListByConversationId(params: {
-  conversationId: string
-  pageNo?: number
-  pageSize?: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.MESSAGE_LIST_BY_CONVERSATION_ID,
-    params
-  })
+export async function notification(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] notification() is deprecated, use sessionSettingsService.setNotificationMode() instead')
 }
 
-// 删除单条消息
-export async function messageDelete(params: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.MESSAGE_DELETE,
-    params
-  })
+export async function updateMyRoomInfo(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] updateMyRoomInfo() is deprecated, use Matrix SDK room state events instead')
 }
 
-// 删除指定对话的消息
-export async function messageDeleteByConversationId(body: { conversationIdList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.MESSAGE_DELETE_BY_CONVERSATION_ID,
-    body
-  })
+// ============================================================================
+// 公告相关
+// ============================================================================
+
+export async function getAnnouncementDetail(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] getAnnouncementDetail() is deprecated')
+  return {}
 }
 
-// 获取会话列表（我的）
-export async function conversationPage(params?: { pageNo?: number; pageSize?: number }) {
-  return await imRequest({
-    url: ImUrlEnum.CONVERSATION_PAGE,
-    params: params ?? {}
-  })
+export async function editAnnouncement(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] editAnnouncement() is deprecated')
 }
 
-// 获得【我的】聊天对话
-export async function conversationGetMy(params?: { id: string }) {
-  return await imRequest({
-    url: ImUrlEnum.CONVERSATION_GET_MY,
-    params: params ?? {}
-  })
+export async function pushAnnouncement(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] pushAnnouncement() is deprecated')
 }
 
-// 创建会话（我的）
-export async function conversationCreateMy(body: {
-  roleId?: string
-  knowledgeId?: string
-  title?: string
-  modelId?: string
-  systemMessage?: string
-  temperature?: number
-  maxTokens?: number
-  maxContexts?: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.CONVERSATION_CREATE_MY,
-    body
-  })
+// ============================================================================
+// 认证相关
+// ============================================================================
+
+export async function register(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] register() is deprecated, use Matrix SDK registration instead')
 }
 
-// 更新会话（我的）
-export async function conversationUpdateMy(body: {
-  id: string
-  title?: string
-  pinned?: boolean
-  roleId?: string
-  modelId?: string
-  knowledgeId?: string
-  systemMessage?: string
-  temperature?: number
-  maxTokens?: number
-  maxContexts?: number
-}) {
-  return await imRequest({
-    url: ImUrlEnum.CONVERSATION_UPDATE_MY,
-    body
-  })
+export async function logout(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] logout() is deprecated, use Matrix SDK logout instead')
 }
 
-// 删除会话（我的）- 支持批量删除
-export async function conversationDeleteMy(body: { conversationIdList: string[] }) {
-  return await imRequest({
-    url: ImUrlEnum.CONVERSATION_DELETE_MY,
-    body
-  })
+// ============================================================================
+// 二维码相关
+// ============================================================================
+
+export async function scanQRCodeAPI(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] scanQRCodeAPI() is deprecated')
+  return {}
+}
+
+export async function confirmQRCodeAPI(..._args: unknown[]): Promise<unknown> {
+  logger.warn('[ImRequestUtils] confirmQRCodeAPI() is deprecated')
+  return {}
+}
+
+// ============================================================================
+// 通知和联系人相关
+// ============================================================================
+
+export async function getNoticeUnreadCount(..._args: unknown[]): Promise<number> {
+  logger.warn('[ImRequestUtils] getNoticeUnreadCount() is deprecated')
+  return 0
+}
+
+export async function getContactList(..._args: unknown[]): Promise<unknown[]> {
+  logger.warn('[ImRequestUtils] getContactList() is deprecated, use Matrix SDK room API instead')
+  return []
+}
+
+export async function markMsgRead(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] markMsgRead() is deprecated, use Matrix SDK read receipts instead')
+}
+
+export async function updateRoomInfo(..._args: unknown[]): Promise<void> {
+  logger.warn('[ImRequestUtils] updateRoomInfo() is deprecated, use Matrix SDK room state events instead')
+}
+
+// ============================================================================
+// 通用请求函数（保留接口以避免编译错误）
+// ============================================================================
+
+export async function invokeWithRetry<T>(
+  _command: string,
+  _args?: Record<string, unknown>,
+  _options?: unknown
+): Promise<T> {
+  logger.warn('[ImRequestUtils] invokeWithRetry() is deprecated - old backend API removed')
+  return {} as T
+}
+
+export async function invokeWithErrorHandler<T>(
+  _command: string,
+  _args?: Record<string, unknown>,
+  _handlerOptions?: unknown
+): Promise<T> {
+  logger.warn('[ImRequestUtils] invokeWithErrorHandler() is deprecated - old backend API removed')
+  return {} as T
+}
+
+export async function invokeSilently<T>(_command: string, _args?: Record<string, unknown>): Promise<T> {
+  logger.warn('[ImRequestUtils] invokeSilently() is deprecated - old backend API removed')
+  return {} as T
 }

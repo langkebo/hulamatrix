@@ -154,9 +154,17 @@ interface Props {
   show: boolean
 }
 
+interface BackupResult {
+  success?: boolean
+  recoveryKey?: string
+  imported?: number
+  total?: number
+  error?: string
+}
+
 interface Emits {
   (e: 'update:show', value: boolean): void
-  (e: 'backup-completed', result: any): void
+  (e: 'backup-completed', result: BackupResult): void
 }
 
 const props = defineProps<Props>()

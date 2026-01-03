@@ -58,8 +58,6 @@ import type { ImageBody, MsgType, MessageBodyExtensions } from '@/services/types
 import { isMobile } from '@/utils/PlatformConstants'
 import { useCacheStore } from '@/stores/mediaCache'
 import { useMediaStore } from '@/stores/useMediaStore'
-import { buildQiniuThumbnailUrl, getPreferredQiniuFormat } from '@/utils/QiniuImageUtils'
-import type { QiniuThumbOptions } from '@/utils/QiniuImageUtils'
 import type { EncryptedFile } from '@/integrations/matrix/mediaCrypto'
 import { fileService } from '@/services/file-service'
 import { TauriCommand } from '@/enums'
@@ -169,20 +167,8 @@ const handleOpenImageViewer = () => {
 const remoteThumbnailSrc = computed(() => {
   const originalUrl = props.body?.url
   if (!originalUrl) return ''
-  const deviceRatio = typeof window !== 'undefined' ? Math.max(window.devicePixelRatio || 1, 1) : 1
-  const thumbnailWidth = Math.ceil(MAX_WIDTH * Math.min(deviceRatio, 2))
-  const format = getPreferredQiniuFormat()
-  const options: QiniuThumbOptions = {
-    width: thumbnailWidth,
-    quality: THUMB_QUALITY
-  }
-
-  // Only add format if it exists
-  if (format) {
-    options.format = format
-  }
-
-  return buildQiniuThumbnailUrl(originalUrl, options) ?? originalUrl
+  // Direct use of original URL - Matrix media server handles thumbnails
+  return originalUrl
 })
 
 const downloadKey = computed(() => remoteThumbnailSrc.value || props.body?.url || '')

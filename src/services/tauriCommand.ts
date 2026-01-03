@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import rustWebSocketClient from '@/services/webSocketRust'
+// WebSocket 已废弃，使用 Matrix SDK
 import { TauriCommand, SexEnum } from '../enums'
 import { useLogin } from '../hooks/useLogin'
 import { useWindow } from '../hooks/useWindow'
@@ -114,16 +114,8 @@ export const loginCommand = async (
       uid: info.uid
     }
   }).then(async (res: unknown) => {
-    // Phase 1 Migration: 检查是否禁用WebSocket
-    const websocketDisabled = import.meta.env.VITE_DISABLE_WEBSOCKET === 'true'
-
-    if (!websocketDisabled) {
-      // 仅在未禁用WebSocket时初始化自定义WebSocket
-      await rustWebSocketClient.initConnect()
-    } else {
-      // Phase 1: 使用Matrix标准协议，跳过自定义WebSocket
-      logger.info('WebSocket disabled in Phase 1 migration, using Matrix protocol instead')
-    }
+    // WebSocket 已废弃，使用 Matrix SDK
+    logger.info('Using Matrix SDK for communication (WebSocket removed)')
 
     const loginRes = res as LoginResponse
     await loginProcess(loginRes.token, loginRes.refreshToken, loginRes.client)

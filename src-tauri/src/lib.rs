@@ -30,23 +30,15 @@ pub mod command;
 pub mod common;
 pub mod configuration;
 pub mod error;
-mod im_request_client;
 pub mod pojo;
-pub mod repository;
 pub mod state;
 pub mod utils;
 mod vo;
-pub mod websocket;
 #[cfg(target_os = "ios")]
 mod webview_helper;
 
 use crate::command::app_state_command::is_app_state_ready;
-use crate::command::request_command::{im_request_command, login_command};
-use crate::command::room_member_command::{
-    cursor_page_room_members, get_room_members, page_room, update_my_room_info,
-};
 use crate::command::setting_command::{get_settings, update_settings};
-use crate::command::user_command::remove_tokens;
 use crate::configuration::{Settings, get_configuration};
 use crate::error::CommonError;
 use sea_orm::DatabaseConnection;
@@ -64,7 +56,6 @@ use mobiles::splash;
 pub struct AppData {
     db_conn: Arc<DatabaseConnection>,
     user_info: Arc<Mutex<UserInfo>>,
-    pub rc: Arc<Mutex<im_request_client::ImRequestClient>>,
     pub config: Arc<Mutex<Settings>>,
     frontend_task: Mutex<bool>,
     backend_task: Mutex<bool>,
@@ -72,19 +63,9 @@ pub struct AppData {
 
 pub(crate) static APP_STATE_READY: AtomicBool = AtomicBool::new(false);
 
-use crate::command::chat_history_command::query_chat_history;
-use crate::command::contact_command::{hide_contact_command, list_contacts_command};
-use crate::command::file_manager_command::{
-    debug_message_stats, get_navigation_items, query_files,
-};
 use crate::command::media::{
     clear_media_cache, delete_cached_media, download_media, get_media_cache_stats, preload_media,
 };
-use crate::command::message_command::{
-    delete_message, delete_room_messages, page_msg, save_msg, send_msg, sync_messages,
-    update_message_recall_status,
-};
-use crate::command::message_mark_command::save_message_mark;
 use crate::state::AppState;
 
 #[cfg(desktop)]
@@ -143,7 +124,6 @@ async fn initialize_app_data(
     (
         Arc<DatabaseConnection>,
         Arc<Mutex<UserInfo>>,
-        Arc<Mutex<im_request_client::ImRequestClient>>,
         Arc<Mutex<Settings>>,
     ),
     CommonError,
@@ -177,18 +157,6 @@ async fn initialize_app_data(
         }
     }
 
-    let rc: im_request_client::ImRequestClient = match im_request_client::ImRequestClient::new(
-        configuration.lock().await.backend.base_url.clone(),
-    ) {
-        Ok(client) => client,
-        Err(e) => {
-            eprintln!("Failed to create ImRequestClient: {e}");
-            return Err(CommonError::UnexpectedError(anyhow::anyhow!(
-                "Failed to create request client: {e}"
-            )));
-        }
-    };
-
     // 创建用户信息
     let user_info = UserInfo {
         token: Default::default(),
@@ -197,7 +165,7 @@ async fn initialize_app_data(
     };
     let user_info = Arc::new(Mutex::new(user_info));
 
-    Ok((db, user_info, Arc::new(Mutex::new(rc)), configuration))
+    Ok((db, user_info, configuration))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -356,12 +324,11 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 
     // 异步初始化应用数据，避免阻塞主线程
     match tauri::async_runtime::block_on(initialize_app_data(app_handle.clone())) {
-        Ok((db, user_info, rc, settings)) => {
+        Ok((db, user_info, settings)) => {
             // 使用 manage 方法在运行时添加状态
             app_handle.manage(AppData {
                 db_conn: db.clone(),
                 user_info: user_info.clone(),
-                rc,
                 config: settings,
                 frontend_task: Mutex::new(false),
                 // 后端任务默认完成
@@ -392,20 +359,12 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
 {
     #[cfg(mobile)]
     use crate::command::set_complete;
-    use crate::command::user_command::{
-        get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
-    };
     #[cfg(desktop)]
     use crate::desktops::common_cmd::set_badge_count;
     #[cfg(target_os = "ios")]
     use crate::mobiles::keyboard::set_webview_keyboard_adjustment;
     #[cfg(mobile)]
     use crate::mobiles::splash::hide_splash_screen;
-    use crate::websocket::commands::{
-        ws_disconnect, ws_force_reconnect, ws_get_app_background_state, ws_get_health,
-        ws_get_state, ws_init_connection, ws_is_connected, ws_send_message,
-        ws_set_app_background_state, ws_update_config,
-    };
 
     tauri::generate_handler![
         // 桌面端特定命令
@@ -440,45 +399,7 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         set_badge_count,
         #[cfg(target_os = "windows")]
         get_windows_scale_info,
-        // 通用命令（桌面端和移动端都支持）
-        save_user_info,
-        get_user_tokens,
-        update_token,
-        remove_tokens,
-        update_user_last_opt_time,
-        page_room,
-        get_room_members,
-        update_my_room_info,
-        cursor_page_room_members,
-        list_contacts_command,
-        hide_contact_command,
-        page_msg,
-        sync_messages,
-        send_msg,
-        save_msg,
-        delete_message,
-        delete_room_messages,
-        update_message_recall_status,
-        save_message_mark,
-        // 聊天历史相关命令
-        query_chat_history,
-        // 文件管理相关命令
-        query_files,
-        get_navigation_items,
-        debug_message_stats,
-        // WebSocket 相关命令
-        ws_init_connection,
-        ws_disconnect,
-        ws_send_message,
-        ws_get_state,
-        ws_get_health,
-        ws_force_reconnect,
-        ws_update_config,
-        ws_is_connected,
-        ws_set_app_background_state,
-        ws_get_app_background_state,
-        login_command,
-        im_request_command,
+        // 设置相关命令
         get_settings,
         update_settings,
         // 媒体相关命令

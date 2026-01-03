@@ -17,111 +17,106 @@
 
     <!-- Add Reaction Button -->
     <div v-if="showAddButton" class="add-reaction-btn" @click="openReactionPicker">
-      <n-icon :size="20">
-        <MoodHappy />
-      </n-icon>
+      <van-icon name="smile-o" :size="20" />
     </div>
 
     <!-- Reaction Picker Bottom Sheet -->
-    <n-modal
+    <van-popup
       v-model:show="showPicker"
-      :mask-closable="true"
-      preset="card"
-      :style="{
-        width: '100%',
-        maxWidth: '100%',
-        position: 'fixed',
-        bottom: '0',
-        margin: '0',
-        borderRadius: '16px 16px 0 0'
-      }"
-      @close="handlePickerClose"
+      position="bottom"
+      :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
     >
-      <template #header>
+      <div class="reaction-picker-popup">
+        <!-- Handle bar -->
+        <div class="handle-bar"></div>
+
+        <!-- Header -->
         <div class="picker-header">
           <span>{{ t('reaction.addReaction') }}</span>
-        </div>
-      </template>
-
-      <div class="reaction-picker-content">
-        <!-- Category Tabs -->
-        <div class="category-tabs">
-          <div
-            v-for="category in categories"
-            :key="category.name"
-            class="category-tab"
-            :class="{ active: activeCategory === category.name }"
-            @click="activeCategory = category.name"
-          >
-            {{ category.name }}
-          </div>
+          <van-icon name="cross" :size="20" @click="showPicker = false" />
         </div>
 
-        <!-- Emoji Grid -->
-        <div class="emoji-grid">
-          <div
-            v-for="emoji in currentEmojis"
-            :key="emoji"
-            class="emoji-item"
-            :class="{ 'has-reaction': hasUserReactionLocal(emoji) }"
-            @click="selectEmoji(emoji)"
-          >
-            <span class="emoji">{{ emoji }}</span>
-            <div v-if="hasUserReactionLocal(emoji)" class="check-indicator">
-              <n-icon :size="12"><Check /></n-icon>
+        <!-- Content -->
+        <div class="reaction-picker-content">
+          <!-- Category Tabs -->
+          <div class="category-tabs">
+            <div
+              v-for="category in categories"
+              :key="category.name"
+              class="category-tab"
+              :class="{ active: activeCategory === category.name }"
+              @click="activeCategory = category.name"
+            >
+              {{ category.name }}
             </div>
           </div>
-        </div>
 
-        <!-- Custom Emoji Input -->
-        <div class="custom-input-section">
-          <n-input
-            v-model:value="customEmoji"
-            :placeholder="t('reaction.custom')"
-            maxlength="4"
-            size="large"
-            @keyup.enter="selectEmoji(customEmoji)"
-          >
-            <template #suffix>
-              <n-button
-                type="primary"
-                size="small"
-                :disabled="!customEmoji.trim()"
-                @click="selectEmoji(customEmoji)"
-              >
-                {{ t('common.add') }}
-              </n-button>
-            </template>
-          </n-input>
-        </div>
-
-        <!-- User's Reactions -->
-        <div v-if="userReactions.length > 0" class="user-reactions-section">
-          <div class="section-title">{{ t('reaction.yourReactions') }}</div>
-          <div class="user-reactions-list">
+          <!-- Emoji Grid -->
+          <div class="emoji-grid">
             <div
-              v-for="emoji in userReactions"
+              v-for="emoji in currentEmojis"
               :key="emoji"
-              class="user-reaction-item"
+              class="emoji-item"
+              :class="{ 'has-reaction': hasUserReactionLocal(emoji) }"
               @click="selectEmoji(emoji)"
             >
               <span class="emoji">{{ emoji }}</span>
-              <n-icon :size="16"><X /></n-icon>
+              <div v-if="hasUserReactionLocal(emoji)" class="check-indicator">
+                <van-icon name="success" :size="12" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Emoji Input -->
+          <div class="custom-input-section">
+            <van-field
+              v-model="customEmoji"
+              :placeholder="t('reaction.custom')"
+              :maxlength="4"
+              @keyup.enter="selectEmoji(customEmoji)"
+            >
+              <template #button>
+                <van-button
+                  type="primary"
+                  size="small"
+                  :disabled="!customEmoji.trim()"
+                  @click="selectEmoji(customEmoji)"
+                >
+                  {{ t('common.add') }}
+                </van-button>
+              </template>
+            </van-field>
+          </div>
+
+          <!-- User's Reactions -->
+          <div v-if="userReactions.length > 0" class="user-reactions-section">
+            <div class="section-title">{{ t('reaction.yourReactions') }}</div>
+            <div class="user-reactions-list">
+              <div
+                v-for="emoji in userReactions"
+                :key="emoji"
+                class="user-reaction-item"
+                @click="selectEmoji(emoji)"
+              >
+                <span class="emoji">{{ emoji }}</span>
+                <van-icon name="cross" :size="16" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <template #footer>
-        <n-button block @click="showPicker = false">
-          {{ t('common.close') }}
-        </n-button>
-      </template>
-    </n-modal>
+        <!-- Footer -->
+        <div class="picker-footer">
+          <van-button block @click="showPicker = false">
+            {{ t('common.close') }}
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-overlay">
-      <n-spin size="small" />
+      <van-loading size="20" />
     </div>
   </div>
 </template>
@@ -129,8 +124,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NModal, NIcon, NInput, NButton, NSpin } from 'naive-ui'
-import { MoodHappy, Check, X } from '@vicons/tabler'
+// No imports needed from Naive UI - using Vant components
 import { useMessageReactions } from '@/composables'
 import { logger } from '@/utils/logger'
 
@@ -304,15 +298,57 @@ defineExpose({
   padding: 8px;
 }
 
+.reaction-picker-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+}
+
 .picker-header {
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  span:first-child {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .van-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
 }
 
 .reaction-picker-content {
-  max-height: 60vh;
+  flex: 1;
   overflow-y: auto;
+  padding: 16px;
+}
+
+.picker-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .category-tabs {
@@ -446,7 +482,7 @@ defineExpose({
     font-size: 18px;
   }
 
-  .n-icon {
+  .van-icon {
     color: var(--text-color-3);
   }
 }

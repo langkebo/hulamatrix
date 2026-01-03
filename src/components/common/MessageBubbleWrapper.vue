@@ -74,8 +74,8 @@
           <!-- 用户名 -->
           <span
             :class="[
-              'text-12px select-none color-#909090 inline-block align-top',
-              !isMe ? 'cursor-pointer hover:color-#13987f transition-colors' : ''
+              'text-12px select-none inline-block align-top',
+              !isMe ? 'username-hover cursor-pointer transition-colors' : ''
             ]"
             @click.stop="handleMentionUser">
             {{ senderDisplayName }}
@@ -545,6 +545,15 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 用户名悬停效果 - 使用 HuLa 主题色 */
+.username-hover {
+  color: #909090;
+
+  &:hover {
+    color: var(--hula-accent, #13987f);
   }
 }
 </style>

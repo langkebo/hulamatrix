@@ -1,7 +1,7 @@
 /**
  * Unified Message Receiver Service
- * 统一消息接收服务 - 处理所有来源的消息（WebSocket、Matrix SDK）
- * 合并了原messageReceiver.ts的Matrix事件监听功能
+ * 统一消息接收服务 - 处理所有来源的消息（Matrix SDK）
+ * WebSocket 支持已移除，现在完全使用 Matrix SDK
  */
 
 import { useChatStore } from '@/stores/chat'
@@ -11,12 +11,11 @@ import { invoke } from '@tauri-apps/api/core'
 import type { MessageType } from '@/services/types'
 import { TauriCommand } from '@/enums'
 import { matrixClientService } from '@/integrations/matrix/client'
-import { webSocketService } from './webSocketService'
 import { parseMatrixEvent } from '@/utils/messageUtils'
 import { threadService } from './matrixThreadAdapter'
 import { messageSyncService } from './messageSyncService'
 
-export type MessageSource = 'websocket' | 'matrix' | 'local'
+export type MessageSource = 'matrix' | 'local'
 
 export interface MessageReceiveOptions {
   skipDuplicateCheck?: boolean
@@ -63,18 +62,6 @@ interface MatrixMemberLike {
   userId: string
   name?: string
   displayName?: string
-}
-interface WebSocketMessage {
-  type: string
-  roomId?: string
-  data?: {
-    eventId?: string
-    id?: string
-    type?: string
-    body?: unknown
-    timestamp?: number
-    fromUser?: { uid: string }
-  }
 }
 interface ParsedMessage {
   id: string
@@ -136,7 +123,7 @@ class UnifiedMessageReceiver {
     try {
       logger.info('[UnifiedMessageReceiver] Initializing...')
       await this.initializeMatrixListener()
-      this.initializeWebSocketListener()
+      // WebSocket 支持已移除，现在完全使用 Matrix SDK
       this.isInitialized = true
       logger.info('[UnifiedMessageReceiver] Initialized successfully')
     } catch (err) {
@@ -177,19 +164,6 @@ class UnifiedMessageReceiver {
     logger.info('[UnifiedMessageReceiver] Matrix event listeners initialized')
   }
 
-  private initializeWebSocketListener(): void {
-    webSocketService.on('connected', () => {
-      logger.info('[UnifiedMessageReceiver] WebSocket connected')
-    })
-    webSocketService.on('message', (...args: unknown[]) => {
-      this.handleWebSocketMessage(args[0] as WebSocketMessage)
-    })
-    webSocketService.on('room:*', (...args: unknown[]) => {
-      this.handleWebSocketRoomMessage(args[0] as WebSocketMessage)
-    })
-    logger.info('[UnifiedMessageReceiver] WebSocket listeners initialized')
-  }
-
   private async handleMatrixMessage(event: MatrixEventLike, room: MatrixRoomLike): Promise<void> {
     try {
       const roomId = room.roomId,
@@ -214,48 +188,6 @@ class UnifiedMessageReceiver {
         error
       })
     }
-  }
-
-  private async handleWebSocketMessage(message: WebSocketMessage): Promise<void> {
-    try {
-      if (message.type !== 'message') return
-      const roomId = message.roomId
-      if (!roomId) return
-      const messageId =
-        message.data?.eventId || message.data?.id || `ws_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
-      if (!messageSyncService.shouldProcessMessage(messageId)) {
-        logger.debug('[UnifiedMessageReceiver] Duplicate WebSocket message ignored:', { messageId, roomId })
-        return
-      }
-      const globalStore = useGlobalStore()
-      const parsedMessage: ParsedMessage = {
-        id: messageId,
-        localId: `local_${Date.now()}`,
-        type: message.data?.type || 'text',
-        body: message.data?.body || {},
-        sendTime: message.data?.timestamp || Date.now(),
-        fromUser: message.data?.fromUser || { uid: 'unknown' },
-        roomId,
-        message: {
-          id: messageId,
-          type: message.data?.type || 'text',
-          body: message.data?.body || {},
-          sendTime: message.data?.timestamp || Date.now(),
-          fromUser: message.data?.fromUser || { uid: 'unknown' },
-          status: 'sent',
-          roomId
-        }
-      }
-      if (globalStore.currentSession?.roomId === roomId) await this.processMatrixMessage(parsedMessage)
-      else await this.updateUnreadCount(roomId)
-      logger.debug('[UnifiedMessageReceiver] WebSocket message processed:', { roomId, type: message.type })
-    } catch (error) {
-      logger.error('[UnifiedMessageReceiver] Failed to handle WebSocket message:', { message, error })
-    }
-  }
-
-  private async handleWebSocketRoomMessage(message: WebSocketMessage): Promise<void> {
-    logger.debug('[UnifiedMessageReceiver] WebSocket room message:', message)
   }
 
   private async handleReceipt(event: MatrixEventLike, room: MatrixRoomLike): Promise<void> {
@@ -464,7 +396,7 @@ class UnifiedMessageReceiver {
 
   async receiveMessage(
     message: MessageType,
-    source: MessageSource = 'websocket',
+    source: MessageSource = 'matrix',
     options: MessageReceiveOptions = {}
   ): Promise<MessageReceiveResult> {
     const messageId = message.message?.id || 'unknown',
@@ -577,8 +509,7 @@ class UnifiedMessageReceiver {
     const client = matrixClientService.getClient()
     if (client && typeof (client as unknown as { removeAllListeners?: () => void }).removeAllListeners === 'function')
       (client as unknown as { removeAllListeners: () => void }).removeAllListeners()
-    webSocketService.off('message')
-    webSocketService.off('room:*')
+    // WebSocket 支持已移除，现在完全使用 Matrix SDK
     this.processingQueue.clear()
     this.isInitialized = false
     logger.info('[UnifiedMessageReceiver] Stopped')
@@ -591,11 +522,14 @@ export const messageReceiver = unifiedMessageReceiver
 /** @deprecated 请使用 UnifiedMessageReceiver 代替 */
 export { UnifiedMessageReceiver as MessageReceiver }
 
+/**
+ * @deprecated WebSocket 支持已移除，请使用 receiveMatrixMessage 代替
+ */
 export async function receiveWebSocketMessage(
   message: MessageType,
   options?: MessageReceiveOptions
 ): Promise<MessageReceiveResult> {
-  return unifiedMessageReceiver.receiveMessage(message, 'websocket', options)
+  return unifiedMessageReceiver.receiveMessage(message, 'matrix', options)
 }
 export async function receiveMatrixMessage(
   message: MessageType,

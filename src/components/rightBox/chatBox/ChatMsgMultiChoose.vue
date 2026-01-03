@@ -129,7 +129,7 @@
           <n-button class="w-78px" secondary @click="showDeleteConfirm = false">
             {{ t('message.multi_choose.cancel_button') }}
           </n-button>
-          <n-button class="w-78px" color="#13987f" :loading="isDeleting" @click="handleBatchDelete">
+          <n-button class="w-78px" :color="'var(--hula-accent, #13987f)'" :loading="isDeleting" @click="handleBatchDelete">
             {{ t('message.multi_choose.delete_action') }}
           </n-button>
         </n-flex>
@@ -146,7 +146,6 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { mergeMsg } from '@/utils/ImRequestUtils'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
@@ -340,27 +339,24 @@ const handleRemoveSession = (roomId: string) => {
 
 const sendMsg = async () => {
   const selectedRoomIds = selectedSessions.value.map((item) => item.roomId)
-  const selectedMsgIds = selectedMsgs.value.map((item) => item.message.id)
 
-  await mergeMsg({
-    roomIds: selectedRoomIds,
-    type: mergeMessageType,
-    messageIds: selectedMsgIds,
-    fromRoomId: globalStore.currentSessionRoomId
-  })
-    .then(() => {
-      msg.success?.(t('message.multi_choose.forward_success'))
-    })
-    .catch((e) => {
-      logger.error('消息转发失败', toError(e))
-      msg.error?.(t('message.multi_choose.forward_failed'))
-    })
-    .finally(() => {
-      showModal.value = false
-      chatStore.clearMsgCheck()
-      chatStore.setMsgMultiChoose(false)
-      chatStore.resetSessionSelection()
-    })
+  if (selectedRoomIds.length === 0) {
+    msg.warning?.(t('message.multi_choose.select_session_prompt'))
+    return
+  }
+
+  // Message forwarding not yet implemented for Matrix SDK
+  msg.warning?.(t('message.multi_choose.not_implemented'))
+
+  // TODO: Implement Matrix message forwarding using m.reference relation type
+  // - For single mode: Send each message content to target rooms
+  // - For merge mode: Create a single message referencing all original messages
+
+  // Close the modal and reset selection
+  showModal.value = false
+  chatStore.clearMsgCheck()
+  chatStore.setMsgMultiChoose(false)
+  chatStore.resetSessionSelection()
 }
 
 useMitt.on(MittEnum.MSG_MULTI_CHOOSE, (payload?: { action?: string; mergeType?: MergeMessageType }) => {

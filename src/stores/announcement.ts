@@ -29,22 +29,14 @@ export const useAnnouncementStore = defineStore(StoresEnum.ANNOUNCEMENT, () => {
 
   const announcementContent = computed(() => (announList.value.length > 0 ? (announList.value[0]?.content ?? '') : ''))
 
-  // 判断当前用户是否有权限添加公告
+  // 判断当前用户是否有权限添加公告（仅群主和管理员）
   const canAddAnnouncement = computed(() => {
     if (!userStore.userInfo?.uid) return false
 
     const isLord = groupStore.isCurrentLord(userStore.userInfo.uid) ?? false
     const isAdmin = groupStore.isAdmin(userStore.userInfo.uid) ?? false
 
-    // 判断当前用户是否拥有id为6的徽章 并且是频道
-    const hasBadge6 = () => {
-      if (globalStore.currentSessionRoomId !== '1') return false
-
-      const currentUser = groupStore.getUserInfo(userStore.userInfo!.uid)
-      return currentUser?.itemIds?.includes('6') ?? false
-    }
-
-    return isLord || isAdmin || hasBadge6()
+    return isLord || isAdmin
   })
 
   /**

@@ -30,9 +30,7 @@
           />
         </svg>
         <div class="timer-content">
-          <n-icon :size="18" :color="ringColor">
-            <Clock />
-          </n-icon>
+          <van-icon name="clock-o" :size="18" :color="ringColor" />
           <span class="timer-text" :style="{ color: ringColor }">
             {{ formattedTime }}
           </span>
@@ -43,9 +41,7 @@
     <!-- 图标模式 -->
     <div v-else-if="mode === 'icon'" class="icon-mode">
       <div class="destruct-icon" :class="{ 'is-pulsing': isPulsing }">
-        <n-icon :size="16" :color="iconColor">
-          <Clock />
-        </n-icon>
+        <van-icon name="clock-o" :size="16" :color="iconColor" />
       </div>
       <span v-if="showText" class="destruct-text" :style="{ color: iconColor }">
         {{ formattedShortTime }}
@@ -55,9 +51,7 @@
     <!-- 徽章模式 -->
     <div v-else-if="mode === 'badge'" class="badge-mode">
       <div class="destruct-badge" :class="{ 'is-warning': isWarning, 'is-critical': isCritical }">
-        <n-icon :size="12" color="white">
-          <Clock />
-        </n-icon>
+        <van-icon name="clock-o" :size="12" color="white" />
         <span class="badge-text">{{ formattedShortTime }}</span>
       </div>
     </div>
@@ -69,18 +63,14 @@
         :class="{ 'is-warning': isWarning, 'is-critical': isCritical }"
         :style="{ width: progress + '%' }"
       >
-        <n-icon :size="14" color="white">
-          <Clock />
-        </n-icon>
+        <van-icon name="clock-o" :size="14" color="white" />
       </div>
     </div>
 
     <!-- 销毁动画 -->
     <transition name="destroy-fade">
       <div v-if="isDestroyed" class="destroyed-overlay">
-        <n-icon :size="32" color="#d03050">
-          <Trash />
-        </n-icon>
+        <van-icon name="delete-o" :size="32" color="#d03050" />
         <span class="destroyed-text">已销毁</span>
       </div>
     </transition>
@@ -89,8 +79,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { NIcon } from 'naive-ui'
-import { Clock, Trash } from '@vicons/tabler'
 
 interface Props {
   destroyAt: number // 销毁时间戳
@@ -152,7 +140,7 @@ const ringColor = computed(() => {
 const iconColor = computed(() => {
   if (isCritical.value) return '#d03050'
   if (isWarning.value) return '#f0a020'
-  return '#13987f'
+  return 'var(--hula-accent, #13987f)'
 })
 
 const formattedTime = computed(() => {

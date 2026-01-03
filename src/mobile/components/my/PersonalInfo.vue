@@ -149,9 +149,10 @@ import { OnlineEnum, UserType } from '@/enums'
 import type { UserInfoType, UserItem } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStoreV2 } from '@/stores/friendsV2'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { getSessionDetailWithFriends, deleteFriend } from '@/utils/ImRequestUtils'
+// 会话详情查询已迁移到 Matrix SDK
 import qrCodeImage from '/src/assets/mobile/my/qr-code.webp'
 import medalImage from '/src/assets/mobile/my/my-medal.webp'
 import { msg, dlg } from '@/utils/SafeUI'
@@ -198,6 +199,7 @@ const userStatusStore = useUserStatusStore()
 const groupStore = useGroupStore()
 const route = useRoute()
 const friendsStore = useFriendsStore()
+const friendsStoreV2 = useFriendsStoreV2()
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()
 
@@ -209,16 +211,19 @@ const isBotUser = (uid: string) => groupStore.getUserInfo(uid)?.account === User
 
 const toChatRoom = async () => {
   try {
-    const res = (await getSessionDetailWithFriends({ id: uid, roomType: 2 })) as { roomId: string }
+    // 使用 Matrix SDK 获取或创建 DM 房间
+    const { matrixRoomManager } = await import('@/services/matrixRoomManager')
+    const roomId = await matrixRoomManager.createDMRoom(uid)
+
     // 先检查会话是否已存在
-    const existingSession = chatStore.getSession(res.roomId)
+    const existingSession = chatStore.getSession(roomId)
     if (!existingSession) {
       // 只有当会话不存在时才更新会话列表顺序
-      chatStore.updateSessionLastActiveTime(res.roomId)
+      chatStore.updateSessionLastActiveTime(roomId)
       // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
       await chatStore.getSessionList()
     }
-    await preloadChatRoom(res.roomId)
+    await preloadChatRoom(roomId)
     router.push(`/mobile/chatRoom/chatMain`)
   } catch (error) {
     logger.error('私聊尝试进入聊天室失败:', error)
@@ -325,7 +330,8 @@ const handleDelete = () => {
       if (userDetailInfo.value?.uid) {
         try {
           loading.value = true
-          await deleteFriend({ targetUid: userDetailInfo.value!.uid })
+          // 使用 v2 service 删除好友
+          await friendsStoreV2.removeFriend(userDetailInfo.value!.uid)
           await friendsStore.refreshAll()
           isMyFriend.value = false
           chatStore.getSessionList()

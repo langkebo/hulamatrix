@@ -15,7 +15,12 @@ interface MenuItem {
   miniShow?: boolean
   title?: string
   shortTitle?: string
-  [key: string]: unknown
+  badge?: number | { count?: number; dot?: boolean }
+  window?: { resizable?: boolean }
+  size?: unknown
+  tip?: string
+  id?: string
+  label?: string
 }
 
 export const useMenuTopStore = defineStore(

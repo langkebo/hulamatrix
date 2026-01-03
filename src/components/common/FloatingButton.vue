@@ -350,7 +350,7 @@ const createRipple = (event: Event) => {
   justify-content: center;
   border-radius: 50%;
   border: none;
-  background: #ffffff;
+  background: var(--hula-white, #ffffff);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;

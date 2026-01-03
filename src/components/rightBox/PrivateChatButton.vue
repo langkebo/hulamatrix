@@ -177,7 +177,7 @@ defineExpose({
   height: 40px;
   border-radius: 50%;
   background: rgba(19, 152, 127, 0.1);
-  color: #13987f;
+  color: var(--hula-accent, #13987f);
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -190,7 +190,7 @@ defineExpose({
   }
 
   &.active {
-    background: #13987f;
+    background: var(--hula-accent, #13987f);
     color: white;
   }
 }

@@ -2,7 +2,7 @@ import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 
 type UpdatePayload = {
   roomId: string
@@ -20,6 +20,12 @@ export const useMyRoomInfoUpdater = () => {
   const userStore = useUserStore()
 
   const persistMyRoomInfo = async ({ roomId, myName, remark }: UpdatePayload) => {
+    // 使用 Matrix SDK 设置房间昵称
+    if (myName) {
+      await sessionSettingsService.setRoomNickname(roomId, myName)
+    }
+
+    // 更新本地缓存的房间信息
     const payload = {
       id: roomId,
       myName,
@@ -44,10 +50,6 @@ export const useMyRoomInfoUpdater = () => {
         updated = await cacheStore.updateMyRoomInfo(payload)
       }
     }
-    await requestWithFallback({
-      url: 'update_my_room_info',
-      body: payload
-    })
 
     groupStore.myNameInCurrentGroup = myName
     if (groupStore.countInfo) {

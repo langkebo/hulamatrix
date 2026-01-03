@@ -3,115 +3,101 @@
   <div class="mobile-message-actions">
     <!-- Action Button -->
     <div v-if="showTrigger" class="action-trigger" @click="showMenu = true">
-      <n-icon :size="20">
-        <DotsVertical />
-      </n-icon>
+      <van-icon name="ellipsis" :size="20" />
     </div>
 
     <!-- Action Menu Bottom Sheet -->
-    <n-modal
+    <van-popup
       v-model:show="showMenu"
-      :mask-closable="true"
-      :style="{
-        width: '100%',
-        maxWidth: '100%',
-        position: 'fixed',
-        bottom: '0',
-        margin: '0',
-        borderRadius: '16px 16px 0 0'
-      }"
-      preset="card"
-      @close="handleClose"
+      position="bottom"
+      :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
     >
-      <template #header>
+      <div class="actions-popup">
+        <!-- Handle bar -->
+        <div class="handle-bar"></div>
+
+        <!-- Header -->
         <div class="menu-header">
           <span>{{ t('message.actions') }}</span>
-        </div>
-      </template>
-
-      <div class="actions-content">
-        <!-- Message Preview -->
-        <div v-if="showPreview" class="message-preview">
-          <div class="preview-label">选中消息</div>
-          <div class="preview-content">{{ messagePreview }}</div>
+          <van-icon name="cross" :size="20" @click="handleClose" />
         </div>
 
-        <!-- Primary Actions -->
-        <div class="action-section">
-          <div class="section-title">常用操作</div>
-          <div class="action-grid">
-            <div
-              v-for="action in primaryActions"
-              :key="action.key"
-              class="action-item"
-              :class="{ danger: action.danger }"
-              @click="handleAction(action.key)"
-            >
-              <div class="action-icon" :class="`action-icon-${action.key}`">
-                <n-icon :size="24">
-                  <component :is="action.icon" />
-                </n-icon>
-              </div>
-              <span class="action-label">{{ action.label }}</span>
-            </div>
+        <!-- Content -->
+        <div class="actions-content">
+          <!-- Message Preview -->
+          <div v-if="showPreview" class="message-preview">
+            <div class="preview-label">选中消息</div>
+            <div class="preview-content">{{ messagePreview }}</div>
           </div>
-        </div>
 
-        <!-- Secondary Actions -->
-        <div v-if="secondaryActions.length > 0" class="action-section">
-          <div class="section-title">更多操作</div>
-          <div class="action-list">
-            <div
-              v-for="action in secondaryActions"
-              :key="action.key"
-              class="action-list-item"
-              :class="{ danger: action.danger }"
-              @click="handleAction(action.key)"
-            >
-              <div class="action-item-left">
-                <n-icon :size="18" class="list-icon">
-                  <component :is="action.icon" />
-                </n-icon>
+          <!-- Primary Actions -->
+          <div class="action-section">
+            <div class="section-title">常用操作</div>
+            <div class="action-grid">
+              <div
+                v-for="action in primaryActions"
+                :key="action.key"
+                class="action-item"
+                :class="{ danger: action.danger }"
+                @click="handleAction(action.key)"
+              >
+                <div class="action-icon" :class="`action-icon-${action.key}`">
+                  <van-icon :name="action.iconName" :size="24" />
+                </div>
                 <span class="action-label">{{ action.label }}</span>
               </div>
-              <n-icon v-if="action.chevron" :size="16" class="chevron">
-                <ChevronRight />
-              </n-icon>
+            </div>
+          </div>
+
+          <!-- Secondary Actions -->
+          <div v-if="secondaryActions.length > 0" class="action-section">
+            <div class="section-title">更多操作</div>
+            <div class="action-list">
+              <div
+                v-for="action in secondaryActions"
+                :key="action.key"
+                class="action-list-item"
+                :class="{ danger: action.danger }"
+                @click="handleAction(action.key)"
+              >
+                <div class="action-item-left">
+                  <van-icon :name="action.iconName" :size="18" class="list-icon" />
+                  <span class="action-label">{{ action.label }}</span>
+                </div>
+                <van-icon v-if="action.chevron" name="arrow" :size="16" class="chevron" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Actions (if admin) -->
+          <div v-if="adminActions.length > 0" class="action-section">
+            <div class="section-title">管理操作</div>
+            <div class="action-list">
+              <div
+                v-for="action in adminActions"
+                :key="action.key"
+                class="action-list-item"
+                :class="{ danger: action.danger }"
+                @click="handleAction(action.key)"
+              >
+                <div class="action-item-left">
+                  <van-icon :name="action.iconName" :size="18" class="list-icon" />
+                  <span class="action-label">{{ action.label }}</span>
+                </div>
+                <van-icon name="arrow" :size="16" class="chevron" />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Admin Actions (if admin) -->
-        <div v-if="adminActions.length > 0" class="action-section">
-          <div class="section-title">管理操作</div>
-          <div class="action-list">
-            <div
-              v-for="action in adminActions"
-              :key="action.key"
-              class="action-list-item"
-              :class="{ danger: action.danger }"
-              @click="handleAction(action.key)"
-            >
-              <div class="action-item-left">
-                <n-icon :size="18" class="list-icon">
-                  <component :is="action.icon" />
-                </n-icon>
-                <span class="action-label">{{ action.label }}</span>
-              </div>
-              <n-icon :size="16" class="chevron">
-                <ChevronRight />
-              </n-icon>
-            </div>
-          </div>
+        <!-- Footer -->
+        <div class="actions-footer">
+          <van-button block @click="showMenu = false" size="large">
+            {{ t('common.cancel') }}
+          </van-button>
         </div>
       </div>
-
-      <template #footer>
-        <n-button block @click="showMenu = false" size="large">
-          {{ t('common.cancel') }}
-        </n-button>
-      </template>
-    </n-modal>
+    </van-popup>
 
     <!-- Edit Dialog -->
     <MobileMessageEditDialog
@@ -145,23 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NModal, NIcon, NButton, useMessage } from 'naive-ui'
-import {
-  DotsVertical,
-  ChevronRight,
-  Repeat,
-  Edit,
-  Copy,
-  Share,
-  Trash,
-  Flag,
-  Pin,
-  Bookmark,
-  Download,
-  Select,
-  Refresh,
-  Shield
-} from '@vicons/tabler'
+import { useMessage } from '@/utils/vant-adapter'
 import MobileMessageEditDialog from './MobileMessageEditDialog.vue'
 import MobileMessageReplyDialog from './MobileMessageReplyDialog.vue'
 import MobileMessageForwardDialog from './MobileMessageForwardDialog.vue'
@@ -208,6 +178,28 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const messageApi = useMessage()
 
+// Icon name mapping for Vant
+const iconMap: Record<string, string> = {
+  DotsVertical: 'ellipsis',
+  ChevronRight: 'arrow',
+  Repeat: 'replay',
+  Edit: 'edit',
+  Copy: 'description',
+  Share: 'share',
+  Trash: 'delete',
+  Flag: 'warning-o',
+  Pin: 'location-o',
+  Bookmark: 'star-o',
+  Download: 'down',
+  Select: 'checked',
+  Refresh: 'replay',
+  Shield: 'shield-o'
+}
+
+const getIconName = (iconName: string): string => {
+  return iconMap[iconName] || 'circle'
+}
+
 // State
 const showMenu = ref(false)
 const showEditDialog = ref(false)
@@ -224,18 +216,18 @@ const primaryActions = computed(() => {
   const actions: Array<{
     key: string
     label: string
-    icon: Component
+    iconName: string
     danger?: boolean
   }> = [
     {
       key: 'reply',
       label: t('message.reply'),
-      icon: Repeat
+      iconName: 'replay'
     },
     {
       key: 'react',
       label: t('message.reaction'),
-      icon: Refresh
+      iconName: 'replay'
     }
   ]
 
@@ -243,20 +235,20 @@ const primaryActions = computed(() => {
     actions.push({
       key: 'edit',
       label: t('message.edit'),
-      icon: Edit
+      iconName: 'edit'
     })
   }
 
   actions.push({
     key: 'copy',
     label: t('message.copy'),
-    icon: Copy
+    iconName: 'description'
   })
 
   actions.push({
     key: 'forward',
     label: t('message.forward'),
-    icon: Share
+    iconName: 'share'
   })
 
   return actions
@@ -266,7 +258,7 @@ const secondaryActions = computed(() => {
   const actions: Array<{
     key: string
     label: string
-    icon: Component
+    iconName: string
     danger?: boolean
     chevron?: boolean
   }> = []
@@ -275,7 +267,7 @@ const secondaryActions = computed(() => {
     actions.push({
       key: 'delete',
       label: t('message.delete'),
-      icon: Trash,
+      iconName: 'delete',
       danger: true
     })
   }
@@ -284,19 +276,19 @@ const secondaryActions = computed(() => {
     {
       key: 'pin',
       label: props.message.isPinned ? t('message.unpin') : t('message.pin'),
-      icon: Pin,
+      iconName: 'location-o',
       chevron: true
     },
     {
       key: 'bookmark',
       label: props.message.isBookmarked ? t('message.unbookmark') : t('message.bookmark'),
-      icon: Bookmark,
+      iconName: 'star-o',
       chevron: true
     },
     {
       key: 'select',
       label: t('message.select'),
-      icon: Select,
+      iconName: 'checked',
       chevron: true
     }
   )
@@ -306,7 +298,7 @@ const secondaryActions = computed(() => {
     actions.push({
       key: 'download',
       label: t('message.download'),
-      icon: Download
+      iconName: 'down'
     })
   }
 
@@ -320,7 +312,7 @@ const adminActions = computed(() => {
     {
       key: 'report',
       label: t('message.report'),
-      icon: Flag,
+      iconName: 'warning-o',
       danger: true
     }
   ]
@@ -495,15 +487,57 @@ defineExpose({
   }
 }
 
+.actions-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+}
+
 .menu-header {
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  span:first-child {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .van-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
 }
 
 .actions-content {
-  max-height: 70vh;
+  flex: 1;
   overflow-y: auto;
+  padding: 16px;
+}
+
+.actions-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .message-preview {

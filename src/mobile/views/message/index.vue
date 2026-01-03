@@ -108,7 +108,7 @@ import { RoomTypeEnum, NotificationTypeEnum } from '@/enums'
 import {} from '@/hooks/useMessage'
 import { useReplaceMsg } from '@/hooks/useReplaceMsg'
 import { IsAllUserEnum, type SessionItem, type UserItem } from '@/services/types'
-import rustWebSocketClient from '@/services/webSocketRust'
+// WebSocket 已废弃，使用 Matrix SDK
 import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
@@ -200,7 +200,7 @@ const sessionList = computed(() => {
 
 onMounted(async () => {
   await friendsStore.refreshAll()
-  await rustWebSocketClient.setupBusinessMessageListeners()
+  // WebSocket 已废弃，使用 Matrix SDK 同步消息
 })
 
 /**

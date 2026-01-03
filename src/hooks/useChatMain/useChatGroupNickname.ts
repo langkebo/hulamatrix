@@ -11,7 +11,7 @@ import { MittEnum } from '@/enums'
 import { useCachedStore } from '@/stores/dataCache'
 import { useRoomStore } from '@/stores/room'
 import { useCommon } from '@/hooks/useCommon'
-import { updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 import { msg } from '@/utils/SafeUI'
 
 export type GroupNicknameModalPayload = {
@@ -80,6 +80,11 @@ export function useChatGroupNickname(options: UseChatGroupNicknameOptions = {}) 
 
     try {
       groupNicknameSubmitting.value = true
+
+      // 使用 Matrix SDK 设置房间昵称（存储在 room account data）
+      await sessionSettingsService.setRoomNickname(roomId, trimmedName)
+
+      // 更新本地缓存的房间信息
       const remark = ''
       const payload = {
         id: roomId,
@@ -87,7 +92,8 @@ export function useChatGroupNickname(options: UseChatGroupNicknameOptions = {}) 
         remark
       }
       await cachedStore.updateMyRoomInfo(payload)
-      await updateMyRoomInfo(payload)
+
+      // 更新 roomStore 中的成员信息
       roomStore.updateMember(roomId, currentUid, { displayName: trimmedName })
 
       if (currentUid === userUid.value) {
@@ -95,6 +101,7 @@ export function useChatGroupNickname(options: UseChatGroupNicknameOptions = {}) 
       }
       groupNicknameSubmitting.value = false
       groupNicknameModalVisible.value = false
+      msg.success(t('home.chat_main.group_nickname.success'))
     } catch (_error) {
       msg.error(t('home.chat_main.group_nickname.errors.update_fail'))
       groupNicknameSubmitting.value = false

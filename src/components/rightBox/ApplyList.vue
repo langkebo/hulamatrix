@@ -36,7 +36,7 @@
                     @click="
                       isCurrentUser(item.senderId) ? (currentUserId = item.operateId) : (currentUserId = item.senderId)
                     "
-                    class="text-(14px #13987f) cursor-pointer shrink-0 max-w-150px truncate">
+                    class="text-(14px) text-brand cursor-pointer shrink-0 max-w-150px truncate">
                     {{
                       item.eventType === NoticeType.GROUP_MEMBER_DELETE && item.operateId == item.receiverId
                         ? t('home.apply_list.you')
@@ -49,7 +49,7 @@
                       {{ applyMsg(item) }}
                     </p>
 
-                    <p class="text-(10px #909090) shrink-0 whitespace-nowrap">{{ formatTimestamp(item.createTime) }}</p>
+                    <p class="text-(10px [--hula-gray-500,#909090]) shrink-0 whitespace-nowrap">{{ formatTimestamp(item.createTime) }}</p>
                   </div>
                 </n-flex>
                 <p
@@ -94,7 +94,7 @@
               <span class="text-(12px #c14053)" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
                 {{ t('home.apply_list.status.rejected') }}
               </span>
-              <span class="text-(12px #909090)" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
+              <span class="text-(12px [--hula-gray-500,#909090])" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
                 {{ t('home.apply_list.status.ignored') }}
               </span>
               <span
@@ -134,7 +134,6 @@ import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime'
 import { useGroupStore } from '@/stores/group'
-import { getGroupInfo } from '@/utils/ImRequestUtils'
 import { logger } from '@/utils/logger'
 
 // Type definitions
@@ -201,10 +200,17 @@ const getGroupDetail = async (roomId: string) => {
   // 开始加载
   loadingGroups.value.add(roomId)
   try {
-    const groupInfo = await getGroupInfo(roomId)
-    if (groupInfo) {
-      groupDetailsMap.value[roomId] = groupInfo as GroupDetails
-      return groupInfo
+    // 使用 groupStore 获取群组信息
+    const groupDetail = await groupStore.fetchGroupDetailSafely(roomId)
+    if (groupDetail) {
+      const details: GroupDetails = {
+        id: groupDetail.roomId,
+        name: groupDetail.groupName || '',
+        avatar: groupDetail.avatar || '',
+        memberCount: groupDetail.memberNum
+      }
+      groupDetailsMap.value[roomId] = details
+      return details
     }
   } catch (error) {
     logger.error('获取群组信息失败:', error)

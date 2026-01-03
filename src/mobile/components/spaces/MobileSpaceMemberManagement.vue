@@ -25,298 +25,316 @@
 
     <!-- Search and Filter -->
     <div class="search-filter-section">
-      <n-input
-        v-model:value="searchQuery"
+      <van-field
+        v-model="searchQuery"
         placeholder="搜索成员..."
         clearable
         @input="handleSearch"
       >
-        <template #prefix>
-          <n-icon><Search /></n-icon>
+        <template #left-icon>
+          <van-icon name="search" />
         </template>
-      </n-input>
+      </van-field>
 
       <div class="filter-chips">
-        <n-tag
+        <van-tag
           v-for="option in filterOptions"
           :key="option.value"
           :type="currentFilter === option.value ? 'primary' : 'default'"
-          :bordered="false"
-          size="small"
           round
           @click="setFilter(option.value)"
         >
           {{ option.label }}
-        </n-tag>
+        </van-tag>
       </div>
     </div>
 
     <!-- Member List -->
     <div class="member-list">
-      <n-spin :show="loading">
-        <!-- Empty State -->
-        <n-empty v-if="!hasMembers && !loading" description="暂无成员" />
+      <van-loading v-if="loading" size="24px">加载中...</van-loading>
 
-        <!-- Members -->
-        <div v-else class="members">
-          <div
-            v-for="member in filteredMembers"
-            :key="member.userId"
-            class="member-item"
-            @click="handleMemberClick(member)"
-          >
-            <div class="member-left">
-              <div class="avatar-wrapper">
-                <n-avatar
-                  :src="getAvatarUrl(member.avatarUrl)"
-                  :size="48"
-                  round
-                  @error="handleAvatarError"
-                >
-                  {{ getInitials(member.displayName) }}
-                </n-avatar>
-                <div
-                  v-if="member.presence === 'online'"
-                  class="presence-indicator online"
-                />
-                <div
-                  v-else
-                  class="presence-indicator offline"
-                />
-              </div>
+      <!-- Empty State -->
+      <van-empty v-else-if="!hasMembers" description="暂无成员" />
 
-              <div class="member-info">
-                <div class="member-name">{{ member.displayName }}</div>
-                <div class="member-id">{{ formatUserId(member.userId) }}</div>
-                <div class="member-roles">
-                  <n-tag
-                    v-if="member.powerLevel >= 100"
-                    type="error"
-                    size="small"
-                    :bordered="false"
-                  >
-                    管理员
-                  </n-tag>
-                  <n-tag
-                    v-else-if="member.powerLevel >= 50"
-                    type="warning"
-                    size="small"
-                    :bordered="false"
-                  >
-                    版主
-                  </n-tag>
-                  <n-tag
-                    v-if="member.membership === 'invite'"
-                    type="info"
-                    size="small"
-                    :bordered="false"
-                  >
-                    已邀请
-                  </n-tag>
-                </div>
-              </div>
+      <!-- Members -->
+      <div v-else class="members">
+        <div
+          v-for="member in filteredMembers"
+          :key="member.userId"
+          class="member-item"
+          @click="handleMemberClick(member)"
+        >
+          <div class="member-left">
+            <div class="avatar-wrapper">
+              <van-image
+                :src="getAvatarUrl(member.avatarUrl)"
+                width="48"
+                height="48"
+                round
+                @error="handleAvatarError"
+              >
+                <template #error>
+                  <div class="avatar-fallback">
+                    {{ getInitials(member.displayName) }}
+                  </div>
+                </template>
+              </van-image>
+              <div
+                v-if="member.presence === 'online'"
+                class="presence-indicator online"
+              />
+              <div
+                v-else
+                class="presence-indicator offline"
+              />
             </div>
 
-            <div class="member-right">
-              <n-dropdown
-                :options="getMemberActions(member)"
-                @select="(key) => handleMemberAction(key, member)"
-              >
-                <n-button text>
-                  <template #icon>
-                    <n-icon><DotsVertical /></n-icon>
-                  </template>
-                </n-button>
-              </n-dropdown>
+            <div class="member-info">
+              <div class="member-name">{{ member.displayName }}</div>
+              <div class="member-id">{{ formatUserId(member.userId) }}</div>
+              <div class="member-roles">
+                <van-tag
+                  v-if="member.powerLevel >= 100"
+                  type="danger"
+                >
+                  管理员
+                </van-tag>
+                <van-tag
+                  v-else-if="member.powerLevel >= 50"
+                  type="warning"
+                >
+                  版主
+                </van-tag>
+                <van-tag
+                  v-if="member.membership === 'invite'"
+                  type="primary"
+                >
+                  已邀请
+                </van-tag>
+              </div>
             </div>
           </div>
+
+          <div class="member-right">
+            <van-button
+              icon="ellipsis"
+              @click.stop="showActionSheet(member)"
+            />
+          </div>
         </div>
-      </n-spin>
+      </div>
     </div>
 
     <!-- Member Detail Modal -->
-    <n-modal
-      v-model:show="showMemberDetail"
-      preset="card"
-      :style="{ width: '90%', maxWidth: '400px' }"
-      @update:show="selectedMember = null"
+    <van-popup
+      :show="showMemberDetail"
+      position="center"
+      :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
+      @update:show="handleDetailClose"
     >
-      <template #header>
-        <div class="modal-header">成员详情</div>
-      </template>
-
-      <div v-if="selectedMember" class="member-detail">
-        <div class="detail-avatar">
-          <n-avatar
-            :src="getAvatarUrl(selectedMember.avatarUrl)"
-            :size="80"
-            round
-          >
-            {{ getInitials(selectedMember.displayName) }}
-          </n-avatar>
-          <div
-            :class="['presence-badge', selectedMember.presence || 'offline']"
-          >
-            {{ getPresenceLabel(selectedMember.presence) }}
-          </div>
+      <div v-if="selectedMember" class="member-detail-popup">
+        <div class="detail-header">
+          <span class="header-title">成员详情</span>
+          <van-icon name="cross" :size="18" @click="showMemberDetail = false" />
         </div>
 
-        <div class="detail-name">{{ selectedMember.displayName }}</div>
-        <div class="detail-id">{{ selectedMember.userId }}</div>
-
-        <n-divider />
-
-        <div class="detail-section">
-          <div class="section-label">权限等级</div>
-          <div class="power-level-bar">
-            <n-progress
-              type="line"
-              :percentage="Math.min(100, (selectedMember.powerLevel / 100) * 100)"
-              :show-indicator="false"
-            />
-            <div class="power-value">{{ selectedMember.powerLevel }}</div>
+        <div class="member-detail">
+          <div class="detail-avatar">
+            <van-image
+              :src="getAvatarUrl(selectedMember.avatarUrl)"
+              width="80"
+              height="80"
+              round
+            >
+              <template #error>
+                <div class="avatar-fallback-large">
+                  {{ getInitials(selectedMember.displayName) }}
+                </div>
+              </template>
+            </van-image>
+            <div
+              :class="['presence-badge', selectedMember.presence || 'offline']"
+            >
+              {{ getPresenceLabel(selectedMember.presence) }}
+            </div>
           </div>
-        </div>
 
-        <div class="detail-section">
-          <div class="section-label">操作</div>
-          <n-space vertical>
-            <n-button
-              v-if="canChangeRole(selectedMember)"
-              type="primary"
-              block
-              @click="showRoleModal = true"
-            >
-              修改角色
-            </n-button>
-            <n-button
-              v-if="selectedMember.membership === 'invite'"
-              type="success"
-              block
-              @click="handleResendInvite"
-            >
-              重新发送邀请
-            </n-button>
-            <n-button
-              v-if="canKick(selectedMember)"
-              type="warning"
-              block
-              @click="handleKick(selectedMember)"
-            >
-              移除成员
-            </n-button>
-            <n-button
-              v-if="canBan(selectedMember)"
-              type="error"
-              block
-              @click="handleBan(selectedMember)"
-            >
-              封禁用户
-            </n-button>
-          </n-space>
+          <div class="detail-name">{{ selectedMember.displayName }}</div>
+          <div class="detail-id">{{ selectedMember.userId }}</div>
+
+          <van-divider />
+
+          <div class="detail-section">
+            <div class="section-label">权限等级</div>
+            <div class="power-level-bar">
+              <van-progress
+                :percentage="Math.min(100, (selectedMember.powerLevel / 100) * 100)"
+                :show-pivot="false"
+              />
+              <div class="power-value">{{ selectedMember.powerLevel }}</div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="section-label">操作</div>
+            <div class="action-buttons">
+              <van-button
+                v-if="canChangeRole(selectedMember)"
+                type="primary"
+                block
+                @click="showRoleModal = true"
+              >
+                修改角色
+              </van-button>
+              <van-button
+                v-if="selectedMember.membership === 'invite'"
+                type="success"
+                block
+                @click="handleResendInvite"
+              >
+                重新发送邀请
+              </van-button>
+              <van-button
+                v-if="canKick(selectedMember)"
+                type="warning"
+                block
+                @click="handleKick(selectedMember)"
+              >
+                移除成员
+              </van-button>
+              <van-button
+                v-if="canBan(selectedMember)"
+                type="danger"
+                block
+                @click="handleBan(selectedMember)"
+              >
+                封禁用户
+              </van-button>
+            </div>
+          </div>
         </div>
       </div>
-    </n-modal>
+    </van-popup>
 
     <!-- Role Change Modal -->
-    <n-modal
-      v-model:show="showRoleModal"
-      preset="dialog"
-      title="修改角色"
+    <van-popup
+      :show="showRoleModal"
+      position="center"
+      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }"
     >
-      <div class="role-modal-content">
-        <n-radio-group v-model:value="newRole" name="role">
-          <n-space vertical>
-            <n-radio value="admin">
-              <div class="role-option">
-                <div class="role-name">管理员</div>
-                <div class="role-desc">完全权限 (100)</div>
-              </div>
-            </n-radio>
-            <n-radio value="moderator">
-              <div class="role-option">
-                <div class="role-name">版主</div>
-                <div class="role-desc">管理权限 (50)</div>
-              </div>
-            </n-radio>
-            <n-radio value="member">
-              <div class="role-option">
-                <div class="role-name">成员</div>
-                <div class="role-desc">普通权限 (0)</div>
-              </div>
-            </n-radio>
-          </n-space>
-        </n-radio-group>
+      <div class="role-modal-popup">
+        <div class="role-modal-header">
+          <span class="header-title">修改角色</span>
+        </div>
+
+        <div class="role-modal-content">
+          <van-radio-group v-model="newRole">
+            <van-cell-group inset :border="true">
+              <van-cell
+                title="管理员"
+                label="完全权限 (100)"
+                clickable
+                @click="newRole = 'admin'"
+              >
+                <template #right-icon>
+                  <van-radio name="admin" />
+                </template>
+              </van-cell>
+              <van-cell
+                title="版主"
+                label="管理权限 (50)"
+                clickable
+                @click="newRole = 'moderator'"
+              >
+                <template #right-icon>
+                  <van-radio name="moderator" />
+                </template>
+              </van-cell>
+              <van-cell
+                title="成员"
+                label="普通权限 (0)"
+                clickable
+                @click="newRole = 'member'"
+              >
+                <template #right-icon>
+                  <van-radio name="member" />
+                </template>
+              </van-cell>
+            </van-cell-group>
+          </van-radio-group>
+        </div>
+
+        <div class="role-modal-actions">
+          <van-button @click="showRoleModal = false">取消</van-button>
+          <van-button type="primary" :loading="isChangingRole" @click="confirmRoleChange">
+            确定
+          </van-button>
+        </div>
       </div>
-      <template #action>
-        <n-button @click="showRoleModal = false">取消</n-button>
-        <n-button type="primary" :loading="isChangingRole" @click="confirmRoleChange">
-          确定
-        </n-button>
-      </template>
-    </n-modal>
+    </van-popup>
 
     <!-- Invite Member Modal -->
-    <n-modal
-      v-model:show="showInviteModal"
-      preset="dialog"
-      title="邀请新成员"
+    <van-popup
+      :show="showInviteModal"
+      position="center"
+      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }"
     >
-      <n-form ref="inviteFormRef" :model="inviteForm" :rules="inviteRules">
-        <n-form-item label="用户ID" path="userId">
-          <n-input
-            v-model:value="inviteForm.userId"
-            placeholder="@username:server.com"
-          />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-button @click="showInviteModal = false">取消</n-button>
-        <n-button type="primary" :loading="isInviting" @click="handleInvite">
-          邀请
-        </n-button>
-      </template>
-    </n-modal>
+      <div class="invite-modal-popup">
+        <div class="invite-modal-header">
+          <span class="header-title">邀请新成员</span>
+        </div>
+
+        <van-form @submit="handleInvite">
+          <van-cell-group inset :border="true">
+            <van-field
+              v-model="inviteForm.userId"
+              name="userId"
+              label="用户ID"
+              placeholder="@username:server.com"
+              :rules="[{ required: true, message: '请输入用户ID' }]"
+            />
+          </van-cell-group>
+        </van-form>
+
+        <div class="invite-modal-actions">
+          <van-button @click="showInviteModal = false">取消</van-button>
+          <van-button type="primary" :loading="isInviting" @click="handleInvite">
+            邀请
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
+
+    <!-- Action Sheet -->
+    <van-action-sheet
+      v-model:show="showActionSheetVisible"
+      :actions="currentMemberActions"
+      @select="handleMemberAction"
+    />
 
     <!-- Floating Action Button -->
-    <n-float-button
-      :right="20"
-      :bottom="20"
-      :shape="'circle'"
+    <van-floating-bubble
+      axis="xy"
+      magnetic="x"
+      :style="{ right: '20px', bottom: '20px' }"
+      icon="plus"
       @click="showInviteModal = true"
-    >
-      <n-icon :size="24"><UserPlus /></n-icon>
-    </n-float-button>
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import {
-  NInput,
-  NIcon,
-  NTag,
-  NSpin,
-  NEmpty,
-  NAvatar,
-  NDropdown,
-  NModal,
-  NButton,
-  NDivider,
-  NSpace,
-  NProgress,
-  NRadioGroup,
-  NRadio,
-  NForm,
-  NFormItem,
-  NFloatButton,
-  useMessage,
-  useDialog
-} from 'naive-ui'
-import { Search, DotsVertical, UserPlus, Crown, Shield, User, Mail, UserMinus, Ban, Refresh } from '@vicons/tabler'
+import { useMessage, useDialog } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { mxcUrlToHttp } from '@/utils/matrixClientUtils'
 import { logger } from '@/utils/logger'
+
+interface ActionSheetAction {
+  name: string
+  value: string
+  icon?: string
+}
 
 // ==================== Types ====================
 
@@ -374,6 +392,10 @@ const inviteRules = {
   }
 }
 
+// Action sheet state
+const showActionSheetVisible = ref(false)
+const currentActionMember = ref<SpaceMember | null>(null)
+
 // ==================== Computed ====================
 
 const filterOptions = [
@@ -413,6 +435,38 @@ const memberStats = computed(() => ({
 
 const hasMembers = computed(() => filteredMembers.value.length > 0)
 
+const currentMemberActions = computed<ActionSheetAction[]>(() => {
+  if (!currentActionMember.value) return []
+
+  const member = currentActionMember.value
+  const actions: ActionSheetAction[] = [{ name: '查看详情', value: 'view', icon: 'eye-o' }]
+
+  if (canChangeRole(member)) {
+    if (member.powerLevel < 100) {
+      actions.push({ name: '设为管理员', value: 'promote_admin', icon: 'upgrade' })
+    }
+    if (member.powerLevel >= 50 && member.powerLevel < 100) {
+      actions.push({ name: '降为成员', value: 'demote', icon: 'down' })
+    } else if (member.powerLevel < 50) {
+      actions.push({ name: '设为版主', value: 'promote_moderator', icon: 'upgrade' })
+    }
+  }
+
+  if (canKick(member)) {
+    actions.push({ name: '移除成员', value: 'kick', icon: 'delete-o' })
+  }
+
+  if (canBan(member)) {
+    actions.push({ name: '封禁用户', value: 'ban', icon: 'lock' })
+  }
+
+  if (member.membership === 'invite') {
+    actions.push({ name: '重新发送邀请', value: 'resend_invite', icon: 'envelope-o' })
+  }
+
+  return actions
+})
+
 // ==================== Methods ====================
 
 const loadMembers = async () => {
@@ -443,7 +497,23 @@ const handleMemberClick = (member: SpaceMember) => {
   showMemberDetail.value = true
 }
 
-const handleMemberAction = (key: string, member: SpaceMember) => {
+const handleDetailClose = () => {
+  showMemberDetail.value = false
+  selectedMember.value = null
+}
+
+const showActionSheet = (member: SpaceMember) => {
+  currentActionMember.value = member
+  showActionSheetVisible.value = true
+}
+
+const handleMemberAction = (action: ActionSheetAction) => {
+  if (!currentActionMember.value) return
+
+  const member = currentActionMember.value
+  const key = action.value
+
+  showActionSheetVisible.value = false
   switch (key) {
     case 'view':
       handleMemberClick(member)
@@ -467,36 +537,6 @@ const handleMemberAction = (key: string, member: SpaceMember) => {
       handleResendInvite()
       break
   }
-}
-
-const getMemberActions = (member: SpaceMember) => {
-  const actions = [{ label: '查看详情', key: 'view', icon: () => 'User' }]
-
-  if (canChangeRole(member)) {
-    if (member.powerLevel < 50) {
-      actions.push({ label: '设为版主', key: 'promote_moderator', icon: () => 'Shield' })
-    }
-    if (member.powerLevel < 100) {
-      actions.push({ label: '设为管理员', key: 'promote_admin', icon: () => 'Crown' })
-    }
-    if (member.powerLevel >= 50) {
-      actions.push({ label: '降为普通成员', key: 'demote', icon: () => 'UserMinus' })
-    }
-  }
-
-  if (canKick(member)) {
-    actions.push({ label: '移除成员', key: 'kick', icon: () => 'UserMinus' })
-  }
-
-  if (canBan(member)) {
-    actions.push({ label: '封禁用户', key: 'ban', icon: () => 'Ban' })
-  }
-
-  if (member.membership === 'invite') {
-    actions.push({ label: '重新发送邀请', key: 'resend_invite', icon: () => 'Mail' })
-  }
-
-  return actions
 }
 
 const canChangeRole = (member: SpaceMember): boolean => {
@@ -540,9 +580,9 @@ const handleKick = (member: SpaceMember) => {
   dialog.warning({
     title: '移除成员',
     content: `确定要移除 ${member.displayName} 吗？`,
-    positiveText: '移除',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '移除',
+    cancelText: '取消',
+    onConfirm: async () => {
       try {
         message.success('成员已移除')
         emit('member-removed', member.userId)
@@ -558,9 +598,9 @@ const handleBan = (member: SpaceMember) => {
   dialog.error({
     title: '封禁用户',
     content: `确定要封禁 ${member.displayName} 吗？用户将被禁止重新加入。`,
-    positiveText: '封禁',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '封禁',
+    cancelText: '取消',
+    onConfirm: async () => {
       try {
         message.success('用户已封禁')
         emit('member-banned', member.userId)

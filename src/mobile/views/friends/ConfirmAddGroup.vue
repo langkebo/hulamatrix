@@ -39,7 +39,7 @@
                 type="textarea"
                 placeholder="输入验证消息" />
 
-              <n-button class="mt-120px" color="#13987f" @click="addFriend">申请加入</n-button>
+              <n-button class="mt-120px" :color="'var(--hula-accent, #13987f)'" @click="addFriend">申请加入</n-button>
             </n-flex>
           </div>
         </div>
@@ -54,7 +54,8 @@ import { useCommon } from '@/hooks/useCommon'
 import router from '@/router'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { applyGroup } from '@/utils/ImRequestUtils'
+import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { logger } from '@/utils/logger'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 import { msg } from '@/utils/SafeUI'
@@ -73,15 +74,24 @@ watch(
 )
 
 const addFriend = async () => {
-  await applyGroup({
-    msg: requestMsg.value,
-    account: String(globalStore.addGroupModalInfo.account),
-    type: 2
-  })
-  msg.success?.('已发送群聊申请')
-  setTimeout(() => {
-    router.push('/mobile/message')
-  }, 2000)
+  try {
+    const roomId = globalStore.addGroupModalInfo.roomId
+    if (!roomId) {
+      msg.error?.('群聊信息不存在')
+      return
+    }
+
+    // 使用 Matrix SDK 加入房间
+    // 如果房间需要邀请，Matrix 会自动向管理员发送申请
+    await matrixRoomManager.joinRoom(roomId)
+    msg.success?.('已发送群聊申请')
+    setTimeout(() => {
+      router.push('/mobile/message')
+    }, 2000)
+  } catch (error) {
+    logger.error('申请加入群聊失败:', error)
+    msg.error?.('申请失败，请重试')
+  }
 }
 
 onMounted(async () => {

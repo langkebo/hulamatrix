@@ -39,7 +39,7 @@
             <n-progress
               type="line"
               :percentage="backupRate"
-              :color="backupRate > 80 ? '#18a058' : '#f0a020'"
+              :color="backupRate > 80 ? 'var(--hula-success, #18a058)' : 'var(--hula-warning, #f0a020)'"
               :rail-color="'#f0f0f0'"
               indicator-placement="inside"
             />
@@ -49,7 +49,7 @@
             <n-progress
               type="line"
               :percentage="recoveryRate"
-              :color="recoveryRate > 80 ? '#18a058' : '#f0a020'"
+              :color="recoveryRate > 80 ? 'var(--hula-success, #18a058)' : 'var(--hula-warning, #f0a020)'"
               :rail-color="'#f0f0f0'"
               indicator-placement="inside"
             />

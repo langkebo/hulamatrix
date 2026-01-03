@@ -208,7 +208,7 @@ const formattedTime = computed(() => {
 // Switch 轨道样式
 const railStyle = ({ checked }: { focused: boolean; checked: boolean }) => {
   return {
-    backgroundColor: checked ? '#13987f' : '#d1d5db'
+    backgroundColor: checked ? 'var(--hula-accent, #13987f)' : '#d1d5db'
   }
 }
 
@@ -343,7 +343,7 @@ watch(
       }
 
       &.is-selected {
-        border-color: #13987f;
+        border-color: var(--hula-accent, #13987f);
         background: rgba(19, 152, 127, 0.05);
       }
 
@@ -417,7 +417,7 @@ watch(
 
       .preview-value {
         font-weight: 600;
-        color: #13987f;
+        color: var(--hula-accent, #13987f);
       }
     }
   }

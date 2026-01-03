@@ -1,13 +1,10 @@
 import type { MenuItem, PluginItem } from '@/types'
 import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { MittEnum, ModalEnum, PluginEnum } from '@/enums'
 import { useLogin } from '@/hooks/useLogin'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
-import { useSettingStore } from '@/stores/setting'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
 
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
@@ -65,8 +62,6 @@ const useItemsBottom = () =>
 const useMoreList = () => {
   const { t } = useI18n()
   const { createWebviewWindow } = useWindow()
-  const settingStore = useSettingStore()
-  const { login } = storeToRefs(settingStore)
   const { logout, resetLoginState } = useLogin()
 
   return computed<MenuItem[]>(() => [
@@ -98,7 +93,6 @@ const useMoreList = () => {
       icon: 'power',
       click: async () => {
         try {
-          await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
           await resetLoginState()
           await logout()
         } catch (error) {

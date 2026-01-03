@@ -3,12 +3,10 @@ import { ref, computed } from 'vue'
 import { logger } from '@/utils/logger'
 
 // Matrix SDK 类型定义（兼容性处理）
-interface MatrixClientCompat {
+interface MatrixClientMethods {
   getUserId?(): string
-  getUser?(userId: string): { userId: string } | null
   getDeviceId?(): string
-  getDevice?(deviceId: string): { deviceId: string } | null
-  deleteDevice(deviceId: string): Promise<void>
+  deleteDevice?(deviceId: string): Promise<void>
   getStoredDevicesForUser?(
     userId: string
   ): Array<{ deviceId: string; displayName?: string; verified?: boolean; blocked?: boolean; lastSeenTs?: number }>
@@ -63,7 +61,7 @@ interface E2EEStats {
   }
 }
 
-interface DeviceInfo {
+export interface DeviceInfo {
   deviceId: string
   userId?: string
   displayName?: string
@@ -87,10 +85,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function initialize(): Promise<void> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient()
       if (!client) return
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -110,10 +106,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function loadCrossSigningInfo(): Promise<void> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient()
       if (!client) return
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -135,10 +129,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function loadKeyBackupStatus(): Promise<void> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient()
       if (!client) return
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -167,10 +159,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function loadAllDevices(): Promise<void> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient() as unknown as MatrixClientMethods
       if (!client) return
 
       const userId = client.getUserId?.()
@@ -201,10 +191,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function createKeyBackup(): Promise<{ version: string; recoveryKey: string } | null> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient()
       if (!client) return null
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -226,10 +214,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function restoreKeyBackup(recoveryKey: string): Promise<{ imported: number; total: number } | null> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient()
       if (!client) return null
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -251,10 +237,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function verifyDevice(deviceId: string): Promise<boolean> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient() as unknown as MatrixClientMethods
       if (!client) return false
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -274,10 +258,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function blockDevice(deviceId: string): Promise<boolean> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient() as unknown as MatrixClientMethods
       if (!client) return false
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -297,10 +279,8 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function unblockDevice(deviceId: string): Promise<boolean> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient() as unknown as MatrixClientMethods
       if (!client) return false
 
       const crypto = (client as unknown as { getCrypto?: () => CryptoApiCompat | null }).getCrypto?.()
@@ -320,16 +300,14 @@ export const useE2EEStore = defineStore('e2ee', () => {
 
   async function deleteDevice(deviceId: string): Promise<boolean> {
     try {
-      const matrixClientService = (await import('@/services/matrixClientService')) as {
-        default: { getClient: () => MatrixClientCompat | null }
-      }
-      const client = matrixClientService.default.getClient()
+      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const client = matrixClientService.getClient() as unknown as MatrixClientMethods
       if (!client) return false
 
       const myDeviceId = client.getDeviceId?.()
       if (deviceId === myDeviceId) return false
 
-      await client.deleteDevice(deviceId)
+      await client.deleteDevice?.(deviceId)
       await loadAllDevices()
       return true
     } catch (error) {

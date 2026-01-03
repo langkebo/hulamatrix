@@ -157,7 +157,7 @@ function applyFilters(spaces: SpaceInfo[], filters: SearchFilters): SpaceInfo[] 
 
     // Encrypted filter
     if (filters.encrypted !== 'all') {
-      const isEncrypted = (space as any).encrypted === true
+      const isEncrypted = space.encrypted === true
       if (filters.encrypted === 'encrypted' && !isEncrypted) return false
       if (filters.encrypted === 'unencrypted' && isEncrypted) return false
     }
@@ -184,7 +184,7 @@ function applyFilters(spaces: SpaceInfo[], filters: SearchFilters): SpaceInfo[] 
  */
 export async function searchSpaces(query: string, options: SearchOptions = {}): Promise<SearchResult[]> {
   const startTime = performance.now()
-  const { limit = 50, fuzzy = true, filters } = options
+  const { limit = 50, filters } = options
 
   // Empty query returns empty results
   if (!query.trim()) {

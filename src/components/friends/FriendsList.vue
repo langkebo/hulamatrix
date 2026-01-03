@@ -215,6 +215,12 @@
 </template>
 
 <script setup lang="ts">
+// Category option type for select component
+interface CategoryOption {
+  label: string
+  value: number | -1 // Use -1 instead of null for "no category"
+}
+
 import { ref, computed, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -296,8 +302,8 @@ const filteredFriends = computed(() => {
 })
 
 const categoryOptions = computed(() => [
-  { label: '无分类', value: null } as any,
-  ...friendsStore.categories.map((cat: FriendCategoryItem) => ({ label: cat.name, value: cat.id }))
+  { label: '无分类', value: -1, type: null },
+  ...friendsStore.categories.map((cat: FriendCategoryItem) => ({ label: cat.name, value: cat.id, type: null }))
 ])
 
 const categoryMenuOptions = computed(() => [

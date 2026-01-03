@@ -318,12 +318,12 @@ watch(
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: #13987f;
+        border-color: var(--hula-accent, #13987f);
         background-color: rgba(19, 152, 127, 0.05);
       }
 
       &.n-radio--checked {
-        border-color: #13987f;
+        border-color: var(--hula-accent, #13987f);
         background-color: rgba(19, 152, 127, 0.1);
       }
 

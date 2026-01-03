@@ -229,7 +229,7 @@ import {
   Check,
   Copy
 } from '@vicons/tabler'
-import { usePerformanceMonitor } from '@/utils/performanceMonitor'
+import { usePerformanceMonitor, type PerformanceIssue } from '@/utils/performanceMonitor'
 import { msg } from '@/utils/SafeUI'
 
 const {
@@ -246,7 +246,7 @@ const {
 const showSlowComponents = ref(false)
 const showReport = ref(false)
 const hasMetrics = ref(false)
-const issues = ref<any[]>([])
+const issues = ref<PerformanceIssue[]>([])
 
 const isRunningBenchmark = ref({
   render: false,
@@ -360,7 +360,8 @@ const runMemoryBenchmark = async () => {
   isRunningBenchmark.value.memory = true
 
   try {
-    const before = (performance as any).memory?.usedJSHeapSize || 0
+    const perf = performance as { memory?: { usedJSHeapSize: number } }
+    const before = perf.memory?.usedJSHeapSize || 0
 
     // Allocate memory
     const arrays: number[][] = []
@@ -368,7 +369,7 @@ const runMemoryBenchmark = async () => {
       arrays.push(new Array(10000).fill(Math.random()))
     }
 
-    const after = (performance as any).memory?.usedJSHeapSize || 0
+    const after = perf.memory?.usedJSHeapSize || 0
     const allocated = ((after - before) / (1024 * 1024)).toFixed(2)
 
     msg.success(`分配内存: ${allocated}MB`)

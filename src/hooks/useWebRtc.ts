@@ -6,11 +6,10 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { error, info } from '@tauri-apps/plugin-log'
 import { CallTypeEnum, RTCCallStatus } from '@/enums'
-import rustWebSocketClient from '@/services/webSocketRust'
 import { sendMatrixRtcSignal } from '@/integrations/matrix/rtc'
 import { useUserStore } from '@/stores/user'
 import { useRtcStore } from '@/stores/rtc'
-import { WsRequestMsgType, WsResponseMessageType } from '../services/wsType'
+import { WsResponseMessageType } from '../services/wsType'
 import { isMobile } from '../utils/PlatformConstants'
 import { useMitt } from './useMitt'
 import { useTauriListener } from './useTauriListener'
@@ -24,19 +23,6 @@ import type { MatrixRtcPayload } from '@/types/matrix'
 // Tauri事件类型定义
 interface TauriEvent<T = unknown> {
   payload: T
-}
-
-/** WebSocket RTC 信号消息 */
-interface WSRtcSignalMessage {
-  type: WsRequestMsgType.WEBRTC_SIGNAL
-  data: {
-    roomId: string
-    signal: string
-    signalType: string
-    targetUid: string
-    video?: boolean
-    mediaType?: string
-  }
 }
 
 // 定义具体的载荷类型
@@ -262,27 +248,16 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
   /**
    * 发送通话请求
    */
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
   const sendCall = async () => {
     try {
-      if (isTauri) {
-        await rustWebSocketClient.sendMessage({
-          type: WsRequestMsgType.VIDEO_CALL_REQUEST,
-          data: {
-            roomId: roomId,
-            targetUid: remoteUserId,
-            isVideo: callType === CallTypeEnum.VIDEO
-          }
-        })
-      } else {
-        const offerData = {
-          call_id: `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          lifetime: 60000,
-          version: 1,
-          offer: { sdp: '', type: 'offer' } as RTCSessionDescriptionInit
-        }
-        await sendMatrixRtcSignal(roomId, 'offer', offerData as unknown as MatrixRtcPayload)
+      // WebSocket 已废弃，统一使用 Matrix RTC 信号
+      const offerData = {
+        call_id: `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        lifetime: 60000,
+        version: 1,
+        offer: { sdp: '', type: 'offer' } as RTCSessionDescriptionInit
       }
+      await sendMatrixRtcSignal(roomId, 'offer', offerData as unknown as MatrixRtcPayload)
     } catch (error) {
       logger.error('发送通话请求失败:', { error, component: 'useWebRtc' })
     }
@@ -335,19 +310,19 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
     }
   }
 
-  // 发送 ws 请求，通知双方通话状态
+  // 发送通话响应，通知双方通话状态
   // -1 = 超时 0 = 拒绝 1 = 接通 2 = 挂断
   const sendRtcCall2VideoCallResponse = async (status: number) => {
     try {
-      info(`发送 ws 请求，通知双方通话状态 ${status}`)
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.VIDEO_CALL_RESPONSE,
-        data: {
-          callerUid: remoteUserId,
-          roomId: roomId,
-          accepted: status
-        }
-      })
+      info(`发送通话响应，通知双方通话状态 ${status}`)
+      // WebSocket 已废弃，使用 Matrix RTC 发送响应
+      await sendMatrixRtcSignal(roomId, 'answer', {
+        callerUid: remoteUserId,
+        roomId: roomId,
+        accepted: status,
+        call_id: `call_${Date.now()}`,
+        version: 1
+      } as unknown as MatrixRtcPayload)
     } catch (error) {
       logger.error('发送通话响应失败:', { error, component: 'useWebRtc' })
     }
@@ -656,16 +631,9 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
         video: callType === CallTypeEnum.VIDEO
       }
 
-      info('ws发送 offer')
-      if (isTauri) {
-        const wsMsg: WSRtcSignalMessage = {
-          type: WsRequestMsgType.WEBRTC_SIGNAL,
-          data: signalData
-        }
-        await rustWebSocketClient.sendMessage(wsMsg as unknown)
-      } else {
-        await sendMatrixRtcSignal(roomId, 'offer', signalData as unknown as MatrixRtcPayload)
-      }
+      info('发送 offer (使用 Matrix RTC)')
+      // WebSocket 已废弃，统一使用 Matrix RTC
+      await sendMatrixRtcSignal(roomId, 'offer', signalData as unknown as MatrixRtcPayload)
     } catch (error) {
       logger.error('Failed to send SDP offer:', { error: error, component: 'useWebRtc' })
     }
@@ -746,15 +714,8 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
         mediaType: callType === CallTypeEnum.VIDEO ? 'VideoSignal' : 'AudioSignal'
       }
 
-      if (isTauri) {
-        const wsMsg: WSRtcSignalMessage = {
-          type: WsRequestMsgType.WEBRTC_SIGNAL,
-          data: signalData
-        }
-        await rustWebSocketClient.sendMessage(wsMsg as unknown)
-      } else {
-        await sendMatrixRtcSignal(roomId, 'candidate', signalData as unknown as MatrixRtcPayload)
-      }
+      // WebSocket 已废弃，统一使用 Matrix RTC
+      await sendMatrixRtcSignal(roomId, 'candidate', signalData as unknown as MatrixRtcPayload)
     } catch (error) {
       logger.error('Failed to send ICE candidate:', { error: error, component: 'useWebRtc' })
     }
@@ -824,17 +785,10 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
       }
 
       logger.debug('发送SDP answer:', { data: signalData, component: 'useWebRtc' })
-      if (isTauri) {
-        const wsMsg: WSRtcSignalMessage = {
-          type: WsRequestMsgType.WEBRTC_SIGNAL,
-          data: signalData
-        }
-        await rustWebSocketClient.sendMessage(wsMsg as unknown)
-      } else {
-        await sendMatrixRtcSignal(roomId, 'answer', signalData as unknown as MatrixRtcPayload)
-      }
+      // WebSocket 已废弃，统一使用 Matrix RTC
+      await sendMatrixRtcSignal(roomId, 'answer', signalData as unknown as MatrixRtcPayload)
 
-      logger.debug('SDP answer sent via WebSocket::', { data: answer, component: 'useWebRtc' })
+      logger.debug('SDP answer sent via Matrix RTC:', { data: answer, component: 'useWebRtc' })
     } catch (error) {
       logger.error('Failed to send SDP answer:', { error: error, component: 'useWebRtc' })
     }

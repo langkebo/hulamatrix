@@ -2,140 +2,135 @@
 <template>
   <div class="mobile-device-verification">
     <!-- Bottom Sheet Dialog -->
-    <n-modal
+    <van-popup
       v-model:show="showDialog"
-      :mask-closable="false"
-      :style="{
-        width: '100%',
-        maxWidth: '100%',
-        position: 'fixed',
-        bottom: '0',
-        margin: '0',
-        borderRadius: '16px 16px 0 0'
-      }"
-      preset="card"
-      @close="handleClose"
+      :close-on-click-overlay="false"
+      position="bottom"
+      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
     >
-      <template #header>
+      <div class="verification-dialog">
+        <!-- Handle bar -->
+        <div class="handle-bar" @click="handleClose"></div>
+
+        <!-- Header -->
         <div class="dialog-header">
           <div class="header-content">
             <h3>设备验证</h3>
             <span class="header-desc">验证设备以确保安全的加密通信</span>
           </div>
-          <n-button quaternary circle size="small" @click="handleClose">
-            <template #icon>
-              <n-icon><X /></n-icon>
-            </template>
-          </n-button>
-        </div>
-      </template>
-
-      <!-- Content -->
-      <div class="verification-content">
-        <!-- User Info -->
-        <div v-if="pendingRequest" class="user-section">
-          <n-avatar :size="64" :src="getUserAvatar(pendingRequest.userId)" round>
-            <template #fallback>
-              <n-icon :size="32"><Devices /></n-icon>
-            </template>
-          </n-avatar>
-          <div class="user-details">
-            <div class="user-name">{{ getUserName(pendingRequest.userId) }}</div>
-            <div class="user-id">{{ formatUserId(pendingRequest.userId) }}</div>
-          </div>
+          <van-icon name="close" :size="18" @click="handleClose" class="close-icon" />
         </div>
 
-        <!-- Verification Steps -->
-        <div class="steps-section">
-          <n-steps :current="currentStep" :status="verificationStatus" size="small">
-            <n-step title="请求" />
-            <n-step title="验证" />
-            <n-step title="完成" />
-          </n-steps>
-        </div>
-
-        <!-- Emoji Verification (SAS) -->
-        <div v-if="showEmojiVerification" class="emoji-section">
-          <div class="section-title">验证表情符号</div>
-          <div class="emoji-grid">
-            <div
-              v-for="(item, index) in verificationEmoji"
-              :key="index"
-              class="emoji-item"
-            >
-              <span class="emoji">{{ item.emoji }}</span>
-              <span class="number">{{ item.number }}</span>
+        <!-- Content -->
+        <div class="verification-content">
+          <!-- User Info -->
+          <div v-if="pendingRequest" class="user-section">
+            <van-image :width="64" :height="64" :src="getUserAvatar(pendingRequest.userId)" round>
+              <template #error>
+                <div class="avatar-fallback">
+                  <van-icon name="phone-o" :size="32" />
+                </div>
+              </template>
+            </van-image>
+            <div class="user-details">
+              <div class="user-name">{{ getUserName(pendingRequest.userId) }}</div>
+              <div class="user-id">{{ formatUserId(pendingRequest.userId) }}</div>
             </div>
           </div>
-          <n-alert type="info" style="margin-top: 12px">
-            请确认对方设备显示的表情符号和数字与上面一致
-          </n-alert>
-        </div>
 
-        <!-- QR Code Verification -->
-        <div v-if="showQRVerification" class="qr-section">
-          <div class="section-title">扫描二维码验证</div>
-          <div class="qr-container">
-            <div class="qr-placeholder">
-              <n-icon :size="64"><Qrcode /></n-icon>
-              <p>显示二维码供对方扫描</p>
-            </div>
-          </div>
-          <n-button block secondary @click="switchToEmoji">
-            改用表情符号验证
-          </n-button>
-        </div>
-
-        <!-- Trust Level -->
-        <div class="trust-section">
-          <div class="trust-card" :class="`trust-${currentTrustLevel}`">
-            <n-icon :size="24">
-              <component :is="getTrustIcon(currentTrustLevel)" />
-            </n-icon>
-            <div class="trust-info">
-              <span class="trust-label">{{ getTrustLabel(currentTrustLevel) }}</span>
-              <span class="trust-desc">{{ getTrustDescription(currentTrustLevel) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Verification Methods -->
-        <div v-if="currentStep === 0 && !verifying" class="methods-section">
-          <div class="section-title">选择验证方式</div>
-          <div class="method-list">
-            <div class="method-item" @click="startEmojiVerification">
-              <n-icon :size="24" color="#18a058"><MoodHappy /></n-icon>
-              <div class="method-info">
-                <span class="method-name">表情符号验证</span>
-                <span class="method-desc">对比7个表情符号和数字</span>
+          <!-- Verification Steps -->
+          <div class="steps-section">
+            <div class="custom-steps">
+              <div v-for="(step, index) in ['请求', '验证', '完成']" :key="index" class="step-item" :class="{ active: index === currentStep, completed: index < currentStep }">
+                <div class="step-circle">
+                  <van-icon v-if="index < currentStep" name="success" :size="16" />
+                  <span v-else>{{ index + 1 }}</span>
+                </div>
+                <div class="step-title">{{ step }}</div>
               </div>
-              <n-icon :size="18"><ChevronRight /></n-icon>
             </div>
-            <div class="method-item" @click="startQRVerification">
-              <n-icon :size="24" color="#18a058"><Qrcode /></n-icon>
-              <div class="method-info">
-                <span class="method-name">二维码验证</span>
-                <span class="method-desc">扫描二维码快速验证</span>
+          </div>
+
+          <!-- Emoji Verification (SAS) -->
+          <div v-if="showEmojiVerification" class="emoji-section">
+            <div class="section-title">验证表情符号</div>
+            <div class="emoji-grid">
+              <div
+                v-for="(item, index) in verificationEmoji"
+                :key="index"
+                class="emoji-item"
+              >
+                <span class="emoji">{{ item.emoji }}</span>
+                <span class="number">{{ item.number }}</span>
               </div>
-              <n-icon :size="18"><ChevronRight /></n-icon>
             </div>
+            <div class="alert-info" style="margin-top: 12px">
+              <van-icon name="info-o" :size="16" />
+              <span>请确认对方设备显示的表情符号和数字与上面一致</span>
+            </div>
+          </div>
+
+          <!-- QR Code Verification -->
+          <div v-if="showQRVerification" class="qr-section">
+            <div class="section-title">扫描二维码验证</div>
+            <div class="qr-container">
+              <div class="qr-placeholder">
+                <van-icon name="qr" :size="64" />
+                <p>显示二维码供对方扫描</p>
+              </div>
+            </div>
+            <van-button block plain @click="switchToEmoji">
+              改用表情符号验证
+            </van-button>
+          </div>
+
+          <!-- Trust Level -->
+          <div class="trust-section">
+            <div class="trust-card" :class="`trust-${currentTrustLevel}`">
+              <van-icon :name="getVantIconName(getTrustIconName(currentTrustLevel))" :size="24" />
+              <div class="trust-info">
+                <span class="trust-label">{{ getTrustLabel(currentTrustLevel) }}</span>
+                <span class="trust-desc">{{ getTrustDescription(currentTrustLevel) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verification Methods -->
+          <div v-if="currentStep === 0 && !verifying" class="methods-section">
+            <div class="section-title">选择验证方式</div>
+            <div class="method-list">
+              <div class="method-item" @click="startEmojiVerification">
+                <van-icon name="smile-o" :size="24" color="#18a058" />
+                <div class="method-info">
+                  <span class="method-name">表情符号验证</span>
+                  <span class="method-desc">对比7个表情符号和数字</span>
+                </div>
+                <van-icon name="arrow" :size="18" />
+              </div>
+              <div class="method-item" @click="startQRVerification">
+                <van-icon name="qr" :size="24" color="#18a058" />
+                <div class="method-info">
+                  <span class="method-name">二维码验证</span>
+                  <span class="method-desc">扫描二维码快速验证</span>
+                </div>
+                <van-icon name="arrow" :size="18" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Waiting State -->
+          <div v-if="verifying" class="waiting-section">
+            <van-loading size="24px" />
+            <p>正在验证...</p>
           </div>
         </div>
 
-        <!-- Waiting State -->
-        <div v-if="verifying" class="waiting-section">
-          <n-spin size="large" />
-          <p>正在验证...</p>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <template #footer>
+        <!-- Actions Footer -->
         <div class="dialog-footer">
-          <n-button v-if="currentStep === 1" size="large" block @click="handleReject" :disabled="verifying">
+          <van-button v-if="currentStep === 1" size="large" block @click="handleReject" :disabled="verifying">
             拒绝
-          </n-button>
-          <n-button
+          </van-button>
+          <van-button
             v-if="currentStep === 1 && verificationEmoji"
             type="primary"
             size="large"
@@ -144,8 +139,8 @@
             :loading="verifying"
           >
             确认匹配
-          </n-button>
-          <n-button
+          </van-button>
+          <van-button
             v-if="currentStep === 0"
             type="primary"
             size="large"
@@ -153,44 +148,55 @@
             @click="handleClose"
           >
             稍后验证
-          </n-button>
+          </van-button>
         </div>
-      </template>
-    </n-modal>
+      </div>
+    </van-popup>
 
     <!-- Success Notification -->
-    <n-modal
+    <van-popup
       v-model:show="showSuccess"
-      :mask-closable="true"
-      :style="{ maxWidth: '320px' }"
-      preset="card"
+      :close-on-click-overlay="true"
+      position="center"
+      :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }"
     >
-      <template #header>
+      <div class="success-dialog">
         <div class="success-header">
-          <n-icon :size="48" color="#18a058">
-            <CircleCheck />
-          </n-icon>
+          <van-icon name="success" :size="48" color="#18a058" />
         </div>
-      </template>
-      <div class="success-content">
-        <h3>验证成功!</h3>
-        <p>{{ successMessage }}</p>
-      </div>
-      <template #footer>
-        <n-button type="primary" size="large" block @click="showSuccess = false">
+        <div class="success-content">
+          <h3>验证成功!</h3>
+          <p>{{ successMessage }}</p>
+        </div>
+        <van-button type="primary" size="large" block @click="showSuccess = false">
           完成
-        </n-button>
-      </template>
-    </n-modal>
+        </van-button>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { NModal, NButton, NIcon, NAvatar, NSteps, NStep, NAlert, NSpin, useMessage, useDialog } from 'naive-ui'
-import { X, Devices, Qrcode, MoodHappy, ChevronRight, Shield, ShieldOff, ShieldX, CircleCheck } from '@vicons/tabler'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useMessage, useDialog } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
+
+// Icon name mapping for Vant
+const getVantIconName = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    X: 'close',
+    Devices: 'phone-o',
+    Qrcode: 'qr',
+    MoodHappy: 'smile-o',
+    ChevronRight: 'arrow',
+    Shield: 'shield-o',
+    ShieldOff: 'shield-close',
+    ShieldX: 'shield-close',
+    CircleCheck: 'success'
+  }
+  return iconMap[iconName] || 'circle'
+}
 
 interface VerificationRequest {
   requestId: string
@@ -317,15 +323,19 @@ const getTrustDescription = (level: TrustLevel): string => {
   }
 }
 
-const getTrustIcon = (level: TrustLevel) => {
+const getTrustIcon = (level: TrustLevel): string => {
   switch (level) {
     case 'verified':
-      return Shield
+      return 'Shield'
     case 'blocked':
-      return ShieldX
+      return 'ShieldX'
     default:
-      return ShieldOff
+      return 'ShieldOff'
   }
+}
+
+const getTrustIconName = (level: TrustLevel): string => {
+  return getTrustIcon(level)
 }
 
 const generateVerificationEmoji = (): void => {
@@ -397,9 +407,9 @@ const handleReject = () => {
   dialog.warning({
     title: '拒绝验证',
     content: '确定要拒绝此设备的验证请求吗？',
-    positiveText: '拒绝',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '拒绝',
+    cancelText: '取消',
+    onConfirm: async () => {
       try {
         emit('verification-complete', {
           requestId: pendingRequest.value!.requestId,
@@ -425,9 +435,9 @@ const handleClose = () => {
     dialog.warning({
       title: '取消验证',
       content: '确定要取消验证吗？',
-      positiveText: '确定',
-      negativeText: '继续',
-      onPositiveClick: () => {
+      confirmText: '确定',
+      cancelText: '继续',
+      onConfirm: () => {
         showDialog.value = false
         emit('close')
         resetState()
@@ -516,16 +526,31 @@ defineExpose({
 })
 </script>
 
-<script lang="ts">
-import { watch } from 'vue'
-export default {
-  name: 'MobileDeviceVerificationDialog'
-}
-</script>
-
 <style scoped lang="scss">
 .mobile-device-verification {
   // Container
+}
+
+.verification-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: #d0d0d0;
+  }
 }
 
 .dialog-header {
@@ -533,6 +558,9 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
 
   .header-content {
     flex: 1;
@@ -549,15 +577,135 @@ export default {
       color: var(--text-color-3);
     }
   }
+
+  .close-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
 }
 
 .verification-content {
-  padding: 16px 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-height: 60vh;
-  overflow-y: auto;
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color, #18a058);
+  color: white;
+  border-radius: 50%;
+}
+
+.alert-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  color: #0958d9;
+  font-size: 13px;
+}
+
+// Custom steps
+.custom-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-color);
+  border-radius: 12px;
+
+  .step-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--card-color);
+      border: 2px solid var(--divider-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-color-3);
+      transition: all 0.3s;
+
+      span {
+        font-size: 14px;
+      }
+    }
+
+    .step-title {
+      font-size: 12px;
+      color: var(--text-color-3);
+    }
+
+    &.active .step-circle {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: rgba(24, 160, 88, 0.1);
+    }
+
+    &.completed .step-circle {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+  }
+}
+
+.success-dialog {
+  padding: 24px;
+  text-align: center;
+
+  .success-header {
+    margin-bottom: 16px;
+  }
+
+  .success-content {
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: var(--text-color-1);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-color-3);
+    }
+  }
+}
+
+.dialog-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .user-section {
@@ -588,11 +736,7 @@ export default {
 }
 
 .steps-section {
-  :deep(.n-steps) {
-    .n-step {
-      flex: 1;
-    }
-  }
+  // Custom steps implementation already added above
 }
 
 .emoji-section {
@@ -767,30 +911,6 @@ export default {
   p {
     margin: 0;
     color: var(--text-color-2);
-  }
-}
-
-.dialog-footer {
-  display: flex;
-  gap: 8px;
-}
-
-.success-header {
-  text-align: center;
-}
-
-.success-content {
-  text-align: center;
-
-  h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-    color: var(--text-color-1);
-  }
-
-  p {
-    margin: 0;
-    color: var(--text-color-3);
   }
 }
 

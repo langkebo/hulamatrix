@@ -25,7 +25,6 @@ import { info } from '@tauri-apps/plugin-log'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import { useLogin } from '@/hooks/useLogin'
 import { useMitt } from '@/hooks/useMitt'
-import rustWebSocketClient from '@/services/webSocketRust'
 import { useGlobalStore } from '@/stores/global'
 import { isMobile, isWindows } from '@/utils/PlatformConstants'
 import { MittEnum, MsgEnum, NotificationTypeEnum } from '@/enums'
@@ -449,13 +448,8 @@ onMounted(async () => {
   if (!isTauri) return
   const homeWindow = await WebviewWindow.getByLabel('home')
   if (homeWindow) {
-    if (!websocketDisabled) {
-      // 仅在未禁用WebSocket时设置自定义WebSocket消息监听器
-      await rustWebSocketClient.setupBusinessMessageListeners()
-    } else {
-      // Phase 1: 使用Matrix标准协议
-      logger.info('WebSocket disabled in Phase 1 migration, Matrix client will handle messages')
-    }
+    // WebSocket 已废弃，统一使用 Matrix SDK 处理消息
+    logger.info('Using Matrix SDK for message handling (WebSocket removed)')
 
     // 监听窗口聚焦事件，聚焦时停止tray闪烁
     if (isWindows()) {

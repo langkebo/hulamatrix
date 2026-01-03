@@ -422,13 +422,13 @@ const saveShortcut = () => {
   }
 
   &.is-recording {
-    border-color: #13987f;
+    border-color: var(--hula-accent, #13987f);
     background: rgba(19, 152, 127, 0.05);
   }
 
   &:focus {
     outline: none;
-    border-color: #13987f;
+    border-color: var(--hula-accent, #13987f);
   }
 }
 </style>

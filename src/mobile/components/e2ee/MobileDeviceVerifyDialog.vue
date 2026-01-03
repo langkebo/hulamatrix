@@ -1,177 +1,199 @@
 <!-- Mobile Device Verification Dialog - E2EE device verification UI for mobile -->
 <template>
-  <n-modal
+  <van-popup
     :show="showVerifyDialog"
-    :mask-closable="false"
-    preset="card"
-    :style="{ width: '90%', maxWidth: '400px' }"
-    :title="title"
-    @update:show="handleClose"
+    :close-on-click-overlay="false"
+    position="center"
+    :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
   >
-    <!-- Loading state -->
-    <div v-if="loading" class="verify-loading">
-      <n-spin size="medium" />
-      <p class="mt-12px">{{ loadingText }}</p>
-    </div>
+    <div class="verify-dialog">
+      <!-- Header -->
+      <div class="dialog-header">
+        <span class="header-title">{{ title }}</span>
+        <van-icon name="cross" :size="18" @click="handleClose" />
+      </div>
 
-    <!-- Error state -->
-    <n-alert v-else-if="error" type="error" :show-icon="true" class="mb-12px">
-      {{ error }}
-    </n-alert>
+      <!-- Scrollable Content -->
+      <div class="dialog-content">
+        <!-- Loading state -->
+        <div v-if="loading" class="verify-loading">
+          <van-loading size="24px" />
+          <p class="mt-12px">{{ loadingText }}</p>
+        </div>
 
-    <!-- Device info -->
-    <div v-if="currentDevice && !loading" class="device-info-section">
-      <div class="device-info">
-        <n-avatar :size="50" :src="getDeviceAvatar(currentDevice)">
-          <template #fallback>
-            <n-icon :size="24"><DeviceMobile /></n-icon>
-          </template>
-        </n-avatar>
-        <div class="device-details">
-          <div class="device-name">{{ currentDevice.display_name || currentDevice.device_id }}</div>
-          <div class="device-id">{{ currentDevice.device_id }}</div>
+        <!-- Error state -->
+        <div v-else-if="error" class="alert-error mb-12px">
+          <van-icon name="warning-o" :size="18" />
+          <span>{{ error }}</span>
+        </div>
+
+        <!-- Device info -->
+        <div v-if="currentDevice && !loading" class="device-info-section">
+          <div class="device-info">
+            <van-image :width="50" :height="50" :src="getDeviceAvatar(currentDevice)" round>
+              <template #error>
+                <div class="avatar-fallback">
+                  <van-icon name="phone-o" :size="24" />
+                </div>
+              </template>
+            </van-image>
+            <div class="device-details">
+              <div class="device-name">{{ currentDevice.display_name || currentDevice.device_id }}</div>
+              <div class="device-id">{{ currentDevice.device_id }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verification method selection -->
+        <div v-if="step === 'method' && !loading" class="method-selection">
+          <div class="button-group">
+            <van-button
+              size="large"
+              type="primary"
+              block
+              @click="startSasVerification"
+              icon="key"
+            >
+              SAS 表情符号验证
+            </van-button>
+            <van-button
+              size="large"
+              type="default"
+              block
+              @click="startQrVerification"
+              icon="qr"
+              class="mt-12px"
+            >
+              二维码验证
+            </van-button>
+          </div>
+        </div>
+
+        <!-- SAS verification -->
+        <div v-if="step === 'sas' && sasData" class="sas-verification">
+          <div class="alert-info mb-12px">
+            <van-icon name="info-o" :size="18" />
+            <span>请确认对方设备显示的表情符号和数字与下面一致</span>
+          </div>
+
+          <!-- Emoji display -->
+          <div v-if="sasData.emojis && sasData.emojis.length > 0" class="emoji-grid">
+            <div
+              v-for="(emoji, index) in sasData.emojis"
+              :key="index"
+              class="emoji-item"
+            >
+              <span class="emoji-char">{{ emoji.emoji }}</span>
+              <span class="emoji-name">{{ emoji.name }}</span>
+            </div>
+          </div>
+
+          <!-- Decimal display -->
+          <div v-else-if="sasData.decimals && sasData.decimals.length > 0" class="decimal-display">
+            <div class="decimal-label">或者核对数字：</div>
+            <div class="decimal-numbers">
+              <span v-for="(num, index) in sasData.decimals" :key="index" class="decimal-digit">
+                {{ num.toString().padStart(4, '0') }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR verification -->
+        <div v-if="step === 'qr' && qrDataUri" class="qr-verification">
+          <div class="alert-info mb-12px">
+            <van-icon name="info-o" :size="18" />
+            <span>请使用另一设备扫描二维码以完成验证</span>
+          </div>
+          <div class="qr-code-container">
+            <img :src="qrDataUri" alt="QR Code" class="qr-code-image" />
+          </div>
+        </div>
+
+        <!-- Success state -->
+        <div v-if="step === 'success'" class="success-state">
+          <van-icon name="success" :size="60" color="#18a058" class="success-icon" />
+          <p class="success-text">设备验证成功！</p>
         </div>
       </div>
-    </div>
 
-    <!-- Verification method selection -->
-    <div v-if="step === 'method' && !loading" class="method-selection">
-      <n-space vertical :size="12">
-        <n-button
-          size="large"
-          type="primary"
-          block
-          @click="startSasVerification"
-        >
-          <template #icon>
-            <n-icon><Key /></n-icon>
-          </template>
-          SAS 表情符号验证
-        </n-button>
-        <n-button
-          size="large"
-          type="info"
-          block
-          @click="startQrVerification"
-        >
-          <template #icon>
-            <n-icon><Qrcode /></n-icon>
-          </template>
-          二维码验证
-        </n-button>
-      </n-space>
-    </div>
+      <!-- Actions Footer -->
+      <div class="dialog-footer">
+        <template v-if="step === 'method'">
+          <van-button block @click="handleClose">取消</van-button>
+        </template>
 
-    <!-- SAS verification -->
-    <div v-if="step === 'sas' && sasData" class="sas-verification">
-      <n-alert type="info" :show-icon="true" class="mb-12px">
-        请确认对方设备显示的表情符号和数字与下面一致
-      </n-alert>
+        <template v-if="step === 'sas'">
+          <div class="button-group">
+            <van-button
+              type="primary"
+              block
+              :loading="confirming"
+              @click="confirmSas"
+            >
+              确认匹配
+            </van-button>
+            <van-button
+              type="danger"
+              block
+              :disabled="confirming"
+              @click="cancelVerification"
+              class="mt-8px"
+            >
+              不匹配
+            </van-button>
+          </div>
+        </template>
 
-      <!-- Emoji display -->
-      <div v-if="sasData.emojis && sasData.emojis.length > 0" class="emoji-grid">
-        <div
-          v-for="(emoji, index) in sasData.emojis"
-          :key="index"
-          class="emoji-item"
-        >
-          <span class="emoji-char">{{ emoji.emoji }}</span>
-          <span class="emoji-name">{{ emoji.name }}</span>
-        </div>
-      </div>
+        <template v-if="step === 'qr'">
+          <div class="button-group">
+            <van-button
+              type="primary"
+              block
+              :loading="confirming"
+              @click="confirmQr"
+            >
+              已扫描
+            </van-button>
+            <van-button
+              type="danger"
+              block
+              :disabled="confirming"
+              @click="cancelVerification"
+              class="mt-8px"
+            >
+              取消
+            </van-button>
+          </div>
+        </template>
 
-      <!-- Decimal display -->
-      <div v-else-if="sasData.decimals && sasData.decimals.length > 0" class="decimal-display">
-        <div class="decimal-label">或者核对数字：</div>
-        <div class="decimal-numbers">
-          <span v-for="(num, index) in sasData.decimals" :key="index" class="decimal-digit">
-            {{ num.toString().padStart(4, '0') }}
-          </span>
-        </div>
+        <van-button v-if="step === 'success'" type="primary" block @click="handleClose">
+          完成
+        </van-button>
       </div>
     </div>
-
-    <!-- QR verification -->
-    <div v-if="step === 'qr' && qrDataUri" class="qr-verification">
-      <n-alert type="info" :show-icon="true" class="mb-12px">
-        请使用另一设备扫描二维码以完成验证
-      </n-alert>
-      <div class="qr-code-container">
-        <img :src="qrDataUri" alt="QR Code" class="qr-code-image" />
-      </div>
-    </div>
-
-    <!-- Success state -->
-    <div v-if="step === 'success'" class="success-state">
-      <n-icon size="60" color="#18a058" class="success-icon">
-        <CircleCheck />
-      </n-icon>
-      <p class="success-text">设备验证成功！</p>
-    </div>
-
-    <!-- Actions -->
-    <template #footer>
-      <n-space v-if="step === 'method'" vertical :size="8">
-        <n-button block @click="handleClose">
-          取消
-        </n-button>
-      </n-space>
-
-      <n-space v-if="step === 'sas'" vertical :size="8">
-        <n-button
-          type="primary"
-          block
-          :loading="confirming"
-          @click="confirmSas"
-        >
-          确认匹配
-        </n-button>
-        <n-button
-          type="error"
-          block
-          :disabled="confirming"
-          @click="cancelVerification"
-        >
-          不匹配
-        </n-button>
-      </n-space>
-
-      <n-space v-if="step === 'qr'" vertical :size="8">
-        <n-button
-          type="primary"
-          block
-          :loading="confirming"
-          @click="confirmQr"
-        >
-          已扫描
-        </n-button>
-        <n-button
-          type="error"
-          block
-          :disabled="confirming"
-          @click="cancelVerification"
-        >
-          取消
-        </n-button>
-      </n-space>
-
-      <n-button v-if="step === 'success'" type="primary" block @click="handleClose">
-        完成
-      </n-button>
-    </template>
-  </n-modal>
+  </van-popup>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
-import { NModal, NButton, NSpace, NAlert, NSpin, NIcon, NAvatar } from 'naive-ui'
-import { DeviceMobile, Key, Qrcode, CircleCheck } from '@vicons/tabler'
+import { msg } from '@/utils/SafeUI'
 import {
   startSasVerification as apiStartSas,
   startQrVerification as apiStartQr
 } from '@/integrations/matrix/encryption'
 import { useE2EEStore } from '@/stores/e2ee'
-import { msg } from '@/utils/SafeUI'
+
+// Icon name mapping for Vant
+const getVantIconName = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    DeviceMobile: 'phone-o',
+    Key: 'key',
+    Qrcode: 'qr',
+    CircleCheck: 'success'
+  }
+  return iconMap[iconName] || 'circle'
+}
 
 // Props
 interface Props {
@@ -384,6 +406,93 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
 </script>
 
 <style scoped lang="scss">
+.verify-dialog {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  max-height: 80vh;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.dialog-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dialog-footer {
+  padding: 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 8px;
+  color: #ff4d4f;
+  font-size: 13px;
+  margin: 0 16px;
+}
+
+.alert-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  color: #0958d9;
+  font-size: 13px;
+  margin: 0 16px 16px;
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color, #18a058);
+  color: white;
+  border-radius: 50%;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-8px {
+  margin-top: 8px;
+}
+
+.mt-12px {
+  margin-top: 12px;
+}
+
+.mb-12px {
+  margin-bottom: 12px;
+}
+
 .verify-loading {
   display: flex;
   flex-direction: column;
@@ -393,6 +502,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
 
 .device-info-section {
   margin-bottom: 16px;
+  padding: 0 16px;
 }
 
 .device-info {
@@ -428,73 +538,76 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
 }
 
 .method-selection {
-  padding: 8px 0;
+  padding: 16px;
 }
 
 .sas-verification {
-  .emoji-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding: 12px;
-    background: var(--bg-color);
-    border-radius: 8px;
-  }
+  padding: 0 16px;
+}
 
-  .emoji-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 8px;
-    background: var(--card-color);
-    border-radius: 8px;
-  }
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-color);
+  border-radius: 8px;
+}
 
-  .emoji-char {
-    font-size: 28px;
-    line-height: 1;
-  }
+.emoji-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--card-color);
+  border-radius: 8px;
+}
 
-  .emoji-name {
-    font-size: 11px;
-    color: var(--text-color-3);
-    text-align: center;
-  }
+.emoji-char {
+  font-size: 28px;
+  line-height: 1;
+}
 
-  .decimal-display {
-    padding: 16px;
-    background: var(--bg-color);
-    border-radius: 8px;
-    text-align: center;
-  }
+.emoji-name {
+  font-size: 11px;
+  color: var(--text-color-3);
+  text-align: center;
+}
 
-  .decimal-label {
-    font-size: 13px;
-    color: var(--text-color-2);
-    margin-bottom: 12px;
-  }
+.decimal-display {
+  padding: 16px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  text-align: center;
+}
 
-  .decimal-numbers {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+.decimal-label {
+  font-size: 13px;
+  color: var(--text-color-2);
+  margin-bottom: 12px;
+}
 
-  .decimal-digit {
-    font-size: 18px;
-    font-weight: 600;
-    font-family: 'Courier New', monospace;
-    padding: 8px 12px;
-    background: var(--card-color);
-    border-radius: 6px;
-    color: var(--text-color-1);
-  }
+.decimal-numbers {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.decimal-digit {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  padding: 8px 12px;
+  background: var(--card-color);
+  border-radius: 6px;
+  color: var(--text-color-1);
 }
 
 .qr-verification {
   text-align: center;
+  padding: 0 16px;
 
   .qr-code-container {
     display: flex;

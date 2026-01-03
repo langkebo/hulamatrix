@@ -327,11 +327,11 @@ const handleDeviceAdded = (device: Device) => {
 }
 
 // 处理密钥备份完成
-const handleKeyBackupCompleted = (options: { success: boolean; exportedKey?: string }) => {
+const handleKeyBackupCompleted = (options: { success?: boolean; recoveryKey?: string }) => {
   showKeyBackupDialog.value = false
-  if (options.success && options.exportedKey) {
+  if (options.success && options.recoveryKey) {
     msg.success('密钥备份成功')
-  } else if (!options.success) {
+  } else if (options.success === false) {
     msg.error('密钥备份失败')
   }
 }

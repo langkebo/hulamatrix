@@ -26,13 +26,13 @@
             <!-- bot用户标签 -->
             <div
               v-if="false"
-              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid #13987f) border-(1px solid #13987f) flex-center px-8px py-4px rounded-6px">
-              <p class="text-(11px #13987f)">{{ t('home.chat_header.bot_tag') }}</p>
+              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid var(--hula-accent, #13987f)) border-(1px solid var(--hula-accent, #13987f)) flex-center px-8px py-4px rounded-6px">
+              <p class="text-(11px) text-brand">{{ t('home.chat_header.bot_tag') }}</p>
             </div>
           </label>
           <svg
             v-if="currentSession?.hotFlag === IsAllUserEnum.Yes"
-            class="size-20px color-#13987f select-none outline-none">
+            class="size-20px text-brand select-none outline-none">
             <use href="#auth"></use>
           </svg>
           <n-flex v-else-if="currentSession?.type === RoomTypeEnum.SINGLE " align="center">
@@ -187,7 +187,7 @@
               <p class="color-#d03553">{{ t('home.chat_header.sidebar.single.delete_friend') }}</p>
             </div>
 
-            <p class="m-[0_auto] text-(12px #13987f center) mt-20px cursor-pointer">
+            <p class="m-[0_auto] text-(12px) text-brand center mt-20px cursor-pointer">
               {{ t('home.chat_header.sidebar.single.report') }}
             </p>
           </template>
@@ -247,7 +247,7 @@
 
                     <n-popover trigger="hover" v-if="currentSession?.hotFlag === IsAllUserEnum.Yes && !isEditingGroupName">
                       <template #trigger>
-                        <svg class="size-20px select-none outline-none cursor-pointer color-#13987f">
+                        <svg class="size-20px select-none outline-none cursor-pointer text-brand">
                           <use href="#auth"></use>
                         </svg>
                       </template>
@@ -364,14 +364,7 @@
                     <n-switch
                       size="small"
                       :value="allowScanEnter"
-                      @update:value="
-                        (val: boolean) => {
-                          updateRoomInfo({
-                            id: currentSession!.roomId,
-                            allowScanEnter: val
-                          })
-                        }
-                      " />
+                      @update:value="handleJoinRuleChange" />
                   </div>
                 </template>
               </n-flex>
@@ -430,7 +423,7 @@
 
             <p
               v-if="currentSession?.hotFlag !== IsAllUserEnum.Yes"
-              class="text-(12px #13987f center) my-20px cursor-pointer">
+              class="text-(12px) text-brand center my-20px cursor-pointer">
               {{ t('home.chat_header.sidebar.group.report') }}
             </p>
           </template>
@@ -458,7 +451,7 @@
         <span class="text-14px">{{ tips }}</span>
 
         <n-flex justify="end">
-          <n-button @click="handleConfirm" class="w-78px" color="#13987f">
+          <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-accent, #13987f)'">
             {{ t('home.chat_header.modal.confirm') }}
           </n-button>
           <n-button @click="handleCancel" class="w-78px" secondary>{{ t('home.chat_header.modal.cancel') }}</n-button>
@@ -574,17 +567,17 @@ import { useGlobalStore } from '@/stores/global'
 import { useRoomStore } from '@/stores/room'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
+import { friendsServiceV2 } from '@/services/friendsServiceV2'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { notification, setSessionTop, shield, updateRoomInfo } from '@/utils/ImRequestUtils'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { useTypingStore } from '@/integrations/matrix/typing'
 import { usePresenceStore } from '@/stores/presence'
-import { matrixClientService } from '@/integrations/matrix/client'
 import { msg } from '@/utils/SafeUI'
 import { getRoom } from '@/utils/matrixClientUtils'
 import { useRoomStats } from '@/composables/useRoomStats'
-//
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 import PrivateChatButton from '../PrivateChatButton.vue'
 import PrivateChatDialog from '../PrivateChatDialog.vue'
 import { sdkSetSessionTop, sdkUpdateRoomName } from '@/services/rooms'
@@ -792,29 +785,14 @@ const {
   handleFileChange,
   handleCrop: onCrop
 } = useAvatarUpload({
-  onSuccess: async (downloadUrl) => {
+  onSuccess: async (mxcUrl) => {
     const session = currentSession.value
     if (!session) return
-    if (flags.matrixEnabled) {
-      // Matrix mode: update room avatar
-      // Note: downloadUrl should be an MXC URI or accessible URL.
-      // Assuming useAvatarUpload returns a URL we can use or upload to Matrix.
-      // If it returns an HTTP URL from Qiniu, we might need to upload to Matrix Media Repo first if we want proper Matrix support,
-      // but for now we can just set it as avatar url if the client supports it.
-      // However, sdkUpdateRoomAvatar expects an MXC URI ideally, or at least a URL.
-      // Let's assume downloadUrl is fine for now or we will handle media upload later.
-      // The plan mentions "Media: unified upload/MXC".
-      // For now, let's try to set it.
-      const { sdkUpdateRoomAvatar } = await import('@/services/rooms')
-      await sdkUpdateRoomAvatar(session.roomId, downloadUrl)
-      // Update local session
-      chatStore.updateSession(session.roomId, { avatar: downloadUrl })
-    } else {
-      await updateRoomInfo({
-        id: session.roomId,
-        avatar: downloadUrl
-      })
-    }
+    // 使用 Matrix SDK 更新房间头像
+    const { sdkUpdateRoomAvatar } = await import('@/services/rooms')
+    await sdkUpdateRoomAvatar(session.roomId, mxcUrl)
+    // Update local session
+    chatStore.updateSession(session.roomId, { avatar: mxcUrl })
   }
 })
 
@@ -934,11 +912,7 @@ const handleTop = async (value: boolean) => {
   if (!session) return
 
   try {
-    if (flags.matrixEnabled) {
-      await sdkSetSessionTop(session.roomId, value)
-    } else {
-      await setSessionTop({ roomId: session.roomId, top: value })
-    }
+    await sessionSettingsService.setSessionTop(session.roomId, value)
     // 更新本地会话状态
     chatStore.updateSession(session.roomId, { top: value })
     msg.success(value ? t('home.chat_header.toast.pin_on') : t('home.chat_header.toast.pin_off'))
@@ -948,83 +922,95 @@ const handleTop = async (value: boolean) => {
 }
 
 /** 处理消息免打扰 */
-const handleNotification = (value: boolean) => {
+const handleNotification = async (value: boolean) => {
   const session = currentSession.value
   if (!session) return
-  const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
+  const newMode = value ? 'not_disturb' : 'reception'
   // 如果当前是屏蔽状态，需要先取消屏蔽
   if (session.shield) {
-    handleShield(false)
+    await handleShield(false)
   }
-  notification({
-    roomId: session.roomId,
-    type: newType
-  })
-    .then(() => {
-      // 更新本地会话状态
-      chatStore.updateSession(session.roomId, {
-        muteNotification: newType
-      })
-
-      // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
-      if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
-        chatStore.updateTotalUnreadCount()
-      }
-
-      // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
-      if (newType === NotificationTypeEnum.NOT_DISTURB) {
-        chatStore.updateTotalUnreadCount()
-      }
-
-      msg.success(value ? t('home.chat_header.toast.mute_on') : t('home.chat_header.toast.mute_off'))
+  try {
+    // 使用 Matrix SDK 设置通知模式
+    await sessionSettingsService.setNotificationMode(session.roomId, newMode)
+    // 更新本地会话状态
+    const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
+    chatStore.updateSession(session.roomId, {
+      muteNotification: newType
     })
-    .catch(() => {
-      msg.error(t('home.chat_header.toast.action_failed'))
-    })
+
+    // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
+    if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
+    if (newType === NotificationTypeEnum.NOT_DISTURB) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    msg.success(value ? t('home.chat_header.toast.mute_on') : t('home.chat_header.toast.mute_off'))
+  } catch (error) {
+    msg.error(t('home.chat_header.toast.action_failed'))
+  }
 }
 
 /** 处理屏蔽消息 */
-const handleShield = (value: boolean) => {
+const handleShield = async (value: boolean) => {
   const session = currentSession.value
   if (!session) return
-  shield({
-    roomId: session.roomId,
-    state: value
-  })
-    .then(() => {
-      // 更新本地会话状态
-      chatStore.updateSession(session.roomId, {
-        shield: value
-      })
-
-      // 1. 先保存当前聊天室ID
-      const tempRoomId = globalStore.currentSessionRoomId
-
-      // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
-      nextTick(() => {
-        globalStore.updateCurrentSessionRoomId(tempRoomId)
-      })
-
-      msg.success(value ? t('home.chat_header.toast.shield_on') : t('home.chat_header.toast.shield_off'))
+  try {
+    await sessionSettingsService.setSessionShield(session.roomId, value)
+    // 更新本地会话状态
+    chatStore.updateSession(session.roomId, {
+      shield: value
     })
-    .catch(() => {
-      msg.error(t('home.chat_header.toast.action_failed'))
+
+    // 1. 先保存当前聊天室ID
+    const tempRoomId = globalStore.currentSessionRoomId
+
+    // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
+    nextTick(() => {
+      globalStore.updateCurrentSessionRoomId(tempRoomId)
     })
+
+    msg.success(value ? t('home.chat_header.toast.shield_on') : t('home.chat_header.toast.shield_off'))
+  } catch (error) {
+    msg.error(t('home.chat_header.toast.action_failed'))
+  }
 }
 
-const handleMessageSetting = (value: string) => {
+const handleMessageSetting = async (value: string) => {
   const session = currentSession.value
   if (!session) return
   if (value === 'shield') {
     // 设置为屏蔽消息
     if (!session.shield) {
-      handleShield(true)
+      await handleShield(true)
     }
   } else if (value === 'notification') {
     // 设置为接收消息但不提醒
     if (session.shield) {
-      handleShield(false)
+      await handleShield(false)
     }
+  }
+}
+
+/** 处理房间加入规则修改 */
+const handleJoinRuleChange = async (val: boolean) => {
+  const client = matrixClientService.getClient()
+  const session = currentSession.value
+  if (!client || !session) return
+  try {
+    // 使用 Matrix SDK 设置房间加入规则
+    const setJoinRule = client.setJoinRule as ((roomId: string, joinRule: string) => Promise<unknown>) | undefined
+    if (setJoinRule) {
+      await setJoinRule(session.roomId, val ? 'public' : 'invite')
+      msg.success(val ? '已开启扫码入群' : '已关闭扫码入群')
+    }
+  } catch (error) {
+    logger.error('设置房间加入规则失败:', error)
+    msg.error('设置失败')
   }
 }
 
@@ -1126,7 +1112,8 @@ const handleConfirm = async () => {
 
   if (currentOption === RoomActEnum.DELETE_FRIEND && targetDetailId) {
     try {
-      await import('@/utils/ImRequestUtils').then((m) => m.deleteFriend({ targetUid: targetDetailId }))
+      // 使用 Matrix SDK 删除好友
+      await friendsServiceV2.removeFriend(targetDetailId)
       await require('@/stores/friends').useFriendsStore().refreshAll()
       useMitt.emit(MittEnum.DELETE_SESSION, targetRoomId)
       msg.success(t('home.chat_header.toast.delete_friend_success'))
@@ -1236,17 +1223,10 @@ const saveGroupName = async () => {
   if (!trimmedName) return
 
   try {
-    if (flags.matrixEnabled) {
-      await sdkUpdateRoomName(session.roomId, trimmedName)
-      // Matrix SDK might auto-update room name via sync events, but we can also update local optimistically
-      chatStore.updateSession(session.roomId, { name: trimmedName })
-    } else {
-      // 调用更新群信息的API
-      await updateRoomInfo({
-        id: session.roomId,
-        name: trimmedName
-      })
-    }
+    // 使用 Matrix SDK 更新房间名称
+    await sdkUpdateRoomName(session.roomId, trimmedName)
+    // Matrix SDK might auto-update room name via sync events, but we can also update local optimistically
+    chatStore.updateSession(session.roomId, { name: trimmedName })
     // 清空待保存的群信息
     pendingGroupInfo.value = null
   } catch (error) {
@@ -1338,7 +1318,7 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 
   &:hover {
-    color: #13987f;
+    color: var(--hula-accent, #13987f);
     transform: scale(1.1);
   }
 }
@@ -1350,7 +1330,7 @@ onUnmounted(() => {
     color: var(--icon-color);
 
     &:hover {
-      color: #13987f;
+      color: var(--hula-accent, #13987f);
     }
   }
 }

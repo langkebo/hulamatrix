@@ -44,7 +44,7 @@
                 padding: '2px 4px',
                 borderRadius: '6px',
                 color: '#000',
-                background: '#13987f'
+                background: 'var(--hula-accent, #13987f)'
               }" />
             <p v-else style="margin: 0">{{ item }}</p>
           </div>
@@ -59,7 +59,7 @@
           padding: '2px 4px',
           borderRadius: '6px',
           color: '#000',
-          background: '#13987f'
+          background: 'var(--hula-accent, #13987f)'
         }" />
       <template v-else>{{ item }}</template>
       <div

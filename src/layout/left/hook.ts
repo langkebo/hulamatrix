@@ -1,11 +1,11 @@
-import { ref, computed, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import { info } from '@tauri-apps/plugin-log'
 import { useTimeoutFn } from '@vueuse/core'
-import { IsYesEnum, MittEnum, ThemeEnum } from '@/enums'
+import { MittEnum, ThemeEnum } from '@/enums'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
-import type { BadgeType, UserInfoType } from '@/services/types'
+import type { UserInfoType } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 // 迁移: useMenuTopStore → useMenuTopStoreCompat (兼容层)
@@ -13,7 +13,7 @@ import { useMenuTopStoreCompat as useMenuTopStore } from '@/stores/compatibility
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
-import { ModifyUserInfo, setUserBadge } from '@/utils/ImRequestUtils'
+import { userProfileService } from '@/services/userProfileService'
 
 import { msg } from '@/utils/SafeUI'
 import { storeToRefs } from 'pinia'
@@ -61,16 +61,10 @@ export const leftHook = () => {
   const editInfo = ref<{
     show: boolean
     content: Partial<UserInfoType>
-    badgeList: BadgeType[]
   }>({
     show: false,
-    content: {},
-    badgeList: []
+    content: {}
   })
-  /** 当前用户佩戴的徽章  */
-  const currentBadge = computed(() =>
-    editInfo.value.badgeList.find((item) => item.obtain === IsYesEnum.YES && item.wearing === IsYesEnum.YES)
-  )
 
   /* =================================== 方法 =============================================== */
 
@@ -90,7 +84,7 @@ export const leftHook = () => {
   })
 
   /** 更新缓存里面的用户信息 */
-  const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: string) => {
+  const updateCurrentUserCache = (key: 'name' | 'avatar', value: string) => {
     const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
     if (currentUser) {
       currentUser[key] = value // 更新缓存里面的用户信息
@@ -98,7 +92,7 @@ export const leftHook = () => {
   }
 
   /** 保存用户信息 */
-  const saveEditInfo = (localUserInfo: Partial<UserInfoType>) => {
+  const saveEditInfo = async (localUserInfo: Partial<UserInfoType>) => {
     if (!localUserInfo.name || localUserInfo.name.trim() === '') {
       msg.error?.('昵称不能为空')
       return
@@ -107,7 +101,8 @@ export const leftHook = () => {
       msg.error?.('改名次数不足')
       return
     }
-    ModifyUserInfo(localUserInfo as UserInfoType).then(() => {
+    try {
+      await userProfileService.setDisplayName(localUserInfo.name!)
       // 更新本地缓存的用户信息
       userStore.userInfo!.name = localUserInfo.name!
       loginHistoriesStore.updateLoginHistory(<UserInfoType>userStore.userInfo) // 更新登录历史记录
@@ -115,34 +110,9 @@ export const leftHook = () => {
       if (!editInfo.value.content.modifyNameChance) return
       editInfo.value.content.modifyNameChance -= 1
       msg.success?.('保存成功')
-    })
-  }
-
-  /** 佩戴徽章 */
-  const toggleWarningBadge = async (badge: BadgeType) => {
-    if (!badge?.id) return
-    try {
-      await setUserBadge({ badgeId: badge.id })
-      // 更新本地缓存中的用户徽章信息
-      const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
-      if (currentUser) {
-        // 更新当前佩戴的徽章ID
-        currentUser.wearingItemId = badge.id
-        // 更新用户信息中的佩戴徽章ID
-        userStore.userInfo!.wearingItemId = badge.id
-        // 更新徽章列表中的佩戴状态
-        editInfo.value.badgeList = editInfo.value.badgeList.map((item) => ({
-          ...item,
-          wearing: item.id === badge.id ? IsYesEnum.YES : IsYesEnum.NO,
-          obtain: item.obtain // 保持原有的obtain状态
-        }))
-      }
-      // 确保在状态更新后再显示成功消息
-      nextTick(() => {
-        msg.success('佩戴成功')
-      })
-    } catch (_error) {
-      msg.error('佩戴失败，请稍后重试')
+    } catch (error) {
+      logger.error('[leftHook] Failed to save user info:', error)
+      msg.error?.('保存失败，请重试')
     }
   }
 
@@ -250,12 +220,10 @@ export const leftHook = () => {
     themeColor,
     openWindowsList,
     editInfo,
-    currentBadge,
     handleEditing,
     pageJumps,
     openContent,
     saveEditInfo,
-    toggleWarningBadge,
     updateCurrentUserCache,
     followOS
   }

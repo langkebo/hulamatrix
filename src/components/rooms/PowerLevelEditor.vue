@@ -628,7 +628,7 @@ onMounted(() => {
 .event-type {
   font-family: monospace;
   font-size: 13px;
-  background: #f5f5f5;
+  background: var(--hula-gray-100, #f5f5f5);
   padding: 2px 6px;
   border-radius: 4px;
 }

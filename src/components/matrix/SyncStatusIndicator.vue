@@ -54,7 +54,7 @@ const reconnectAttempts = computed(() => {
 })
 
 const reconnectInfo = computed(() => {
-  const max = (matrixClientService as any).maxReconnectAttempts || 5
+  const max = (matrixClientService as unknown as { maxReconnectAttempts?: number }).maxReconnectAttempts || 5
   return `${reconnectAttempts.value}/${max}`
 })
 

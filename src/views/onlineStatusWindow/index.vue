@@ -56,7 +56,7 @@ import type { UserState } from '@/services/types'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
-import { changeUserState } from '@/utils/ImRequestUtils'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 import { logger } from '@/utils/logger'
 
 const userStatusStore = useUserStatusStore()
@@ -91,8 +91,10 @@ watchEffect(() => {
  */
 const handleActive = async (item: UserState) => {
   try {
-    await changeUserState({ id: item.id })
+    // 使用 Matrix SDK 设置用户状态（存储在全局 account data）
+    await sessionSettingsService.setUserState(item.id)
 
+    // 更新本地状态
     userStatusStore.setStateId(item.id)
     if (userStore.userInfo) {
       const userInfoWithState = userStore.userInfo as typeof userStore.userInfo & { userStateId?: string }

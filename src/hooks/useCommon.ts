@@ -450,9 +450,34 @@ export const useCommon = () => {
       reply.value.imgCount = imageCount
     }
 
-    // todo: 暂时用http开头的图片判断，后续需要优化
-    if (content.startsWith('http')) {
-      // 再创建一个img标签节点，并设置src属性为base64编码的图片
+    /**
+     * Check if a URL is an image URL by examining:
+     * 1. URL extension (jpg, jpeg, png, gif, webp, svg, etc.)
+     * 2. Matrix media server URLs (mxc://) or proxied URLs
+     * 3. Common image URL patterns
+     */
+    const isImageUrl = (url: string): boolean => {
+      if (!url || typeof url !== 'string') return false
+
+      // Check for data URL images
+      if (url.startsWith('data:image/')) return true
+
+      // Check for common image file extensions
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico', '.avif']
+      const lowerUrl = url.toLowerCase()
+      if (imageExtensions.some((ext) => lowerUrl.includes(ext))) return true
+
+      // Check for Matrix media URLs (mxc://) or proxied media URLs
+      if (url.includes('mxc://') || url.includes('/_matrix/media/')) return true
+
+      // Check for common image hosting patterns
+      if (url.includes('imgur') || url.includes('image') || url.includes('photo')) return true
+
+      return false
+    }
+
+    if (isImageUrl(content)) {
+      // 创建一个img标签节点，并设置src属性
       contentBox = document.createElement('img')
       contentBox.src = content
       contentBox.style.cssText = `

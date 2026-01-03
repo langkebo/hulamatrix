@@ -3,9 +3,7 @@
   <div class="mobile-encryption-status" :class="statusClass">
     <!-- Status Icon -->
     <div class="status-icon" @click="showDetails = true">
-      <n-icon :size="iconSize">
-        <component :is="statusIcon" />
-      </n-icon>
+      <van-icon :name="statusIcon" :size="iconSize" />
       <div v-if="showPulse" class="pulse-ring"></div>
     </div>
 
@@ -18,121 +16,128 @@
     </div>
 
     <!-- Details Modal -->
-    <n-modal v-model:show="showDetails" preset="card" :style="{ width: '90%', maxWidth: '400px' }" title="加密状态详情">
-      <div class="encryption-details">
-        <!-- Status Summary -->
-        <div class="status-summary">
-          <n-icon :size="48" :color="statusColor">
-            <component :is="statusIcon" />
-          </n-icon>
-          <div class="summary-text">
-            <div class="summary-title">{{ statusTitle }}</div>
-            <div class="summary-desc">{{ statusDescription }}</div>
+    <van-popup
+      v-model:show="showDetails"
+      position="bottom"
+      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
+    >
+      <div class="encryption-details-popup">
+        <!-- Handle bar -->
+        <div class="handle-bar" @click="showDetails = false"></div>
+
+        <!-- Header -->
+        <div class="popup-header">
+          <span class="header-title">加密状态详情</span>
+          <van-icon name="cross" :size="20" @click="showDetails = false" />
+        </div>
+
+        <!-- Content -->
+        <div class="popup-content">
+          <div class="encryption-details">
+            <!-- Status Summary -->
+            <div class="status-summary">
+              <van-icon :name="statusIcon" :size="48" :color="statusColor" />
+              <div class="summary-text">
+                <div class="summary-title">{{ statusTitle }}</div>
+                <div class="summary-desc">{{ statusDescription }}</div>
+              </div>
+            </div>
+
+            <!-- Encryption Details List -->
+            <div class="encryption-list">
+              <div class="list-item">
+                <van-icon name="lock" :size="20" class="item-icon" />
+                <div class="detail-item">
+                  <span class="detail-label">端到端加密</span>
+                  <van-tag :type="encryptionStatus.enabled ? 'success' : 'danger'">
+                    {{ encryptionStatus.enabled ? '已启用' : '未启用' }}
+                  </van-tag>
+                </div>
+              </div>
+
+              <div class="list-item">
+                <van-icon name="key" :size="20" class="item-icon" />
+                <div class="detail-item">
+                  <span class="detail-label">交叉签名</span>
+                  <van-tag :type="encryptionStatus.crossSigningReady ? 'success' : 'warning'">
+                    {{ encryptionStatus.crossSigningReady ? '已设置' : '未设置' }}
+                  </van-tag>
+                </div>
+              </div>
+
+              <div class="list-item">
+                <van-icon name="records" :size="20" class="item-icon" />
+                <div class="detail-item">
+                  <span class="detail-label">安全存储</span>
+                  <van-tag :type="encryptionStatus.secretStorageReady ? 'success' : 'warning'">
+                    {{ encryptionStatus.secretStorageReady ? '已启用' : '未启用' }}
+                  </van-tag>
+                </div>
+              </div>
+
+              <div class="list-item">
+                <van-icon name="phone-o" :size="20" class="item-icon" />
+                <div class="detail-item">
+                  <span class="detail-label">已验证设备</span>
+                  <span class="detail-value">
+                    {{ encryptionStatus.verifiedDeviceCount }} / {{ encryptionStatus.deviceCount }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Warning Message -->
+            <div v-if="!encryptionStatus.crossSigningReady" class="alert-warning mt-3">
+              <van-icon name="warning-o" :size="18" />
+              <span>交叉签名未设置，建议设置以增强安全性</span>
+            </div>
+
+            <!-- Room-specific info -->
+            <div v-if="roomId && isRoomEncrypted" class="room-info mt-3">
+              <div class="alert-success">
+                <van-icon name="shield-o" :size="18" />
+                <span>此聊天已启用端到端加密</span>
+              </div>
+            </div>
+            <div v-else-if="roomId && !isRoomEncrypted" class="room-info mt-3">
+              <div class="alert-warning">
+                <van-icon name="shield-close" :size="18" />
+                <span>此聊天未加密</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons mt-4">
+              <van-button
+                v-if="!encryptionStatus.crossSigningReady"
+                type="primary"
+                block
+                @click="handleSetupCrossSigning"
+                class="mb-2"
+              >
+                <van-icon name="key" :size="18" />
+                设置交叉签名
+              </van-button>
+              <van-button block @click="handleViewDevices">
+                <van-icon name="phone-o" :size="18" />
+                管理设备
+              </van-button>
+            </div>
           </div>
         </div>
 
-        <!-- Encryption Details -->
-        <n-list bordered>
-          <n-list-item>
-            <template #prefix>
-              <n-icon :size="20"><Lock /></n-icon>
-            </template>
-            <div class="detail-item">
-              <span class="detail-label">端到端加密</span>
-              <n-tag :type="encryptionStatus.enabled ? 'success' : 'error'" size="small">
-                {{ encryptionStatus.enabled ? '已启用' : '未启用' }}
-              </n-tag>
-            </div>
-          </n-list-item>
-
-          <n-list-item>
-            <template #prefix>
-              <n-icon :size="20"><Key /></n-icon>
-            </template>
-            <div class="detail-item">
-              <span class="detail-label">交叉签名</span>
-              <n-tag :type="encryptionStatus.crossSigningReady ? 'success' : 'warning'" size="small">
-                {{ encryptionStatus.crossSigningReady ? '已设置' : '未设置' }}
-              </n-tag>
-            </div>
-          </n-list-item>
-
-          <n-list-item>
-            <template #prefix>
-              <n-icon :size="20"><Database /></n-icon>
-            </template>
-            <div class="detail-item">
-              <span class="detail-label">安全存储</span>
-              <n-tag :type="encryptionStatus.secretStorageReady ? 'success' : 'warning'" size="small">
-                {{ encryptionStatus.secretStorageReady ? '已启用' : '未启用' }}
-              </n-tag>
-            </div>
-          </n-list-item>
-
-          <n-list-item>
-            <template #prefix>
-              <n-icon :size="20"><DeviceMobile /></n-icon>
-            </template>
-            <div class="detail-item">
-              <span class="detail-label">已验证设备</span>
-              <span class="detail-value">
-                {{ encryptionStatus.verifiedDeviceCount }} / {{ encryptionStatus.deviceCount }}
-              </span>
-            </div>
-          </n-list-item>
-        </n-list>
-
-        <!-- Warning Message -->
-        <n-alert v-if="!encryptionStatus.crossSigningReady" type="warning" :show-icon="false" class="mt-3">
-          交叉签名未设置，建议设置以增强安全性
-        </n-alert>
-
-        <!-- Room-specific info -->
-        <div v-if="roomId && isRoomEncrypted" class="room-info mt-3">
-          <n-alert type="success" :show-icon="false">
-            <template #icon>
-              <n-icon><Shield /></n-icon>
-            </template>
-            此聊天已启用端到端加密
-          </n-alert>
+        <!-- Footer -->
+        <div class="popup-footer">
+          <van-button block @click="showDetails = false">关闭</van-button>
         </div>
-        <div v-else-if="roomId && !isRoomEncrypted" class="room-info mt-3">
-          <n-alert type="warning" :show-icon="false">
-            <template #icon>
-              <n-icon><ShieldOff /></n-icon>
-            </template>
-            此聊天未加密
-          </n-alert>
-        </div>
-
-        <!-- Action Buttons -->
-        <n-space vertical class="mt-4">
-          <n-button v-if="!encryptionStatus.crossSigningReady" type="primary" block @click="handleSetupCrossSigning">
-            <template #icon>
-              <n-icon><Key /></n-icon>
-            </template>
-            设置交叉签名
-          </n-button>
-          <n-button block @click="handleViewDevices">
-            <template #icon>
-              <n-icon><DeviceMobile /></n-icon>
-            </template>
-            管理设备
-          </n-button>
-        </n-space>
       </div>
-
-      <template #footer>
-        <n-button block @click="showDetails = false">关闭</n-button>
-      </template>
-    </n-modal>
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { NIcon, NModal, NTag, NList, NListItem, NAlert, NSpace, NButton, useMessage } from 'naive-ui'
-import { Lock, LockOpen, Shield, ShieldOff, Key, Database, DeviceMobile, AlertTriangle, Check } from '@vicons/tabler'
+import { useMessage } from '@/utils/vant-adapter'
 import { e2eeService, type DeviceInfo } from '@/services/e2eeService'
 import { useHaptic } from '@/composables/useMobileGestures'
 import { useRouter } from 'vue-router'
@@ -181,12 +186,27 @@ const iconSize = computed(() => {
 })
 
 const statusIcon = computed(() => {
-  if (!encryptionStatus.value.enabled) return LockOpen
+  if (!encryptionStatus.value.enabled) return 'lock-open'
   if (encryptionStatus.value.crossSigningReady && encryptionStatus.value.secretStorageReady) {
-    return Shield
+    return 'shield'
   }
-  return ShieldOff
+  return 'shield-close'
 })
+
+const getIconName = (iconType: string): string => {
+  const iconMap: Record<string, string> = {
+    Lock: 'lock',
+    LockOpen: 'lock-open',
+    Shield: 'shield-o',
+    ShieldOff: 'shield-close',
+    Key: 'key',
+    Database: 'records',
+    DeviceMobile: 'phone-o',
+    AlertTriangle: 'warning-o',
+    Check: 'success'
+  }
+  return iconMap[iconType] || 'circle'
+}
 
 const statusClass = computed(() => {
   if (!encryptionStatus.value.enabled) return 'status-disabled'
@@ -383,6 +403,65 @@ defineExpose({
   color: #f0a020;
 }
 
+.encryption-details-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: #d0d0d0;
+  }
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .van-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+}
+
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.popup-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
 .encryption-details {
   .status-summary {
     display: flex;
@@ -410,41 +489,114 @@ defineExpose({
     }
   }
 
-  .detail-item {
+  .encryption-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+
+  .list-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
     gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg-color);
+    border-radius: 8px;
 
-    .detail-label {
-      font-size: 14px;
-      color: var(--text-color-1);
+    .item-icon {
+      color: var(--text-color-2);
+      flex-shrink: 0;
     }
 
-    .detail-value {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-color-1);
+    .detail-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 12px;
+
+      .detail-label {
+        font-size: 14px;
+        color: var(--text-color-1);
+      }
+
+      .detail-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-color-1);
+      }
+    }
+  }
+
+  .alert-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fff7e6;
+    border: 1px solid #ffd591;
+    border-radius: 8px;
+    color: #d46b08;
+    font-size: 13px;
+
+    .van-icon {
+      color: #fa8c16;
+      flex-shrink: 0;
+    }
+  }
+
+  .alert-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 8px;
+    color: #389e0d;
+    font-size: 13px;
+
+    .van-icon {
+      color: #52c41a;
+      flex-shrink: 0;
     }
   }
 
   .room-info {
-    .n-alert {
-      :deep(.n-alert__icon) {
-        align-self: flex-start;
-        margin-top: 2px;
-      }
+    margin-top: 12px;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .van-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+  }
+
+  .mt-3 {
+    margin-top: 12px;
+  }
+
+  .mt-4 {
+    margin-top: 16px;
+  }
+
+  .mb-2 {
+    margin-bottom: 8px;
   }
 }
 
 // Safe area for mobile
 @supports (padding: env(safe-area-inset-bottom)) {
-  .encryption-details {
-    .n-space {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+  .popup-footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }
 </style>

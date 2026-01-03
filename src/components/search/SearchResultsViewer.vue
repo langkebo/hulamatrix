@@ -537,7 +537,7 @@ watch(
   flex-direction: column;
   gap: 8px;
   padding-left: 12px;
-  border-left: 2px solid #e0e0e0;
+  border-left: 2px solid var(--hula-gray-200, #e0e0e0);
 }
 
 .context-message {
@@ -559,7 +559,7 @@ watch(
 
 .main-message {
   padding: 16px;
-  background: #f5f5f5;
+  background: var(--hula-gray-100, #f5f5f5);
   border-radius: 8px;
 }
 
@@ -583,7 +583,7 @@ watch(
   display: flex;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--hula-gray-200, #e0e0e0);
 }
 
 .empty-icon {
@@ -616,7 +616,7 @@ watch(
   }
 
   .main-message {
-    background: #2a2a2a;
+    background: var(--hula-gray-800, #2a2a2a);
   }
 
   .detail-actions {

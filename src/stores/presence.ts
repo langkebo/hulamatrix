@@ -21,12 +21,6 @@ interface PresenceContent {
   last_active_ago?: number
 }
 
-/** Presence 数据结构（包含时间戳） */
-interface PresenceData {
-  state: PresenceState
-  lastActive?: number
-}
-
 /** Matrix 房间成员事件接口 */
 interface MatrixMemberEvent {
   userId?: string

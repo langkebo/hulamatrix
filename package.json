@@ -127,6 +127,7 @@
     "pinia-shared-state": "^1.0.1",
     "seemly": "^0.3.10",
     "tauri-plugin-mic-recorder-api": "^2.0.0",
+    "vant": "^4.9.22",
     "vue": "^3.5.25",
     "vue-cropper": "^0.6.5",
     "vue-i18n": "^11.1.12",

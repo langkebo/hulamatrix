@@ -14,11 +14,11 @@
     <!-- Swipe Actions Background -->
     <div class="swipe-actions">
       <div class="swipe-action reply" :style="{ opacity: isSwiped ? 1 : 0 }">
-        <n-icon :size="24"><Repeat /></n-icon>
+        <van-icon name="replay" :size="24" />
         <span>回复</span>
       </div>
       <div class="swipe-action delete" :style="{ opacity: isConfirmed ? 1 : 0 }">
-        <n-icon :size="24"><Trash /></n-icon>
+        <van-icon name="delete" :size="24" />
         <span>确认删除</span>
       </div>
     </div>
@@ -33,11 +33,13 @@
     >
       <!-- Sender Avatar (not for own messages) -->
       <div v-if="!isOwn" class="message-avatar">
-        <n-avatar :src="avatarUrl" :size="36" round>
-          <template #fallback>
-            <span>{{ senderName?.charAt(0) || '?' }}</span>
+        <van-image :src="avatarUrl" width="36" height="36" round>
+          <template #error>
+            <div class="avatar-fallback">
+              <span>{{ senderName?.charAt(0) || '?' }}</span>
+            </div>
           </template>
-        </n-avatar>
+        </van-image>
       </div>
 
       <!-- Message Bubble -->
@@ -79,15 +81,9 @@
         <div class="message-info">
           <span v-if="!isOwn" class="sender-name">{{ senderName }}</span>
           <span class="message-time">{{ formattedTime }}</span>
-          <n-icon v-if="status === 'sent'" :size="14" class="status-icon">
-            <Check />
-          </n-icon>
-          <n-icon v-else-if="status === 'delivered'" :size="14" class="status-icon delivered">
-            <Checks />
-          </n-icon>
-          <n-icon v-else-if="status === 'failed'" :size="14" class="status-icon failed">
-            <AlertCircle />
-          </n-icon>
+          <van-icon v-if="status === 'sent'" name="success" :size="14" class="status-icon" />
+          <van-icon v-else-if="status === 'delivered'" name="success" :size="14" class="status-icon delivered" />
+          <van-icon v-else-if="status === 'failed'" name="warning-o" :size="14" class="status-icon failed" />
         </div>
 
         <!-- Self-Destruct Message Indicator -->
@@ -104,34 +100,31 @@
         <!-- Double Tap Heart Animation -->
         <transition name="heart-burst">
           <div v-if="showHeartAnimation" class="heart-animation">
-            <n-icon :size="60" color="#ff4757">
-              <Heart />
-            </n-icon>
+            <van-icon name="like" :size="60" color="#ff4757" />
           </div>
         </transition>
       </div>
     </div>
 
     <!-- Quick Action Menu (Long Press) -->
-    <n-modal
+    <van-popup
       v-model:show="showActionMenu"
-      :show-icon="false"
-      :mask-closable="true"
-      preset="card"
-      :style="{
-        width: '90%',
-        maxWidth: '320px',
-        position: 'fixed',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        margin: '0',
-        borderRadius: '16px'
-      }"
+      position="bottom"
+      :style="{ height: '60%', borderRadius: '16px 16px 0 0' }"
     >
       <div class="action-menu">
+        <!-- Handle bar -->
+        <div class="handle-bar" @click="showActionMenu = false"></div>
+
+        <!-- Header -->
         <div class="action-menu-header">
-          <n-avatar :src="avatarUrl" :size="48" round />
+          <van-image :src="avatarUrl" width="48" height="48" round>
+            <template #error>
+              <div class="avatar-fallback">
+                <span>{{ senderName?.charAt(0) || '?' }}</span>
+              </div>
+            </template>
+          </van-image>
           <div class="header-text">
             <div class="header-name">{{ senderName }}</div>
             <div class="header-time">{{ formattedTime }}</div>
@@ -141,59 +134,59 @@
         <div class="action-grid">
           <div class="action-item" @click="handleAction('reply')">
             <div class="action-icon reply">
-              <n-icon :size="24"><Repeat /></n-icon>
+              <van-icon name="replay" :size="24" />
             </div>
             <span>回复</span>
           </div>
           <div class="action-item" @click="handleAction('react')">
             <div class="action-icon react">
-              <n-icon :size="24"><MoodHappy /></n-icon>
+              <van-icon name="smile-o" :size="24" />
             </div>
             <span>反应</span>
           </div>
           <div class="action-item" v-if="isOwn" @click="handleAction('edit')">
             <div class="action-icon edit">
-              <n-icon :size="24"><Edit /></n-icon>
+              <van-icon name="edit" :size="24" />
             </div>
             <span>编辑</span>
           </div>
           <div class="action-item" @click="handleAction('forward')">
             <div class="action-icon forward">
-              <n-icon :size="24"><Share /></n-icon>
+              <van-icon name="share" :size="24" />
             </div>
             <span>转发</span>
           </div>
           <div class="action-item" @click="handleAction('copy')">
             <div class="action-icon copy">
-              <n-icon :size="24"><Copy /></n-icon>
+              <van-icon name="description" :size="24" />
             </div>
             <span>复制</span>
           </div>
           <div class="action-item" @click="handleAction('pin')">
             <div class="action-icon pin">
-              <n-icon :size="24"><Pin /></n-icon>
+              <van-icon name="location-o" :size="24" />
             </div>
             <span>{{ isPinned ? '取消置顶' : '置顶' }}</span>
           </div>
           <div class="action-item" @click="handleAction('select')">
             <div class="action-icon select">
-              <n-icon :size="24"><BoxSelect /></n-icon>
+              <van-icon name="checked" :size="24" />
             </div>
             <span>多选</span>
           </div>
           <div class="action-item danger" @click="handleAction('delete')">
             <div class="action-icon delete">
-              <n-icon :size="24"><Trash /></n-icon>
+              <van-icon name="delete" :size="24" />
             </div>
             <span>删除</span>
           </div>
         </div>
 
         <div class="action-menu-footer">
-          <n-button block @click="showActionMenu = false">取消</n-button>
+          <van-button block @click="showActionMenu = false">取消</van-button>
         </div>
       </div>
-    </n-modal>
+    </van-popup>
 
     <!-- Reaction Picker -->
     <div v-if="showReactionPicker" class="reaction-picker">
@@ -213,21 +206,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { NAvatar, NIcon, NModal, NButton } from 'naive-ui'
-import {
-  Repeat,
-  Trash,
-  Edit,
-  Share,
-  Copy,
-  Pin,
-  Select,
-  Check,
-  Checks,
-  AlertCircle,
-  MoodHappy,
-  Heart
-} from '@vicons/tabler'
 import { useHaptic } from '@/composables/useMobileGestures'
 import MobileSelfDestructIndicator from './MobileSelfDestructIndicator.vue'
 
@@ -533,6 +511,19 @@ onMounted(() => {
 
 .message-avatar {
   flex-shrink: 0;
+
+  .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+  }
 }
 
 .message-bubble {
@@ -715,11 +706,40 @@ onMounted(() => {
 
 // Action menu
 .action-menu {
+  .handle-bar {
+    width: 40px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 8px auto;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:active {
+      background: #d0d0d0;
+    }
+  }
+
   .action-menu-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .avatar-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: 600;
+    }
 
     .header-text {
       .header-name {
@@ -738,7 +758,7 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 16px;
+    padding: 16px;
 
     .action-item {
       display: flex;
@@ -785,6 +805,12 @@ onMounted(() => {
         color: var(--text-color-2);
       }
     }
+  }
+
+  .action-menu-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+    flex-shrink: 0;
   }
 }
 

@@ -118,7 +118,6 @@ import { useFriendsStore } from '@/stores/friends'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useGroupStore } from '@/stores/group'
-import { getGroupInfo } from '@/utils/ImRequestUtils'
 import type { NoticeItem } from '@/services/types'
 import { logger } from '@/utils/logger'
 
@@ -176,8 +175,13 @@ const getGroupDetail = async (roomId: string) => {
   // 开始加载
   loadingGroups.value.add(roomId)
   try {
-    const groupInfo = (await getGroupInfo(roomId)) as { name: string; avatar?: string } | null
-    if (groupInfo) {
+    // 使用 groupStore 获取群组信息
+    const groupDetail = await groupStore.fetchGroupDetailSafely(roomId)
+    if (groupDetail) {
+      const groupInfo = {
+        name: groupDetail.groupName || '',
+        avatar: groupDetail.avatar || ''
+      }
       groupDetailsMap.value[roomId] = groupInfo
       return groupInfo
     }

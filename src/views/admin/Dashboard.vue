@@ -49,7 +49,7 @@
         <n-card :bordered="false" class="stat-card">
           <n-statistic :label="t('admin.stats.media_storage')" :value="formatBytes(stats.mediaStorage)">
             <template #prefix>
-              <n-icon size="24" color="#d03050"><Database /></n-icon>
+              <n-icon size="24" color="var(--hula-error, #d03050)"><Database /></n-icon>
             </template>
           </n-statistic>
         </n-card>

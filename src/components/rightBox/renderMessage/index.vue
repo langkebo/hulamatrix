@@ -96,30 +96,11 @@
                 align="center"
                 v-if="isGroup"
                 :style="isMe ? 'flex-direction: row-reverse' : ''">
-                <!-- 用户徽章 -->
-                <n-popover
-                  v-if="
-                    globalStore.currentSessionRoomId === '1' &&
-                    cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.img
-                  "
-                  trigger="hover">
-                  <template #trigger>
-                    <n-avatar
-                      class="select-none"
-                      :size="18"
-                      round
-                      :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-                      :src="cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.img || ''" />
-                  </template>
-                  <span>
-                    {{ cachedStore.badgeById(groupStore.getUserInfo(fromUser.uid)?.wearingItemId)?.describe }}
-                  </span>
-                </n-popover>
                 <!-- 用户名 -->
                 <span
                   :class="[
                     'text-12px select-none color-#909090 inline-block align-top',
-                    !isMe ? 'cursor-pointer hover:color-#13987f transition-colors' : ''
+                    !isMe ? 'cursor-pointer hover:text-brand transition-colors' : ''
                   ]"
                   @click.stop="handleMentionUser">
                   {{ senderDisplayName }}

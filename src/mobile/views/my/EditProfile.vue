@@ -100,7 +100,8 @@ import { useGroupStore } from '@/stores/group'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { ModifyUserInfo } from '@/utils/ImRequestUtils'
+import { userProfileService } from '@/services/userProfileService'
+import { logger } from '@/utils/logger'
 
 import { msg } from '@/utils/SafeUI'
 const region = ref('')
@@ -174,7 +175,7 @@ const toEditBio = () => {
   router.push('/mobile/mobileMy/editBio')
 }
 
-const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: string) => {
+const updateCurrentUserCache = (key: 'name' | 'avatar', value: string) => {
   const uid = userStore.userInfo?.uid
   if (uid) {
     const currentUser = groupStore.getUserInfo(uid)
@@ -184,7 +185,7 @@ const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value:
   }
 }
 
-const saveEditInfo = () => {
+const saveEditInfo = async () => {
   if (!localUserInfo.value.name || localUserInfo.value.name.trim() === '') {
     msg.error('昵称不能为空')
     return
@@ -194,26 +195,28 @@ const saveEditInfo = () => {
   //   return
   // }
 
-  ModifyUserInfo({
-    name: localUserInfo.value.name!,
-    sex: localUserInfo.value.sex!,
-    phone: localUserInfo.value.phone ?? '',
-    avatar: localUserInfo.value.avatar ?? '',
-    resume: localUserInfo.value.resume ?? '',
-    modifyNameChance: localUserInfo.value.modifyNameChance!
-  }).then(() => {
+  try {
+    // 使用 Matrix SDK 更新用户昵称
+    await userProfileService.setDisplayName(localUserInfo.value.name!)
+
     // 更新本地缓存的用户信息
     if (userStore.userInfo) {
-      userStore.userInfo.name = localUserInfo.value.name ?? userStore.userInfo.name
+      userStore.userInfo.name = localUserInfo.value.name!
       userStore.userInfo.sex = localUserInfo.value.sex ?? userStore.userInfo.sex
       userStore.userInfo.phone = localUserInfo.value.phone ?? userStore.userInfo.phone
+      userStore.userInfo.resume = localUserInfo.value.resume ?? userStore.userInfo.resume
       loginHistoriesStore.updateLoginHistory(userStore.userInfo as UserInfoType) // 更新登录历史记录
-      updateCurrentUserCache('name', localUserInfo.value.name ?? '') // 更新缓存里面的用户信息
+      updateCurrentUserCache('name', localUserInfo.value.name!) // 更新缓存里面的用户信息
     }
-    if (!localUserInfo.value.modifyNameChance) return
-    localUserInfo.value.modifyNameChance -= 1
+
+    if (localUserInfo.value.modifyNameChance) {
+      localUserInfo.value.modifyNameChance -= 1
+    }
     msg.success('修改成功')
-  })
+  } catch (error) {
+    logger.error('修改用户信息失败:', error)
+    msg.error('修改失败，请重试')
+  }
 }
 
 onMounted(() => {

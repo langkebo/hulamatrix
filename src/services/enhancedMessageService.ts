@@ -5,7 +5,6 @@ import { logger } from '@/utils/logger'
 import { MsgEnum, MessageStatusEnum } from '@/enums'
 import type { MsgType, MessageBody } from '@/services/types'
 import { generateMessageId, formatMessageContent } from '@/utils/messageUtils'
-import { webSocketService } from '@/services/webSocketService'
 import { mediaService } from './mediaService'
 import { messageSyncService } from './messageSyncService'
 
@@ -477,53 +476,11 @@ export class EnhancedMessageService {
 
   /**
    * 通过WebSocket发送消息
+   * @deprecated WebSocket 支持已移除，现在完全使用 Matrix SDK
    */
-  private async sendViaWebSocket(roomId: string, msg: SendMessageParams): Promise<MsgType> {
-    try {
-      // 检查WebSocket服务是否可用
-      if (!webSocketService?.isConnected()) {
-        throw new Error('WebSocket未连接')
-      }
-
-      // 构建WebSocket消息格式
-      const wsMessage = {
-        type: 'message',
-        roomId,
-        payload: {
-          type: msg.type,
-          body: msg.body,
-          timestamp: Date.now()
-        }
-      }
-
-      // 发送消息
-      await webSocketService.send(wsMessage)
-
-      // 构建返回的消息对象
-      const response: MsgType = {
-        id: generateMessageId(),
-        roomId: roomId,
-        type: msg.type,
-        body: (msg.body ?? {}) as MessageBody,
-        sendTime: Date.now(),
-        messageMarks: {},
-        status: MessageStatusEnum.SUCCESS
-      }
-
-      logger.info('[EnhancedMessageService] WebSocket消息发送成功', {
-        roomId,
-        type: msg.type
-      })
-
-      return response
-    } catch (error) {
-      logger.error('[EnhancedMessageService] WebSocket消息发送失败:', {
-        roomId,
-        type: msg.type,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
+  private async sendViaWebSocket(_roomId: string, _msg: SendMessageParams): Promise<MsgType> {
+    // WebSocket 已移除，抛出错误引导使用 Matrix
+    throw new Error('WebSocket support has been removed. Please use Matrix SDK instead.')
   }
 
   /**

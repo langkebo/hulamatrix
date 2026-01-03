@@ -76,7 +76,7 @@ import { logger } from '@/utils/logger'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
-import { getAnnouncementDetail, editAnnouncement, pushAnnouncement } from '@/utils/ImRequestUtils'
+import { getAnnouncementDetail, editAnnouncement, pushAnnouncement } from '@/services/matrixAnnouncementService'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 import { msg } from '@/utils/SafeUI'

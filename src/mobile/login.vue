@@ -29,7 +29,7 @@
           <div
             style="border-radius: 24px 42px 4px 24px"
             :class="[
-              'z-10 absolute bottom--4px h-6px w-34px bg-#13987f transition-all duration-300 ease-out',
+              'z-10 absolute bottom--4px h-6px w-34px brand-bg transition-all duration-300 ease-out',
               activeTab === 'login' ? 'left-[33px]' : 'left-[133px]'
             ]"></div>
         </div>
@@ -41,7 +41,7 @@
       <!-- 登录表单 -->
       <n-flex v-if="activeTab === 'login'" class="text-center w-80%" vertical :size="16">
         <n-flex justify="center" class="mt--10px">
-          <n-button text color="#13987f" @click="toggleServerInput()">自定义服务器</n-button>
+          <n-button text :style="{ color: 'var(--hula-accent, #13987f)' }" @click="toggleServerInput()">自定义服务器</n-button>
         </n-flex>
         <n-collapse-transition :show="matrixStore.serverInputVisible">
           <n-flex vertical :size="8">
@@ -123,7 +123,7 @@
           clearable />
 
         <n-flex justify="flex-end" :size="6">
-          <n-button text color="#13987f" @click="handleForgetPassword">忘记密码</n-button>
+          <n-button text :style="{ color: 'var(--hula-accent, #13987f)' }" @click="handleForgetPassword">忘记密码</n-button>
         </n-flex>
 
         <n-button
@@ -141,9 +141,9 @@
           <n-checkbox v-model:checked="protocol" />
           <div class="text-12px color-#909090 cursor-default lh-14px">
             <span>已阅读并同意</span>
-            <span @click.stop="toServiceAgreement" class="color-#13987f cursor-pointer">服务协议</span>
+            <span @click.stop="toServiceAgreement" class="brand-link">服务协议</span>
             <span>和</span>
-            <span @click.stop="toPrivacyAgreement" class="color-#13987f cursor-pointer">HuLa隐私保护指引</span>
+            <span @click.stop="toPrivacyAgreement" class="brand-link">HuLa隐私保护指引</span>
           </div>
         </n-flex>
       </n-flex>
@@ -213,9 +213,9 @@
           <n-checkbox v-model:checked="registerProtocol" />
           <div class="text-12px color-#909090 cursor-default lh-14px">
             <span>已阅读并同意</span>
-            <span @click.stop="toServiceAgreement" class="color-#13987f cursor-pointer">服务协议</span>
+            <span @click.stop="toServiceAgreement" class="brand-link">服务协议</span>
             <span>和</span>
-            <span @click.stop="toPrivacyAgreement" class="color-#13987f cursor-pointer">HuLa隐私保护指引</span>
+            <span @click.stop="toPrivacyAgreement" class="brand-link">HuLa隐私保护指引</span>
           </div>
         </n-flex>
 
@@ -243,7 +243,6 @@ import type { RegisterUserReq, UserInfoType } from '@/services/types'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useMobileStore } from '@/stores/mobile'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { register } from '@/utils/ImRequestUtils'
 import { isAndroid, isIOS } from '@/utils/PlatformConstants'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import { useMitt } from '../hooks/useMitt'
@@ -306,7 +305,7 @@ const sendCodeCountdown = ref(0)
 const MOBILE_EMAIL_TIMER_ID = 'mobile_register_email_timer'
 const timerWorker = new Worker(new URL('@/workers/timer.worker.ts', import.meta.url))
 const { normalLogin, loading, loginText, loginDisabled, info: userInfo } = useLogin()
-const { toggleServerInput, applyCustomServer, store: matrixStore } = useMatrixAuth()
+const { toggleServerInput, applyCustomServer, store: matrixStore, registerMatrix } = useMatrixAuth()
 const customServer = ref('')
 const applyServer = async () => {
   await applyCustomServer(customServer.value)
@@ -462,15 +461,53 @@ const handleRegisterComplete = async () => {
     const avatarId = avatarNum.toString().padStart(3, '0')
     registerInfo.value.avatar = avatarId
 
-    // 注册 - 只传递API需要的字段
-    const { ...apiRegisterInfo } = registerInfo.value
-    await register(apiRegisterInfo)
+    // 使用 Matrix SDK 注册
+    const username = registerInfo.value.nickName || registerInfo.value.email
+    const password = registerInfo.value.password
+
+    if (!username || !password) {
+      msg.error('用户名和密码不能为空')
+      return
+    }
+
+    // 调用 Matrix SDK 注册
+    const registerResult = await registerMatrix(username, password)
+
+    if (!registerResult) {
+      throw new Error('注册失败，未返回结果')
+    }
+
     msg.success('注册成功')
-    // 自动登录并跳转主页面
-    userInfo.value.account = registerInfo.value.nickName || registerInfo.value.email
-    userInfo.value.password = registerInfo.value.password
-    await normalLogin('MOBILE', true, false)
-    router.push('/mobile/message')
+
+    // 注册成功后设置用户信息
+    const token = registerResult.access_token || registerResult.accessToken || ''
+    const uid = registerResult.user_id || registerResult.userId || ''
+
+    if (token && uid) {
+      // 设置认证信息
+      const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
+      const matrixAuthStore = useMatrixAuthStore()
+      matrixAuthStore.setAuth(token, uid)
+
+      // 设置用户信息到 userStore
+      userInfo.value.uid = uid
+      userInfo.value.account = username
+      userInfo.value.name = registerInfo.value.nickName || username
+      userInfo.value.password = password
+
+      // 保存到登录历史
+      loginHistoriesStore.addLoginHistory({
+        uid,
+        account: username,
+        name: registerInfo.value.nickName || username,
+        avatar: registerInfo.value.avatar || '',
+        password
+      } as UserInfoType)
+
+      router.push('/mobile/message')
+    } else {
+      throw new Error('注册后未返回 token 或 user_id')
+    }
   } catch (error) {
     // 处理注册失败
     const errorMsg = error instanceof Error ? error.message : String(error)
@@ -630,5 +667,24 @@ onUnmounted(() => {
 /* 确保按钮完全居中 */
 .gradient-button {
   text-align: center;
+}
+
+/* HuLa 品牌色链接 */
+.brand-link {
+  color: var(--hula-accent, #13987f);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--hula-accent-hover, #0f7d69);
+  }
+
+  &:active {
+    color: var(--hula-accent-active, #0c6354);
+  }
+}
+
+/* HuLa 品牌色背景 */
+.brand-bg {
+  background: var(--hula-accent, #13987f);
 }
 </style>

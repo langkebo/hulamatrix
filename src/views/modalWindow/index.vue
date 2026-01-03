@@ -29,7 +29,7 @@
         :disabled-options="disabledOptions" />
 
       <n-flex align="center" justify="end" class="p-16px">
-        <n-button color="#13987f" @click="handleInvite">确定</n-button>
+        <n-button :color="'var(--hula-accent, #13987f)'" @click="handleInvite">确定</n-button>
         <n-button secondary @click="handleClose">取消</n-button>
       </n-flex>
     </div>
@@ -42,8 +42,6 @@ import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import { getDisabledOptions, getFilteredOptions, renderLabel, renderSourceList } from '@/layout/center/model'
 import { useGroupStore } from '@/stores/group'
-import { inviteGroupMember } from '@/utils/ImRequestUtils'
-import { flags } from '@/utils/envFlags'
 import { sdkInviteToRoom } from '@/services/rooms'
 
 import { msg } from '@/utils/SafeUI'
@@ -71,15 +69,8 @@ const handleInvite = async () => {
   if (selectedValue.value.length < 1) return
 
   try {
-    if (flags.matrixEnabled) {
-      await sdkInviteToRoom(roomId.value, selectedValue.value)
-    } else {
-      // 调用邀请群成员API
-      await inviteGroupMember({
-        roomId: roomId.value,
-        uidList: selectedValue.value
-      })
-    }
+    // 使用 Matrix SDK 邀请用户加入房间
+    await sdkInviteToRoom(roomId.value, selectedValue.value)
 
     msg.success('邀请成功')
     setTimeout(() => {

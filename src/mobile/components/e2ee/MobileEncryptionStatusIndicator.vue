@@ -3,160 +3,191 @@
   <div class="mobile-encryption-status" :class="statusClass">
     <!-- Compact Mode (Default) -->
     <div v-if="compact" class="status-compact" @click="showDetail = true">
-      <n-icon :size="iconSize" :color="iconColor">
-        <component :is="statusIcon" />
-      </n-icon>
+      <van-icon :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')" :size="iconSize" :color="iconColor" />
       <span v-if="showLabel" class="status-label">{{ statusText }}</span>
     </div>
 
     <!-- Full Mode -->
     <div v-else class="status-full">
       <div class="status-header" @click="showDetail = true">
-        <n-icon :size="20" :color="iconColor">
-          <component :is="statusIcon" />
-        </n-icon>
+        <van-icon :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')" :size="20" :color="iconColor" />
         <div class="status-info">
           <span class="status-title">{{ statusTitle }}</span>
           <span class="status-desc">{{ statusDesc }}</span>
         </div>
-        <n-icon :size="16" :color="iconColor">
-          <ChevronRight />
-        </n-icon>
+        <van-icon name="arrow" :size="16" :color="iconColor" />
       </div>
 
       <!-- Trust Level Badge -->
       <div v-if="isEncrypted && trustLevel" class="trust-badge" :class="trustClass">
-        <n-icon :size="14">
-          <component :is="trustIcon" />
-        </n-icon>
+        <van-icon :name="getVantIconName(trustIcon === 'ShieldCheck' ? 'ShieldCheck' : trustIcon === 'Shield' ? 'Shield' : 'AlertTriangle')" :size="14" />
         <span>{{ trustLevelText }}</span>
       </div>
 
       <!-- Verified Devices Count -->
       <div v-if="isEncrypted && verifiedCount > 0" class="verified-count">
-        <n-icon :size="14" color="#18a058">
-          <ShieldCheck />
-        </n-icon>
+        <van-icon name="success" :size="14" color="#18a058" />
         <span>{{ verifiedCount }}/{{ totalDevices }} 个设备已验证</span>
       </div>
 
       <!-- Warning for Unverified Devices -->
       <div v-if="isEncrypted && unverifiedCount > 0" class="warning-badge">
-        <n-icon :size="14" color="#f0a020">
-          <AlertTriangle />
-        </n-icon>
+        <van-icon name="warning-o" :size="14" color="#f0a020" />
         <span>{{ unverifiedCount }} 个设备未验证</span>
       </div>
     </div>
 
     <!-- Detail Modal -->
-    <n-modal
-      v-model:show="showDetail"
-      preset="card"
-      :style="{ maxWidth: '400px' }"
-      :title="isEncrypted ? '端到端加密详情' : '房间未加密'"
+    <van-popup
+      :show="showDetail"
+      position="center"
+      :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
+      :close-on-click-overlay="true"
+      @update:show="showDetail = $event"
     >
-      <!-- Encryption Status -->
-      <div class="detail-section">
-        <div class="detail-item">
-          <div class="item-icon" :class="statusClass">
-            <n-icon :size="32" :color="iconColor">
-              <component :is="statusIcon" />
-            </n-icon>
-          </div>
-          <div class="item-content">
-            <div class="item-title">{{ statusTitle }}</div>
-            <div class="item-desc">{{ statusDesc }}</div>
-          </div>
+      <div class="detail-modal">
+        <!-- Header -->
+        <div class="detail-modal-header">
+          <span class="header-title">{{ isEncrypted ? '端到端加密详情' : '房间未加密' }}</span>
+          <van-icon name="cross" :size="18" @click="showDetail = false" />
         </div>
-      </div>
 
-      <!-- Encryption Info -->
-      <div v-if="isEncrypted" class="detail-section">
-        <div class="section-title">加密信息</div>
-        <div class="info-list">
-          <div class="info-item">
-            <span class="info-label">算法</span>
-            <span class="info-value">{{ algorithm || 'm.megolm.v1.aes-sha2' }}</span>
-          </div>
-          <div v-if="trustLevel" class="info-item">
-            <span class="info-label">信任级别</span>
-            <span class="info-value" :class="trustClass">{{ trustLevelText }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Device List -->
-      <div v-if="isEncrypted && devices.length > 0" class="detail-section">
-        <div class="section-title">设备列表</div>
-        <div class="device-list">
-          <div
-            v-for="device in devices"
-            :key="device.deviceId"
-            class="device-item"
-          >
-            <div class="device-info">
-              <n-avatar :size="32" round>
-                {{ device.displayName?.[0] || '?' }}
-              </n-avatar>
-              <div class="device-details">
-                <div class="device-name">{{ device.displayName || '未知设备' }}</div>
-                <div class="device-id">{{ formatDeviceId(device.deviceId) }}</div>
+        <!-- Scrollable Content -->
+        <div class="detail-modal-content">
+          <!-- Encryption Status -->
+          <div class="detail-section">
+            <div class="detail-item">
+              <div class="item-icon" :class="statusClass">
+                <van-icon
+                  :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
+                  :size="32"
+                  :color="iconColor"
+                />
+              </div>
+              <div class="item-content">
+                <div class="item-title">{{ statusTitle }}</div>
+                <div class="item-desc">{{ statusDesc }}</div>
               </div>
             </div>
-            <div class="device-status" :class="device.verified ? 'verified' : 'unverified'">
-              <n-icon :size="16">
-                <component :is="device.verified ? 'ShieldCheck' : 'AlertTriangle'" />
-              </n-icon>
-              <span>{{ device.verified ? '已验证' : '未验证' }}</span>
+          </div>
+
+          <!-- Encryption Info -->
+          <div v-if="isEncrypted" class="detail-section">
+            <div class="section-title">加密信息</div>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-label">算法</span>
+                <span class="info-value">{{ algorithm || 'm.megolm.v1.aes-sha2' }}</span>
+              </div>
+              <div v-if="trustLevel" class="info-item">
+                <span class="info-label">信任级别</span>
+                <span class="info-value" :class="trustClass">{{ trustLevelText }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Device List -->
+          <div v-if="isEncrypted && devices.length > 0" class="detail-section">
+            <div class="section-title">设备列表</div>
+            <div class="device-list">
+              <div
+                v-for="device in devices"
+                :key="device.deviceId"
+                class="device-item"
+              >
+                <div class="device-info">
+                  <van-image
+                    :width="32"
+                    :height="32"
+                    round
+                    class="device-avatar"
+                  >
+                    <template #error>
+                      <div class="avatar-fallback">
+                        {{ device.displayName?.[0] || '?' }}
+                      </div>
+                    </template>
+                  </van-image>
+                  <div class="device-details">
+                    <div class="device-name">{{ device.displayName || '未知设备' }}</div>
+                    <div class="device-id">{{ formatDeviceId(device.deviceId) }}</div>
+                  </div>
+                </div>
+                <div class="device-status" :class="device.verified ? 'verified' : 'unverified'">
+                  <van-icon
+                    :name="getVantIconName(device.verified ? 'ShieldCheck' : 'AlertTriangle')"
+                    :size="16"
+                  />
+                  <span>{{ device.verified ? '已验证' : '未验证' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning for Unencrypted Room -->
+          <div v-if="!isEncrypted" class="unencrypted-warning">
+            <div class="alert-warning">
+              <van-icon name="warning-o" :size="18" />
+              <span>此房间未启用端到端加密。消息可能会被服务器管理员查看。</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Warning for Unencrypted Room -->
-      <div v-if="!isEncrypted" class="unencrypted-warning">
-        <n-alert type="warning">
-          <template #icon>
-            <n-icon><AlertTriangle /></n-icon>
-          </template>
-          此房间未启用端到端加密。消息可能会被服务器管理员查看。
-        </n-alert>
+        <!-- Actions Footer -->
+        <div class="detail-modal-footer">
+          <div v-if="isEncrypted" class="action-buttons">
+            <van-button
+              type="primary"
+              size="small"
+              @click="handleVerifyDevices"
+              icon="shield-o"
+            >
+              验证设备
+            </van-button>
+            <van-button
+              type="default"
+              size="small"
+              @click="handleResetSession"
+              icon="replay"
+            >
+              重置会话
+            </van-button>
+          </div>
+          <van-button
+            v-else
+            type="primary"
+            size="small"
+            block
+            @click="handleEnableEncryption"
+            icon="lock"
+          >
+            启用加密
+          </van-button>
+        </div>
       </div>
-
-      <!-- Actions -->
-      <template #action>
-        <n-space v-if="isEncrypted">
-          <n-button secondary @click="handleVerifyDevices">
-            <template #icon>
-              <n-icon><ShieldCheck /></n-icon>
-            </template>
-            验证设备
-          </n-button>
-          <n-button secondary @click="handleResetSession">
-            <template #icon>
-              <n-icon><Refresh /></n-icon>
-            </template>
-            重置会话
-          </n-button>
-        </n-space>
-        <n-button v-else type="primary" @click="handleEnableEncryption">
-          <template #icon>
-            <n-icon><Lock /></n-icon>
-          </template>
-          启用加密
-        </n-button>
-      </template>
-    </n-modal>
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NModal, NIcon, NButton, NSpace, NAlert, NAvatar, useMessage, useDialog } from 'naive-ui'
-import { Lock, LockOpen, Shield, ShieldCheck, AlertTriangle, ChevronRight, Refresh } from '@vicons/tabler'
+import { useMessage, useDialog } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
+
+// Icon name mapping for Vant
+const getVantIconName = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    Lock: 'lock',
+    LockOpen: 'lock-open',
+    Shield: 'shield-o',
+    ShieldCheck: 'success',
+    AlertTriangle: 'warning-o',
+    ChevronRight: 'arrow',
+    Refresh: 'replay'
+  }
+  return iconMap[iconName] || 'circle'
+}
 
 interface DeviceInfo {
   deviceId: string
@@ -196,7 +227,7 @@ const devices = ref<DeviceInfo[]>([])
 
 // Computed
 const statusIcon = computed(() => {
-  return isEncrypted.value ? Lock : LockOpen
+  return isEncrypted.value ? 'Lock' : 'LockOpen'
 })
 
 const statusClass = computed(() => {
@@ -237,9 +268,9 @@ const iconColor = computed(() => {
 })
 
 const trustIcon = computed(() => {
-  if (trustLevel.value === 'verified') return ShieldCheck
-  if (trustLevel.value === 'trusted') return Shield
-  return AlertTriangle
+  if (trustLevel.value === 'verified') return 'ShieldCheck'
+  if (trustLevel.value === 'trusted') return 'Shield'
+  return 'AlertTriangle'
 })
 
 const trustClass = computed(() => {
@@ -372,9 +403,9 @@ const handleResetSession = () => {
   dialog.warning({
     title: '重置会话',
     content: '重置会话将清除所有发送的加密消息历史，此操作不可撤销。确定要继续吗？',
-    positiveText: '重置',
-    negativeText: '取消',
-    onPositiveClick: () => {
+    confirmText: '重置',
+    cancelText: '取消',
+    onConfirm: () => {
       showDetail.value = false
       emit('reset-session')
       message.success('会话已重置')
@@ -386,9 +417,9 @@ const handleEnableEncryption = () => {
   dialog.info({
     title: '启用加密',
     content: '此功能需要升级房间配置。启用后，所有新消息都将被加密，但历史消息不会改变。',
-    positiveText: '启用',
-    negativeText: '取消',
-    onPositiveClick: () => {
+    confirmText: '启用',
+    cancelText: '取消',
+    onConfirm: () => {
       showDetail.value = false
       emit('enable-encryption')
       message.success('正在启用加密...')
@@ -691,6 +722,77 @@ defineExpose({
 
 .unencrypted-warning {
   margin-bottom: 16px;
+}
+
+.alert-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(240, 160, 32, 0.1);
+  border: 1px solid rgba(240, 160, 32, 0.3);
+  border-radius: 8px;
+  color: #f0a020;
+  font-size: 13px;
+}
+
+// Detail Modal Styles
+.detail-modal {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-color, #ffffff);
+  max-height: 80vh;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detail-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  flex-shrink: 0;
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color-1, #333);
+  }
+}
+
+.detail-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.detail-modal-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color, #f0f0f0);
+  flex-shrink: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color, #18a058);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.device-avatar {
+  flex-shrink: 0;
 }
 
 // Status variants

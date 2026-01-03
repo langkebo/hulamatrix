@@ -67,7 +67,7 @@
         <n-select
           v-model:value="localValue as string | number"
           :disabled="item.disabled"
-          :options="(item.options as any)"
+          :options="(item.options || []) as Array<{ label: string; value: string | number }>"
           size="medium"
           @update:value="handleSelectChange"
         />
@@ -89,7 +89,7 @@ import { ref, watch } from 'vue'
 import { NSwitch, NInput, NSelect } from 'naive-ui'
 import Icon from '#/components/icons/Icon.vue'
 import { SettingsItemType } from '#/views/settings/types'
-import type { SettingsItem } from '#/views/settings/types'
+import type { SettingsItem, SelectOption } from '#/views/settings/types'
 
 interface Props {
   item: SettingsItem

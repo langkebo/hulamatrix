@@ -69,6 +69,7 @@ export interface Space {
   members?: readonly unknown[]
   isJoined?: boolean
   memberStatus?: 'joined' | 'invited' | 'left'
+  encrypted?: boolean // E2EE encryption status
   [key: string]: unknown
 }
 

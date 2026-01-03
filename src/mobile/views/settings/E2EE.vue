@@ -169,6 +169,14 @@ interface DeviceInfo {
   lastSeenTs?: number
 }
 
+interface BackupResult {
+  success?: boolean
+  recoveryKey?: string
+  imported?: number
+  total?: number
+  error?: string
+}
+
 const { t } = useI18n()
 const e2eeStore = useE2EEStore()
 
@@ -238,7 +246,7 @@ const handleBack = () => {
   window.history.back()
 }
 
-const handleBackupCompleted = async (result: any) => {
+const handleBackupCompleted = async (result: BackupResult) => {
   logger.info('[MobileE2EE] Backup completed', result)
   showToast.success(t('setting.e2ee.key_backup.create_success'))
 }
@@ -257,7 +265,7 @@ const formatLastSeen = (timestamp?: number): string => {
 const loadDevices = async () => {
   try {
     const devices = e2eeStore.getAllDevices()
-    userDevices.value = devices.map((d: any) => ({
+    userDevices.value = devices.map((d: DeviceInfo) => ({
       deviceId: d.deviceId,
       userId: d.userId || '',
       displayName: d.displayName,

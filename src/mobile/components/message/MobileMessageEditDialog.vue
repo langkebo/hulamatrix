@@ -1,92 +1,103 @@
 <!-- Mobile Message Edit Dialog - Edit previously sent messages -->
 <template>
-  <n-modal
+  <van-popup
     v-model:show="showDialog"
-    preset="card"
-    :title="t('message.edit.editMessage')"
-    :style="{ width: '90%', maxWidth: '500px' }"
-    @close="handleClose"
+    position="bottom"
+    :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
   >
-    <div class="mobile-message-edit">
-      <!-- Original Message Preview -->
-      <div class="original-message">
-        <div class="preview-label">{{ t('message.edit.originalMessage') }}</div>
-        <div class="preview-content">{{ originalContent }}</div>
+    <div class="mobile-message-edit-popup">
+      <!-- Handle bar -->
+      <div class="handle-bar" @click="handleClose"></div>
+
+      <!-- Header -->
+      <div class="popup-header">
+        <div class="header-title">{{ t('message.edit.editMessage') }}</div>
+        <van-icon name="cross" :size="20" @click="handleClose" />
       </div>
 
-      <!-- Edit Input -->
-      <div class="edit-section">
-        <n-input
-          v-model:value="editContent"
-          type="textarea"
-          :placeholder="t('message.edit.placeholder')"
-          :autosize="{ minRows: 3, maxRows: 8 }"
-          :maxlength="maxLength"
-          show-count
-          size="large"
-          ref="inputRef"
-          @keyup.enter.ctrl="saveEdit"
-        />
-      </div>
+      <!-- Content -->
+      <div class="popup-content">
+        <div class="mobile-message-edit">
+          <!-- Original Message Preview -->
+          <div class="original-message">
+            <div class="preview-label">{{ t('message.edit.originalMessage') }}</div>
+            <div class="preview-content">{{ originalContent }}</div>
+          </div>
 
-      <!-- Edit History -->
-      <div v-if="editHistory.length > 0" class="edit-history">
-        <div class="history-header">
-          <span class="history-label">{{ t('message.edit.editHistory') }}</span>
-          <n-button text size="small" @click="showHistory = !showHistory">
-            {{ showHistory ? t('common.hide') : t('common.show') }}
-          </n-button>
-        </div>
-        <div v-if="showHistory" class="history-list">
-          <div
-            v-for="(edit, index) in editHistory"
-            :key="index"
-            class="history-item"
-          >
-            <span class="history-time">{{ formatTime(edit.timestamp) }}</span>
-            <span class="history-content">{{ edit.content }}</span>
+          <!-- Edit Input -->
+          <div class="edit-section">
+            <van-field
+              v-model="editContent"
+              type="textarea"
+              :placeholder="t('message.edit.placeholder')"
+              :autosize="{ minHeight: 80, maxHeight: 200 }"
+              :maxlength="maxLength"
+              rows="3"
+              ref="inputRef"
+              @keyup.ctrl.enter="saveEdit"
+            />
+            <div class="char-count">{{ editContent.length }}/{{ maxLength }}</div>
+          </div>
+
+          <!-- Edit History -->
+          <div v-if="editHistory.length > 0" class="edit-history">
+            <div class="history-header">
+              <span class="history-label">{{ t('message.edit.editHistory') }}</span>
+              <van-button
+                type="primary"
+                size="small"
+                plain
+                @click="showHistory = !showHistory"
+              >
+                {{ showHistory ? t('common.hide') : t('common.show') }}
+              </van-button>
+            </div>
+            <div v-if="showHistory" class="history-list">
+              <div
+                v-for="(edit, index) in editHistory"
+                :key="index"
+                class="history-item"
+              >
+                <span class="history-time">{{ formatTime(edit.timestamp) }}</span>
+                <span class="history-content">{{ edit.content }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="edit-info">
+            <van-icon name="info-o" :size="14" />
+            <span>{{ t('message.edit.info') }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Info -->
-      <n-alert type="info" :show-icon="true" class="edit-info">
-        <template #icon>
-          <n-icon><InfoCircle /></n-icon>
-        </template>
-        {{ t('message.edit.info') }}
-      </n-alert>
-
-      <!-- Actions -->
-      <template #footer>
-        <n-space vertical>
-          <n-button
-            type="primary"
-            block
-            size="large"
-            :loading="saving"
-            :disabled="!editContent.trim() || editContent === originalContent"
-            @click="saveEdit"
-          >
-            <template #icon>
-              <n-icon><Check /></n-icon>
-            </template>
-            {{ t('message.edit.save') }}
-          </n-button>
-          <n-button block @click="handleClose">
-            {{ t('common.cancel') }}
-          </n-button>
-        </n-space>
-      </template>
+      <!-- Footer Actions -->
+      <div class="popup-footer">
+        <van-button
+          type="primary"
+          block
+          :loading="saving"
+          :disabled="!editContent.trim() || editContent === originalContent"
+          @click="saveEdit"
+        >
+          <template #icon>
+            <van-icon name="success" />
+          </template>
+          {{ t('message.edit.save') }}
+        </van-button>
+        <van-button block @click="handleClose">
+          {{ t('common.cancel') }}
+        </van-button>
+      </div>
     </div>
-  </n-modal>
+  </van-popup>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NModal, NInput, NButton, NSpace, NAlert, NIcon, useMessage } from 'naive-ui'
-import { Check, InfoCircle } from '@vicons/tabler'
+import { useMessage } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { sendMessage } from '@/utils/matrixClientUtils'
@@ -211,6 +222,68 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.mobile-message-edit-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: #d0d0d0;
+  }
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .van-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+}
+
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.popup-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .mobile-message-edit {
   .original-message {
     margin-bottom: 16px;
@@ -236,6 +309,15 @@ watch(
 
   .edit-section {
     margin-bottom: 16px;
+    position: relative;
+
+    .char-count {
+      position: absolute;
+      bottom: -20px;
+      right: 0;
+      font-size: 11px;
+      color: var(--text-color-3);
+    }
   }
 
   .edit-history {
@@ -287,8 +369,20 @@ watch(
   }
 
   .edit-info {
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-radius: 6px;
     font-size: 12px;
+    color: #0050b3;
+
+    .van-icon {
+      color: #1890ff;
+      flex-shrink: 0;
+    }
   }
 }
 </style>

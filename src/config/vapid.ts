@@ -96,12 +96,12 @@ export async function generateVapidKeys(): Promise<VapidConfig> {
   // This should only be called server-side (e.g., in a Node.js environment)
   // For browser environments, use an external tool or server endpoint
 
-  if (typeof window !== 'undefined') {
+  if ('window' in globalThis) {
     throw new Error('VAPID key generation should be done server-side')
   }
 
   // Dynamic import for Node.js crypto
-  const { randomBytes, createPublicKey } = await import('crypto')
+  await import('node:crypto')
 
   // Generate P-256 curve key pair
   const keyPair = await crypto.subtle.generateKey(
@@ -137,7 +137,7 @@ function bufferToBase64Url(buffer: ArrayBuffer): string {
   for (const byte of bytes) {
     binary += String.fromCharCode(byte)
   }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
 }
 
 /**

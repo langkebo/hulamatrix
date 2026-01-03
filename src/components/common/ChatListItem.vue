@@ -26,7 +26,7 @@
             <!-- Official badge -->
             <n-popover v-if="item.hotFlag === 1" trigger="hover">
               <template #trigger>
-                <svg class="size-20px select-none outline-none cursor-pointer color-#13987f">
+                <svg class="size-20px select-none outline-none cursor-pointer text-brand">
                   <use href="#auth"></use>
                 </svg>
               </template>
@@ -35,7 +35,7 @@
             <!-- Bot badge -->
             <n-popover v-if="item.account === 'bot'" trigger="hover">
               <template #trigger>
-                <svg class="size-20px select-none outline-none cursor-pointer color-#13987f">
+                <svg class="size-20px select-none outline-none cursor-pointer text-brand">
                   <use href="#authenticationUser"></use>
                 </svg>
               </template>

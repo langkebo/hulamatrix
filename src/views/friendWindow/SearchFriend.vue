@@ -71,9 +71,6 @@
                     <n-flex vertical justify="center" :size="10" class="flex-1">
                       <n-space align="center" :size="10">
                         <span class="text-(14px [--text-color])">{{ item.name }}</span>
-                        <template v-for="account in item.itemIds" :key="account">
-                          <img class="size-20px" :src="cachedStore.badgeById(account)?.img" alt="" />
-                        </template>
                       </n-space>
                       <n-flex align="center" :size="10">
                         <span class="text-(12px [--chat-text-color])">
@@ -591,6 +588,7 @@ const handleAddFriend = async (item: SearchResultItem) => {
       globalStore.addGroupModalInfo.account = item.account
       globalStore.addGroupModalInfo.name = item.name
       globalStore.addGroupModalInfo.avatar = item.avatar
+      globalStore.addGroupModalInfo.roomId = item.roomId
     } else {
       try {
         await router.push('/rooms/manage')

@@ -65,7 +65,7 @@
                   <template #trigger>
                     <svg
                       @click.stop="unlock"
-                      class="size-16px color-#e3e3e3 mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:bg-#13987fe6">
+                      class="size-16px color-#e3e3e3 mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:opacity-80">
                       <use href="#arrow-right"></use>
                     </svg>
                   </template>

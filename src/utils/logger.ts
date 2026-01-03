@@ -150,20 +150,20 @@ class Logger {
 
     switch (entry.level) {
       case LogLevel.DEBUG:
-        logger.debug(...args)
+        console.debug(...args)
         break
       case LogLevel.INFO:
-        logger.info(...args)
+        console.info(...args)
         break
       case LogLevel.WARN:
-        logger.warn(...args)
+        console.warn(...args)
         break
       case LogLevel.ERROR:
         if (entry.stack) {
-          logger.error(args[0] as string, args[1], args[2])
-          logger.error(entry.stack)
+          console.error(args[0] as string, args[1], args[2])
+          console.error(entry.stack)
         } else {
-          logger.error(args[0] as string, args[1], args[2])
+          console.error(args[0] as string, args[1], args[2])
         }
         break
     }

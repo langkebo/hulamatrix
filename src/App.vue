@@ -52,7 +52,6 @@ import { useChatStore } from '@/stores/chat'
 import { useAnnouncementStore } from '@/stores/announcement'
 // REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
 import type { MarkItemType, RevokedMsgType, UserItem } from '@/services/types'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useTauriListener } from '@/hooks/useTauriListener'
@@ -166,13 +165,13 @@ useMitt.on(
 
     unreadCountManager.refreshBadge(globalStore.unReadMark)
 
-    // 刷新好友申请列表（使用IM接口获取未读数）
-    await ImRequestUtils.getNoticeUnreadCount()
+    // TODO: getNoticeUnreadCount - custom notification system, needs Matrix-based implementation
   }
 )
 
 useMitt.on(WsResponseMessageType.NOTIFY_EVENT, async () => {
-  await ImRequestUtils.getNoticeUnreadCount()
+  // TODO: getNoticeUnreadCount - custom notification system, needs Matrix-based implementation
+  unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 
 // 处理自己被移除
@@ -277,8 +276,14 @@ useMitt.on(WsResponseMessageType.MSG_MARK_ITEM, async (data: { markList: MarkIte
 
 useMitt.on(WsResponseMessageType.REQUEST_APPROVAL_FRIEND, async () => {
   // 刷新好友列表以获取最新状态
-  await ImRequestUtils.getContactList({ pageSize: 100 })
-  await ImRequestUtils.getNoticeUnreadCount()
+  // Migrated to friendsServiceV2
+  try {
+    const { friendsServiceV2 } = await import('@/services/index-v2')
+    await friendsServiceV2.listFriends(false) // useCache=false to refresh
+  } catch (error) {
+    logger.warn('[App] Failed to refresh friends list:', error)
+  }
+  // TODO: getNoticeUnreadCount - custom notification system
   unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 
@@ -336,7 +341,6 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
           timestamp: Date.now()
         }
       })
-      await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
       await resetLoginState()
       await logout()
     }
@@ -498,7 +502,9 @@ const runReconnectSync = async () => {
         const currentSession = chatStore.getSession(globalStore.currentSessionRoomId)
         if (currentSession?.unreadCount) {
           try {
-            await ImRequestUtils.markMsgRead(currentSession.roomId)
+            // Use unifiedMessageService instead of deprecated ImRequestUtils
+            const { unifiedMessageService } = await import('@/services/unified-message-service')
+            await unifiedMessageService.markRoomRead(currentSession.roomId)
           } catch (error) {}
           chatStore.markSessionRead(currentSession.roomId)
         }
@@ -563,25 +569,8 @@ onMounted(async () => {
     logger.warn('[App] Message receiver initialization failed - continuing with limited functionality')
   }
 
-  // Initialize WebSocket message listeners early to ensure no messages are missed
-  // This must be done before any other initialization to catch all incoming messages
-  if (typeof window !== 'undefined' && '__TAURI__' in window) {
-    try {
-      const { default: rustWebSocketClient } = await import('@/services/webSocketRust')
-      await rustWebSocketClient.setupBusinessMessageListeners()
-      logger.info('[App] WebSocket message listeners initialized early')
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      logger.error('[App] Failed to initialize WebSocket listeners:', {
-        error: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined
-      })
-
-      // User-friendly notification for WebSocket initialization failure
-      // Non-blocking: Matrix SDK sync may still work
-      logger.warn('[App] WebSocket listeners initialization failed - Matrix SDK sync will be used as fallback')
-    }
-  }
+  // WebSocket 已废弃，使用 Matrix SDK 同步消息
+  logger.info('[App] Using Matrix SDK for message synchronization (WebSocket removed)')
 
   // iOS应用启动时预请求网络权限（必须在最开始执行）
   if (isIOS()) {

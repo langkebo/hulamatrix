@@ -247,11 +247,12 @@ import router from '@/router'
 import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStoreV2 } from '@/stores/friendsV2'
 import { useGlobalStore } from '@/stores/global'
 import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useRoomStats } from '@/composables/useRoomStats'
-import { deleteFriend, modifyFriendRemark, notification, setSessionTop, shield } from '@/utils/ImRequestUtils'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 import { msg } from '@/utils/SafeUI'
@@ -266,6 +267,7 @@ const globalStore = useGlobalStore()
 const roomStore = useRoomStore()
 const cacheStore = useCachedStore()
 const friendsStore = useFriendsStore()
+const friendsStoreV2 = useFriendsStoreV2()
 const { persistMyRoomInfo } = useMyRoomInfoUpdater()
 
 // 房间统计信息
@@ -405,7 +407,8 @@ async function handleExit() {
             msg.warning('无法获取好友信息')
             return
           }
-          await deleteFriend({ targetUid: detailId })
+          // 使用 v2 service 删除好友
+          await friendsStoreV2.removeFriend(detailId)
           msg.success('删除好友成功')
         }
 
@@ -419,22 +422,6 @@ async function handleExit() {
     }
   })
 }
-
-/** 判断当前用户是否拥有id为6的徽章 并且是频道 */
-const hasBadge6 = computed(() => {
-  // 只有当 roomId 为 "1" 时才进行徽章判断（频道）
-  if (globalStore.currentSessionRoomId !== '1') return false
-
-  // 徽章功能说明：
-  // - 当前返回 false，表示未启用徽章功能
-  // - 未来迁移计划：将徽章数据存储到 RoomStore 或 UserStore
-  // - 需要考虑的徽章类型：管理员、VIP、认证用户等
-  // - 迁移步骤：
-  //   1. 在 RoomStore/UserStore 中添加 badgeList 状态
-  //   2. 从 Matrix 房间状态事件中读取徽章信息
-  //   3. 根据用户权限级别返回对应的徽章状态
-  return false
-})
 
 const clickInfo = () => {
   if (isGroup.value) {
@@ -458,8 +445,8 @@ const handleLoadGroupAnnoun = async () => {
       logger.error('当前会话没有roomId')
       return
     }
-    // 设置是否可以添加公告
-    isAddAnnoun.value = isLord.value || isAdmin.value || hasBadge6.value!
+    // 设置是否可以添加公告（仅群主和管理员）
+    isAddAnnoun.value = isLord.value || isAdmin.value
     // 获取群公告列表
     const data = await cacheStore.getGroupAnnouncementList(roomId, 1, 10)
     if (data) {
@@ -484,18 +471,19 @@ const handleLoadGroupAnnoun = async () => {
 }
 
 /** 置顶 */
-const handleTop = (value: boolean) => {
+const handleTop = async (value: boolean) => {
   const session = currentSession.value
   if (!session) return
-  setSessionTop({ roomId: session.roomId, top: value })
-    .then(() => {
-      // 更新本地会话状态
-      chatStore.updateSession(session.roomId, { top: value })
-      msg.success(value ? '已置顶' : '已取消置顶')
-    })
-    .catch(() => {
-      msg.error('置顶失败')
-    })
+  try {
+    // 使用 Matrix SDK 设置会话置顶
+    await sessionSettingsService.setSessionTop(session.roomId, value)
+    // 更新本地会话状态
+    chatStore.updateSession(session.roomId, { top: value })
+    msg.success(value ? '已置顶' : '已取消置顶')
+  } catch (error) {
+    logger.error('置顶失败:', error)
+    msg.error('置顶失败')
+  }
 }
 
 // 处理群备注更新
@@ -529,10 +517,8 @@ const handleInfoUpdate = async () => {
       msg.warning('无法获取好友信息')
       return
     }
-    await modifyFriendRemark({
-      targetUid: detailId,
-      remark: remarkValue.value
-    })
+    // 使用 Matrix SDK 设置好友备注
+    await sessionSettingsService.setFriendRemark(globalStore.currentSessionRoomId, remarkValue.value)
 
     if (friend.value) {
       const friendWithRemark = friend.value as typeof friend.value & { remark?: string }
@@ -579,68 +565,65 @@ const handleGroupInfoUpdate = async () => {
  */
 
 /** 处理屏蔽消息 */
-const handleShield = (value: boolean) => {
+const handleShield = async (value: boolean) => {
   const session = currentSession.value
   if (!session) return
-  shield({
-    roomId: session.roomId,
-    state: value
-  })
-    .then(() => {
-      // 更新本地会话状态
-      chatStore.updateSession(session.roomId, {
-        shield: value
-      })
-
-      // 1. 先保存当前聊天室ID
-      const tempRoomId = globalStore.currentSessionRoomId
-
-      // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
-      nextTick(() => {
-        globalStore.updateCurrentSessionRoomId(tempRoomId)
-      })
-
-      msg.success(value ? '已屏蔽消息' : '已取消屏蔽')
+  try {
+    // 使用 Matrix SDK 设置会话屏蔽
+    await sessionSettingsService.setSessionShield(session.roomId, value)
+    // 更新本地会话状态
+    chatStore.updateSession(session.roomId, {
+      shield: value
     })
-    .catch(() => {
-      msg.error('设置失败')
+
+    // 1. 先保存当前聊天室ID
+    const tempRoomId = globalStore.currentSessionRoomId
+
+    // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
+    nextTick(() => {
+      globalStore.updateCurrentSessionRoomId(tempRoomId)
     })
+
+    msg.success(value ? '已屏蔽消息' : '已取消屏蔽')
+  } catch (error) {
+    logger.error('设置屏蔽失败:', error)
+    msg.error('设置失败')
+  }
 }
 
 /** 处理消息免打扰 */
-const handleNotification = (value: boolean) => {
+const handleNotification = async (value: boolean) => {
   const session = currentSession.value
   if (!session) return
-  const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
+  const newMode = value ? 'not_disturb' : 'reception'
   // 如果当前是屏蔽状态，需要先取消屏蔽
   if (session.shield) {
-    handleShield(false)
+    await handleShield(false)
   }
-  notification({
-    roomId: session.roomId,
-    type: newType
-  })
-    .then(() => {
-      // 更新本地会话状态
-      chatStore.updateSession(session.roomId, {
-        muteNotification: newType
-      })
-
-      // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
-      if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
-        chatStore.updateTotalUnreadCount()
-      }
-
-      // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
-      if (newType === NotificationTypeEnum.NOT_DISTURB) {
-        chatStore.updateTotalUnreadCount()
-      }
-
-      msg.success(value ? '已设置接收消息但不提醒' : '已允许消息提醒')
+  try {
+    // 使用 Matrix SDK 设置通知模式
+    await sessionSettingsService.setNotificationMode(session.roomId, newMode)
+    // 更新本地会话状态
+    const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
+    chatStore.updateSession(session.roomId, {
+      muteNotification: newType
     })
-    .catch(() => {
-      msg.error('设置失败')
-    })
+
+    // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
+    if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
+    if (newType === NotificationTypeEnum.NOT_DISTURB) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    msg.success(value ? '已设置接收消息但不提醒' : '已允许消息提醒')
+  } catch (error) {
+    logger.error('设置通知模式失败:', error)
+    msg.error('设置失败')
+  }
 }
 
 /**

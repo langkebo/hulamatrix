@@ -1,64 +1,49 @@
 <!-- Mobile Space Details Drawer - Full space details for mobile -->
 <template>
-  <n-drawer
-    v-model:show="showDrawer"
-    placement="bottom"
-    :height="'90vh'"
-    :trap-focus="false"
-    :block-scroll="false"
-    @after-leave="handleAfterLeave">
-    <n-drawer-content :body-style="{ padding: '0' }" :native-scrollbar="false">
+  <van-popup
+    :show="showDrawer"
+    position="bottom"
+    :style="{ height: '90vh', borderRadius: '16px 16px 0 0' }"
+    @update:show="handleClose"
+    @click-overlay="handleClose"
+  >
+    <div class="space-drawer-popup">
       <!-- Header -->
-      <template #header>
-        <div class="drawer-header">
-          <div class="header-left">
-            <n-button text @click="handleClose">
-              <template #icon>
-                <n-icon :size="20"><X /></n-icon>
-              </template>
-            </n-button>
-            <span class="header-title">工作区详情</span>
-          </div>
-          <div class="header-right">
-            <n-dropdown trigger="click" :options="getMenuOptions()" @select="handleMenuAction">
-              <n-button circle>
-                <template #icon>
-                  <n-icon><DotsVertical /></n-icon>
-                </template>
-              </n-button>
-            </n-dropdown>
-          </div>
+      <div class="drawer-header">
+        <div class="header-left">
+          <van-button icon="cross" @click="handleClose" />
+          <span class="header-title">工作区详情</span>
         </div>
-      </template>
+        <div class="header-right">
+          <van-button icon="ellipsis" @click="showMenuSheet = true" />
+        </div>
+      </div>
 
+      <!-- Content -->
       <div v-if="space" class="space-details">
         <!-- Space Info Card -->
         <div class="space-info-card">
           <div class="space-avatar-section">
-            <n-avatar :src="space.avatar" :size="72" round>
-              <template #fallback>
-                <span class="avatar-fallback">{{ space.name?.charAt(0)?.toUpperCase() || '?' }}</span>
+            <van-image
+              :src="space.avatar"
+              width="72"
+              height="72"
+              round
+            >
+              <template #error>
+                <div class="avatar-fallback">{{ space.name?.charAt(0)?.toUpperCase() || '?' }}</div>
               </template>
-            </n-avatar>
+            </van-image>
             <div class="space-badges">
-              <n-tag v-if="space.isPublic" type="info" size="small" round>
-                <template #icon>
-                  <n-icon :size="12"><World /></n-icon>
-                </template>
+              <van-tag v-if="space.isPublic" type="primary" round>
                 公开
-              </n-tag>
-              <n-tag v-else type="default" size="small" round>
-                <template #icon>
-                  <n-icon :size="12"><Lock /></n-icon>
-                </template>
+              </van-tag>
+              <van-tag v-else type="default" round>
                 私有
-              </n-tag>
-              <n-tag v-if="(space as any).encrypted" type="success" size="small" round>
-                <template #icon>
-                  <n-icon :size="12"><Lock /></n-icon>
-                </template>
+              </van-tag>
+              <van-tag v-if="space.encrypted" type="success" round>
                 加密
-              </n-tag>
+              </van-tag>
             </div>
           </div>
 
@@ -67,17 +52,17 @@
 
           <div class="space-stats">
             <div class="stat-item">
-              <n-icon :size="16"><Users /></n-icon>
+              <van-icon name="friends-o" :size="16" />
               <span>{{ space.memberCount ?? 0 }}</span>
               <span class="stat-label">成员</span>
             </div>
             <div class="stat-item">
-              <n-icon :size="16"><Hash /></n-icon>
+              <van-icon name="hash" :size="16" />
               <span>{{ space.children?.length ?? 0 }}</span>
               <span class="stat-label">房间</span>
             </div>
             <div v-if="unreadCount > 0" class="stat-item unread">
-              <n-icon :size="16"><Bell /></n-icon>
+              <van-icon name="bell" :size="16" />
               <span>{{ unreadCount }}</span>
               <span class="stat-label">未读</span>
             </div>
@@ -85,46 +70,47 @@
 
           <!-- Space Address -->
           <div v-if="space.canonicalAlias" class="space-address">
-            <n-text depth="3" style="font-size: 12px">
-              {{ space.canonicalAlias }}
-            </n-text>
-            <n-button text size="tiny" @click="copySpaceAddress">
-              <template #icon>
-                <n-icon :size="14"><Copy /></n-icon>
-              </template>
-            </n-button>
+            <span class="address-text">{{ space.canonicalAlias }}</span>
+            <van-button icon="files-o" size="small" @click="copySpaceAddress" />
           </div>
 
           <!-- Join/Leave Button -->
           <div class="space-actions">
-            <n-button v-if="!isJoined" type="primary" size="large" block :loading="isJoining" @click="handleJoin">
-              <template #icon>
-                <n-icon><Login /></n-icon>
-              </template>
+            <van-button
+              v-if="!isJoined"
+              type="primary"
+              size="large"
+              block
+              :loading="isJoining"
+              icon="log-in"
+              @click="handleJoin"
+            >
               加入工作区
-            </n-button>
-            <n-button v-else type="error" size="large" block :loading="isLeaving" @click="handleLeave">
-              <template #icon>
-                <n-icon><Logout /></n-icon>
-              </template>
+            </van-button>
+            <van-button
+              v-else
+              type="danger"
+              size="large"
+              block
+              :loading="isLeaving"
+              icon="log-out"
+              @click="handleLeave"
+            >
               离开工作区
-            </n-button>
+            </van-button>
           </div>
         </div>
 
         <!-- Tabs -->
-        <n-tabs v-model:value="activeTab" type="line" animated :bar-padding="20">
+        <van-tabs v-model:active="activeTab" animated swipeable>
           <!-- Rooms Tab -->
-          <n-tab-pane name="rooms" tab="房间">
+          <van-tab title="房间" name="rooms">
             <div class="tab-content">
               <!-- Create Room Button -->
               <div v-if="isJoined && canManageRooms" class="tab-header">
-                <n-button type="primary" size="small" @click="showCreateDialog = true">
-                  <template #icon>
-                    <n-icon><Plus /></n-icon>
-                  </template>
+                <van-button type="primary" size="small" icon="plus" @click="showCreateDialog = true">
                   添加房间
-                </n-button>
+                </van-button>
               </div>
 
               <!-- Room List -->
@@ -135,11 +121,16 @@
                   class="room-item"
                   @click="openRoom(child.roomId)">
                   <div class="room-avatar">
-                    <n-avatar :src="String(child.avatar ?? '')" :size="44" round>
-                      <template #fallback>
+                    <van-image
+                      :src="String(child.avatar ?? '')"
+                      width="44"
+                      height="44"
+                      round
+                    >
+                      <template #error>
                         <span>{{ child.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                       </template>
-                    </n-avatar>
+                    </van-image>
                     <div v-if="getRoomUnread(child) > 0" class="unread-badge">
                       {{ getRoomUnread(child) > 99 ? '99+' : getRoomUnread(child) }}
                     </div>
@@ -149,322 +140,324 @@
                     <div class="room-name">{{ child.name }}</div>
                     <div class="room-meta">
                       <span v-if="child.memberCount">{{ child.memberCount }} 成员</span>
-                      <n-tag v-if="!child.isJoined" size="tiny" type="info">未加入</n-tag>
-                      <n-tag v-if="child.topic" size="tiny" type="default">{{ child.topic }}</n-tag>
+                      <van-tag v-if="!child.isJoined" type="primary">未加入</van-tag>
+                      <van-tag v-if="child.topic" type="default">{{ child.topic }}</van-tag>
                     </div>
                   </div>
 
                   <div class="room-action">
-                    <n-icon :size="18"><ChevronRight /></n-icon>
+                    <van-icon name="arrow" :size="18" />
                   </div>
                 </div>
               </div>
 
-              <n-empty v-else description="暂无房间" size="small">
+              <van-empty v-else description="暂无房间">
                 <template #extra v-if="isJoined && canManageRooms">
-                  <n-button type="primary" size="small" @click="showCreateDialog = true">添加第一个房间</n-button>
+                  <van-button type="primary" size="small" @click="showCreateDialog = true">添加第一个房间</van-button>
                 </template>
-              </n-empty>
+              </van-empty>
             </div>
-          </n-tab-pane>
+          </van-tab>
 
           <!-- Members Tab -->
-          <n-tab-pane name="members" tab="成员">
+          <van-tab title="成员" name="members">
             <div class="tab-content">
               <!-- Search and Filter -->
               <div v-if="isJoined" class="tab-header">
-                <n-input v-model:value="memberSearchQuery" placeholder="搜索成员..." clearable size="small">
-                  <template #prefix>
-                    <n-icon><Search /></n-icon>
-                  </template>
-                </n-input>
+                <van-field
+                  v-model="memberSearchQuery"
+                  placeholder="搜索成员..."
+                  clearable
+                  left-icon="search"
+                />
               </div>
 
               <!-- Member List -->
               <div v-if="isLoadingMembers" class="loading-container">
-                <n-spin size="medium" />
-                <n-text depth="3">加载成员中...</n-text>
+                <van-loading size="24px" />
+                <span style="color: var(--text-color-3)">加载成员中...</span>
               </div>
 
               <div v-else-if="filteredMembers.length > 0" class="member-list">
                 <div
                   v-for="member in filteredMembers"
-                  :key="(member as any).userId"
+                  :key="member.userId"
                   class="member-item"
-                  @click="handleMemberClick(member as any)">
-                  <n-avatar :src="(member as any).avatarUrl" :size="42" round>
-                    <template #fallback>
+                  @click="handleMemberClick(member)">
+                  <van-image
+                    :src="member.avatarUrl"
+                    width="42"
+                    height="42"
+                    round
+                  >
+                    <template #error>
                       <span>
-                        {{ (member as any).displayName?.charAt(0) || (member as any).userId?.charAt(0) || '?' }}
+                        {{ member.displayName?.charAt(0) || member.userId?.charAt(0) || '?' }}
                       </span>
                     </template>
-                  </n-avatar>
+                  </van-image>
 
                   <div class="member-info">
-                    <div class="member-name">{{ (member as any).displayName || (member as any).userId }}</div>
+                    <div class="member-name">{{ member.displayName || member.userId }}</div>
                     <div class="member-role">
-                      <n-tag v-if="(member as any).isAdmin" size="tiny" type="warning">管理员</n-tag>
-                      <n-tag v-else-if="(member as any).isModerator" size="tiny" type="info">版主</n-tag>
-                      <n-text v-else depth="3" style="font-size: 12px">{{ (member as any).userId }}</n-text>
+                      <van-tag v-if="member.isAdmin" type="warning">管理员</van-tag>
+                      <van-tag v-else-if="member.isModerator" type="primary">版主</van-tag>
+                      <span v-else style="font-size: 12px; color: var(--text-color-3)">{{ member.userId }}</span>
                     </div>
                   </div>
 
                   <div class="member-status">
-                    <div v-if="(member as any).presence === 'online'" class="status-dot online" />
-                    <div v-else-if="(member as any).presence === 'unavailable'" class="status-dot away" />
+                    <div v-if="member.presence === 'online'" class="status-dot online" />
+                    <div v-else-if="member.presence === 'unavailable'" class="status-dot away" />
                     <div v-else class="status-dot offline" />
                   </div>
                 </div>
               </div>
 
-              <n-empty v-else :description="memberSearchQuery ? '未找到匹配的成员' : '暂无成员'" size="small">
+              <van-empty v-else :description="memberSearchQuery ? '未找到匹配的成员' : '暂无成员'">
                 <template #extra v-if="isJoined && !memberSearchQuery">
-                  <n-button type="primary" size="small" @click="showInviteDialog = true">邀请成员</n-button>
+                  <van-button type="primary" size="small" @click="showInviteDialog = true">邀请成员</van-button>
                 </template>
-              </n-empty>
+              </van-empty>
 
               <!-- Invite Button (only for admins) -->
               <div v-if="isJoined && canManageMembers && !isLoadingMembers" class="invite-section">
-                <n-button type="primary" block @click="showInviteDialog = true">
-                  <template #icon>
-                    <n-icon><UserPlus /></n-icon>
-                  </template>
+                <van-button type="primary" block icon="add-o" @click="showInviteDialog = true">
                   邀请新成员
-                </n-button>
+                </van-button>
               </div>
             </div>
-          </n-tab-pane>
+          </van-tab>
 
           <!-- Settings Tab -->
-          <n-tab-pane name="settings" tab="设置">
+          <van-tab title="设置" name="settings">
             <div class="tab-content">
-              <n-list v-if="isJoined" hoverable clickable>
+              <van-cell-group v-if="isJoined" inset :border="true">
                 <!-- Space Settings -->
-                <n-list-item>
-                  <template #prefix>
-                    <n-icon :size="20"><Settings /></n-icon>
+                <van-cell title="工作区设置" is-link @click="">
+                  <template #icon>
+                    <van-icon name="setting-o" :size="20" />
                   </template>
-                  <div class="settings-item">
-                    <span>工作区设置</span>
-                    <n-text depth="3">名称、头像、描述等</n-text>
-                  </div>
-                </n-list-item>
+                  <template #label>
+                    <span style="color: var(--text-color-3)">名称、头像、描述等</span>
+                  </template>
+                </van-cell>
 
                 <!-- Notifications -->
-                <n-list-item @click="handleNotifications">
-                  <template #prefix>
-                    <n-icon :size="20"><Bell /></n-icon>
+                <van-cell title="通知设置" is-link @click="handleNotifications">
+                  <template #icon>
+                    <van-icon name="bell" :size="20" />
                   </template>
-                  <div class="settings-item">
-                    <span>通知设置</span>
-                    <div class="setting-value">
-                      <n-tag size="tiny" :type="notificationEnabled ? 'success' : 'default'">
-                        {{ notificationEnabled ? '已启用' : '已禁用' }}
-                      </n-tag>
-                    </div>
-                  </div>
-                </n-list-item>
+                  <template #right-icon>
+                    <van-tag :type="notificationEnabled ? 'success' : 'default'">
+                      {{ notificationEnabled ? '已启用' : '已禁用' }}
+                    </van-tag>
+                  </template>
+                </van-cell>
 
                 <!-- Permissions -->
-                <n-list-item v-if="canAdmin" @click="handlePermissions">
-                  <template #prefix>
-                    <n-icon :size="20"><Shield /></n-icon>
+                <van-cell v-if="canAdmin" title="权限管理" is-link @click="handlePermissions">
+                  <template #icon>
+                    <van-icon name="shield-o" :size="20" />
                   </template>
-                  <div class="settings-item">
-                    <span>权限管理</span>
-                    <n-text depth="3">成员角色和权限</n-text>
-                  </div>
-                </n-list-item>
-
-                <!-- Security -->
-                <n-list-item>
-                  <template #prefix>
-                    <n-icon :size="20"><Lock /></n-icon>
+                  <template #label>
+                    <span style="color: var(--text-color-3)">成员角色和权限</span>
                   </template>
-                  <div class="settings-item">
-                    <span>安全设置</span>
-                    <div class="setting-value">
-                      <n-switch
-                        v-model:value="spaceEncrypted"
-                        :disabled="!canAdmin"
-                        @update:value="handleEncryptionToggle" />
-                    </div>
-                  </div>
-                </n-list-item>
+                </van-cell>
 
                 <!-- Share -->
-                <n-list-item @click="handleExport" :disabled="!space.isPublic">
-                  <template #prefix>
-                    <n-icon :size="20"><Share /></n-icon>
+                <van-cell title="分享工作区" :is-link="space.isPublic" @click="handleExport">
+                  <template #icon>
+                    <van-icon name="share-o" :size="20" />
                   </template>
-                  <div class="settings-item">
-                    <span>分享工作区</span>
-                    <n-text depth="3">复制邀请链接</n-text>
-                  </div>
-                </n-list-item>
+                  <template #label>
+                    <span style="color: var(--text-color-3)">复制邀请链接</span>
+                  </template>
+                </van-cell>
 
                 <!-- Leave -->
-                <n-list-item @click="handleLeave" class="danger-item">
-                  <template #prefix>
-                    <n-icon :size="20" color="#d03050"><Logout /></n-icon>
+                <van-cell title="离开工作区" @click="handleLeave" class="danger-item">
+                  <template #icon>
+                    <van-icon name="log-out" :size="20" color="#d03050" />
                   </template>
-                  <div class="settings-item">
-                    <span style="color: #d03050">离开工作区</span>
-                  </div>
-                </n-list-item>
-              </n-list>
+                </van-cell>
+              </van-cell-group>
 
-              <n-empty v-else description="加入工作区后可访问设置" size="small">
+              <van-empty v-else description="加入工作区后可访问设置">
                 <template #extra>
-                  <n-button type="primary" size="small" @click="handleJoin">立即加入</n-button>
+                  <van-button type="primary" size="small" @click="handleJoin">立即加入</van-button>
                 </template>
-              </n-empty>
+              </van-empty>
             </div>
-          </n-tab-pane>
-        </n-tabs>
+          </van-tab>
+        </van-tabs>
       </div>
 
       <!-- Create Room Dialog -->
-      <n-modal v-model:show="showCreateDialog" preset="dialog" title="添加房间">
-        <n-form ref="createFormRef" :model="newRoom" :rules="createRules">
-          <n-form-item label="房间名称" path="name">
-            <n-input v-model:value="newRoom.name" placeholder="输入房间名称" />
-          </n-form-item>
-          <n-form-item label="房间描述">
-            <n-input v-model:value="newRoom.description" type="textarea" placeholder="描述此房间的用途" />
-          </n-form-item>
-          <n-form-item label="房间类型">
-            <n-radio-group v-model:value="newRoom.isPublic">
-              <n-radio :value="false">私有房间</n-radio>
-              <n-radio :value="true">公开房间</n-radio>
-            </n-radio-group>
-          </n-form-item>
-        </n-form>
-        <template #action>
-          <n-button @click="showCreateDialog = false">取消</n-button>
-          <n-button type="primary" :loading="isCreating" @click="handleCreateRoom">创建</n-button>
-        </template>
-      </n-modal>
+      <van-popup
+        :show="showCreateDialog"
+        position="center"
+        :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
+        @update:show="showCreateDialog = $event"
+      >
+        <div class="dialog-content">
+          <div class="dialog-header">
+            <h3>添加房间</h3>
+          </div>
+          <van-form @submit="handleCreateRoom">
+            <van-field
+              v-model="newRoom.name"
+              label="房间名称"
+              placeholder="输入房间名称"
+              :rules="[{ required: true, message: '请输入房间名称' }]"
+            />
+            <van-field
+              v-model="newRoom.description"
+              label="房间描述"
+              type="textarea"
+              placeholder="描述此房间的用途"
+              rows="3"
+            />
+            <van-field label="房间类型">
+              <template #input>
+                <van-radio-group v-model="newRoom.isPublic" direction="horizontal">
+                  <van-radio :name="false">私有房间</van-radio>
+                  <van-radio :name="true">公开房间</van-radio>
+                </van-radio-group>
+              </template>
+            </van-field>
+            <div class="dialog-actions">
+              <van-button @click="showCreateDialog = false">取消</van-button>
+              <van-button type="primary" :loading="isCreating" native-type="submit">创建</van-button>
+            </div>
+          </van-form>
+        </div>
+      </van-popup>
 
       <!-- Invite Member Dialog -->
-      <n-modal v-model:show="showInviteDialog" preset="dialog" title="邀请成员">
-        <n-form ref="inviteFormRef" :model="inviteForm" :rules="inviteRules">
-          <n-form-item label="用户 ID" path="userId">
-            <n-input v-model:value="inviteForm.userId" placeholder="@username:server.com" />
-          </n-form-item>
-        </n-form>
-        <template #action>
-          <n-button @click="showInviteDialog = false">取消</n-button>
-          <n-button type="primary" :loading="isInviting" @click="handleInvite">邀请</n-button>
-        </template>
-      </n-modal>
+      <van-popup
+        :show="showInviteDialog"
+        position="center"
+        :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
+        @update:show="showInviteDialog = $event"
+      >
+        <div class="dialog-content">
+          <div class="dialog-header">
+            <h3>邀请成员</h3>
+          </div>
+          <van-form @submit="handleInvite">
+            <van-field
+              v-model="inviteForm.userId"
+              label="用户 ID"
+              placeholder="@username:server.com"
+              :rules="[{ required: true, message: '请输入用户 ID' }]"
+            />
+            <div class="dialog-actions">
+              <van-button @click="showInviteDialog = false">取消</van-button>
+              <van-button type="primary" :loading="isInviting" native-type="submit">邀请</van-button>
+            </div>
+          </van-form>
+        </div>
+      </van-popup>
 
       <!-- Member Details Modal -->
-      <n-modal
-        v-model:show="showMemberModal"
-        preset="card"
-        :title="selectedMember?.displayName || '成员详情'"
-        style="width: 90%">
-        <div v-if="selectedMember" class="member-details">
-          <div class="member-avatar-section">
-            <n-avatar :src="selectedMember.avatarUrl" :size="80" round>
-              <template #fallback>
-                <span>{{ selectedMember.displayName?.charAt(0) || selectedMember.userId?.charAt(0) || '?' }}</span>
-              </template>
-            </n-avatar>
-            <n-tag v-if="selectedMember.isAdmin" type="warning">管理员</n-tag>
-            <n-tag v-else-if="selectedMember.isModerator" type="info">版主</n-tag>
+      <van-popup
+        :show="showMemberModal"
+        position="center"
+        :style="{ width: '90%', maxWidth: '500px', borderRadius: '12px' }"
+        @update:show="showMemberModal = $event"
+      >
+        <div class="dialog-content member-details">
+          <div class="dialog-header">
+            <h3>{{ selectedMember?.displayName || '成员详情' }}</h3>
           </div>
+          <div v-if="selectedMember">
+            <div class="member-avatar-section">
+              <van-image
+                :src="selectedMember.avatarUrl"
+                width="80"
+                height="80"
+                round
+              >
+                <template #error>
+                  <span>{{ selectedMember.displayName?.charAt(0) || selectedMember.userId?.charAt(0) || '?' }}</span>
+                </template>
+              </van-image>
+              <van-tag v-if="selectedMember.isAdmin" type="warning">管理员</van-tag>
+              <van-tag v-else-if="selectedMember.isModerator" type="primary">版主</van-tag>
+            </div>
 
-          <n-descriptions :column="1" bordered>
-            <n-descriptions-item label="用户 ID">
-              {{ selectedMember.userId }}
-            </n-descriptions-item>
-            <n-descriptions-item label="显示名称">
-              {{ selectedMember.displayName || '未设置' }}
-            </n-descriptions-item>
-            <n-descriptions-item label="在线状态">
-              <n-tag v-if="selectedMember.presence === 'online'" type="success">在线</n-tag>
-              <n-tag v-else-if="selectedMember.presence === 'unavailable'" type="warning">离开</n-tag>
-              <n-tag v-else type="default">离线</n-tag>
-            </n-descriptions-item>
-          </n-descriptions>
+            <van-cell-group inset :border="true">
+              <van-cell title="用户 ID" :value="selectedMember.userId" />
+              <van-cell title="显示名称" :value="selectedMember.displayName || '未设置'" />
+              <van-cell title="在线状态">
+                <template #value>
+                  <van-tag v-if="selectedMember.presence === 'online'" type="success">在线</van-tag>
+                  <van-tag v-else-if="selectedMember.presence === 'unavailable'" type="warning">离开</van-tag>
+                  <van-tag v-else type="default">离线</van-tag>
+                </template>
+              </van-cell>
+            </van-cell-group>
 
-          <div v-if="canAdmin && selectedMember.userId !== currentUserId" class="member-actions">
-            <n-button block @click="startChatWithMember">
-              <template #icon>
-                <n-icon><MessageCircle /></n-icon>
-              </template>
-              发送消息
-            </n-button>
-            <n-button block type="warning" @click="handleRemoveMember" :disabled="!canAdmin">
-              <template #icon>
-                <n-icon><UserMinus /></n-icon>
-              </template>
-              移除成员
-            </n-button>
+            <div v-if="canAdmin && selectedMember.userId !== currentUserId" class="member-actions">
+              <van-button block icon="chat-o" @click="startChatWithMember">
+                发送消息
+              </van-button>
+              <van-button block type="warning" icon="delete-o" @click="handleRemoveMember">
+                移除成员
+              </van-button>
+            </div>
           </div>
         </div>
-      </n-modal>
-    </n-drawer-content>
-  </n-drawer>
+      </van-popup>
+
+      <!-- Menu Action Sheet -->
+      <van-action-sheet
+        v-model:show="showMenuSheet"
+        :actions="menuActions"
+        @select="handleMenuSelect"
+      />
+    </div>
+  </van-popup>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  NDrawer,
-  NDrawerContent,
-  NTabs,
-  NTabPane,
-  NButton,
-  NIcon,
-  NAvatar,
-  NTag,
-  NEmpty,
-  NList,
-  NListItem,
-  NSpin,
-  NModal,
-  NForm,
-  NFormItem,
-  NInput,
-  NText,
-  NDropdown,
-  NRadioGroup,
-  NRadio,
-  NDescriptions,
-  NDescriptionsItem,
-  NSwitch,
-  useDialog,
-  useMessage
-} from 'naive-ui'
-import {
-  X,
-  DotsVertical,
-  World,
-  Lock,
-  Users,
-  Hash,
-  Bell,
-  Login,
-  Logout,
-  Plus,
-  ChevronRight,
-  UserPlus,
-  Share,
-  Settings,
-  Search,
-  Copy,
-  MessageCircle,
-  UserMinus,
-  AlertTriangle
-} from '@vicons/tabler'
-import { useMatrixSpaces, type Space as MatrixSpace } from '@/hooks/useMatrixSpaces'
+import { useDialog, useMessage } from '@/utils/vant-adapter'
+import { useMatrixSpaces, type Space as MatrixSpace, type SpaceChild } from '@/hooks/useMatrixSpaces'
 import { useHaptic } from '@/composables/useMobileGestures'
 import { logger } from '@/utils/logger'
 import { msg } from '@/utils/SafeUI'
+
+// Icon name mapping for Vant
+const getVantIconName = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    X: 'cross',
+    DotsVertical: 'ellipsis',
+    World: 'globe-o',
+    Lock: 'lock',
+    LockOpen: 'lock-open',
+    Users: 'friends-o',
+    Hash: 'hash',
+    Bell: 'bell',
+    Login: 'log-in',
+    Logout: 'log-out',
+    Plus: 'plus',
+    ChevronRight: 'arrow',
+    UserPlus: 'add-o',
+    Share: 'share-o',
+    Settings: 'setting-o',
+    Search: 'search',
+    Copy: 'files-o',
+    MessageCircle: 'chat-o',
+    UserMinus: 'delete-o',
+    AlertTriangle: 'warning-o',
+    Shield: 'shield-o',
+    Check: 'success'
+  }
+  return iconMap[iconName] || 'circle'
+}
 
 interface Props {
   show: boolean
@@ -503,6 +496,7 @@ const isJoining = ref(false)
 const isLeaving = ref(false)
 const showCreateDialog = ref(false)
 const showInviteDialog = ref(false)
+const showMenuSheet = ref(false)
 const isCreating = ref(false)
 const isInviting = ref(false)
 const showMemberModal = ref(false)
@@ -589,6 +583,19 @@ const filteredMembers = computed(() => {
   )
 })
 
+// Menu actions for action sheet
+interface MenuAction {
+  name: string
+  value: string
+  icon?: string
+}
+
+const menuActions = computed<MenuAction[]>(() => [
+  { name: '分享', value: 'share', icon: 'share-o' },
+  { name: '刷新', value: 'refresh', icon: 'replay' },
+  { name: '举报', value: 'report', icon: 'warning-o' }
+])
+
 // Methods
 const loadMembers = async () => {
   if (!props.space || !isJoined.value) return
@@ -618,28 +625,9 @@ const handleClose = () => {
   selection()
 }
 
-const getMenuOptions = () => {
-  return [
-    {
-      label: '分享',
-      key: 'share',
-      icon: () => 'Share'
-    },
-    {
-      label: '刷新',
-      key: 'refresh',
-      icon: () => 'Refresh'
-    },
-    {
-      label: '举报',
-      key: 'report',
-      icon: () => 'AlertTriangle'
-    }
-  ]
-}
-
-const handleMenuAction = (key: string) => {
-  switch (key) {
+const handleMenuSelect = (action: MenuAction) => {
+  showMenuSheet.value = false
+  switch (action.value) {
     case 'share':
       handleExport()
       break
@@ -681,9 +669,9 @@ const handleLeave = () => {
   dialog.warning({
     title: '离开工作区',
     content: `确定要离开 "${props.space.name}" 吗？`,
-    positiveText: '离开',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '离开',
+    cancelText: '取消',
+    onConfirm: async () => {
       isLeaving.value = true
       try {
         const result = await leaveSpace(props.space!.id)
@@ -707,18 +695,12 @@ const openRoom = (roomId: string) => {
   selection()
 }
 
-const getRoomUnread = (child: any) => {
+const getRoomUnread = (child: SpaceChild) => {
   if (!child.notifications) return 0
   return (child.notifications.notificationCount ?? 0) + (child.notifications.highlightCount ?? 0)
 }
 
 const handleCreateRoom = async () => {
-  try {
-    await createFormRef.value?.validate()
-  } catch {
-    return
-  }
-
   if (!props.space || !newRoom.value.name) return
 
   isCreating.value = true
@@ -743,12 +725,6 @@ const handleCreateRoom = async () => {
 }
 
 const handleInvite = async () => {
-  try {
-    await inviteFormRef.value?.validate()
-  } catch {
-    return
-  }
-
   if (!props.space || !inviteForm.value.userId) return
 
   isInviting.value = true
@@ -797,9 +773,9 @@ const handleEncryptionToggle = (value: boolean) => {
   dialog.info({
     title: '加密设置',
     content: value ? '启用加密后，新消息将被端到端加密' : '禁用加密后，新消息将不再加密',
-    positiveText: '确定',
-    negativeText: '取消',
-    onPositiveClick: () => {
+    confirmText: '确定',
+    cancelText: '取消',
+    onConfirm: () => {
       spaceEncrypted.value = value
       success()
       message.success(value ? '已启用加密' : '已禁用加密')
@@ -841,9 +817,9 @@ const handleRemoveMember = () => {
   dialog.warning({
     title: '移除成员',
     content: `确定要移除 "${selectedMember.value.displayName || selectedMember.value.userId}" 吗？`,
-    positiveText: '移除',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '移除',
+    cancelText: '取消',
+    onConfirm: async () => {
       try {
         await removeFromSpace(props.space!.id, selectedMember.value!.userId)
         success()
@@ -871,7 +847,7 @@ watch(
   () => props.space,
   async (newSpace) => {
     if (newSpace && isJoined.value) {
-      spaceEncrypted.value = (newSpace as any).encrypted || false
+      spaceEncrypted.value = newSpace.encrypted || false
     }
   }
 )
@@ -1177,6 +1153,50 @@ onMounted(() => {
     flex-direction: column;
     gap: 8px;
     margin-top: 12px;
+  }
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-color, #ffffff);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 80vh;
+
+  .dialog-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-color-1);
+      text-align: center;
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color, #f0f0f0);
+
+    .van-button {
+      flex: 1;
+    }
+  }
+}
+
+// Safe area for mobile
+@supports (padding: env(safe-area-inset-bottom)) {
+  .drawer-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .tab-content {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 </style>

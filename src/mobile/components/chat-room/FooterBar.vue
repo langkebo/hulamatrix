@@ -67,7 +67,7 @@ defineExpose({ root })
   position: relative;
 
   svg {
-    color: #13987f;
+    color: var(--hula-accent, #13987f);
     /* 主题色 */
     transition: color 0.3s ease;
   }
@@ -81,7 +81,7 @@ defineExpose({ root })
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background-color: #13987f;
+    background-color: var(--hula-accent, #13987f);
     animation: pulse 1.5s infinite;
   }
 }

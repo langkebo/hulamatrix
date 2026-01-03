@@ -263,7 +263,7 @@
         <!-- Step 4: Failed -->
         <div v-else-if="verificationStep === 'failed'" class="verification-step">
           <div class="failed-content">
-            <n-icon size="48" color="#d03050" :component="CircleX" />
+            <n-icon size="48" color="var(--hula-error, #d03050)" :component="CircleX" />
             <h4>验证失败</h4>
             <p>{{ verificationError || '设备验证失败，请重试' }}</p>
           </div>

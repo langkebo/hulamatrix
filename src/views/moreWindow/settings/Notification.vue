@@ -84,8 +84,8 @@
           <n-progress
             id="batch-progress"
             type="line"
-            :color="'#13987f'"
-            :rail-color="'#13987f30'"
+            :color="'var(--hula-accent, #13987f)'"
+            :rail-color="'rgba(19, 152, 127, 0.19)'"
             :percentage="progress"
             :show-indicator="false" />
         </n-flex>
@@ -120,7 +120,7 @@
                   trigger="click"
                   :scrollable="false"
                   @update:show="(show: boolean) => (isDropdownShow = show)">
-                  <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
+                  <n-button size="small" :color="'var(--hula-accent, #13987f)'" text class="text-(12px [--text-color])">
                     {{ getNotificationStatusText(session) }}
                   </n-button>
                 </n-dropdown>
@@ -150,7 +150,7 @@
                 trigger="click"
                 :scrollable="false"
                 @update:show="(show: boolean) => (isDropdownShow = show)">
-                <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
+                <n-button size="small" :color="'var(--hula-accent, #13987f)'" text class="text-(12px [--text-color])">
                   {{ getNotificationStatusText(session) }}
                 </n-button>
               </n-dropdown>
@@ -279,9 +279,7 @@ import { NotificationTypeEnum, RoomTypeEnum } from '@/enums'
 import type { SessionItem } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { notification, shield } from '@/utils/ImRequestUtils'
 import { muteRoom, unmuteRoom, getNotificationPolicy } from '@/integrations/matrix/pusher'
-import { flags } from '@/utils/envFlags'
 
 import { msg } from '@/utils/SafeUI'
 import { assign } from 'es-toolkit/compat'
@@ -387,7 +385,7 @@ const getNotificationOptions = (session: SessionItem) => {
       key: 'allow',
       icon:
         !session.shield && session.muteNotification === NotificationTypeEnum.RECEPTION
-          ? () => h('svg', { class: 'size-14px text-#13987f' }, [h('use', { href: '#check-small' })])
+          ? () => h('svg', { class: 'size-14px text-brand' }, [h('use', { href: '#check-small' })])
           : undefined
     },
     {
@@ -395,14 +393,14 @@ const getNotificationOptions = (session: SessionItem) => {
       key: 'mute',
       icon:
         !session.shield && session.muteNotification === NotificationTypeEnum.NOT_DISTURB
-          ? () => h('svg', { class: 'size-14px text-#13987f' }, [h('use', { href: '#check-small' })])
+          ? () => h('svg', { class: 'size-14px text-brand' }, [h('use', { href: '#check-small' })])
           : undefined
     },
     {
       label: t('setting.notice.group_notic_type.block'),
       key: 'shield',
       icon: session.shield
-        ? () => h('svg', { class: 'size-14px text-#13987f' }, [h('use', { href: '#check-small' })])
+        ? () => h('svg', { class: 'size-14px text-brand' }, [h('use', { href: '#check-small' })])
         : undefined
     }
   ]
@@ -521,25 +519,11 @@ const handleNotificationChange = async (
       case 'allow':
         // 如果当前是屏蔽状态，需要先取消屏蔽
         if (session.shield) {
-          if (flags.matrixEnabled) {
-            await unmuteRoom(session.roomId)
-          } else {
-            await shield({
-              roomId: session.roomId,
-              state: false
-            })
-          }
+          await unmuteRoom(session.roomId)
           applySessionUpdate(session, { shield: false })
         }
 
-        if (flags.matrixEnabled) {
-          await unmuteRoom(session.roomId)
-        } else {
-          await notification({
-            roomId: session.roomId,
-            type: NotificationTypeEnum.RECEPTION
-          })
-        }
+        await unmuteRoom(session.roomId)
 
         applySessionUpdate(session, {
           muteNotification: NotificationTypeEnum.RECEPTION
@@ -553,25 +537,11 @@ const handleNotificationChange = async (
       case 'mute':
         // 如果当前是屏蔽状态，需要先取消屏蔽
         if (session.shield) {
-          if (flags.matrixEnabled) {
-            await unmuteRoom(session.roomId)
-          } else {
-            await shield({
-              roomId: session.roomId,
-              state: false
-            })
-          }
+          await unmuteRoom(session.roomId)
           applySessionUpdate(session, { shield: false })
         }
 
-        if (flags.matrixEnabled) {
-          await muteRoom(session.roomId)
-        } else {
-          await notification({
-            roomId: session.roomId,
-            type: NotificationTypeEnum.NOT_DISTURB
-          })
-        }
+        await muteRoom(session.roomId)
 
         applySessionUpdate(session, {
           muteNotification: NotificationTypeEnum.NOT_DISTURB
@@ -585,14 +555,7 @@ const handleNotificationChange = async (
         break
 
       case 'shield':
-        if (flags.matrixEnabled) {
-          await muteRoom(session.roomId)
-        } else {
-          await shield({
-            roomId: session.roomId,
-            state: true
-          })
-        }
+        await muteRoom(session.roomId)
 
         applySessionUpdate(session, {
           shield: true

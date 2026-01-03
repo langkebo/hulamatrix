@@ -1,72 +1,78 @@
 <!-- Mobile Message Reply Dialog - Reply to a message on mobile -->
 <template>
-  <n-modal
+  <van-popup
     v-model:show="showDialog"
-    preset="card"
-    :title="t('message.reply')"
-    :style="{ width: '90%', maxWidth: '500px' }"
-    @close="handleClose"
+    position="bottom"
+    :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
   >
-    <div class="mobile-message-reply">
-      <!-- Original Message Preview -->
-      <div class="original-message">
-        <div class="preview-label">{{ t('message.replyingTo') }}</div>
-        <div class="preview-content">{{ replyToContent }}</div>
+    <div class="mobile-message-reply-popup">
+      <!-- Handle bar -->
+      <div class="handle-bar" @click="handleClose"></div>
+
+      <!-- Header -->
+      <div class="popup-header">
+        <div class="header-title">{{ t('message.reply') }}</div>
+        <van-icon name="cross" :size="20" @click="handleClose" />
       </div>
 
-      <!-- Reply Input -->
-      <div class="reply-section">
-        <n-input
-          v-model:value="replyText"
-          type="textarea"
-          :placeholder="t('message.replyPlaceholder')"
-          :autosize="{ minRows: 3, maxRows: 8 }"
-          :maxlength="maxLength"
-          show-count
-          size="large"
-          ref="inputRef"
-          @keyup.enter.ctrl="sendReply"
-        />
+      <!-- Content -->
+      <div class="popup-content">
+        <div class="mobile-message-reply">
+          <!-- Original Message Preview -->
+          <div class="original-message">
+            <div class="preview-label">{{ t('message.replyingTo') }}</div>
+            <div class="preview-content">{{ replyToContent }}</div>
+          </div>
+
+          <!-- Reply Input -->
+          <div class="reply-section">
+            <van-field
+              v-model="replyText"
+              type="textarea"
+              :placeholder="t('message.replyPlaceholder')"
+              :autosize="{ minHeight: 80, maxHeight: 200 }"
+              :maxlength="maxLength"
+              rows="3"
+              ref="inputRef"
+              @keyup.ctrl.enter="sendReply"
+            />
+            <div class="char-count">{{ replyText.length }}/{{ maxLength }}</div>
+          </div>
+
+          <!-- Info -->
+          <div class="reply-info">
+            <van-icon name="info-o" :size="14" />
+            <span>{{ t('message.replyInfo') }}</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Info -->
-      <n-alert type="info" :show-icon="true" class="reply-info">
-        <template #icon>
-          <n-icon><InfoCircle /></n-icon>
-        </template>
-        {{ t('message.replyInfo') }}
-      </n-alert>
-
-      <!-- Actions -->
-      <template #footer>
-        <n-space vertical>
-          <n-button
-            type="primary"
-            block
-            size="large"
-            :loading="sending"
-            :disabled="!replyText.trim()"
-            @click="sendReply"
-          >
-            <template #icon>
-              <n-icon><Send /></n-icon>
-            </template>
-            {{ t('message.send') }}
-          </n-button>
-          <n-button block @click="handleClose">
-            {{ t('common.cancel') }}
-          </n-button>
-        </n-space>
-      </template>
+      <!-- Footer Actions -->
+      <div class="popup-footer">
+        <van-button
+          type="primary"
+          block
+          :loading="sending"
+          :disabled="!replyText.trim()"
+          @click="sendReply"
+        >
+          <template #icon>
+            <van-icon name="send" />
+          </template>
+          {{ t('message.send') }}
+        </van-button>
+        <van-button block @click="handleClose">
+          {{ t('common.cancel') }}
+        </van-button>
+      </div>
     </div>
-  </n-modal>
+  </van-popup>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NModal, NInput, NButton, NSpace, NAlert, NIcon, useMessage } from 'naive-ui'
-import { Send, InfoCircle } from '@vicons/tabler'
+import { useMessage } from '@/utils/vant-adapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { sendMessage } from '@/utils/matrixClientUtils'
@@ -173,6 +179,68 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.mobile-message-reply-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 8px auto;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:active {
+    background: #d0d0d0;
+  }
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .van-icon {
+    cursor: pointer;
+    color: #666;
+    padding: 8px;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+}
+
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.popup-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .mobile-message-reply {
   .original-message {
     margin-bottom: 16px;
@@ -198,11 +266,32 @@ watch(
 
   .reply-section {
     margin-bottom: 16px;
+    position: relative;
+
+    .char-count {
+      position: absolute;
+      bottom: -20px;
+      right: 0;
+      font-size: 11px;
+      color: var(--text-color-3);
+    }
   }
 
   .reply-info {
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-radius: 6px;
     font-size: 12px;
+    color: #0050b3;
+
+    .van-icon {
+      color: #1890ff;
+      flex-shrink: 0;
+    }
   }
 }
 </style>

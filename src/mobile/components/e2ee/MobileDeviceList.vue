@@ -3,11 +3,7 @@
   <div class="mobile-device-list">
     <!-- Security Status Banner -->
     <div v-if="showSecurityBanner" class="security-banner" :class="`security-${securityLevel}`">
-      <n-icon class="banner-icon" :size="20">
-        <Shield v-if="securityLevel === 'high'" />
-        <ShieldCheck v-else-if="securityLevel === 'medium'" />
-        <ShieldX v-else />
-      </n-icon>
+      <van-icon class="banner-icon" :name="getVantIconName(securityLevel === 'high' ? 'Shield' : securityLevel === 'medium' ? 'ShieldCheck' : 'ShieldX')" :size="20" />
       <div class="banner-content">
         <div class="banner-title">{{ securityTitle }}</div>
         <div class="banner-desc">{{ securityDescription }}</div>
@@ -19,31 +15,29 @@
       <div class="progress-label">
         设备验证进度: {{ progress }}%
       </div>
-      <n-progress type="line" :percentage="progress" :show-indicator="false" />
+      <van-progress :percentage="progress" :show-pivot="false" stroke-width="4" />
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
-      <n-spin size="medium" />
+      <van-loading size="24px" />
       <p class="mt-12px">加载设备中...</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <n-result status="error" title="加载失败" :description="error">
-        <template #footer>
-          <n-button @click="refreshDevices">重试</n-button>
-        </template>
-      </n-result>
+      <van-icon name="close-circle" :size="64" color="#d03050" class="mb-12px" />
+      <div class="state-title">加载失败</div>
+      <div class="state-desc">{{ error }}</div>
+      <van-button @click="refreshDevices" type="primary" class="mt-16px">重试</van-button>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="devices.length === 0" class="empty-state">
-      <n-result status="info" title="暂无设备" description="没有找到任何设备">
-        <template #footer>
-          <n-button type="primary" @click="refreshDevices">刷新</n-button>
-        </template>
-      </n-result>
+      <van-icon name="info-o" :size="64" color="#18a058" class="mb-12px" />
+      <div class="state-title">暂无设备</div>
+      <div class="state-desc">没有找到任何设备</div>
+      <van-button @click="refreshDevices" type="primary" class="mt-16px">刷新</van-button>
     </div>
 
     <!-- Device List -->
@@ -52,7 +46,7 @@
       <div v-if="verifiedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <n-icon :size="16" color="#18a058"><CircleCheck /></n-icon>
+            <van-icon name="success" :size="16" color="#18a058" />
             已验证设备 ({{ verifiedDevices.length }})
           </div>
         </div>
@@ -64,11 +58,13 @@
             @click="openDeviceMenu(device)"
           >
             <div class="device-main">
-              <n-avatar :size="44" :src="getDeviceAvatar(device)">
-                <template #fallback>
-                  <n-icon :size="22"><DeviceMobile /></n-icon>
+              <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
+                <template #error>
+                  <div class="avatar-fallback">
+                    <van-icon name="phone-o" :size="22" />
+                  </div>
                 </template>
-              </n-avatar>
+              </van-image>
               <div class="device-info">
                 <div class="device-name">{{ device.displayName || device.deviceId }}</div>
                 <div class="device-id">{{ device.deviceId }}</div>
@@ -78,7 +74,7 @@
               </div>
             </div>
             <div class="device-status">
-              <n-tag type="success" size="small" round>已验证</n-tag>
+              <van-tag type="success" round>已验证</van-tag>
             </div>
           </div>
         </div>
@@ -88,7 +84,7 @@
       <div v-if="unverifiedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <n-icon :size="16" color="#f0a020"><AlertCircle /></n-icon>
+            <van-icon name="warning-o" :size="16" color="#f0a020" />
             未验证设备 ({{ unverifiedDevices.length }})
           </div>
         </div>
@@ -100,11 +96,13 @@
             @click="openDeviceMenu(device)"
           >
             <div class="device-main">
-              <n-avatar :size="44" :src="getDeviceAvatar(device)">
-                <template #fallback>
-                  <n-icon :size="22"><DeviceMobile /></n-icon>
+              <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
+                <template #error>
+                  <div class="avatar-fallback">
+                    <van-icon name="phone-o" :size="22" />
+                  </div>
                 </template>
-              </n-avatar>
+              </van-image>
               <div class="device-info">
                 <div class="device-name">{{ device.displayName || device.deviceId }}</div>
                 <div class="device-id">{{ device.deviceId }}</div>
@@ -114,9 +112,9 @@
               </div>
             </div>
             <div class="device-status">
-              <n-button type="primary" size="small" round @click.stop="openVerifyDialog(device)">
+              <van-button type="primary" size="small" round @click.stop="openVerifyDialog(device)">
                 验证
-              </n-button>
+              </van-button>
             </div>
           </div>
         </div>
@@ -126,7 +124,7 @@
       <div v-if="blockedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <n-icon :size="16" color="#d03050"><ShieldX /></n-icon>
+            <van-icon name="shield-close" :size="16" color="#d03050" />
             已屏蔽设备 ({{ blockedDevices.length }})
           </div>
         </div>
@@ -138,11 +136,13 @@
             @click="openDeviceMenu(device)"
           >
             <div class="device-main">
-              <n-avatar :size="44" :src="getDeviceAvatar(device)">
-                <template #fallback>
-                  <n-icon :size="22"><DeviceMobile /></n-icon>
+              <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
+                <template #error>
+                  <div class="avatar-fallback">
+                    <van-icon name="phone-o" :size="22" />
+                  </div>
                 </template>
-              </n-avatar>
+              </van-image>
               <div class="device-info">
                 <div class="device-name">{{ device.displayName || device.deviceId }}</div>
                 <div class="device-id">{{ device.deviceId }}</div>
@@ -152,7 +152,7 @@
               </div>
             </div>
             <div class="device-status">
-              <n-tag type="error" size="small" round>已屏蔽</n-tag>
+              <van-tag type="danger" round>已屏蔽</van-tag>
             </div>
           </div>
         </div>
@@ -161,43 +161,33 @@
 
     <!-- Action Buttons -->
     <div v-if="devices.length > 0" class="action-buttons">
-      <n-button type="primary" block size="large" @click="refreshDevices" :loading="loading">
-        <template #icon>
-          <n-icon><Refresh /></n-icon>
-        </template>
+      <van-button type="primary" block size="large" @click="refreshDevices" :loading="loading" icon="replay">
         刷新设备
-      </n-button>
+      </van-button>
     </div>
 
     <!-- Device Action Menu -->
-    <n-popover
+    <van-popup
       v-model:show="showActionMenu"
-      placement="bottom"
-      trigger="click"
-      :show-arrow="true"
+      position="bottom"
+      :style="{ borderRadius: '16px 16px 0 0' }"
     >
-      <template #trigger>
-        <n-button text style="opacity: 0">
-          <template #icon>
-            <n-icon><DotsVertical /></n-icon>
-          </template>
-        </n-button>
-      </template>
-      <div class="action-menu">
-        <div
-          v-for="action in deviceActions"
-          :key="action.key"
-          class="action-item"
-          :class="{ danger: action.danger }"
-          @click="handleDeviceAction(action.key)"
-        >
-          <n-icon v-if="action.icon" :size="16" class="action-icon">
-            <component :is="action.icon" />
-          </n-icon>
-          <span>{{ action.label }}</span>
+      <div class="action-menu-popup">
+        <div class="handle-bar" @click="showActionMenu = false"></div>
+        <div class="action-menu">
+          <div
+            v-for="action in deviceActions"
+            :key="action.key"
+            class="action-item"
+            :class="{ danger: action.danger, disabled: action.disabled }"
+            @click="handleDeviceAction(action.key)"
+          >
+            <van-icon v-if="!action.disabled" :name="getVantIconName(getActionIconName(action.key))" :size="16" class="action-icon" />
+            <span>{{ action.label }}</span>
+          </div>
         </div>
       </div>
-    </n-popover>
+    </van-popup>
 
     <!-- Verification Dialog -->
     <MobileDeviceVerifyDialog
@@ -208,57 +198,74 @@
     />
 
     <!-- Rename Dialog -->
-    <n-modal v-model:show="showRenameDialog" preset="card" title="重命名设备" :style="{ width: '90%', maxWidth: '400px' }">
-      <n-input
-        v-model:value="renameValue"
-        placeholder="请输入设备名称"
-        size="large"
-        @keyup.enter="confirmRename"
-      />
-      <template #footer>
-        <n-space>
-          <n-button @click="showRenameDialog = false">取消</n-button>
-          <n-button type="primary" @click="confirmRename">确定</n-button>
-        </n-space>
-      </template>
-    </n-modal>
+    <van-popup
+      v-model:show="showRenameDialog"
+      position="center"
+      :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
+    >
+      <div class="rename-dialog">
+        <div class="dialog-header">
+          <span class="header-title">重命名设备</span>
+          <van-icon name="cross" :size="18" @click="showRenameDialog = false" />
+        </div>
+        <div class="dialog-content">
+          <van-field
+            v-model="renameValue"
+            placeholder="请输入设备名称"
+            size="large"
+            @keyup.enter="confirmRename"
+          />
+        </div>
+        <div class="dialog-footer">
+          <div class="button-group">
+            <van-button @click="showRenameDialog = false">取消</van-button>
+            <van-button type="primary" @click="confirmRename">确定</van-button>
+          </div>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import {
-  NButton,
-  NIcon,
-  NAvatar,
-  NTag,
-  NSpin,
-  NResult,
-  NProgress,
-  NPopover,
-  NModal,
-  NInput,
-  NSpace,
-  useDialog
-} from 'naive-ui'
-import {
-  DeviceMobile,
-  Shield,
-  ShieldCheck,
-  ShieldX,
-  CircleCheck,
-  AlertCircle,
-  Refresh,
-  DotsVertical,
-  Check,
-  X,
-  Trash
-} from '@vicons/tabler'
+import { useDialog } from '@/utils/vant-adapter'
 import { useE2EEStore } from '@/stores/e2ee'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { listDevices, deleteDevice, renameDevice } from '@/integrations/matrix/encryption'
 import MobileDeviceVerifyDialog from './MobileDeviceVerifyDialog.vue'
 import { msg } from '@/utils/SafeUI'
+
+// Icon name mapping for Vant
+const getVantIconName = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    DeviceMobile: 'phone-o',
+    Shield: 'shield-o',
+    ShieldCheck: 'shield',
+    ShieldX: 'shield-close',
+    CircleCheck: 'success',
+    AlertCircle: 'warning-o',
+    Refresh: 'replay',
+    DotsVertical: 'ellipsis',
+    Check: 'success',
+    X: 'close',
+    Trash: 'delete'
+  }
+  return iconMap[iconName] || 'circle'
+}
+
+// Get action icon name
+const getActionIconName = (actionKey: string): string => {
+  const iconMap: Record<string, string> = {
+    verify: 'Check',
+    rename: 'DotsVertical',
+    unverify: 'X',
+    block: 'ShieldX',
+    unblock: 'Check',
+    delete: 'Trash'
+  }
+  return iconMap[actionKey] || 'CircleCheck'
+}
 
 // Store
 const e2eeStore = useE2EEStore()
@@ -319,7 +326,6 @@ const deviceActions = computed(() => {
   const actions: Array<{
     label: string
     key: string
-    icon?: () => unknown
     danger?: boolean
     disabled?: boolean
   }> = [
@@ -333,22 +339,19 @@ const deviceActions = computed(() => {
   if (!device.verified && !device.blocked) {
     actions.push({
       label: '验证设备',
-      key: 'verify',
-      icon: () => Check
+      key: 'verify'
     })
   }
 
   actions.push({
     label: '重命名',
-    key: 'rename',
-    icon: () => DotsVertical
+    key: 'rename'
   })
 
   if (device.verified && !device.blocked) {
     actions.push({
       label: '取消验证',
       key: 'unverify',
-      icon: () => X,
       danger: true
     })
   }
@@ -357,21 +360,18 @@ const deviceActions = computed(() => {
     actions.push({
       label: '屏蔽设备',
       key: 'block',
-      icon: () => ShieldX,
       danger: true
     })
   } else {
     actions.push({
       label: '取消屏蔽',
-      key: 'unblock',
-      icon: () => Check
+      key: 'unblock'
     })
   }
 
   actions.push({
     label: '删除设备',
     key: 'delete',
-    icon: () => Trash,
     danger: true
   })
 
@@ -402,8 +402,17 @@ const loadDevices = async () => {
       blocked: e2eeStore.isDeviceBlocked(d.device_id)
     }))
 
-    // Update store
-    e2eeStore.updateDevices(devices.value as any)
+    // Update store - convert Device[] to DeviceInfo[]
+    const deviceInfoList = devices.value.map((d) => ({
+      deviceId: d.deviceId,
+      verified: d.verified ?? false,
+      keyInfo: {
+        deviceId: d.deviceId,
+        display_name: d.displayName,
+        last_seen_ts: d.lastSeen
+      }
+    }))
+    e2eeStore.updateDevices(deviceInfoList)
   } catch (err) {
     error.value = err instanceof Error ? err.message : '加载设备失败'
   } finally {
@@ -485,9 +494,9 @@ const handleDelete = async (device: Device) => {
   dialog.warning({
     title: '删除设备',
     content: `确定要删除设备 "${device.displayName || device.deviceId}" 吗？此操作不可撤销。`,
-    positiveText: '删除',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '删除',
+    cancelText: '取消',
+    onConfirm: async () => {
       loading.value = true
       try {
         const ok = await deleteDevice(device.deviceId)
@@ -508,9 +517,9 @@ const handleBlock = async (device: Device) => {
   dialog.warning({
     title: '屏蔽设备',
     content: `确定要屏蔽设备 "${device.displayName || device.deviceId}" 吗？被屏蔽的设备将无法参与加密通信。`,
-    positiveText: '屏蔽',
-    negativeText: '取消',
-    onPositiveClick: async () => {
+    confirmText: '屏蔽',
+    cancelText: '取消',
+    onConfirm: async () => {
       e2eeStore.updateDevice(device.deviceId, { blocked: true })
       msg.success('设备已屏蔽')
       await loadDevices()
@@ -755,5 +764,144 @@ onMounted(() => {
   padding: 12px 0;
   background: var(--bg-color);
   margin-top: 16px;
+}
+
+// Utility classes
+.mt-12px {
+  margin-top: 12px;
+}
+
+.mb-12px {
+  margin-bottom: 12px;
+}
+
+.mt-16px {
+  margin-top: 16px;
+}
+
+// Avatar fallback
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color, #18a058);
+  color: white;
+  border-radius: 50%;
+}
+
+// State display
+.state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color-1);
+  margin-bottom: 8px;
+}
+
+.state-desc {
+  font-size: 14px;
+  color: var(--text-color-3);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+// Action menu popup
+.action-menu-popup {
+  .handle-bar {
+    width: 40px;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 8px auto;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:active {
+      background: #d0d0d0;
+    }
+  }
+
+  .action-menu {
+    padding: 8px 0;
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:not(.disabled):active {
+        background: var(--item-hover-bg);
+      }
+
+      &.danger {
+        color: #d03050;
+
+        .action-icon {
+          color: #d03050;
+        }
+      }
+
+      &.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        font-weight: 600;
+      }
+
+      .action-icon {
+        color: var(--text-color-2);
+      }
+    }
+  }
+}
+
+// Rename dialog
+.rename-dialog {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .van-icon {
+      cursor: pointer;
+      color: #666;
+      padding: 8px;
+
+      &:active {
+        opacity: 0.6;
+      }
+    }
+  }
+
+  .dialog-content {
+    padding: 16px;
+  }
+
+  .dialog-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+    }
+  }
 }
 </style>

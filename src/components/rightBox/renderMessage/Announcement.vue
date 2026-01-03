@@ -26,7 +26,7 @@
           padding: '2px 4px',
           borderRadius: '6px',
           color: '#000',
-          background: '#13987f'
+          background: 'var(--hula-accent, #13987f)'
         }" />
       <template v-else>{{ body.content }}</template>
     </p>

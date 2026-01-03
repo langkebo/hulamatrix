@@ -278,7 +278,7 @@ onMounted(() => {
 
   &.status-verified {
     background: #e6f7ef;
-    color: #13987f;
+    color: var(--hula-accent, #13987f);
   }
 
   &.status-unverified {

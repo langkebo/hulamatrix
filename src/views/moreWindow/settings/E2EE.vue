@@ -13,7 +13,7 @@
       <n-list hoverable clickable>
         <n-list-item>
           <template #prefix>
-            <n-icon size="24" :color="crossSigningReady ? '#18a058' : '#f0a020'">
+            <n-icon size="24" :color="crossSigningReady ? 'var(--hula-success, #18a058)' : 'var(--hula-warning, #f0a020)'">
               <CircleCheck v-if="crossSigningReady" />
               <AlertCircle v-else />
             </n-icon>
@@ -232,13 +232,15 @@ import DeviceVerificationDialog from '@/components/e2ee/DeviceVerificationDialog
 
 const { t } = useI18n()
 
-interface DeviceInfo {
-  deviceId: string
-  userId: string
-  displayName?: string
-  verified: boolean
-  blocked?: boolean
-  lastSeenTs?: number
+// Re-export DeviceInfo from store for use in component
+import type { DeviceInfo } from '@/stores/e2ee'
+
+interface BackupResult {
+  success?: boolean
+  recoveryKey?: string
+  imported?: number
+  total?: number
+  error?: string
 }
 
 const e2eeStore = useE2EEStore()
@@ -352,7 +354,7 @@ const handleDeviceVerified = async () => {
   await loadDevices()
 }
 
-const handleBackupCompleted = async (result: any) => {
+const handleBackupCompleted = async (result: BackupResult) => {
   logger.info('[E2EESettings] Backup completed', result)
 }
 
@@ -398,7 +400,7 @@ const formatLastSeen = (timestamp?: number): string => {
 const loadDevices = async () => {
   try {
     const devices = e2eeStore.getAllDevices()
-    userDevices.value = devices.map((d: any) => ({
+    userDevices.value = devices.map((d: DeviceInfo) => ({
       deviceId: d.deviceId,
       userId: d.userId || '',
       displayName: d.displayName,

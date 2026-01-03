@@ -36,13 +36,15 @@ import { saveFileAttachmentAs, saveVideoAttachmentAs } from '@/utils/AttachmentS
 import { isDiffNow } from '@/utils/ComputedTime.ts'
 import { extractFileName, removeTag } from '@/utils/Formatting'
 import { detectImageFormat, imageUrlToUint8Array, isImageUrl } from '@/utils/ImageUtils'
-import { recallMsg, updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { detectRemoteFileType, getFilesMeta } from '@/utils/PathUtil'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useWindow } from './useWindow'
 import { useI18n } from 'vue-i18n'
 import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
 
 // Type definitions for message bodies
 interface UrlMessageBody {
@@ -170,12 +172,10 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
     try {
       groupNicknameSubmitting.value = true
-      // Remark 功能说明：
-      // - remark 字段用于设置用户在群组中的备注/别名
-      // - 当前架构迁移中，RoomStore 暂未实现 remark 功能
-      // - 如需启用，需要在 RoomStore 中添加 remark 状态管理
-      // - Matrix 协议中可以通过 m.room.member 事件的 displayname 实现
-      // - 当前使用空字符串作为默认值，不影响核心功能
+      // 使用 Matrix SDK 设置房间昵称
+      await sessionSettingsService.setRoomNickname(roomId, trimmedName)
+
+      // 更新本地缓存的房间信息
       const remark = ''
       const payload = {
         id: roomId,
@@ -183,16 +183,14 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
         remark
       }
       await cachedStore.updateMyRoomInfo(payload)
-      await updateMyRoomInfo(payload)
-      // groupStore.updateUserItem(currentUid, { myName: trimmedName }, roomId)
       roomStore.updateMember(roomId, currentUid, { displayName: trimmedName })
 
-      // await groupStore.updateGroupDetail(roomId, { myName: trimmedName })
       if (currentUid === userUid.value) {
         // groupStore.myNameInCurrentGroup = trimmedName
       }
       groupNicknameSubmitting.value = false
       groupNicknameModalVisible.value = false
+      msg.success(t('home.chat_main.group_nickname.success'))
     } catch (_error) {
       msg.error(t('home.chat_main.group_nickname.errors.update_fail'))
       groupNicknameSubmitting.value = false
@@ -298,20 +296,30 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
       icon: 'corner-down-left',
       action: async (item: MessageType) => {
         const msg = { ...item }
-        const res = await recallMsg({ roomId: globalStore.currentSessionRoomId, msgId: item.message.id })
-        if (res) {
-          ;(msg as unknown as { error: (error: unknown) => void }).error(res)
-          return
+        // 使用 Matrix SDK 的 redaction 功能
+        const client = matrixClientService.getClient()
+        if (!client) return
+
+        try {
+          const redactEvent = client.redactEvent as
+            | ((roomId: string, eventId: string, reason?: string) => Promise<unknown>)
+            | undefined
+
+          if (redactEvent) {
+            await redactEvent(globalStore.currentSessionRoomId, item.message.id)
+            chatStore.recordRecallMsg({
+              recallUid: userStore.userInfo!.uid,
+              msg
+            })
+            await chatStore.updateRecallMsg({
+              recallUid: userStore.userInfo!.uid,
+              roomId: msg.message.roomId,
+              msgId: msg.message.id
+            })
+          }
+        } catch (error) {
+          logger.error('Failed to recall message:', error)
         }
-        chatStore.recordRecallMsg({
-          recallUid: userStore.userInfo!.uid,
-          msg
-        })
-        await chatStore.updateRecallMsg({
-          recallUid: userStore.userInfo!.uid,
-          roomId: msg.message.roomId,
-          msgId: msg.message.id
-        })
       },
       visible: (item: MessageType) => {
         const isSystemAdmin = userStore.userInfo?.power === PowerEnum.ADMIN

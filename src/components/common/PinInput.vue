@@ -13,9 +13,9 @@
         :class="[
           'text-center rounded-8px',
           'border-(2px solid transparent)',
-          'focus:border-(2px solid #13987f)',
           'focus:outline-none',
           'box-border',
+          'pin-input-field',
           inputClass
         ]"
         :style="{
@@ -170,3 +170,9 @@ defineExpose({
   focus
 })
 </script>
+
+<style scoped>
+.pin-input-field:focus {
+  border: 2px solid var(--hula-accent, #13987f);
+}
+</style>

@@ -59,8 +59,6 @@ import { ThemeEnum } from '@/enums'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useLogin } from '@/hooks/useLogin'
-// replaced Vant dialog with Naive dialog
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
 import router from '@/router'
 
 import { msg } from '@/utils/SafeUI'
@@ -130,8 +128,6 @@ async function handleLogout() {
   if (isLoggingOut.value) return
   isLoggingOut.value = true
 
-  let logoutSuccess = false
-
   const confirm = () =>
     new Promise<void>((resolve, reject) => {
       window.$dialog?.warning({
@@ -146,29 +142,18 @@ async function handleLogout() {
 
   confirm()
     .then(async () => {
-      try {
-        await ImRequestUtils.logout({ autoLogin: true })
-        logoutSuccess = true
-      } catch (error) {
-        logger.error('服务器登出失败：', error)
-        // 即使服务器登出失败，也继续执行本地清理，但给出警告
-        msg.warning('服务器登出失败，但本地登录状态已清除')
-      }
-
       // 无论服务器登出是否成功，都执行本地状态清理
       try {
-        // 2. 重置登录状态
+        // 1. 重置登录状态
         await resetLoginState()
-        // 3. 最后调用登出方法(这会创建登录窗口或发送登出事件)
+        // 2. 最后调用登出方法(这会创建登录窗口或发送登出事件)
         await logout()
 
         settingStore.toggleLogin(false, false)
         info('登出账号')
         // 保持托盘菜单状态由全局控制，不在此强制修改
 
-        if (logoutSuccess) {
-          msg.success('登出成功')
-        }
+        msg.success('登出成功')
         await router.push('/mobile/login')
       } catch (localError) {
         logger.error('本地登出清理失败：', localError)

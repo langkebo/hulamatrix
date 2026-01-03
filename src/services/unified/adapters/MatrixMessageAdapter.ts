@@ -4,8 +4,8 @@
  * 实现 Matrix 协议的消息发送功能
  *
  * 注意：
- * - messageService 现在是适配器层，内部委托给 unifiedMessageService
- * - enhancedMessageService 也被 unifiedMessageService 内部使用
+ * - 已移除对废弃 messageService 的依赖
+ * - 使用 unifiedMessageService 和 enhancedMessageService
  * - 此适配器保持动态导入以避免循环依赖
  */
 
@@ -49,9 +49,9 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
     try {
       logger.info('[MatrixAdapter] 初始化 Matrix 消息服务')
 
-      // 动态导入以避免循环依赖
-      const { messageService } = await import('@/services/messageService')
-      await messageService.initialize()
+      // Use unifiedMessageReceiver instead of deprecated messageService
+      const { unifiedMessageReceiver } = await import('@/services/unifiedMessageReceiver')
+      await unifiedMessageReceiver.initialize()
 
       logger.info('[MatrixAdapter] Matrix 消息服务初始化成功')
     } catch (error) {
@@ -111,7 +111,7 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
 
   /**
    * 发送文件的具体实现
-   * 使用现有的 messageService.sendFileMessage
+   * 使用 enhancedMessageService
    */
   protected async doSendFile(params: SendFileParams): Promise<MessageSendResult> {
     try {
@@ -133,10 +133,9 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
         msgType = MsgEnum.VOICE
       }
 
-      // 使用现有的 messageService 发送文件
-      const { messageService } = await import('@/services/messageService')
-      const result = await messageService.sendMessage({
-        roomId: params.roomId,
+      // Use enhancedMessageService to send file
+      const { enhancedMessageService } = await import('@/services/enhancedMessageService')
+      const result = await enhancedMessageService.sendMessage(params.roomId, {
         type: msgType,
         body: {
           file: params.file,
@@ -163,7 +162,7 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
 
   /**
    * 撤回消息的具体实现
-   * 使用现有的 messageService.recallMessage
+   * 使用 unifiedMessageService
    */
   protected async doRecallMessage(params: RecallMessageParams): Promise<boolean> {
     try {
@@ -172,9 +171,9 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
         eventId: params.eventId
       })
 
-      // 使用现有的 messageService 撤回消息
-      const { messageService } = await import('@/services/messageService')
-      await messageService.recallMessage(params.roomId, params.eventId)
+      // Use unifiedMessageService to recall message
+      const { unifiedMessageService } = await import('@/services/unified-message-service')
+      await unifiedMessageService.recallMessage(params.roomId, params.eventId)
 
       return true
     } catch (error) {
@@ -185,7 +184,7 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
 
   /**
    * 获取消息历史的具体实现
-   * 使用现有的 messageService.getHistoryMessages
+   * 使用 unifiedMessageService
    */
   protected async doGetMessageHistory(params: GetMessageHistoryParams): Promise<Message[]> {
     try {
@@ -194,8 +193,8 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
         limit: params.limit
       })
 
-      // 使用现有的 messageService 获取历史消息
-      const { messageService } = await import('@/services/messageService')
+      // Use unifiedMessageService to get message history
+      const { unifiedMessageService } = await import('@/services/unified-message-service')
       const options: { limit: number; from?: string; dir?: 'b' | 'f' } = {
         limit: params.limit || 50
       }
@@ -205,7 +204,7 @@ export class MatrixMessageAdapter extends BaseMessageAdapter {
       if (params.direction !== undefined) {
         options.dir = params.direction
       }
-      const messages = await messageService.getHistoryMessages(params.roomId, options)
+      const messages = await unifiedMessageService.pageMessages(params.roomId, options)
 
       // 转换为统一格式
       return messages.map((msg) => ({

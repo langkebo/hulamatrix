@@ -14,7 +14,7 @@
           class="bg-#c8c8c833 h-60px w-14px absolute top-40% right--18px drag-icon pointer-events-auto z-10"
           @mousedown="initDrag"
         >
-          <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 color-#909090">
+          <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500">
             <use href="#sliding"></use>
           </svg>
         </div>
@@ -85,12 +85,12 @@
       <div v-if="devBackendError" class="w-full h-full flex items-center justify-center">
         <div class="rounded-8px border-(1px solid [--right-chat-footer-line-color]) p-24px w-420px text-center bg-[--bg-edit]">
           <div class="mb-16px">
-            <svg class="size-42px color-#d03050"><use href="#close"></use></svg>
+            <svg class="size-42px text-error"><use href="#close"></use></svg>
           </div>
           <div class="text-(18px [--text-color]) mb-8px)">加载失败</div>
           <div class="text-(12px [--chat-text-color]) mb-16px)">{{ devBackendMsg }}</div>
           <n-flex :size="12" justify="center">
-            <n-button color="#13987f" @click="handleRetry">重试</n-button>
+            <n-button :color="'var(--hula-accent, #13987f)'" @click="handleRetry">重试</n-button>
             <n-button secondary @click="handleRefresh">刷新</n-button>
           </n-flex>
         </div>
@@ -145,7 +145,7 @@
             :render-target-label="renderLabel" />
 
           <n-flex align="center" justify="center" class="p-16px">
-            <n-button :disabled="selectedValue.length < 2" color="#13987f" @click="handleCreateGroup">
+            <n-button :disabled="selectedValue.length < 2" :color="'var(--hula-accent, #13987f)'" @click="handleCreateGroup">
               {{ t('home.create_group.action') }}
             </n-button>
           </n-flex>
@@ -169,9 +169,7 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
-import { flags } from '@/utils/envFlags'
 import { sdkCreateRoom } from '@/services/rooms'
 
 import { msg } from '@/utils/SafeUI'
@@ -401,14 +399,10 @@ const resetCreateGroupState = () => {
 const handleCreateGroup = async () => {
   if (selectedValue.value.length < 2) return
   try {
-    let result: { roomId?: string | number; id?: string | number } = {}
-    if (flags.matrixEnabled) {
-      result = (await sdkCreateRoom(selectedValue.value)) as { roomId?: string | number; id?: string | number }
-    } else {
-      result = (await ImRequestUtils.createGroup({ uidList: selectedValue.value })) as {
-        roomId?: string | number
-        id?: string | number
-      }
+    // 使用 Matrix SDK 创建房间
+    const result = (await sdkCreateRoom(selectedValue.value)) as {
+      roomId?: string | number
+      id?: string | number
     }
 
     // 创建成功后刷新会话列表以显示新群聊

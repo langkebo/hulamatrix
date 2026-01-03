@@ -1,34 +1,14 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { TauriCommand } from '@/enums'
-import type { CacheBadgeItem, CacheUserItem } from '@/services/types'
+import type { CacheUserItem } from '@/services/types'
 import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
-import { logger } from '@/utils/logger'
 
 // 定义基础用户信息类型，只包含uid、头像和名称
 export type BaseUserItem = Pick<CacheUserItem, 'uid' | 'avatar' | 'name' | 'account'>
 
 export const useCachedStore = defineStore('dataCache', () => {
-  // DEPRECATED: Badge system is custom backend feature, not supported by Matrix
-  // Kept for backward compatibility but will always return empty
-  const badgeList = ref<CacheBadgeItem[]>([])
-
-  /**
-   * @deprecated Badge system not supported by Matrix
-   */
-  const badgeById = computed(() => (_id?: string): CacheBadgeItem | undefined => {
-    return undefined // Always return undefined - badge system removed
-  })
-
-  /**
-   * @deprecated Badge system not supported by Matrix
-   */
-  const getAllBadgeList = async () => {
-    logger.warn('[DEPRECATED] Badge system is not supported by Matrix')
-    // No-op - badge system removed
-  }
-
   const userAvatarUpdated = ref(false)
 
   /**
@@ -60,10 +40,6 @@ export const useCachedStore = defineStore('dataCache', () => {
   }
 
   return {
-    // DEPRECATED: Badge system - kept for backward compatibility
-    badgeById,
-    badgeList,
-    getAllBadgeList,
     userAvatarUpdated,
     getGroupAnnouncementList,
     updateMyRoomInfo,

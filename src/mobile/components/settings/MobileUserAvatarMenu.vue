@@ -9,7 +9,7 @@
           <!-- Profile Info Section -->
           <div class="profile-section">
             <div class="profile-avatar">
-              <n-avatar :size="64" :src="userInfo?.avatar || '/logo.png'" round />
+              <van-image :width="64" :height="64" :src="userInfo?.avatar || '/logo.png'" round />
             </div>
             <div class="profile-info">
               <div class="profile-name">{{ userInfo?.name || '' }}</div>
@@ -62,7 +62,7 @@
 
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useDialog, useMessage } from 'naive-ui'
+import { useDialog, useMessage } from '@/utils/vant-adapter'
 import Icon from '#/components/icons/Icon.vue'
 import { useUserMenu } from '@/composables'
 import { logger } from '@/utils/logger'
@@ -106,9 +106,9 @@ const handleItemClick = async (item: { id: string; label: string; icon: string; 
     dialog.warning({
       title: t('common.avatar_menu.logout_confirm_title') || '确认退出',
       content: t('common.avatar_menu.logout_confirm_content') || '确定要退出登录吗？',
-      positiveText: t('common.confirm') || '确定',
-      negativeText: t('common.cancel') || '取消',
-      onPositiveClick: async () => {
+      confirmText: t('common.confirm') || '确定',
+      cancelText: t('common.cancel') || '取消',
+      onConfirm: async () => {
         try {
           await handleMenuItem(item.id)
           message.success(t('common.avatar_menu.logout_success') || '退出成功')

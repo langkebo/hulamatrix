@@ -39,7 +39,7 @@
                 type="textarea"
                 placeholder="输入几句话，对TA说些什么吧" />
 
-              <n-button class="mt-30px" color="#13987f" @click="addFriend">添加好友</n-button>
+              <n-button class="mt-30px" :color="'var(--hula-accent, #13987f)'" @click="addFriend">添加好友</n-button>
             </n-flex>
           </div>
         </div>
@@ -55,7 +55,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { sendAddFriendRequest } from '@/utils/ImRequestUtils'
+import { friendsServiceV2 } from '@/services/friendsServiceV2'
 import router from '@/router'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 
@@ -77,14 +77,15 @@ watch(
 )
 
 const addFriend = async () => {
-  await sendAddFriendRequest({
-    msg: requestMsg.value,
-    targetUid: globalStore.addFriendModalInfo.uid as string
-  })
-  msg.success?.('已发送好友申请')
-  setTimeout(() => {
-    router.push('/mobile/message')
-  }, 2000)
+  try {
+    await friendsServiceV2.sendFriendRequest(globalStore.addFriendModalInfo.uid as string, requestMsg.value)
+    msg.success?.('已发送好友申请')
+    setTimeout(() => {
+      router.push('/mobile/message')
+    }, 2000)
+  } catch (error) {
+    msg.error?.('发送好友申请失败，请重试')
+  }
 }
 
 onMounted(async () => {

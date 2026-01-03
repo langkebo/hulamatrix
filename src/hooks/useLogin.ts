@@ -18,7 +18,6 @@ import { useConfigStore } from '../stores/config'
 import { useUserStatusStore } from '../stores/userStatus'
 import { useUserStore } from '../stores/user'
 import { useLoginHistoriesStore } from '../stores/loginHistory'
-import rustWebSocketClient from '@/services/webSocketRust'
 // 旧 IM 层已禁用，用户状态与详情改由 Matrix 或占位提供
 import { useNetwork } from '@vueuse/core'
 import { UserInfoType } from '../services/types'
@@ -258,10 +257,9 @@ export const useLogin = () => {
   const init = async (options?: { isInitialSync?: boolean }) => {
     // 初始化前清空当前选中的会话，避免自动打开会话
     globalStore.updateCurrentSessionRoomId('')
-    // 连接 ws
-    await rustWebSocketClient.initConnect()
+    // WebSocket 已废弃，使用 Matrix SDK 同步
 
-    // 获取用户详细信息（在 WebSocket 连接建立后）
+    // 获取用户详细信息
     try {
       await userStore.getUserDetailAction()
       logger.info('[useLogin] 用户信息加载成功')

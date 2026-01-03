@@ -102,14 +102,14 @@ const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !c
     &::before {
       opacity: 1;
       transform: scaleY(1.2);
-      background: #13987f80;
+      background: rgba(19, 152, 127, 0.5);
     }
 
     &::after {
       opacity: 1;
       box-shadow:
-        0 -3px 0 0 #13987f80,
-        0 3px 0 0 #13987f80;
+        0 -3px 0 0 rgba(19, 152, 127, 0.5),
+        0 3px 0 0 rgba(19, 152, 127, 0.5);
     }
   }
 }

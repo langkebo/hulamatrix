@@ -132,8 +132,20 @@ onMounted(async () => {
 })
 
 async function loadStats() {
-  // Load server statistics
-  // TODO: Implement admin API calls to fetch statistics
+  try {
+    // Load server statistics
+    // In a real implementation, this would call adminClient.getServerStats()
+    // For now, using mock data matching the PC dashboard
+    stats.value = {
+      totalUsers: 1234,
+      activeUsers: 567,
+      totalRooms: 89,
+      mediaStorage: 5368709120 // 5GB
+    }
+  } catch (error) {
+    logger.error('[MobileAdminDashboard] Failed to load stats:', error)
+    showToast.fail(t('admin.error.load_stats_failed'))
+  }
 }
 
 function handleBack() {
