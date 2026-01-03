@@ -3,7 +3,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { copyFile, readFile } from '@tauri-apps/plugin-fs'
 import type { FilesMeta } from '@/services/types'
 import { extractFileName } from '@/utils/Formatting'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from '@/stores/user'
 import { getFilesMeta } from './PathUtil'
 
 class FileUtil {

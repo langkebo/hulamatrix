@@ -23,7 +23,7 @@ import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
-import { leftHook } from '../hook'
+import { leftHook } from '@/layout/left/hook'
 import UserAvatarMenu from '@/components/settings/UserAvatarMenu.vue'
 
 const userStore = useUserStore()

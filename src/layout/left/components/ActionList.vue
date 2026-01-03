@@ -280,8 +280,8 @@ import { useMenuTopStoreCompat as useMenuTopStore, type MenuTopItem } from '@/st
 import { usePluginsStore } from '@/stores/plugins'
 import { useSettingStore } from '@/stores/setting'
 // REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
-import { useItemsBottom, useMoreList } from '../config'
-import { leftHook } from '../hook'
+import { useItemsBottom, useMoreList } from '@/layout/left/config'
+import { leftHook } from '@/layout/left/hook'
 import DefinePlugins from './definePlugins/index.vue'
 import { useI18n } from 'vue-i18n'
 import type { PluginBadge, PluginItem, PluginWindowConfig } from '@/types'

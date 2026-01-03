@@ -4,7 +4,7 @@ import { useGroupStore } from '@/stores/group'
 import type { Ref } from 'vue'
 import type { UserItem } from '@/services/types'
 import { useUserStore } from '@/stores/user'
-import type { EditorRange } from '../types'
+import type { EditorRange } from '@/hooks/useMsgInput/types'
 import DOMPurify from 'dompurify'
 
 /**

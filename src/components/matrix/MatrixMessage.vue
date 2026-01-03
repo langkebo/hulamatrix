@@ -225,10 +225,10 @@ import {
   CircleCheck,
   Clock
 } from '@vicons/tabler'
-import { messageDecryptService } from '../../services/messageDecryptService'
+import { messageDecryptService } from '@/services/messageDecryptService'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
 import { MsgEnum } from '../../enums'
-import type { MsgType } from '../../services/types'
+import type { MsgType } from '@/services/types'
 
 interface RoomMember {
   displayName?: string

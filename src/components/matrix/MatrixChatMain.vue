@@ -217,7 +217,7 @@ import { logger } from '@/utils/logger'
 import type { MatrixMessage as MatrixMessageType, MatrixMessageContent } from '@/types/matrix'
 import type { IMatrixRoom, IMatrixTimeline, IMatrixEvent, IMatrixRoomState } from '@/types/matrix'
 import { getMatrixMessageText, getMatrixContentProperty, isMatrixContentObject } from '@/types/matrix'
-import { MatrixCall } from '../../services/matrixCallService'
+import { MatrixCall } from '@/services/matrixCallService'
 import type { MsgType } from '@/services/types'
 import { MsgEnum, MessageStatusEnum } from '@/enums'
 

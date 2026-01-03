@@ -21,12 +21,12 @@
  */
 
 import { type InjectionKey } from 'vue'
-import type { UseChatMainContext } from '../useChatMain'
+import type { UseChatMainContext } from '@/hooks/useChatMain'
 
 // Re-export the original hook for now
 // The modular extraction is in progress - see phases above
-export { useChatMain } from '../useChatMain'
-export type { UseChatMainContext } from '../useChatMain'
+export { useChatMain } from '@/hooks/useChatMain'
+export type { UseChatMainContext } from '@/hooks/useChatMain'
 export const chatMainInjectionKey = Symbol('chatMainInjectionKey') as InjectionKey<UseChatMainContext>
 
 // Re-export modules for direct use if needed

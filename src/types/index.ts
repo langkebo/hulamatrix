@@ -2,12 +2,12 @@
  * 通用类型定义
  */
 
-export * from '../services/types'
-export * from '../typings/components'
+export * from '@/services/types'
+export * from '@/typings/components'
 
 // Re-export MessageType as MessageItem for compatibility
-import type { MessageType } from '../services/types'
-import type { PluginEnum } from '../enums'
+import type { MessageType } from '@/services/types'
+import type { PluginEnum } from '@/enums'
 export type MessageItem = MessageType
 export type { MessageType }
 

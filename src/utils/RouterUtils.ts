@@ -1,5 +1,5 @@
-import router from '../router'
-import { useGlobalStore } from '../stores/global'
+import router from '@/router'
+import { useGlobalStore } from '@/stores/global'
 
 /**
  * 跳转到移动端用户详情页

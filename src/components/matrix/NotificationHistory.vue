@@ -278,7 +278,7 @@ import {
   Volume,
   AlertTriangle
 } from '@vicons/tabler'
-import type { NotificationContent, NotificationAction } from '../../services/matrixPushService'
+import type { NotificationContent, NotificationAction } from '@/services/matrixPushService'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
 import { logger } from '@/utils/logger'
 

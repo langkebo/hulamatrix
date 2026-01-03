@@ -1,8 +1,8 @@
 import DOMPurify from 'dompurify'
 import { MsgEnum } from '@/enums'
-import { parseHtmlSafely, stripHtml } from '../utils'
+import { parseHtmlSafely, stripHtml } from '@/hooks/useMsgInput/utils'
 import type { Ref } from 'vue'
-import type { EditorRange } from '../types'
+import type { EditorRange } from '@/hooks/useMsgInput/types'
 
 /** Node data for different message types */
 type NodeData =
