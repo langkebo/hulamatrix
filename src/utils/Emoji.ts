@@ -1,4 +1,4 @@
-import { animalEmojis, expressionEmojis, gestureEmojis } from '@/components/rightBox/emoticon/material'
+import { animalEmojis, expressionEmojis, gestureEmojis } from '@/components/chat/emoji-picker/material'
 import { useI18nGlobal } from '@/services/i18n'
 
 /**

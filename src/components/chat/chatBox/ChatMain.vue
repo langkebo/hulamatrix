@@ -216,7 +216,7 @@ import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isMobile, isWindows } from '@/utils/PlatformConstants'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
-import FileUploadProgress from '@/components/rightBox/FileUploadProgress.vue'
+import FileUploadProgress from '@/components/chat/FileUploadProgress.vue'
 
 // Tauri WebviewWindow 扩展接口
 interface WebviewWindowWithListen {

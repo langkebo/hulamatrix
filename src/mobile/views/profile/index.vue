@@ -13,8 +13,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import PersonalInfo from '#/components/my/PersonalInfo.vue'
-import Settings from '#/components/my/Settings.vue'
+import PersonalInfo from '#/components/profile/PersonalInfo.vue'
+import Settings from '#/components/profile/Settings.vue'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 
 // REMOVED: useFeedStore, DynamicList - Moments/Feed feature removed

@@ -47,7 +47,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-import RenderMessage from '@/components/rightBox/renderMessage/index.vue'
+import RenderMessage from '@/components/chat/message-renderer/index.vue'
 import { MsgEnum } from '@/enums'
 import { useChatMain } from '@/hooks/useChatMain'
 import { useImageViewer } from '@/hooks/useImageViewer'

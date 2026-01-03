@@ -24,8 +24,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { NSpin } from 'naive-ui'
-import AutoFixHeightPage from '#/components/chat-room/AutoFixHeightPage.vue'
-import HeaderBar from '#/components/chat-room/HeaderBar.vue'
+import AutoFixHeightPage from '#/components/chat/AutoFixHeightPage.vue'
+import HeaderBar from '#/components/chat/HeaderBar.vue'
 
 interface Props {
   title?: string

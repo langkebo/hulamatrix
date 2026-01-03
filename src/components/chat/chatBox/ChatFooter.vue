@@ -213,7 +213,7 @@ import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, 
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
 import { FOOTER_HEIGHT, MAX_FOOTER_HEIGHT, MIN_FOOTER_HEIGHT } from '@/common/constants'
-import LocationModal from '@/components/rightBox/location/LocationModal.vue'
+import LocationModal from '@/components/chat/location-picker/LocationModal.vue'
 import { MittEnum, MobilePanelStateEnum, MsgEnum, RoomTypeEnum } from '@/enums'
 import { useChatLayoutGlobal } from '@/hooks/useChatLayout'
 import { type SelectionRange, useCommon } from '@/hooks/useCommon'
@@ -237,9 +237,9 @@ import { logger } from '@/utils/logger'
 
 const { t } = useI18n()
 // 移动端组件条件导入
-const More = isMobile() ? defineAsyncComponent(() => import('@/mobile/components/chat-room/panel/More.vue')) : void 0
+const More = isMobile() ? defineAsyncComponent(() => import('@/mobile/components/chat/panel/More.vue')) : void 0
 const VoicePanel = isMobile()
-  ? defineAsyncComponent(() => import('@/mobile/components/chat-room/panel/VoicePanel.vue'))
+  ? defineAsyncComponent(() => import('@/mobile/components/chat/panel/VoicePanel.vue'))
   : void 0
 
 const props = withDefaults(

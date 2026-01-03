@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import PersonalInfo from '#/components/my/PersonalInfo.vue'
+import PersonalInfo from '#/components/profile/PersonalInfo.vue'
 import { useUserStore } from '@/stores/user'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 

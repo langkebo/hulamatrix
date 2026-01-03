@@ -52,8 +52,8 @@ import { computed, onMounted, ref } from 'vue'
 import { getSettings } from '@/services/tauriCommand'
 import type { LocationBody } from '@/services/types'
 import { isWindows } from '@/utils/PlatformConstants'
-import LocationMap from '@/components/rightBox/location/LocationMap.vue'
-import LocationModal from '@/components/rightBox/location/LocationModal.vue'
+import LocationMap from '@/components/chat/location-picker/LocationMap.vue'
+import LocationModal from '@/components/chat/location-picker/LocationModal.vue'
 import { logger, toError } from '@/utils/logger'
 
 defineOptions({

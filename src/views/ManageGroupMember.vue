@@ -199,7 +199,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useDialog } from 'naive-ui'
 import MobileLayout from '#/components/MobileLayout.vue'
-import HeaderBar from '#/components/chat-room/HeaderBar.vue'
+import HeaderBar from '#/components/chat/HeaderBar.vue'
 import { type } from '@tauri-apps/plugin-os'
 import { OnlineEnum } from '@/enums'
 import { useRoomStore } from '@/stores/room'

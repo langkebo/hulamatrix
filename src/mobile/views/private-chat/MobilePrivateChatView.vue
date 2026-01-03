@@ -217,8 +217,8 @@ import type { PrivateChatSessionItem, PrivateChatMessageItem } from '@/types/mat
 import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
 import { logger } from '@/utils/logger'
-import PrivateChatDialog from '@/components/rightBox/PrivateChatDialog.vue'
-import PrivateChatSelfDestructPanel from '#/components/chat-room/PrivateChatSelfDestructPanel.vue'
+import PrivateChatDialog from '@/components/chat/PrivateChatDialog.vue'
+import PrivateChatSelfDestructPanel from '#/components/chat/PrivateChatSelfDestructPanel.vue'
 import MobileSelfDestructIndicator from '#/components/message/MobileSelfDestructIndicator.vue'
 
 const router = useRouter()

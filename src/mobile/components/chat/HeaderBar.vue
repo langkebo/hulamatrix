@@ -50,7 +50,7 @@ import { useUserStore } from '@/stores/user'
 import { usePresenceStore } from '@/stores/presence'
 import { matrixClientService } from '@/integrations/matrix/client'
 //
-import PrivateChatDialog from '@/components/rightBox/PrivateChatDialog.vue'
+import PrivateChatDialog from '@/components/chat/PrivateChatDialog.vue'
 import { IsAllUserEnum, UserType } from '@/enums'
 import { logger } from '@/utils/logger'
 

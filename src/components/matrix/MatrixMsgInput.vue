@@ -284,7 +284,7 @@ import { getMatrixMessageText } from '@/types/matrix'
 
 // Components
 import EmojiPicker from '@/components/message/EmojiPicker.vue'
-import VoiceRecorder from '@/components/rightBox/VoiceRecorder.vue'
+import VoiceRecorder from '@/components/chat/VoiceRecorder.vue'
 import MatrixMessage from './MatrixMessage.vue'
 
 // Type definitions

@@ -53,10 +53,10 @@ import router from '@/router'
 import type { DetailsContent, SessionItem } from '@/services/types'
 import { useSettingStore } from '@/stores/setting'
 import { useGlobalStore } from '@/stores/global'
-import Details from '@/components/rightBox/Details.vue'
-import FloatingTypingHint from '@/components/rightBox/FloatingTypingHint.vue'
-import ChatBox from '@/components/rightBox/chatBox/index.vue'
-import ApplyList from '@/components/rightBox/ApplyList.vue'
+import Details from '@/components/chat/Details.vue'
+import FloatingTypingHint from '@/components/chat/FloatingTypingHint.vue'
+import ChatBox from '@/components/chat/chatBox/index.vue'
+import ApplyList from '@/components/chat/ApplyList.vue'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
