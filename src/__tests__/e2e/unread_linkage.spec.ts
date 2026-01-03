@@ -22,7 +22,12 @@ describe('unread linkage', () => {
 
     // Call the method with proper parameters
     const sessionList: SessionItem[] = []
-    const unReadMark = { newFriendUnreadCount: 0, newGroupUnreadCount: 0, newMsgUnreadCount: unreadCount }
+    const unReadMark = {
+      newFriendUnreadCount: 0,
+      newGroupUnreadCount: 0,
+      newMsgUnreadCount: unreadCount,
+      noticeUnreadCount: 0
+    }
     const result = unreadCountManager.markRead(roomId, sessionList, unReadMark)
 
     // Verify it was called with correct parameters
@@ -84,7 +89,12 @@ describe('unread linkage', () => {
         allowScanEnter: false
       }
     ]
-    const unReadMark = { newFriendUnreadCount: 0, newGroupUnreadCount: 0, newMsgUnreadCount: 5 }
+    const unReadMark = {
+      newFriendUnreadCount: 0,
+      newGroupUnreadCount: 0,
+      newMsgUnreadCount: 5,
+      noticeUnreadCount: 0
+    }
 
     // Import after mocking
     const { unreadCountManager } = await import('@/utils/UnreadCountManager')

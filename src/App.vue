@@ -51,6 +51,7 @@ import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import { useAnnouncementStore } from '@/stores/announcement'
 // REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
+import { useNotificationStore } from '@/stores/notifications'
 import type { MarkItemType, RevokedMsgType, UserItem } from '@/services/types'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -65,6 +66,7 @@ const mobileRtcCallFloatCell = isMobile()
 
 const userStore = useUserStore()
 const announcementStore = useAnnouncementStore()
+const notificationStore = useNotificationStore()
 // REMOVED: feedStore - Moments/Feed feature removed
 const userUid = computed(() => userStore.userInfo!.uid)
 const groupStore = useGroupStore()
@@ -163,14 +165,19 @@ useMitt.on(
     globalStore.unReadMark.newFriendUnreadCount = data.unReadCount4Friend || 0
     globalStore.unReadMark.newGroupUnreadCount = data.unReadCount4Group || 0
 
-    unreadCountManager.refreshBadge(globalStore.unReadMark)
+    // 获取通知未读计数
+    const noticeUnreadCount = notificationStore.getUnreadCount()
+    globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
 
-    // TODO: getNoticeUnreadCount - custom notification system, needs Matrix-based implementation
+    unreadCountManager.refreshBadge(globalStore.unReadMark)
   }
 )
 
 useMitt.on(WsResponseMessageType.NOTIFY_EVENT, async () => {
-  // TODO: getNoticeUnreadCount - custom notification system, needs Matrix-based implementation
+  // 获取通知未读计数
+  const noticeUnreadCount = notificationStore.getUnreadCount()
+  globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
+
   unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 
@@ -283,7 +290,11 @@ useMitt.on(WsResponseMessageType.REQUEST_APPROVAL_FRIEND, async () => {
   } catch (error) {
     logger.warn('[App] Failed to refresh friends list:', error)
   }
-  // TODO: getNoticeUnreadCount - custom notification system
+
+  // 获取通知未读计数
+  const noticeUnreadCount = notificationStore.getUnreadCount()
+  globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
+
   unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 

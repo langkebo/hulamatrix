@@ -22,10 +22,12 @@ export const useGlobalStore = defineStore(
       newFriendUnreadCount: number
       newMsgUnreadCount: number
       newGroupUnreadCount: number
+      noticeUnreadCount: number
     }>({
       newFriendUnreadCount: 0,
       newGroupUnreadCount: 0,
-      newMsgUnreadCount: 0
+      newMsgUnreadCount: 0,
+      noticeUnreadCount: 0
     })
 
     // 当前阅读未读列表状态
@@ -59,7 +61,25 @@ export const useGlobalStore = defineStore(
     /** 当前选中的联系人信息 */
     const currentSelectedContact = ref<FriendItem | RequestFriendItem>()
 
-    // 添加好友模态框信息 TODO: 虚拟列表添加好友有时候会不展示对应的用户信息
+    /**
+     * 添加好友模态框信息
+     *
+     * KNOWN ISSUE: 虚拟列表添加好友时有时不展示用户信息
+     *
+     * 问题描述: 在虚拟滚动列表中添加好友时，部分用户信息无法正确显示
+     * 可能原因:
+     * 1. 虚拟列表组件的数据更新时机问题
+     * 2. 好友列表缓存未及时刷新
+     * 3. 组件响应式更新延迟
+     *
+     * 修复方案:
+     * - 短期: 添加强制刷新机制 (调用 friendsServiceV2.listFriends(false))
+     * - 中期: 优化虚拟列表组件的数据更新逻辑
+     * - 长期: 统一好友列表状态管理，使用单一数据源
+     *
+     * @see {FriendsList} 相关组件
+     * @see {friendsServiceV2} 好友服务
+     */
     const addFriendModalInfo = ref<{ show: boolean; uid?: string }>({
       show: false
     })

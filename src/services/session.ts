@@ -41,7 +41,12 @@ export function requestUnreadUpdate(sessionId?: string): void {
 
 export function calculateGlobalUnread(
   sessionList: SessionItem[],
-  unReadMark: { newFriendUnreadCount: number; newGroupUnreadCount: number; newMsgUnreadCount: number }
+  unReadMark: {
+    newFriendUnreadCount: number
+    newGroupUnreadCount: number
+    newMsgUnreadCount: number
+    noticeUnreadCount: number
+  }
 ): void {
   unreadCountManager.calculateTotal(sessionList, unReadMark)
 }
