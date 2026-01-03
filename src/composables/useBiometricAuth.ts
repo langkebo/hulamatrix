@@ -36,6 +36,9 @@ export interface BiometricCapability {
   reason?: string
 }
 
+// ==================== Window Extensions ====================
+// Window is extended globally in src/types/global.d.ts
+
 // ==================== Platform Detection ====================
 
 function getPlatform(): 'ios' | 'android' | 'web' {
@@ -104,7 +107,7 @@ async function checkIOSBiometricAvailability(): Promise<BiometricCapability> {
   logger.info('[useBiometricAuth] Checking iOS biometric availability')
 
   // Check if running in app context
-  const isApp = (window as any).__TAURI__ || (window as any).Capacitor
+  const isApp = window.__TAURI__ || window.Capacitor
 
   return {
     available: !!isApp,
@@ -127,7 +130,7 @@ async function authenticateWithIOS(options: BiometricAuthOptions = {}): Promise<
 
   try {
     // Check if Tauri plugin is available
-    if ((window as any).__TAURI__) {
+    if (window.__TAURI__) {
       // Call Tauri command for biometric auth
       // This would need to be implemented in Rust
       logger.info('[useBiometricAuth] Tauri biometric authentication requested')
@@ -140,10 +143,10 @@ async function authenticateWithIOS(options: BiometricAuthOptions = {}): Promise<
     }
 
     // Check if Capacitor plugin is available
-    if ((window as any).Capacitor) {
-      const { BiometricAuth } = (window as any).Capacitor.Plugins
+    if (window.Capacitor) {
+      const { BiometricAuth } = window.Capacitor.Plugins
 
-      if (BiometricAuth) {
+      if (BiometricAuth?.verify) {
         const result = await BiometricAuth.verify({
           reason: description || title,
           title,
@@ -153,7 +156,7 @@ async function authenticateWithIOS(options: BiometricAuthOptions = {}): Promise<
 
         return {
           success: true,
-          biometricType: result.biometricType || 'face'
+          biometricType: (result.biometricType || 'face') as BiometricType
         }
       }
     }
@@ -179,7 +182,7 @@ async function authenticateWithIOS(options: BiometricAuthOptions = {}): Promise<
 async function checkAndroidBiometricAvailability(): Promise<BiometricCapability> {
   logger.info('[useBiometricAuth] Checking Android biometric availability')
 
-  const isApp = (window as any).__TAURI__ || (window as any).Capacitor
+  const isApp = window.__TAURI__ || window.Capacitor
 
   return {
     available: !!isApp,
@@ -202,10 +205,10 @@ async function authenticateWithAndroid(options: BiometricAuthOptions = {}): Prom
 
   try {
     // Check if Capacitor plugin is available
-    if ((window as any).Capacitor) {
-      const { BiometricAuth } = (window as any).Capacitor.Plugins
+    if (window.Capacitor) {
+      const { BiometricAuth } = window.Capacitor.Plugins
 
-      if (BiometricAuth) {
+      if (BiometricAuth?.verify) {
         const result = await BiometricAuth.verify({
           reason: description || title,
           title,
@@ -215,7 +218,7 @@ async function authenticateWithAndroid(options: BiometricAuthOptions = {}): Prom
 
         return {
           success: true,
-          biometricType: result.biometricType || 'fingerprint'
+          biometricType: (result.biometricType || 'fingerprint') as BiometricType
         }
       }
     }
