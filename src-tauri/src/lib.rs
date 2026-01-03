@@ -54,6 +54,7 @@ use mobiles::splash;
 
 #[derive(Debug)]
 pub struct AppData {
+    #[allow(dead_code)]
     db_conn: Arc<DatabaseConnection>,
     user_info: Arc<Mutex<UserInfo>>,
     pub config: Arc<Mutex<Settings>>,
