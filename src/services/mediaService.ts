@@ -12,11 +12,25 @@ import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { invoke } from '@tauri-apps/api/core'
 import { exists, remove } from '@tauri-apps/plugin-fs'
+import type { UploadOpts } from 'matrix-js-sdk'
 
-/** 上传内容结果接口 (SDK native) */
-interface UploadContentResult {
-  content_uri: string
-  [key: string]: unknown
+/** Tauri 命令返回类型 - download_media */
+interface TauriDownloadMediaResult {
+  localPath: string
+  size: number
+  mimeType: string
+}
+
+/** Type guard for TauriDownloadMediaResult - simplified version */
+function isTauriDownloadMediaResult(obj: unknown): obj is TauriDownloadMediaResult {
+  const result = obj as Partial<TauriDownloadMediaResult>
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof result.localPath === 'string' &&
+    typeof result.size === 'number' &&
+    typeof result.mimeType === 'string'
+  )
 }
 
 export interface MediaUploadOptions {
@@ -114,12 +128,17 @@ export class MediaService {
 
   /**
    * 上传媒体文件
-   * Uses SDK's native uploadContent() method
+   * Uses SDK's native uploadContent() method via HTTP API
    */
   async uploadMedia(file: File | Blob, options: MediaUploadOptions = {}): Promise<MediaUploadResult> {
     const client = matrixClientService.getClient()
     if (!client) {
       throw new Error('Matrix client not initialized')
+    }
+
+    // Runtime check for http property
+    if (!client.http || typeof (client.http as any).uploadContent !== 'function') {
+      throw new Error('Matrix client does not support HTTP upload')
     }
 
     try {
@@ -132,14 +151,12 @@ export class MediaService {
         contentType
       })
 
-      // Use SDK's native uploadContent (no type casting needed)
-      const uploadContentMethod = client.uploadContent as
-        | ((file: Blob, options: { name?: string; type?: string }) => Promise<UploadContentResult>)
-        | undefined
-      const uploadResult = (await uploadContentMethod?.(file, {
+      // Use SDK's native uploadContent via HTTP API with proper types
+      const uploadOpts: UploadOpts = {
         name: filename,
         type: contentType
-      })) as UploadContentResult
+      }
+      const uploadResult = await (client.http as any).uploadContent(file, uploadOpts)
 
       const result: MediaUploadResult = {
         contentUri: uploadResult.content_uri,
@@ -151,10 +168,11 @@ export class MediaService {
       if (options.generateThumbnail && contentType.startsWith('image/')) {
         try {
           const thumbnail = await this.generateThumbnail(file, options)
-          const thumbnailUpload = (await uploadContentMethod?.(thumbnail.blob, {
+          const thumbnailOpts: UploadOpts = {
             name: `thumb_${filename}`,
             type: thumbnail.mimeType
-          })) as UploadContentResult
+          }
+          const thumbnailUpload = await (client.http as any).uploadContent(thumbnail.blob, thumbnailOpts)
 
           result.thumbnailInfo = {
             uri: thumbnailUpload.content_uri,
@@ -196,24 +214,20 @@ export class MediaService {
     allowRedirects: boolean = true
   ): string | null {
     const client = matrixClientService.getClient()
-    if (!client || !client.mxcUrlToHttp) {
-      logger.warn('[MediaService] Client or mxcUrlToHttp not available')
+    if (!client) {
+      logger.warn('[MediaService] Client not available')
+      return null
+    }
+
+    // Runtime check for mxcUrlToHttp method
+    if (!client.mxcUrlToHttp || typeof client.mxcUrlToHttp !== 'function') {
+      logger.warn('[MediaService] Client does not support mxcUrlToHttp')
       return null
     }
 
     try {
-      const mxcUrlToHttpMethod = client.mxcUrlToHttp as
-        | ((
-            mxcUri: string,
-            width?: number,
-            height?: number,
-            resizeMethod?: string,
-            allowDirectLinks?: boolean,
-            allowRedirects?: boolean,
-            useAuthentication?: boolean
-          ) => string)
-        | undefined
-      const result = mxcUrlToHttpMethod?.(
+      // Use SDK's native mxcUrlToHttp method with proper typing
+      const result = client.mxcUrlToHttp(
         mxcUri,
         width,
         height,
@@ -222,7 +236,7 @@ export class MediaService {
         allowRedirects,
         false // useAuthentication
       )
-      return result || null
+      return result
     } catch (error) {
       logger.error('[MediaService] Failed to generate thumbnail URL:', { mxcUri, error })
       return null
@@ -235,24 +249,20 @@ export class MediaService {
    */
   getHttpUrl(mxcUri: string, useAuthentication: boolean = false): string | null {
     const client = matrixClientService.getClient()
-    if (!client || !client.mxcUrlToHttp) {
-      logger.warn('[MediaService] Client or mxcUrlToHttp not available')
+    if (!client) {
+      logger.warn('[MediaService] Client not available')
+      return null
+    }
+
+    // Runtime check for mxcUrlToHttp method
+    if (!client.mxcUrlToHttp || typeof client.mxcUrlToHttp !== 'function') {
+      logger.warn('[MediaService] Client does not support mxcUrlToHttp')
       return null
     }
 
     try {
-      const mxcUrlToHttpMethod = client.mxcUrlToHttp as
-        | ((
-            mxcUri: string,
-            width?: number,
-            height?: number,
-            resizeMethod?: string,
-            allowDirectLinks?: boolean,
-            allowRedirects?: boolean,
-            useAuthentication?: boolean
-          ) => string)
-        | undefined
-      const result = mxcUrlToHttpMethod?.(
+      // Use SDK's native mxcUrlToHttp method with proper typing
+      const result = client.mxcUrlToHttp(
         mxcUri,
         undefined, // width
         undefined, // height
@@ -261,7 +271,7 @@ export class MediaService {
         true, // allowRedirects
         useAuthentication
       )
-      return result || null
+      return result
     } catch (error) {
       logger.error('[MediaService] Failed to generate HTTP URL:', { mxcUri, error })
       return null
@@ -313,11 +323,16 @@ export class MediaService {
       logger.info('[MediaService] Downloading media:', { mxcUri })
 
       // 使用Tauri API下载文件
-      const result = (await invoke('download_media', {
+      const result = await invoke('download_media', {
         mxcUri,
         force: options.force || false,
         maxSize: options.maxSize || 100 * 1024 * 1024 // 默认100MB
-      })) as { localPath: string; size: number; mimeType: string }
+      })
+
+      // Type-safe validation of the result
+      if (!isTauriDownloadMediaResult(result)) {
+        throw new Error('Invalid download response from Tauri')
+      }
 
       // 添加到缓存
       const cacheEntry: MediaCacheEntry = {

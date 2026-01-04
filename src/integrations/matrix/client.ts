@@ -93,7 +93,7 @@ interface MatrixAccountSettings {
   }
 }
 
-interface MatrixClientLike {
+export interface MatrixClientLike {
   getHomeserverUrl?: () => string
   startClient?(options?: {
     initialSyncLimit?: number
@@ -153,6 +153,20 @@ interface MatrixClientLike {
   findEventById?(eventId: string): Record<string, unknown> | undefined
   getCrypto?(): Record<string, unknown> | undefined
   pollForWellKnownChanges?(): Promise<void>
+  // Media-related methods from Matrix SDK
+  mxcUrlToHttp?(
+    mxcUrl: string,
+    width?: number,
+    height?: number,
+    resizeMethod?: string,
+    allowDirectLinks?: boolean,
+    allowRedirects?: boolean,
+    useAuthentication?: boolean
+  ): string | null
+  // HTTP API property for direct SDK access
+  http?: {
+    uploadContent(file: File | Blob, opts?: { name?: string; type?: string }): Promise<{ content_uri: string }>
+  }
   [key: string]: unknown
 }
 

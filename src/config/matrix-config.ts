@@ -7,7 +7,8 @@
  * - src/config/matrixConfig.ts (服务发现功能)
  */
 
-import { matrixDiscovery, type DiscoveryResult } from '@/services/matrix-discovery'
+import { matrixServerDiscovery, type DiscoveryResult } from '@/integrations/matrix/server-discovery'
+import { AutoDiscoveryAction } from 'matrix-js-sdk'
 import { logger } from '@/utils/logger'
 
 // ============================================================================
@@ -148,15 +149,20 @@ export class MatrixConfigManager {
         this.currentDiscovery = {
           homeserverUrl,
           slidingSyncUrl: `${homeserverUrl}/_matrix/client/unstable/org.matrix.msc3575/sync`,
-          integrations: [],
-          capabilities: { versions: [], unstable_features: {} },
-          rawConfig: { 'm.homeserver': { base_url: homeserverUrl } }
+          capabilities: { versions: [], unstableFeatures: {} },
+          rawConfig: {
+            'm.homeserver': { base_url: homeserverUrl, state: AutoDiscoveryAction.SUCCESS },
+            'm.identity_server': { base_url: '', state: AutoDiscoveryAction.IGNORE }
+          },
+          discovered: true,
+          timestamp: Date.now()
         }
-        return this.currentDiscovery
+        return this.currentDiscovery!
       }
 
       const previousHomeserverUrl = this.currentDiscovery?.homeserverUrl || null
-      this.currentDiscovery = await matrixDiscovery.discoverServices(targetServer)
+      const discovery = await matrixServerDiscovery.discover(targetServer)
+      this.currentDiscovery = discovery
       this.customHomeserver = null
 
       logger.info('Matrix services discovered successfully', {
@@ -172,7 +178,7 @@ export class MatrixConfigManager {
         })
       }
 
-      return this.currentDiscovery
+      return this.currentDiscovery!
     } catch (error) {
       logger.error('Failed to discover Matrix services:', error)
       throw error
@@ -230,8 +236,8 @@ export class MatrixConfigManager {
     // Convert ServerCapabilities to a plain object to avoid union type issues
     return {
       versions: capabilities.versions ?? [],
-      unstable_features: capabilities.unstable_features ?? {},
-      ...(capabilities['m.room_versions'] ? { 'm.room_versions': capabilities['m.room_versions'] } : {})
+      unstableFeatures: capabilities.unstableFeatures ?? {},
+      ...(capabilities.roomVersions ? { roomVersions: capabilities.roomVersions } : {})
     }
   }
 
@@ -239,7 +245,8 @@ export class MatrixConfigManager {
    * 获取集成服务
    */
   getIntegrations(): Array<{ apiUrl: string; uiUrl?: string }> | null {
-    return this.currentDiscovery?.integrations || null
+    // DiscoveryResult doesn't have integrations property
+    return null
   }
 
   /**
@@ -323,7 +330,7 @@ export class MatrixConfigManager {
   reset(): void {
     this.currentDiscovery = null
     this.customHomeserver = null
-    matrixDiscovery.clearCache()
+    matrixServerDiscovery.clearCache()
   }
 
   /**
@@ -372,7 +379,7 @@ export class MatrixConfigManager {
    */
   async validateServerConfig(serverName: string): Promise<boolean> {
     try {
-      await matrixDiscovery.discoverServices(serverName)
+      await matrixServerDiscovery.discover(serverName)
       return true
     } catch (error) {
       logger.error(`Server validation failed for ${serverName}:`, error)

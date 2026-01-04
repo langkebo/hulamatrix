@@ -92,7 +92,11 @@
         <!-- 该选项有提示时展示 -->
         <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
           <template #trigger>
-            <n-badge :max="99" :value="typeof item.badge === 'object' ? (item.badge?.count ?? 0) : (item.badge ?? 0)" dot :show="item.dot">
+            <n-badge
+              :max="99"
+              :value="typeof item.badge === 'object' ? (item.badge?.count ?? 0) : (item.badge ?? 0)"
+              dot
+              :show="item.dot">
               <svg class="size-22px" @click="handleTipShow(item)">
                 <use
                   :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -107,11 +111,7 @@
           </n-flex>
         </n-popover>
         <!-- 该选项无提示时展示 -->
-        <n-badge
-          v-else
-          :max="99"
-          :value="getBadgeValue(item.badge)"
-          :show="getBadgeValue(item.badge) > 0">
+        <n-badge v-else :max="99" :value="getBadgeValue(item.badge)" :show="getBadgeValue(item.badge) > 0">
           <svg class="size-22px">
             <use
               :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -431,18 +431,15 @@ onMounted(async () => {
   startResize()
 
   // 监听自定义事件，处理设置中菜单显示模式切换和添加插件后，导致高度变化，需重新调整插件菜单显示
-  if (isTauri) {
-    const listenFn = appWindow.listen
-    if (listenFn) {
-      await addListener(
-        Promise.resolve(
-          listenFn('startResize', () => {
-            startResize()
-          })
-        ),
-        'startResize'
-      )
-    }
+  if (isTauri && appWindow.listen) {
+    await addListener(
+      Promise.resolve(
+        appWindow.listen('startResize', () => {
+          startResize()
+        })
+      ),
+      'startResize'
+    )
   }
 
   if (tipShow.value) {
