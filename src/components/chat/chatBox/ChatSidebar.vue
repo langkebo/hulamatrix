@@ -128,8 +128,8 @@ import { logger } from '@/utils/logger'
               <ContextMenu
                 :content="item"
                 @select="$event.click(item, 'Sidebar')"
-                :menu="(optionsList as unknown as ContextMenuItem[])"
-                :special-menu="(report as unknown as ContextMenuItem[])">
+                :menu="optionsList as unknown as ContextMenuItem[]"
+                :special-menu="report as unknown as ContextMenuItem[]">
                 <n-flex
                   @click="onClickMember(item)"
                   :key="item.uid"
@@ -144,7 +144,7 @@ import { logger } from '@/utils/logger'
                         class="grayscale"
                         :class="{ 'grayscale-0': item.activeStatus === OnlineEnum.ONLINE }"
                         :size="26"
-                        :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                        :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
                         :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                         :src="AvatarUtils.getAvatarUrl(item.avatar)"
                         @load="userLoadedMap[item.uid] = true"

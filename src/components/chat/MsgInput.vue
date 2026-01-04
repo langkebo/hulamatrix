@@ -138,7 +138,7 @@
                   round
                   :size="22"
                   :src="AvatarUtils.getAvatarUrl(item.avatar)"
-                  :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                  :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
                   :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                   :render-placeholder="() => null"
                   :intersection-observer-options="{

@@ -14,8 +14,7 @@
         borderRadius: '16px 16px 0 0'
       }"
       preset="card"
-      @close="handleClose"
-    >
+      @close="handleClose">
       <template #header>
         <div class="dialog-header">
           <h3>临时会话</h3>
@@ -48,8 +47,7 @@
               :key="option.value"
               class="timer-option"
               :class="{ active: selectedTimer === option.value }"
-              @click="selectTimer(option.value)"
-            >
+              @click="selectTimer(option.value)">
               <n-icon :size="24" :color="selectedTimer === option.value ? '#18a058' : '#c0c0c0'">
                 <component :is="option.icon" />
               </n-icon>
@@ -68,22 +66,10 @@
         <div v-if="showCustomTimer" class="custom-timer-section">
           <div class="section-title">自定义时间</div>
           <div class="custom-timer-inputs">
-            <n-input-number
-              v-model:value="customValue"
-              :min="1"
-              :max="60"
-              placeholder="数值"
-              style="flex: 1"
-            />
-            <n-select
-              v-model:value="customUnit"
-              :options="timeUnits"
-              style="width: 100px"
-            />
+            <n-input-number v-model:value="customValue" :min="1" :max="60" placeholder="数值" style="flex: 1" />
+            <n-select v-model:value="customUnit" :options="timeUnits" style="width: 100px" />
           </div>
-          <n-button secondary block @click="applyCustomTimer" style="margin-top: 8px">
-            应用自定义时间
-          </n-button>
+          <n-button secondary block @click="applyCustomTimer" style="margin-top: 8px">应用自定义时间</n-button>
         </div>
 
         <!-- Current Setting -->
@@ -111,12 +97,8 @@
       <!-- Actions -->
       <template #footer>
         <div class="dialog-footer">
-          <n-button size="large" @click="handleClear" :disabled="!currentTimer">
-            清除设置
-          </n-button>
-          <n-button type="primary" size="large" @click="handleConfirm" :disabled="!selectedTimer">
-            确认设置
-          </n-button>
+          <n-button size="large" @click="handleClear" :disabled="!currentTimer">清除设置</n-button>
+          <n-button type="primary" size="large" @click="handleConfirm" :disabled="!selectedTimer">确认设置</n-button>
         </div>
       </template>
     </n-modal>
@@ -132,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, type Component } from 'vue'
+import { ref, computed, watch, type Component } from 'vue'
 import { NModal, NButton, NIcon, NAlert, NInputNumber, NSelect, useMessage, useDialog } from 'naive-ui'
 import {
   X,
@@ -146,6 +128,10 @@ import {
   Clock as ClockIcon
 } from '@vicons/tabler'
 import { logger } from '@/utils/logger'
+
+defineOptions({
+  name: 'MobileTemporarySessionDialog'
+})
 
 interface TimerOption {
   value: number // seconds
@@ -358,13 +344,6 @@ defineExpose({
     remainingTime.value = seconds
   }
 })
-</script>
-
-<script lang="ts">
-import { watch } from 'vue'
-export default {
-  name: 'MobileTemporarySessionDialog'
-}
 </script>
 
 <style scoped lang="scss">

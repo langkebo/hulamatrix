@@ -9,6 +9,10 @@ import { computed } from 'vue'
 import { NIcon } from 'naive-ui'
 import * as TablerIcons from '@vicons/tabler'
 
+defineOptions({
+  name: 'MobileIcon'
+})
+
 interface Props {
   name: string
   size?: number | string
@@ -120,10 +124,4 @@ const iconMap: Record<string, any> = {
 const iconComponent = computed(() => {
   return iconMap[props.name] || TablerIcons.Help // Default to help icon if icon not found
 })
-</script>
-
-<script lang="ts">
-export default {
-  name: 'MobileIcon'
-}
 </script>

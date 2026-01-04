@@ -65,15 +65,15 @@
             <ContextMenu
               @select="$event.click(message, 'Main')"
               :content="message"
-              :menu="(isGroup ? (optionsList as MenuItem[]) : void 0)"
-              :special-menu="(report as MenuItem[])">
+              :menu="isGroup ? (optionsList as MenuItem[]) : void 0"
+              :special-menu="report as MenuItem[]">
               <!-- 存在头像时候显示 -->
               <n-avatar
                 round
                 :size="34"
                 @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
                 class="select-none"
-                :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
                 :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                 :src="getAvatarSrc(message.fromUser.uid) || ''"
                 :class="isMe ? '' : 'mr-10px'" />
@@ -88,8 +88,8 @@
             <ContextMenu
               @select="$event.click(message, 'Main')"
               :content="message"
-              :menu="(isGroup ? (optionsList as MenuItem[]) : void 0)"
-              :special-menu="(report as MenuItem[])">
+              :menu="isGroup ? (optionsList as MenuItem[]) : void 0"
+              :special-menu="report as MenuItem[]">
               <n-flex
                 :size="6"
                 class="select-none cursor-default"
@@ -141,9 +141,9 @@
             :class="isMe ? 'items-end' : 'items-start'"
             :style="{ '--bubble-max-width': bubbleMaxWidth }"
             @select="$event.click(message, 'Main')"
-            :menu="(handleItemType(message.message.type) as MenuItem[])"
+            :menu="handleItemType(message.message.type) as MenuItem[]"
             :emoji="emojiList"
-            :special-menu="(specialMenuList(message.message.type) as MenuItem[])"
+            :special-menu="specialMenuList(message.message.type) as MenuItem[]"
             @reply-emoji="handleEmojiSelect($event, message)"
             @click="handleMsgClick(message)">
             <component
@@ -189,8 +189,7 @@
               :message-body="message.message.body"
               :inline="true"
               @destroy="handleMessageDestroyed"
-              @warning="handleMessageWarning"
-            />
+              @warning="handleMessageWarning" />
 
             <!-- 显示翻译文本 -->
             <Transition name="fade-translate" appear mode="out-in">
@@ -213,7 +212,9 @@
                       <span>复制翻译</span>
                     </n-tooltip>
                   </n-flex>
-                  <svg class="size-10px cursor-pointer" @click="delete (message.message.body as Record<string, unknown>).translatedText">
+                  <svg
+                    class="size-10px cursor-pointer"
+                    @click="delete (message.message.body as Record<string, unknown>).translatedText">
                     <use href="#close"></use>
                   </svg>
                 </n-flex>
@@ -234,7 +235,9 @@
                   <use href="#cloudError"></use>
                 </svg>
               </n-icon>
-              <span v-if="flags.matrixEnabled && readCount > 0" class="text-(10px #909090) whitespace-nowrap mt-2px select-none">
+              <span
+                v-if="flags.matrixEnabled && readCount > 0"
+                class="text-(10px #909090) whitespace-nowrap mt-2px select-none">
                 {{ readCount }} 已读
               </span>
             </div>
@@ -252,13 +255,13 @@
             <svg class="size-14px">
               <use href="#to-top"></use>
             </svg>
-                <n-avatar
-                  class="reply-avatar"
-                  round
-                  :size="20"
-                  :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
-                  :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-                  :src="getAvatarSrc(message.message.body.reply.uid ?? '') || ''" />
+            <n-avatar
+              class="reply-avatar"
+              round
+              :size="20"
+              :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+              :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
+              :src="getAvatarSrc(message.message.body.reply.uid ?? '') || ''" />
             <span>{{ `${message.message.body.reply.username}: ` }}</span>
             <span class="content-span">
               {{ message.message.body.reply.body }}

@@ -44,12 +44,7 @@
 
       <!-- Spaces Grid -->
       <div v-else class="spaces-grid">
-        <div
-          v-for="space in userSpaces"
-          :key="space.id"
-          class="space-card"
-          @click="handleSpaceClick(space)"
-        >
+        <div v-for="space in userSpaces" :key="space.id" class="space-card" @click="handleSpaceClick(space)">
           <div class="space-avatar-section">
             <n-avatar :src="space.avatar || ''" :size="56" round>
               <template #fallback>
@@ -106,9 +101,7 @@
         <n-form-item label="公开">
           <n-switch v-model:value="createForm.isPublic" />
           <template #feedback>
-            <n-text depth="3" style="font-size: 12px">
-              公开工作区可以被任何人发现和加入
-            </n-text>
+            <n-text depth="3" style="font-size: 12px">公开工作区可以被任何人发现和加入</n-text>
           </template>
         </n-form-item>
       </n-form>
@@ -119,11 +112,7 @@
     </n-modal>
 
     <!-- Space Details Drawer -->
-    <MobileSpaceDrawer
-      v-model:show="showSpaceDrawer"
-      :space="selectedSpace"
-      @room-selected="handleRoomSelected"
-    />
+    <MobileSpaceDrawer v-model:show="showSpaceDrawer" :space="selectedSpace" @room-selected="handleRoomSelected" />
   </div>
 </template>
 
@@ -174,7 +163,7 @@ const selectedSpace = ref<MatrixSpace | null>(null)
 const isCreating = ref(false)
 
 // Create form
-const createFormRef = ref()
+const createFormRef = ref<{ validate: () => void | Promise<void> } | null>(null)
 const createForm = ref({
   name: '',
   topic: '',

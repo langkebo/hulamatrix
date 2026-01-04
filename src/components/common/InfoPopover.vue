@@ -22,7 +22,7 @@
             round
             :size="80"
             :src="avatarSrc"
-            :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
         </div>
 

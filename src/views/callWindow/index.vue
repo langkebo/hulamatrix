@@ -8,7 +8,7 @@
       <n-avatar
         :size="56"
         :src="avatarSrc"
-        :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+        :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
         :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
         class="rounded-12px shadow-md" />
       <!-- 通话类型指示器 -->
@@ -227,7 +227,7 @@
         <n-avatar
           :size="140"
           :src="avatarSrc"
-          :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+          :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           class="rounded-22px mb-16px" />
 

@@ -28,6 +28,14 @@
   --right-bg-color: #f1f1f1;
   --left-bg-color: #f1f1f1;
 
+  /* 左侧导航栏图标颜色 */
+  --left-icon-color: #666;
+  --left-win-icon-color: #13987f;
+  --left-active-bg-color: rgba(19, 152, 127, 0.1);
+  --left-active-icon-color: #13987f;
+  --left-bg-hover: rgba(0, 0, 0, 0.05);
+  --left-active-hover: #13987f;
+
   /* ==========================================================================
       文字色系统
      ========================================================================== */
@@ -206,6 +214,14 @@ html[data-theme='dark'] {
   --center-bg-color: #1b1b1b;
   --right-bg-color: #161616;
   --left-bg-color: #1b1b1b;
+
+  /* 左侧导航栏图标颜色 - 暗色主题 */
+  --left-icon-color: #ccc;
+  --left-win-icon-color: #4fd1c7;
+  --left-active-bg-color: rgba(79, 209, 199, 0.2);
+  --left-active-icon-color: #4fd1c7;
+  --left-bg-hover: rgba(255, 255, 255, 0.1);
+  --left-active-hover: #4fd1c7;
 
   /* 文字色系统 */
   --text-primary: #fff;

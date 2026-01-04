@@ -303,6 +303,7 @@ const layoutMode = computed({
 })
 const layoutOptions = [
   { label: '默认', value: 'default' },
+  { label: '标准三栏', value: 'standard' },
   { label: 'IR 布局', value: 'ir' },
   { label: '分组布局', value: 'group' }
 ]

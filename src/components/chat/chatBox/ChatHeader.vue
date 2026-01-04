@@ -13,7 +13,7 @@
               { grayscale: currentSession?.type === RoomTypeEnum.SINGLE && !isOnline }
             ]"
             :size="28"
-            :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
             :src="currentUserAvatar" />
           <label class="flex-y-center gap-6px">

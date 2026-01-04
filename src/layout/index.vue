@@ -12,7 +12,10 @@
         <AsyncRight v-if="shouldShowRight" />
       </keep-alive>
     </div>
-    <div v-if="overlayVisible" class="absolute inset-0 z-10 flex items-center justify-center" :style="{ background: 'var(--right-theme-bg)' }">
+    <div
+      v-if="overlayVisible"
+      class="absolute inset-0 z-10 flex items-center justify-center"
+      :style="{ background: 'var(--right-theme-bg)' }">
       <LoadingSpinner :percentage="loadingPercentage" :loading-text="loadingText" />
     </div>
   </div>
@@ -214,6 +217,11 @@ const shrinkStatus = ref(false)
 const shouldShowRight = computed(() => {
   const p = route.path
   const isManage = p.includes('/rooms/manage') || p.includes('/settings') || p.includes('/manage')
+  // In standard layout mode, always show right panel (except on management routes)
+  const isStandardLayout = settingStore.chat.layoutMode === 'standard'
+  if (isStandardLayout) {
+    return !isManage
+  }
   return !isManage && !shrinkStatus.value
 })
 

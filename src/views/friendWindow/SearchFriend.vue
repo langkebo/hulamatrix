@@ -1,11 +1,7 @@
 <template>
   <div class="h-full w-full bg-[--center-bg-color] select-none cursor-default">
     <!-- 窗口头部 -->
-    <ActionBar
-      class="absolute right-0 w-full z-999"
-      :shrink="false"
-      :max-w="false"
-      :current-label="currentLabel" />
+    <ActionBar class="absolute right-0 w-full z-999" :shrink="false" :max-w="false" :current-label="currentLabel" />
     <!-- 标题 -->
     <p
       class="absolute-x-center h-fit pt-6px text-(13px [--text-color]) select-none cursor-default"
@@ -65,7 +61,7 @@
                     <n-avatar
                       :size="48"
                       :src="AvatarUtils.getAvatarUrl(item.avatar)"
-                      :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                      :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                       round />
                     <n-flex vertical justify="center" :size="10" class="flex-1">
@@ -129,15 +125,14 @@
         </n-tab-pane>
       </n-tabs>
     </n-flex>
-    
+
     <!-- 添加好友对话框 -->
     <AddFriendModal
       v-model:show="showAddFriendModal"
       :user-id="addFriendTarget.userId"
       :display-name="addFriendTarget.displayName"
       :avatar="addFriendTarget.avatar"
-      @success="handleAddFriendSuccess"
-    />
+      @success="handleAddFriendSuccess" />
   </div>
 </template>
 <script setup lang="ts">

@@ -5,8 +5,7 @@
     position="bottom"
     :style="{ height: '90vh', borderRadius: '16px 16px 0 0' }"
     @update:show="handleClose"
-    @click-overlay="handleClose"
-  >
+    @click-overlay="handleClose">
     <div class="space-drawer-popup">
       <!-- Header -->
       <div class="drawer-header">
@@ -24,26 +23,15 @@
         <!-- Space Info Card -->
         <div class="space-info-card">
           <div class="space-avatar-section">
-            <van-image
-              :src="space.avatar"
-              width="72"
-              height="72"
-              round
-            >
+            <van-image :src="space.avatar" width="72" height="72" round>
               <template #error>
                 <div class="avatar-fallback">{{ space.name?.charAt(0)?.toUpperCase() || '?' }}</div>
               </template>
             </van-image>
             <div class="space-badges">
-              <van-tag v-if="space.isPublic" type="primary" round>
-                公开
-              </van-tag>
-              <van-tag v-else type="default" round>
-                私有
-              </van-tag>
-              <van-tag v-if="space.encrypted" type="success" round>
-                加密
-              </van-tag>
+              <van-tag v-if="space.isPublic" type="primary" round>公开</van-tag>
+              <van-tag v-else type="default" round>私有</van-tag>
+              <van-tag v-if="space.encrypted" type="success" round>加密</van-tag>
             </div>
           </div>
 
@@ -83,8 +71,7 @@
               block
               :loading="isJoining"
               icon="log-in"
-              @click="handleJoin"
-            >
+              @click="handleJoin">
               加入工作区
             </van-button>
             <van-button
@@ -94,8 +81,7 @@
               block
               :loading="isLeaving"
               icon="log-out"
-              @click="handleLeave"
-            >
+              @click="handleLeave">
               离开工作区
             </van-button>
           </div>
@@ -121,12 +107,7 @@
                   class="room-item"
                   @click="openRoom(child.roomId)">
                   <div class="room-avatar">
-                    <van-image
-                      :src="String(child.avatar ?? '')"
-                      width="44"
-                      height="44"
-                      round
-                    >
+                    <van-image :src="String(child.avatar ?? '')" width="44" height="44" round>
                       <template #error>
                         <span>{{ child.name?.charAt(0)?.toUpperCase() || '?' }}</span>
                       </template>
@@ -164,12 +145,7 @@
             <div class="tab-content">
               <!-- Search and Filter -->
               <div v-if="isJoined" class="tab-header">
-                <van-field
-                  v-model="memberSearchQuery"
-                  placeholder="搜索成员..."
-                  clearable
-                  left-icon="search"
-                />
+                <van-field v-model="memberSearchQuery" placeholder="搜索成员..." clearable left-icon="search" />
               </div>
 
               <!-- Member List -->
@@ -184,12 +160,7 @@
                   :key="member.userId"
                   class="member-item"
                   @click="handleMemberClick(member)">
-                  <van-image
-                    :src="member.avatarUrl"
-                    width="42"
-                    height="42"
-                    round
-                  >
+                  <van-image :src="member.avatarUrl" width="42" height="42" round>
                     <template #error>
                       <span>
                         {{ member.displayName?.charAt(0) || member.userId?.charAt(0) || '?' }}
@@ -222,9 +193,7 @@
 
               <!-- Invite Button (only for admins) -->
               <div v-if="isJoined && canManageMembers && !isLoadingMembers" class="invite-section">
-                <van-button type="primary" block icon="add-o" @click="showInviteDialog = true">
-                  邀请新成员
-                </van-button>
+                <van-button type="primary" block icon="add-o" @click="showInviteDialog = true">邀请新成员</van-button>
               </div>
             </div>
           </van-tab>
@@ -298,8 +267,7 @@
         :show="showCreateDialog"
         position="center"
         :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
-        @update:show="showCreateDialog = $event"
-      >
+        @update:show="showCreateDialog = $event">
         <div class="dialog-content">
           <div class="dialog-header">
             <h3>添加房间</h3>
@@ -309,15 +277,13 @@
               v-model="newRoom.name"
               label="房间名称"
               placeholder="输入房间名称"
-              :rules="[{ required: true, message: '请输入房间名称' }]"
-            />
+              :rules="[{ required: true, message: '请输入房间名称' }]" />
             <van-field
               v-model="newRoom.description"
               label="房间描述"
               type="textarea"
               placeholder="描述此房间的用途"
-              rows="3"
-            />
+              rows="3" />
             <van-field label="房间类型">
               <template #input>
                 <van-radio-group v-model="newRoom.isPublic" direction="horizontal">
@@ -339,8 +305,7 @@
         :show="showInviteDialog"
         position="center"
         :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
-        @update:show="showInviteDialog = $event"
-      >
+        @update:show="showInviteDialog = $event">
         <div class="dialog-content">
           <div class="dialog-header">
             <h3>邀请成员</h3>
@@ -350,8 +315,7 @@
               v-model="inviteForm.userId"
               label="用户 ID"
               placeholder="@username:server.com"
-              :rules="[{ required: true, message: '请输入用户 ID' }]"
-            />
+              :rules="[{ required: true, message: '请输入用户 ID' }]" />
             <div class="dialog-actions">
               <van-button @click="showInviteDialog = false">取消</van-button>
               <van-button type="primary" :loading="isInviting" native-type="submit">邀请</van-button>
@@ -365,20 +329,14 @@
         :show="showMemberModal"
         position="center"
         :style="{ width: '90%', maxWidth: '500px', borderRadius: '12px' }"
-        @update:show="showMemberModal = $event"
-      >
+        @update:show="showMemberModal = $event">
         <div class="dialog-content member-details">
           <div class="dialog-header">
             <h3>{{ selectedMember?.displayName || '成员详情' }}</h3>
           </div>
           <div v-if="selectedMember">
             <div class="member-avatar-section">
-              <van-image
-                :src="selectedMember.avatarUrl"
-                width="80"
-                height="80"
-                round
-              >
+              <van-image :src="selectedMember.avatarUrl" width="80" height="80" round>
                 <template #error>
                   <span>{{ selectedMember.displayName?.charAt(0) || selectedMember.userId?.charAt(0) || '?' }}</span>
                 </template>
@@ -400,23 +358,15 @@
             </van-cell-group>
 
             <div v-if="canAdmin && selectedMember.userId !== currentUserId" class="member-actions">
-              <van-button block icon="chat-o" @click="startChatWithMember">
-                发送消息
-              </van-button>
-              <van-button block type="warning" icon="delete-o" @click="handleRemoveMember">
-                移除成员
-              </van-button>
+              <van-button block icon="chat-o" @click="startChatWithMember">发送消息</van-button>
+              <van-button block type="warning" icon="delete-o" @click="handleRemoveMember">移除成员</van-button>
             </div>
           </div>
         </div>
       </van-popup>
 
       <!-- Menu Action Sheet -->
-      <van-action-sheet
-        v-model:show="showMenuSheet"
-        :actions="menuActions"
-        @select="handleMenuSelect"
-      />
+      <van-action-sheet v-model:show="showMenuSheet" :actions="menuActions" @select="handleMenuSelect" />
     </div>
   </van-popup>
 </template>
@@ -427,6 +377,7 @@ import { useRouter } from 'vue-router'
 import { useDialog, useMessage } from '@/utils/vant-adapter'
 import { useMatrixSpaces, type Space as MatrixSpace, type SpaceChild } from '@/hooks/useMatrixSpaces'
 import { useHaptic } from '@/composables/useMobileGestures'
+import { useUserStore } from '@/stores/user'
 import { logger } from '@/utils/logger'
 import { msg } from '@/utils/SafeUI'
 
@@ -482,6 +433,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const router = useRouter()
+const userStore = useUserStore()
 const dialog = useDialog()
 const message = useMessage()
 const { selection, success, error: hapticError, warning } = useHaptic()
@@ -854,8 +806,8 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-  // Load current user ID from auth store (TODO: implement)
-  currentUserId.value = '' // Would come from auth store
+  // Load current user ID from user store
+  currentUserId.value = userStore.userInfo?.uid || ''
 })
 </script>
 

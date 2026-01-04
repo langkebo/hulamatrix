@@ -31,7 +31,7 @@
               :size="34"
               @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
               class="select-none cursor-pointer"
-              :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+              :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
               :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
               :src="getAvatarSrc(message.fromUser.uid) || ''" />
           </ContextMenu>
@@ -189,7 +189,7 @@
           class="reply-avatar"
           round
           :size="20"
-          :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+          :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="getAvatarSrc(message.message.body.reply.uid) || ''" />
         <span>{{ `${message.message.body.reply.username}: ` }}</span>

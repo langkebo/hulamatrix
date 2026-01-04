@@ -83,7 +83,7 @@
                       round
                       :size="28"
                       :src="avatarSrc(announcement.uid)"
-                      :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+                      :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                     <n-flex vertical :size="4">
                       <div class="text-(12px [--chat-text-color])">

@@ -151,7 +151,6 @@ export const leftHook = () => {
       'rooms/manage',
       'rooms/search',
       'spaces',
-      'synapse/friends',
       'searchDetails',
       'e2ee/devices',
       'e2ee/verify',

@@ -8,10 +8,7 @@
     </van-nav-bar>
 
     <!-- Search -->
-    <van-search
-      v-model="searchQuery"
-      :placeholder="t('admin.rooms.search_placeholder')"
-      @input="handleSearch" />
+    <van-search v-model="searchQuery" :placeholder="t('admin.rooms.search_placeholder')" @input="handleSearch" />
 
     <!-- Filters -->
     <van-dropdown-menu>
@@ -21,26 +18,14 @@
 
     <!-- Room List -->
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        :finished-text="t('common.no_more')"
-        @load="onLoad">
-        <van-cell
-          v-for="room in filteredRooms"
-          :key="room.roomId"
-          is-link
-          @click="handleViewRoom(room)">
+      <van-list v-model:loading="loading" :finished="finished" :finished-text="t('common.no_more')" @load="onLoad">
+        <van-cell v-for="room in filteredRooms" :key="room.roomId" is-link @click="handleViewRoom(room)">
           <template #title>
             <div class="room-name">{{ room.name || room.roomId }}</div>
             <div class="room-id">{{ room.roomId }}</div>
           </template>
           <template #icon>
-            <van-image
-              round
-              width="40"
-              height="40"
-              :src="getRoomAvatar(room)" />
+            <van-image round width="40" height="40" :src="getRoomAvatar(room)" />
           </template>
           <template #right-icon>
             <van-space>
@@ -64,9 +49,7 @@
     <van-empty v-if="filteredRooms.length === 0 && !loading" :description="t('admin.rooms.no_rooms')" />
 
     <!-- Room Detail Sheet -->
-    <van-action-sheet
-      v-model:show="showRoomSheet"
-      :title="selectedRoom?.name || selectedRoom?.roomId">
+    <van-action-sheet v-model:show="showRoomSheet" :title="selectedRoom?.name || selectedRoom?.roomId">
       <div class="room-detail">
         <van-cell-group>
           <van-cell title="房间 ID" :value="selectedRoom?.roomId" />
@@ -91,26 +74,13 @@
         </van-cell-group>
 
         <van-space direction="vertical" style="padding: 16px; width: 100%">
-          <van-button
-            v-if="!selectedRoom?.joined"
-            type="primary"
-            block
-            @click="handleJoinRoom(selectedRoom)">
+          <van-button v-if="!selectedRoom?.joined" type="primary" block @click="handleJoinRoom(selectedRoom)">
             加入房间
           </van-button>
-          <van-button
-            v-if="selectedRoom?.joined"
-            type="warning"
-            block
-            @click="handleLeaveRoom(selectedRoom)">
+          <van-button v-if="selectedRoom?.joined" type="warning" block @click="handleLeaveRoom(selectedRoom)">
             离开房间
           </van-button>
-          <van-button
-            type="danger"
-            block
-            @click="handleDeleteRoom(selectedRoom)">
-            删除房间
-          </van-button>
+          <van-button type="danger" block @click="handleDeleteRoom(selectedRoom)">删除房间</van-button>
         </van-space>
       </div>
     </van-action-sheet>
@@ -320,8 +290,8 @@ function handleBack() {
 }
 
 function handleCreateRoom() {
-  showToast('创建房间功能待实现')
-  // TODO: Navigate to room creation page or show modal
+  // Navigate to the room creation page in the settings
+  router.push('/mobile/rooms/manage')
 }
 
 function handleViewRoom(room: Room) {

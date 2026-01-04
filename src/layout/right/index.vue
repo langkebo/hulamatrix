@@ -1,17 +1,20 @@
 <template>
   <!-- 主容器维持 600px 的最小宽度，确保聊天侧边信息不过度挤压 -->
-  <main data-tauri-drag-region class="flex-1 flex flex-col min-h-0 min-w-720px pr-24px box-border" :style="{ background: 'var(--right-theme-bg)' }">
+  <main
+    data-tauri-drag-region
+    class="flex-1 flex flex-col min-h-0 min-w-720px pr-24px box-border"
+    :style="{ background: 'var(--right-theme-bg)' }">
     <div
       :style="{ background: shouldShowChat ? 'transparent' : '' }"
       data-tauri-drag-region
-      class="flex-1 flex flex-col min-h-0"
-    >
+      class="flex-1 flex flex-col min-h-0">
       <ActionBar :current-label="appWindow.label" />
 
       <!-- 需要判断当前路由是否是信息详情界面 -->
       <div class="flex-1 min-h-0 flex flex-col">
-        <ChatBox v-if="isChatRoute" />
-        <FloatingTypingHint v-if="isChatRoute" />
+        <!-- In standard layout mode, always show ChatBox on /message route -->
+        <ChatBox v-if="shouldShowChat" />
+        <FloatingTypingHint v-if="shouldShowChat" />
 
         <Details :content="detailsContent" v-else-if="detailsShow && isDetails && isSessionItem(detailsContent)" />
 
@@ -20,8 +23,8 @@
           v-else-if="detailsContent && isDetails && isDetailsContent(detailsContent)"
           :type="detailsContent.applyType" />
 
-        <!-- 聊天界面背景图标 -->
-        <div v-else class="flex-center size-full select-none" style="pointer-events: none;">
+        <!-- 聊天界面背景图标 (only show when not in standard layout mode) -->
+        <div v-else-if="!isStandardLayout" class="flex-center size-full select-none" style="pointer-events: none">
           <picture>
             <source
               srcset="/logoD.png 1x, /logoD.png 2x"
@@ -89,8 +92,9 @@ const detailsContent = ref<DetailsContent | SessionItem | undefined>()
 const imgTheme = ref<ThemeEnum>(themes.value.content as ThemeEnum)
 const prefers = matchMedia('(prefers-color-scheme: dark)')
 const isChatRoute = computed(() => router.currentRoute.value.path.includes('/message'))
+const isStandardLayout = computed(() => settingStore.chat.layoutMode === 'standard')
 const shouldShowChat = computed(
-  () => isChatRoute.value && (!!currentSession.value || !!globalStore.currentSessionRoomId)
+  () => isChatRoute.value && (isStandardLayout.value || !!currentSession.value || !!globalStore.currentSessionRoomId)
 )
 const isDetails = computed(() => {
   return router.currentRoute.value.path.includes('/friendsList')

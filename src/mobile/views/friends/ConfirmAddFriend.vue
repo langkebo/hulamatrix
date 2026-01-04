@@ -67,7 +67,7 @@ const { countGraphemes } = useCommon()
 const requestMsgAutosize = { minRows: 3, maxRows: 3 }
 const userInfo = ref(groupStore.getUserInfo(globalStore.addFriendModalInfo.uid!)!)
 const avatarSrc = computed(() => AvatarUtils.getAvatarUrl(userInfo.value!.avatar as string))
-const requestMsg = ref()
+const requestMsg = ref('')
 
 watch(
   () => globalStore.addFriendModalInfo.uid,

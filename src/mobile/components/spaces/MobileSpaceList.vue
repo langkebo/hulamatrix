@@ -317,6 +317,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   NButton,
   NIcon,
@@ -342,6 +343,7 @@ import {
 import { Plus, Search, Filter, Users, Hash, Lock, DotsVertical, X, Clock } from '@vicons/tabler'
 import { msg, dlg } from '@/utils/SafeUI'
 import { useMatrixSpaces, type Space as MatrixSpace } from '@/hooks/useMatrixSpaces'
+import { useUserStore } from '@/stores/user'
 import MobileCreateSpaceDialog from './MobileCreateSpaceDialog.vue'
 import MobileSpaceDrawer from './MobileSpaceDrawer.vue'
 import PullRefresh from '@/components/common/PullRefresh.vue'
@@ -384,6 +386,8 @@ const {
   initializeSpaces
 } = useMatrixSpaces()
 
+const router = useRouter()
+const userStore = useUserStore()
 const message = useMessage()
 const dialog = useDialog()
 
@@ -766,8 +770,10 @@ const handleActionSelect = async (key: string, space: MatrixSpace) => {
       break
 
     case 'settings':
-      // TODO: 打开设置页面
-      message.info('设置功能开发中')
+      // Navigate to Space Settings using a dialog (mobile-friendly)
+      // For mobile, we use a drawer dialog for space settings
+      selectedSpace.value = space
+      showSpaceDrawer.value = true
       break
   }
 }

@@ -277,8 +277,8 @@ const getLeftWidth = () => {
   const left = document.querySelector('#layout .left') as HTMLElement | null
   return left?.getBoundingClientRect().width ?? LEFT_MIN_WIDTH
 }
-const startX = ref()
-const startWidth = ref()
+const startX = ref(0)
+const startWidth = ref(0)
 const shrinkStatus = ref(false)
 const isDragging = ref(false)
 const centerEl = shallowRef<HTMLElement | null>(null)

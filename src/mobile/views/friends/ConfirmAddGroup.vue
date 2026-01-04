@@ -64,7 +64,7 @@ const userStore = useUserStore()
 const { countGraphemes } = useCommon()
 const requestMsgAutosize = { minRows: 3, maxRows: 3 }
 const userInfo = ref(globalStore.addGroupModalInfo)
-const requestMsg = ref()
+const requestMsg = ref('')
 
 watch(
   () => globalStore.addGroupModalInfo,

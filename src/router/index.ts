@@ -420,11 +420,6 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
         component: () => import('@/views/homeWindow/SearchDetails.vue')
       },
       {
-        path: '/synapse/friends',
-        name: 'synapseFriends',
-        component: () => import('@/views/friends/SynapseFriends.vue')
-      },
-      {
         path: '/rooms/manage',
         name: 'roomsManage',
         component: () => import('@/views/rooms/Manage.vue')
@@ -439,7 +434,6 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
         name: 'roomsSearch',
         component: () => import('@/views/rooms/Search.vue')
       },
-      // 移除旧设置路由，统一到 SettingsPanel 子路由
       {
         path: '/e2ee/devices',
         name: 'e2eeDevices',

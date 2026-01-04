@@ -1,18 +1,18 @@
 <template>
   <UserAvatarMenu @select="onMenuSelect">
-      <div class="relative size-34px rounded-50% cursor-pointer">
-        <n-avatar
-          :size="34"
-          :src="avatarSrc"
-          :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
-          :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-          round />
-        <div
-          class="bg-[--left-bg-color] text-10px rounded-50% size-12px absolute bottom--2px right--2px border-(2px solid [--left-bg-color])"
-          @click.stop="openContent(t('home.profile_card.online_status'), 'onlineStatus', 320, 480)">
-          <img :src="statusIcon" alt="" class="rounded-50% size-full" />
-        </div>
+    <div class="relative size-34px rounded-50% cursor-pointer">
+      <n-avatar
+        :size="34"
+        :src="avatarSrc"
+        :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
+        :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
+        round />
+      <div
+        class="bg-[--left-bg-color] text-10px rounded-50% size-12px absolute bottom--2px right--2px border-(2px solid [--left-bg-color])"
+        @click.stop="openContent(t('home.profile_card.online_status'), 'onlineStatus', 320, 480)">
+        <img :src="statusIcon" alt="" class="rounded-50% size-full" />
       </div>
+    </div>
   </UserAvatarMenu>
 </template>
 <script setup lang="ts">

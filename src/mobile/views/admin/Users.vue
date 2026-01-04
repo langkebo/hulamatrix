@@ -1,40 +1,21 @@
 <template>
   <div class="mobile-admin-users">
     <!-- Header -->
-    <van-nav-bar :title="t('admin.users.title')" left-arrow @click-left="handleBack">
-      <template #right>
-        <van-icon name="plus" @click="handleCreateUser" />
-      </template>
-    </van-nav-bar>
+    <van-nav-bar :title="t('admin.users.title')" left-arrow @click-left="handleBack" />
 
     <!-- Search -->
-    <van-search
-      v-model="searchQuery"
-      :placeholder="t('admin.users.search_placeholder')"
-      @input="handleSearch" />
+    <van-search v-model="searchQuery" :placeholder="t('admin.users.search_placeholder')" @input="handleSearch" />
 
     <!-- User List -->
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        :finished-text="t('common.no_more')"
-        @load="onLoad">
-        <van-cell
-          v-for="user in filteredUsers"
-          :key="user.userId"
-          is-link
-          @click="handleViewUser(user)">
+      <van-list v-model:loading="loading" :finished="finished" :finished-text="t('common.no_more')" @load="onLoad">
+        <van-cell v-for="user in filteredUsers" :key="user.userId" is-link @click="handleViewUser(user)">
           <template #title>
             <div class="user-name">{{ user.displayName || user.userId }}</div>
             <div class="user-id">{{ user.userId }}</div>
           </template>
           <template #icon>
-            <van-image
-              round
-              width="40"
-              height="40"
-              :src="getUserAvatar(user)" />
+            <van-image round width="40" height="40" :src="getUserAvatar(user)" />
           </template>
           <template #right-icon>
             <van-space>
@@ -44,8 +25,14 @@
                 <van-dropdown-item>
                   <van-cell-group>
                     <van-cell title="编辑" is-link @click.stop="handleEditUser(user)" />
-                    <van-cell :title="user.isAdmin ? '取消管理员' : '设为管理员'" is-link @click.stop="handleToggleAdmin(user)" />
-                    <van-cell :title="user.deactivated ? '启用' : '禁用'" is-link @click.stop="handleToggleActive(user)" />
+                    <van-cell
+                      :title="user.isAdmin ? '取消管理员' : '设为管理员'"
+                      is-link
+                      @click.stop="handleToggleAdmin(user)" />
+                    <van-cell
+                      :title="user.deactivated ? '启用' : '禁用'"
+                      is-link
+                      @click.stop="handleToggleActive(user)" />
                     <van-cell title="删除" is-link @click.stop="handleDeleteUser(user)" />
                   </van-cell-group>
                 </van-dropdown-item>
@@ -60,9 +47,7 @@
     <van-empty v-if="filteredUsers.length === 0 && !loading" :description="t('admin.users.no_users')" />
 
     <!-- User Detail Sheet -->
-    <van-action-sheet
-      v-model:show="showUserSheet"
-      :title="selectedUser?.displayName || selectedUser?.userId">
+    <van-action-sheet v-model:show="showUserSheet" :title="selectedUser?.displayName || selectedUser?.userId">
       <div class="user-detail">
         <van-cell-group>
           <van-cell title="用户 ID" :value="selectedUser?.userId" />
@@ -84,16 +69,43 @@
           <van-cell title="注册时间" :value="formatTimestamp(selectedUser?.creationTs)" />
         </van-cell-group>
 
-        <van-button type="danger" block @click="handleDeleteUser(selectedUser)">
-          删除用户
-        </van-button>
+        <van-button type="danger" block @click="handleDeleteUser(selectedUser)">删除用户</van-button>
+      </div>
+    </van-action-sheet>
+
+    <!-- User Form Sheet (Edit only - creation not supported by Synapse Admin API) -->
+    <van-action-sheet v-model:show="showUserFormSheet" title="编辑用户">
+      <div class="user-form">
+        <van-form @submit="handleUserFormSubmit">
+          <van-cell-group inset>
+            <van-field
+              v-model="userFormData.displayName"
+              name="displayName"
+              label="显示名称"
+              placeholder="请输入显示名称"
+              :rules="[{ required: true, message: '请输入显示名称' }]" />
+            <van-cell title="管理员" center>
+              <template #right-icon>
+                <van-switch v-model="userFormData.isAdmin" size="20" />
+              </template>
+            </van-cell>
+            <van-cell title="禁用" center>
+              <template #right-icon>
+                <van-switch v-model="userFormData.deactivated" size="20" />
+              </template>
+            </van-cell>
+          </van-cell-group>
+          <div style="margin: 16px">
+            <van-button round block type="primary" native-type="submit">保存</van-button>
+          </div>
+        </van-form>
       </div>
     </van-action-sheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { showToast, showLoadingToast, closeToast, showConfirmDialog } from 'vant'
@@ -118,9 +130,17 @@ const refreshing = ref(false)
 const finished = ref(false)
 const users = ref<User[]>([])
 const showUserSheet = ref(false)
+const showUserFormSheet = ref(false)
 const selectedUser = ref<User | null>(null)
 const nextToken = ref<string | undefined>(undefined)
 const totalCount = ref(0)
+
+// User form data
+const userFormData = ref({
+  displayName: '',
+  isAdmin: false,
+  deactivated: false
+})
 
 // Admin API response interface
 interface AdminUserResponse {
@@ -219,20 +239,16 @@ function handleBack() {
   router.back()
 }
 
-function handleCreateUser() {
-  showToast('创建用户功能待实现')
-  // TODO: Navigate to user creation page or show modal
-}
-
 function handleViewUser(user: User) {
   selectedUser.value = user
   showUserSheet.value = true
 }
 
-function handleEditUser(_user: User) {
+function handleEditUser(user: User) {
   showUserSheet.value = false
-  showToast('编辑用户功能待实现')
-  // TODO: Navigate to user edit page or show modal
+  // Show user edit dialog
+  showUserFormSheet.value = true
+  selectedUser.value = user
 }
 
 async function handleToggleAdmin(user: User) {
@@ -349,6 +365,61 @@ function formatTimestamp(timestamp?: number): string {
   const date = new Date(timestamp)
   return date.toLocaleDateString('zh-CN')
 }
+
+async function handleUserFormSubmit() {
+  try {
+    showLoadingToast({
+      message: selectedUser.value ? '保存中...' : '创建中...',
+      forbidClick: true,
+      duration: 0
+    })
+
+    if (selectedUser.value) {
+      // Edit existing user
+      await adminClient.updateUserAdmin(selectedUser.value.userId, userFormData.value.isAdmin)
+      await adminClient.setUserDeactivated(selectedUser.value.userId, userFormData.value.deactivated)
+
+      // Update local state
+      selectedUser.value.isAdmin = userFormData.value.isAdmin
+      selectedUser.value.deactivated = userFormData.value.deactivated
+
+      closeToast()
+      showToast.success('保存成功')
+    } else {
+      // Create new user - Note: Synapse Admin API doesn't support user creation
+      // User registration should be done through the standard registration flow
+      closeToast()
+      showToast.fail('用户创建需要通过注册流程，管理员请联系用户注册')
+      return
+    }
+
+    showUserFormSheet.value = false
+  } catch (error) {
+    logger.error('[MobileAdminUsers] Failed to save user:', error)
+    closeToast()
+    showToast.fail(selectedUser.value ? '保存失败' : '创建失败')
+  }
+}
+
+// Watch for user selection changes to populate form
+watch(
+  () => selectedUser.value,
+  (user) => {
+    if (user) {
+      userFormData.value = {
+        displayName: user.displayName || '',
+        isAdmin: user.isAdmin,
+        deactivated: user.deactivated
+      }
+    } else {
+      userFormData.value = {
+        displayName: '',
+        isAdmin: false,
+        deactivated: false
+      }
+    }
+  }
+)
 
 onMounted(() => {
   onLoad()

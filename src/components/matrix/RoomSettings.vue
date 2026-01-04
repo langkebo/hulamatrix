@@ -10,11 +10,10 @@
             <n-form-item label="房间名称" path="name">
               <n-input
                 :value="roomInfo.name ?? ''"
-                @update:value="(val: string) => roomInfo.name = val"
+                @update:value="(val: string) => (roomInfo.name = val)"
                 placeholder="输入房间名称"
                 maxlength="100"
-                show-count
-              />
+                show-count />
             </n-form-item>
 
             <!-- Room Topic -->
@@ -22,12 +21,11 @@
               <n-input
                 :value="roomInfo.topic ?? ''"
                 type="textarea"
-                @update:value="(val: string) => roomInfo.topic = val"
+                @update:value="(val: string) => (roomInfo.topic = val)"
                 placeholder="输入房间主题描述"
                 :autosize="{ minRows: 2, maxRows: 4 }"
                 maxlength="500"
-                show-count
-              />
+                show-count />
             </n-form-item>
 
             <!-- Room Avatar -->
@@ -38,24 +36,13 @@
                   :src="roomInfo.avatarUrl"
                   :fallback-src="'/default-room-avatar.png'"
                   round
-                  size="large"
-                >
+                  size="large">
                   <n-icon :component="Users" size="24" />
                 </n-avatar>
-                <n-avatar
-                  v-else
-                  :fallback-src="'/default-room-avatar.png'"
-                  round
-                  size="large"
-                >
+                <n-avatar v-else :fallback-src="'/default-room-avatar.png'" round size="large">
                   <n-icon :component="Users" size="24" />
                 </n-avatar>
-                <n-upload
-                  accept="image/*"
-                  :max="1"
-                  :show-file-list="false"
-                  @change="handleAvatarChange"
-                >
+                <n-upload accept="image/*" :max="1" :show-file-list="false" @change="handleAvatarChange">
                   <n-button>更换头像</n-button>
                 </n-upload>
               </div>
@@ -86,13 +73,7 @@
 
             <!-- Save Button -->
             <n-form-item>
-              <n-button
-                type="primary"
-                :loading="saving"
-                @click="saveGeneralSettings"
-              >
-                保存设置
-              </n-button>
+              <n-button type="primary" :loading="saving" @click="saveGeneralSettings">保存设置</n-button>
             </n-form-item>
           </n-form>
         </div>
@@ -106,8 +87,7 @@
               <n-select
                 v-model:value="accessSettings.joinRule"
                 :options="joinRuleOptions"
-                @update:value="updateJoinRule"
-              />
+                @update:value="updateJoinRule" />
               <div class="option-description">
                 {{ getJoinRuleDescription(accessSettings.joinRule) }}
               </div>
@@ -118,8 +98,7 @@
               <n-select
                 v-model:value="accessSettings.guestAccess"
                 :options="guestAccessOptions"
-                @update:value="updateGuestAccess"
-              />
+                @update:value="updateGuestAccess" />
               <div class="option-description">
                 {{ getGuestAccessDescription(accessSettings.guestAccess) }}
               </div>
@@ -130,8 +109,7 @@
               <n-select
                 v-model:value="accessSettings.historyVisibility"
                 :options="historyVisibilityOptions"
-                @update:value="updateHistoryVisibility"
-              />
+                @update:value="updateHistoryVisibility" />
               <div class="option-description">
                 {{ getHistoryVisibilityDescription(accessSettings.historyVisibility) }}
               </div>
@@ -147,25 +125,13 @@
               <n-icon
                 :component="roomInfo.encrypted ? Lock : LockOpen"
                 :color="roomInfo.encrypted ? '#18a058' : '#d03050'"
-                size="20"
-              />
-              <span>
-                房间加密: {{ roomInfo.encrypted ? '已启用' : '未启用' }}
-              </span>
+                size="20" />
+              <span>房间加密: {{ roomInfo.encrypted ? '已启用' : '未启用' }}</span>
             </div>
-            <n-alert
-              v-if="roomInfo.encrypted"
-              type="info"
-              title="端到端加密"
-            >
+            <n-alert v-if="roomInfo.encrypted" type="info" title="端到端加密">
               此房间已启用端到端加密，只有房间成员可以解密消息
             </n-alert>
-            <n-button
-              v-else
-              type="primary"
-              :loading="enablingEncryption"
-              @click="enableEncryption"
-            >
+            <n-button v-else type="primary" :loading="enablingEncryption" @click="enableEncryption">
               启用端到端加密
             </n-button>
           </div>
@@ -178,12 +144,7 @@
           <div class="section-header">
             <h3>房间成员 ({{ members.length }})</h3>
             <div class="member-actions">
-              <n-input
-                v-model:value="memberSearchQuery"
-                placeholder="搜索成员..."
-                clearable
-                style="width: 200px"
-              >
+              <n-input v-model:value="memberSearchQuery" placeholder="搜索成员..." clearable style="width: 200px">
                 <template #prefix>
                   <n-icon :component="Search" />
                 </template>
@@ -197,35 +158,18 @@
 
           <!-- Member List -->
           <div class="member-list">
-            <div
-              v-for="member in filteredMembers"
-              :key="member.userId"
-              class="member-item"
-            >
-              <n-avatar
-                v-if="member.avatarUrl !== undefined"
-                :src="member.avatarUrl"
-                round
-                size="medium"
-              >
+            <div v-for="member in filteredMembers" :key="member.userId" class="member-item">
+              <n-avatar v-if="member.avatarUrl !== undefined" :src="member.avatarUrl" round size="medium">
                 {{ getMemberInitials(member) }}
               </n-avatar>
-              <n-avatar
-                v-else
-                round
-                size="medium"
-              >
+              <n-avatar v-else round size="medium">
                 {{ getMemberInitials(member) }}
               </n-avatar>
               <div class="member-info">
                 <div class="member-name">
                   {{ member.displayName || member.userId }}
-                  <n-tag v-if="(member.powerLevel || 0) >= 50" type="warning" size="tiny">
-                    管理员
-                  </n-tag>
-                  <n-tag v-if="(member.powerLevel || 0) >= 100" type="error" size="tiny">
-                    房主
-                  </n-tag>
+                  <n-tag v-if="(member.powerLevel || 0) >= 50" type="warning" size="tiny">管理员</n-tag>
+                  <n-tag v-if="(member.powerLevel || 0) >= 100" type="error" size="tiny">房主</n-tag>
                 </div>
                 <div class="member-id">{{ member.userId }}</div>
                 <div class="member-status">
@@ -234,10 +178,7 @@
                 </div>
               </div>
               <div class="member-actions">
-                <n-dropdown
-                  :options="getMemberMenuOptions(member)"
-                  @select="handleMemberAction($event, member)"
-                >
+                <n-dropdown :options="getMemberMenuOptions(member)" @select="handleMemberAction($event, member)">
                   <n-button quaternary>
                     <n-icon :component="DotsVertical" />
                   </n-button>
@@ -256,8 +197,7 @@
                 v-model:value="powerLevels.usersDefault"
                 :min="0"
                 :max="100"
-                @update:value="updatePowerLevels"
-              />
+                @update:value="updatePowerLevels" />
             </n-form-item>
 
             <n-form-item label="默认事件权限">
@@ -265,26 +205,15 @@
                 v-model:value="powerLevels.eventsDefault"
                 :min="0"
                 :max="100"
-                @update:value="updatePowerLevels"
-              />
+                @update:value="updatePowerLevels" />
             </n-form-item>
 
             <n-form-item label="踢出权限">
-              <n-input-number
-                v-model:value="powerLevels.kick"
-                :min="0"
-                :max="100"
-                @update:value="updatePowerLevels"
-              />
+              <n-input-number v-model:value="powerLevels.kick" :min="0" :max="100" @update:value="updatePowerLevels" />
             </n-form-item>
 
             <n-form-item label="封禁权限">
-              <n-input-number
-                v-model:value="powerLevels.ban"
-                :min="0"
-                :max="100"
-                @update:value="updatePowerLevels"
-              />
+              <n-input-number v-model:value="powerLevels.ban" :min="0" :max="100" @update:value="updatePowerLevels" />
             </n-form-item>
           </n-form>
         </div>
@@ -303,11 +232,7 @@
               <n-icon :component="Logout" />
               离开房间
             </n-button>
-            <n-button
-              v-if="isRoomOwner"
-              type="error"
-              @click="showDeleteModal = true"
-            >
+            <n-button v-if="isRoomOwner" type="error" @click="showDeleteModal = true">
               <n-icon :component="Trash" />
               删除房间
             </n-button>
@@ -337,11 +262,7 @@
           <!-- Room Events -->
           <h3>最近事件</h3>
           <div class="recent-events">
-            <div
-              v-for="event in recentEvents"
-              :key="event.eventId"
-              class="event-item"
-            >
+            <div v-for="event in recentEvents" :key="event.eventId" class="event-item">
               <span class="event-time">{{ formatTime(event.timestamp) }}</span>
               <span class="event-type">{{ event.type }}</span>
               <span class="event-sender">{{ event.sender }}</span>
@@ -352,84 +273,46 @@
     </n-tabs>
 
     <!-- Invite Member Modal -->
-    <n-modal
-      v-model:show="showInviteModal"
-      preset="dialog"
-      title="邀请成员"
-    >
+    <n-modal v-model:show="showInviteModal" preset="dialog" title="邀请成员">
       <div class="invite-content">
         <n-form :model="inviteForm" label-placement="left">
           <n-form-item label="用户ID">
-            <n-input
-              v-model:value="inviteForm.userId"
-              placeholder="@user:example.com"
-            />
+            <n-input v-model:value="inviteForm.userId" placeholder="@user:example.com" />
           </n-form-item>
           <n-form-item label="邀请理由(可选)">
             <n-input
               v-model:value="inviteForm.reason"
               type="textarea"
               placeholder="邀请理由"
-              :autosize="{ minRows: 2, maxRows: 4 }"
-            />
+              :autosize="{ minRows: 2, maxRows: 4 }" />
           </n-form-item>
         </n-form>
       </div>
       <template #action>
         <n-button @click="showInviteModal = false">取消</n-button>
-        <n-button
-          type="primary"
-          :loading="inviting"
-          @click="inviteMember"
-        >
-          邀请
-        </n-button>
+        <n-button type="primary" :loading="inviting" @click="inviteMember">邀请</n-button>
       </template>
     </n-modal>
 
     <!-- Leave Room Modal -->
-    <n-modal
-      v-model:show="showLeaveModal"
-      preset="dialog"
-      type="warning"
-      title="离开房间"
-    >
+    <n-modal v-model:show="showLeaveModal" preset="dialog" type="warning" title="离开房间">
       <p>确定要离开这个房间吗？</p>
       <template #action>
         <n-button @click="showLeaveModal = false">取消</n-button>
-        <n-button
-          type="warning"
-          :loading="leaving"
-          @click="leaveRoom"
-        >
-          离开
-        </n-button>
+        <n-button type="warning" :loading="leaving" @click="leaveRoom">离开</n-button>
       </template>
     </n-modal>
 
     <!-- Delete Room Modal -->
-    <n-modal
-      v-model:show="showDeleteModal"
-      preset="dialog"
-      type="error"
-      title="删除房间"
-    >
+    <n-modal v-model:show="showDeleteModal" preset="dialog" type="error" title="删除房间">
       <p>
-        <strong>警告：</strong>删除房间是不可逆的，所有消息和历史记录将被永久删除。
+        <strong>警告：</strong>
+        删除房间是不可逆的，所有消息和历史记录将被永久删除。
       </p>
-      <n-input
-        v-model:value="deleteConfirmText"
-        placeholder="输入房间ID以确认删除"
-        style="margin-top: 16px"
-      />
+      <n-input v-model:value="deleteConfirmText" placeholder="输入房间ID以确认删除" style="margin-top: 16px" />
       <template #action>
         <n-button @click="showDeleteModal = false">取消</n-button>
-        <n-button
-          type="error"
-          :disabled="deleteConfirmText !== roomId"
-          :loading="deleting"
-          @click="deleteRoom"
-        >
+        <n-button type="error" :disabled="deleteConfirmText !== roomId" :loading="deleting" @click="deleteRoom">
           删除
         </n-button>
       </template>
@@ -441,8 +324,7 @@
       preset="card"
       title="成员资料"
       :style="{ width: '500px' }"
-      :bordered="false"
-    >
+      :bordered="false">
       <div v-if="selectedMember" class="member-profile-content">
         <!-- 头像和基本信息 -->
         <div class="member-header">
@@ -450,8 +332,7 @@
             :src="selectedMember.avatarUrl ? AvatarUtils.getAvatarUrl(selectedMember.avatarUrl) : undefined"
             :fallback-src="'/default-avatar.png'"
             round
-            :size="80"
-          >
+            :size="80">
             <n-icon :component="User" size="40" />
           </n-avatar>
           <div class="member-basic-info">
@@ -493,8 +374,7 @@
             type="error"
             size="small"
             @click="kickSelectedMember"
-            :disabled="!canManageMember"
-          >
+            :disabled="!canManageMember">
             踢出成员
           </n-button>
           <n-button
@@ -502,8 +382,7 @@
             type="warning"
             size="small"
             @click="banSelectedMember"
-            :disabled="!canManageMember"
-          >
+            :disabled="!canManageMember">
             封禁成员
           </n-button>
         </div>
@@ -519,14 +398,12 @@
       preset="card"
       title="权限等级编辑"
       :style="{ width: '800px' }"
-      :bordered="false"
-    >
+      :bordered="false">
       <PowerLevelEditor
         v-if="showPowerLevelEditor"
         :room-id="roomId"
         @saved="handlePowerLevelsSaved"
-        @cancelled="showPowerLevelEditor = false"
-      />
+        @cancelled="showPowerLevelEditor = false" />
     </n-modal>
   </div>
 </template>
@@ -615,7 +492,7 @@ const messageCount = ref(0)
 const selectedMember = ref<MatrixMember | null>(null)
 
 // Forms
-const generalFormRef = ref()
+const generalFormRef = ref<{ validate: () => void | Promise<void> } | null>(null)
 interface RoomInfoState {
   name?: string
   topic?: string

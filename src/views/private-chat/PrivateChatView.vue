@@ -253,8 +253,8 @@ const showNewChatDialog = ref(false)
 const showMessageTTL = ref(false)
 const selectedTTL = ref('0')
 const currentPresence = ref<'online' | 'offline' | 'unavailable' | 'away'>('offline')
-const messagesContainerRef = ref<HTMLElement>()
-const messageInputRef = ref()
+const messagesContainerRef = ref<HTMLElement | null>(null)
+const messageInputRef = ref<HTMLElement | null>(null)
 
 // 用户头像
 const userAvatar = computed(() => userStore.userInfo?.avatar || '')

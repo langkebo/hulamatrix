@@ -105,7 +105,7 @@ const loadText = computed(() => t(`login.qr.load_text.${loadTextKey.value}`))
 const loading = ref(true)
 const refreshing = ref(false) // 是否正在刷新
 const qrCodeValue = ref('')
-const qrCodeResp = ref()
+const qrCodeResp = ref<{ qrId?: string; deviceHash?: string; [key: string]: unknown } | null>(null)
 const qrCodeColor = ref('#000000')
 const qrCodeBgColor = ref('#FFFFFF')
 const qrCodeType = ref('canvas' as const)
@@ -233,9 +233,9 @@ const startPolling = () => {
       const res = (await requestWithFallback({
         url: 'check_qr_status',
         body: {
-          qrId: qrCodeResp.value.qrId,
+          qrId: qrCodeResp.value?.qrId ?? '',
           clientId: localStorage.getItem('clientId') as string,
-          deviceHash: qrCodeResp.value.deviceHash,
+          deviceHash: qrCodeResp.value?.deviceHash ?? '',
           deviceType: 'PC'
         }
       })) as QrStatusResponse
@@ -275,7 +275,7 @@ const handleQRCodeLogin = async () => {
     qrCodeResp.value = await requestWithFallback({
       url: 'generate_qr_code'
     })
-    qrCodeValue.value = JSON.stringify({ type: 'login', qrId: qrCodeResp.value.qrId })
+    qrCodeValue.value = JSON.stringify({ type: 'login', qrId: qrCodeResp.value?.qrId ?? '' })
     loadTextKey.value = 'scan_hint'
     loading.value = false
     refreshing.value = false
