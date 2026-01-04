@@ -8,13 +8,9 @@
     "node": "^20.19.0 || >=22.12.0",
     "pnpm": ">=10.x"
   },
-  "repository": {
-    "url": "https://github.com/HuLaSpark/HuLa.git"
-  },
   "author": {
     "name": "HuLaSpark团队",
-    "email": "2439646234@qq.com",
-    "url": "https://github.com/HuLaSpark"
+    "email": "2439646234@qq.com"
   },
   "scripts": {
     "========= 启动vue(tauri项目会连带执行不需要单独执行) =========": "",

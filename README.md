@@ -4,30 +4,6 @@
 
 <p align="center">一款基于 Tauri、Vite 7、Vue 3 和 TypeScript 构建的跨平台即时通讯应用</p>
 
-<div align="center">
-  <p>
-    <a href="https://hellogithub.com/repository/743b101346c54f6cb5c20eed2edbaa40" target="_blank">
-      <img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=743b101346c54f6cb5c20eed2edbaa40&claim_uid=WsQaY6SlnL7qxG3&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" />
-    </a>
-  </p>
-</div>
-
-<br>
-
-<div align="center">
-  <p>
-    <a href="https://gitee.com/HulaSpark/HuLa/stargazers">
-      <img src="https://gitee.com/HulaSpark/HuLa/badge/star.svg?theme=gvp" alt="Gitee Stars">
-    </a>
-    <a href="https://github.com/HulaSpark/HuLa/stargazers">
-      <img src="https://img.shields.io/github/stars/HulaSpark/HuLa?style=social" alt="GitHub Stars">
-    </a>
-    <a href="https://gitcode.com/HuLaSpark/HuLa">
-      <img src="https://gitcode.com/HuLaSpark/HuLa/star/badge.svg" alt="GitCode Stars">
-    </a>
-  </p>
-</div>
-
 <br>
 
 <!-- 技术栈 -->
@@ -51,9 +27,7 @@
   <h3>🔗 快速链接</h3>
 
   <p>
-    📝 <strong>开发文档：</strong><a href="CLAUDE.md">开发者指南</a> / <a href="docs/PROJECT_ANALYSIS_AND_OPTIMIZATION_PLAN.md">项目分析</a> |
-    ☕️ <strong>服务端：</strong><a href="https://github.com/HulaSpark/HuLa-Server">GitHub</a> / <a href="https://gitee.com/HulaSpark/HuLa-Server">Gitee</a> |
-    💬 <strong>微信：</strong><code>cy2439646234</code>
+    📝 <strong>开发文档：</strong><a href="CLAUDE.md">开发者指南</a> / <a href="docs/PROJECT_ANALYSIS_AND_OPTIMIZATION_PLAN.md">项目分析</a>
   </p>
 </div>
 
@@ -63,7 +37,7 @@
 </p>
 
 > [!NOTE]
-> 本项目是一个跨平台即时通讯应用，基于 Matrix 协议实现联邦通信，支持 Windows、macOS、Linux、iOS 和 Android 平台。
+> 本项目是一个个人二开项目，基于 Matrix 协议实现联邦通信，支持 Windows、macOS、Linux、iOS 和 Android 平台。
 
 ## 🌐 支持平台
 
@@ -233,10 +207,6 @@ HuLa 是一款基于 Tauri、Vite 7、Vue 3 和 TypeScript 构建的跨平台即
 ### 安装步骤
 
 ```bash
-# 克隆项目
-git clone https://gitee.com/HuLaSpark/HuLa.git
-cd HuLa
-
 # 安装依赖
 pnpm install
 
