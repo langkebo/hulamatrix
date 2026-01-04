@@ -3,7 +3,7 @@
  * 负责管理双重架构，智能选择实现方式
  */
 
-import { matrixDiscovery } from '@/services/matrix-discovery'
+import { matrixServerDiscovery } from '@/integrations/matrix/server-discovery'
 import { matrixConfig } from '@/config/matrix-config'
 
 export type ArchitectureMode = 'discovery' | 'websocket' | 'hybrid'
@@ -204,7 +204,9 @@ export class ArchitectureManager {
 
     try {
       // 检查发现机制
-      const discovery = await matrixDiscovery.discoverDefaultServer()
+      const env = (import.meta as { env?: Record<string, unknown> })?.env || {}
+      const defaultServer = String(env.VITE_MATRIX_SERVER_NAME || 'cjystx.top').trim()
+      const discovery = await matrixServerDiscovery.discover(defaultServer)
       details.discovery = {
         status: 'ok',
         homeserverUrl: discovery.homeserverUrl

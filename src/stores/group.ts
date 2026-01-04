@@ -12,7 +12,7 @@ import { flags } from '@/utils/envFlags'
 import { logger } from '@/utils/logger'
 import { onUnmounted } from 'vue'
 import { createGroupToRoomAdapter, type GroupToRoomAdapter } from '@/adapters/group-to-room-adapter'
-import { discoveryMatrixClient } from '@/integrations/matrix/discovery-client'
+import { matrixClientService } from '@/integrations/matrix/client'
 import type { MatrixClient } from 'matrix-js-sdk'
 
 /** 会话项类型 */
@@ -54,7 +54,7 @@ export const useGroupStore = defineStore(
     // 初始化适配器
     const initAdapter = () => {
       if (flags.matrixEnabled && !roomAdapter) {
-        const client = discoveryMatrixClient.getClient() as ExtendedMatrixClient | null
+        const client = matrixClientService.getClient() as ExtendedMatrixClient | null
         if (client) {
           roomAdapter = createGroupToRoomAdapter(client)
         }

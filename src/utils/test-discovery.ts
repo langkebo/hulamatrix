@@ -2,7 +2,7 @@
  * Matrix 服务发现测试工具
  */
 
-import { matrixDiscovery, type DiscoveryResult } from '@/services/matrix-discovery'
+import { matrixServerDiscovery, type DiscoveryResult } from '@/integrations/matrix/server-discovery'
 import { matrixConfig } from '@/config/matrix-config'
 import { logger } from '@/utils/logger'
 
@@ -29,13 +29,14 @@ export class DiscoveryTester {
     try {
       logger.debug('🔍 测试默认服务器发现...')
 
-      const result = await matrixDiscovery.discoverDefaultServer()
+      const env = (import.meta as { env?: Record<string, unknown> })?.env || {}
+      const defaultServer = String(env.VITE_MATRIX_SERVER_NAME || 'cjystx.top').trim()
+      const result = await matrixServerDiscovery.discover(defaultServer)
 
       logger.debug('✅ 发现成功:', {
         homeserverUrl: result.homeserverUrl,
         identityServerUrl: result.identityServerUrl,
-        slidingSyncUrl: result.slidingSyncUrl,
-        hasIntegrations: !!result.integrations?.length
+        slidingSyncUrl: result.slidingSyncUrl
       })
 
       // 验证配置
@@ -55,13 +56,12 @@ export class DiscoveryTester {
     try {
       logger.debug(`🔍 测试服务器发现: ${serverName}`)
 
-      const result = await matrixDiscovery.discoverServices(serverName)
+      const result = await matrixServerDiscovery.discover(serverName)
 
       logger.debug('✅ 发现成功:', {
         homeserverUrl: result.homeserverUrl,
         identityServerUrl: result.identityServerUrl,
-        slidingSyncUrl: result.slidingSyncUrl,
-        hasIntegrations: !!result.integrations?.length
+        slidingSyncUrl: result.slidingSyncUrl
       })
 
       this.validateDiscoveryResult(result)
