@@ -143,7 +143,8 @@
     "shield_user": "您已屏蔽此人",
     "empty_description": "快和朋友聊天吧！",
     "empty_action": "寻找好友",
-    "default_last_msg": "欢迎使用HuLa"
+    "default_last_msg": "欢迎使用HuLa",
+    "search_placeholder": "搜索会话"
   },
   "message_menu": {
     "pin_success": "已置顶",

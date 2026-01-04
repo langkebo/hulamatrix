@@ -19,14 +19,17 @@
           <label class="flex-y-center gap-6px">
             <p class="text-(16px [--text-color])">{{ roomStore.currentRoom?.name || currentSession?.name }}</p>
             <p
-              v-if="currentSession?.type === RoomTypeEnum.GROUP && (formattedStats.hasData || roomStore.currentRoom?.memberCount)"
+              v-if="
+                currentSession?.type === RoomTypeEnum.GROUP &&
+                (formattedStats.hasData || roomStore.currentRoom?.memberCount)
+              "
               class="text-(11px #808080)">
-              [{{ formattedStats.hasData ? formattedStats.memberCount : (roomStore.currentRoom?.memberCount || 0) }}]
+              [{{ formattedStats.hasData ? formattedStats.memberCount : roomStore.currentRoom?.memberCount || 0 }}]
             </p>
             <!-- bot用户标签 -->
             <div
               v-if="false"
-              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid var(--hula-accent, #13987f)) border-(1px solid var(--hula-accent, #13987f)) flex-center px-8px py-4px rounded-6px">
+              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid #13987f) border-(1px solid #13987f) flex-center px-8px py-4px rounded-6px">
               <p class="text-(11px) text-brand">{{ t('home.chat_header.bot_tag') }}</p>
             </div>
           </label>
@@ -35,7 +38,7 @@
             class="size-20px text-brand select-none outline-none">
             <use href="#auth"></use>
           </svg>
-          <n-flex v-else-if="currentSession?.type === RoomTypeEnum.SINGLE " align="center">
+          <n-flex v-else-if="currentSession?.type === RoomTypeEnum.SINGLE" align="center">
             <template v-if="shouldShowDeleteFriend">
               <n-flex align="center" :size="6">
                 <!-- 状态图标 -->
@@ -91,7 +94,7 @@
         </n-popover>
       </div>
 
-      <div v-if="!isChannel " class="options-box">
+      <div v-if="!isChannel" class="options-box">
         <n-popover trigger="hover" :show-arrow="false" placement="bottom">
           <template #trigger>
             <svg @click="handleMedia">
@@ -102,7 +105,7 @@
         </n-popover>
       </div>
 
-      <div v-if="!isChannel " class="options-box">
+      <div v-if="!isChannel" class="options-box">
         <n-popover trigger="hover" :show-arrow="false" placement="bottom">
           <template #trigger>
             <svg @click="handleAssist">
@@ -113,10 +116,7 @@
         </n-popover>
       </div>
 
-      <div
-        v-if="!isChannel  && currentSession?.roomId !== '1'"
-        class="options-box"
-        @click="handleCreateGroupOrInvite">
+      <div v-if="!isChannel && currentSession?.roomId !== '1'" class="options-box" @click="handleCreateGroupOrInvite">
         <n-popover trigger="hover" :show-arrow="false" placement="bottom">
           <template #trigger>
             <svg>
@@ -131,7 +131,7 @@
       </div>
 
       <!-- 私密聊天按钮 -->
-      <div v-if="!isChannel " class="options-box">
+      <div v-if="!isChannel" class="options-box">
         <n-popover trigger="hover" :show-arrow="false" placement="bottom">
           <template #trigger>
             <svg @click="handleCreatePrivateChat" class="private-chat-icon">
@@ -181,9 +181,7 @@
               <p>{{ t('home.chat_header.sidebar.single.delete_history') }}</p>
             </div>
 
-            <div
-              class="box-item flex-x-center cursor-pointer"
-              @click="handleDelete(RoomActEnum.DELETE_FRIEND)">
+            <div class="box-item flex-x-center cursor-pointer" @click="handleDelete(RoomActEnum.DELETE_FRIEND)">
               <p class="color-#d03553">{{ t('home.chat_header.sidebar.single.delete_friend') }}</p>
             </div>
 
@@ -245,7 +243,9 @@
                       </svg>
                     </div>
 
-                    <n-popover trigger="hover" v-if="currentSession?.hotFlag === IsAllUserEnum.Yes && !isEditingGroupName">
+                    <n-popover
+                      trigger="hover"
+                      v-if="currentSession?.hotFlag === IsAllUserEnum.Yes && !isEditingGroupName">
                       <template #trigger>
                         <svg class="size-20px select-none outline-none cursor-pointer text-brand">
                           <use href="#auth"></use>
@@ -361,10 +361,7 @@
 
                   <div class="flex-between-center">
                     <p>{{ t('home.chat_header.sidebar.group.settings.scan') }}</p>
-                    <n-switch
-                      size="small"
-                      :value="allowScanEnter"
-                      @update:value="handleJoinRuleChange" />
+                    <n-switch size="small" :value="allowScanEnter" @update:value="handleJoinRuleChange" />
                   </div>
                 </template>
               </n-flex>
@@ -390,9 +387,7 @@
 
             <!-- 管理群成员（仅管理员和群主可见） -->
             <div
-              v-if="
-                isAdminOrOwner && currentSession?.hotFlag !== IsAllUserEnum.Yes && currentSession?.roomId !== '1'
-              "
+              v-if="isAdminOrOwner && currentSession?.hotFlag !== IsAllUserEnum.Yes && currentSession?.roomId !== '1'"
               class="box-item cursor-pointer mb-20px"
               @click="handleManageGroupMember">
               <p>{{ t('home.chat_header.sidebar.group.manage_members') }}</p>
@@ -451,7 +446,7 @@
         <span class="text-14px">{{ tips }}</span>
 
         <n-flex justify="end">
-          <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-accent, #13987f)'">
+          <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">
             {{ t('home.chat_header.modal.confirm') }}
           </n-button>
           <n-button @click="handleCancel" class="w-78px" secondary>{{ t('home.chat_header.modal.cancel') }}</n-button>
@@ -1318,7 +1313,7 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 
   &:hover {
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
     transform: scale(1.1);
   }
 }
@@ -1330,7 +1325,7 @@ onUnmounted(() => {
     color: var(--icon-color);
 
     &:hover {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
     }
   }
 }

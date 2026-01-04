@@ -243,8 +243,15 @@ export function validateEnvFlags(): ConfigValidationResult {
     const featureEnabled = parseBool(raw[featureKey], false)
     if (featureEnabled) {
       for (const depKey of depConfig.dependsOn) {
-        const depEnabled = parseBool(raw[depKey], false)
-        if (!depEnabled) {
+        const depValue = raw[depKey]
+        const depEnabled = parseBool(depValue, false)
+
+        // 只在依赖项明确禁用时才警告（值为 off/false/0/no）
+        // 如果依赖项未设置（undefined），使用默认值，不警告
+        const depValueNormalized = normalize(depValue)
+        const isExplicitlyDisabled = ['false', 'off', '0', 'no'].includes(depValueNormalized)
+
+        if (!depEnabled && isExplicitlyDisabled) {
           warnings.push({
             type: 'warning',
             key: featureKey,

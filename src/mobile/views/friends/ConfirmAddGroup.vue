@@ -39,7 +39,7 @@
                 type="textarea"
                 placeholder="输入验证消息" />
 
-              <n-button class="mt-120px" :color="'var(--hula-accent, #13987f)'" @click="addFriend">申请加入</n-button>
+              <n-button class="mt-120px" :color="'#13987f'" @click="addFriend">申请加入</n-button>
             </n-flex>
           </div>
         </div>

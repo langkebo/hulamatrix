@@ -9,8 +9,8 @@
         data-tauri-drag-region
         size="12"
         :border-radius="0"
-        :color="changeColor('var(--hula-accent, #13987f)', { alpha: 0.6 })"
-        :rail-color="changeColor('var(--hula-accent, #13987f)', { alpha: 0.2 })"
+        :color="changeColor('#13987f', { alpha: 0.6 })"
+        :rail-color="changeColor('#13987f', { alpha: 0.2 })"
         :percentage="percentage"
         :show-indicator="false" />
 

@@ -9,7 +9,7 @@
         <p class="text-14px font-medium color-[--text-color]">位置</p>
       </div>
 
-      <div class="text-(10px) text-brand p-4px rounded-4px" :style="{ border: '1px solid var(--hula-accent, #13987f)' }">
+      <div class="text-(10px) text-brand p-4px rounded-4px" :style="{ border: '1px solid #13987f' }">
         <p v-if="body?.precision">{{ body.precision }}</p>
       </div>
     </n-flex>

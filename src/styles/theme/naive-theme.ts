@@ -15,45 +15,45 @@ import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
 export const hulaThemeOverrides = {
   // ==================== 通用配置 ====================
   common: {
-    // 主色
-    primaryColor: 'var(--hula-accent)',
-    primaryColorHover: 'var(--hula-accent-hover)',
-    primaryColorPressed: 'var(--hula-accent-active)',
-    primaryColorSuppl: 'var(--hula-primary)',
+    // 主色 - 使用实际颜色值以支持 Naive UI 的颜色计算
+    primaryColor: '#13987f',
+    primaryColorHover: '#0f7d69',
+    primaryColorPressed: '#0c6354',
+    primaryColorSuppl: '#64a29c',
 
     // 功能色
-    successColor: 'var(--hula-success)',
-    warningColor: 'var(--hula-warning)',
-    errorColor: 'var(--hula-error)',
-    infoColor: 'var(--hula-info)',
+    successColor: '#13987f',
+    warningColor: '#ff976a',
+    errorColor: '#ee0a24',
+    infoColor: '#1989fa',
 
     // 文字颜色
-    textColorBase: 'var(--hula-text-primary)',
-    textColor1: 'var(--hula-text-primary)',
-    textColor2: 'var(--hula-text-regular)',
-    textColor3: 'var(--hula-text-secondary)',
-    textColorDisabled: 'var(--hula-text-placeholder)',
+    textColorBase: '#18212c',
+    textColor1: '#18212c',
+    textColor2: '#576b95',
+    textColor3: '#9fa1a9',
+    textColorDisabled: '#c8c9cc',
 
-    // 背景颜色
-    bodyColor: 'var(--hula-bg-page)',
-    cardColor: 'var(--hula-bg-component)',
-    modalColor: 'var(--hula-bg-component)',
-    popoverColor: 'var(--hula-bg-component)',
+    // 背景颜色 - 使用实际颜色值以支持透明度计算
+    bodyColor: '#f7f8fa',
+    cardColor: '#ffffff',
+    modalColor: '#ffffff',
+    popoverColor: '#ffffff',
 
     // 边框颜色
-    borderColor: 'var(--hula-border-light)',
-    dividerColor: 'var(--hula-border-base)',
+    borderColor: '#ebedf0',
+    dividerColor: '#dcdee0',
 
     // 圆角
-    borderRadius: 'var(--hula-radius-md)',
-    borderRadiusSmall: 'var(--hula-radius-sm)'
+    borderRadius: '8px',
+    borderRadiusSmall: '6px'
   },
 
   // ==================== 按钮组件 ====================
   Button: {
-    borderRadiusMedium: 'var(--hula-radius-md)',
-    borderRadiusSmall: 'var(--hula-radius-sm)',
-    borderRadiusLarge: 'var(--hula-radius-lg)',
+    borderRadiusMedium: '8px',
+    borderRadiusSmall: '6px',
+    borderRadiusLarge: '12px',
     heightMedium: '36px',
     heightSmall: '28px',
     heightLarge: '44px'
@@ -61,40 +61,40 @@ export const hulaThemeOverrides = {
 
   // ==================== 输入框组件 ====================
   Input: {
-    borderRadius: 'var(--hula-radius-md)',
-    borderFocus: '1px solid var(--hula-accent)',
-    borderHover: '1px solid var(--hula-primary)',
+    borderRadius: '8px',
+    borderFocus: '1px solid #13987f',
+    borderHover: '1px solid #64a29c',
     boxShadowFocus: '0 0 0 2px rgba(19, 152, 127, 0.2)'
   },
 
   // ==================== 对话框组件 ====================
   Dialog: {
-    borderRadius: 'var(--hula-radius-lg)',
-    iconColor: 'var(--hula-accent)'
+    borderRadius: '12px',
+    iconColor: '#13987f'
   },
 
   // ==================== 消息提示 ====================
   Message: {
-    iconColor: 'var(--hula-accent)'
+    iconColor: '#13987f'
   },
 
   // ==================== 标签 ====================
   Tag: {
-    borderRadius: 'var(--hula-radius-sm)',
-    colorDefault: 'var(--hula-accent)',
-    colorChecked: 'var(--hula-accent)'
+    borderRadius: '6px',
+    colorDefault: '#13987f',
+    colorChecked: '#13987f'
   },
 
   // ==================== 开关 ====================
   Switch: {
-    railColorActive: 'var(--hula-accent)',
-    buttonColor: 'var(--hula-accent)'
+    railColorActive: '#13987f',
+    buttonColor: '#13987f'
   },
 
   // ==================== 滚动条 ====================
   Scrollbar: {
-    color: 'var(--hula-primary)',
-    colorHover: 'var(--hula-primary-dark)'
+    color: '#64a29c',
+    colorHover: '#4d8b85'
   }
 } as GlobalThemeOverrides
 

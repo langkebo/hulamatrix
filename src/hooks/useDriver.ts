@@ -69,11 +69,11 @@ export interface UseDriverReturn {
 export const useDriver = (_steps: DriverStepConfig[] = [], _config: DriverConfig = {}): UseDriverReturn => {
   // driver.js已禁用，返回空实现
   // 强制禁用引导功能
-  logger.warn('[useDriver] Driver.js已禁用，用户引导功能暂时不可用')
+  logger.debug('[useDriver] Driver.js已禁用，用户引导功能暂时不可用')
 
   // 空实现
   const emptyMethod = () => {
-    logger.warn('[useDriver] 引导功能已禁用')
+    // 静默调用，不输出日志
   }
 
   const emptyMethods: UseDriverReturn = {

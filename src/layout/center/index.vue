@@ -7,13 +7,14 @@
     class="resizable select-none flex flex-col border-r-(1px solid [--right-chat-footer-line-color]) pr-24px box-border"
     :style="centerStyle">
     <!-- 分隔条 -->
-    <div v-if="!shrinkStatus && !isManageRoute" class="resize-handle transition-all duration-600 ease-in-out pointer-events-none">
+    <div
+      v-if="!shrinkStatus && !isManageRoute"
+      class="resize-handle transition-all duration-600 ease-in-out pointer-events-none">
       <div :class="{ 'opacity-100': isDragging }" class="transition-all duration-600 ease-in-out opacity-0 drag-icon">
         <div
           style="border-radius: 8px 0 0 8px"
           class="bg-#c8c8c833 h-60px w-14px absolute top-40% right--18px drag-icon pointer-events-auto z-10"
-          @mousedown="initDrag"
-        >
+          @mousedown="initDrag">
           <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500">
             <use href="#sliding"></use>
           </svg>
@@ -81,16 +82,20 @@
     </header>
 
     <!-- 中间栏：当选中空间时显示空间树，否则显示原列表 -->
-    <div id="centerList" class="h-full overflow-y-auto overflow-x-auto pr-24px box-border" :class="{ 'shadow-inner': page.shadow }">
+    <div
+      id="centerList"
+      class="h-full overflow-y-auto overflow-x-auto pr-24px box-border"
+      :class="{ 'shadow-inner': page.shadow }">
       <div v-if="devBackendError" class="w-full h-full flex items-center justify-center">
-        <div class="rounded-8px border-(1px solid [--right-chat-footer-line-color]) p-24px w-420px text-center bg-[--bg-edit]">
+        <div
+          class="rounded-8px border-(1px solid [--right-chat-footer-line-color]) p-24px w-420px text-center bg-[--bg-edit]">
           <div class="mb-16px">
             <svg class="size-42px text-error"><use href="#close"></use></svg>
           </div>
           <div class="text-(18px [--text-color]) mb-8px)">加载失败</div>
           <div class="text-(12px [--chat-text-color]) mb-16px)">{{ devBackendMsg }}</div>
           <n-flex :size="12" justify="center">
-            <n-button :color="'var(--hula-accent, #13987f)'" @click="handleRetry">重试</n-button>
+            <n-button :color="'#13987f'" @click="handleRetry">重试</n-button>
             <n-button secondary @click="handleRefresh">刷新</n-button>
           </n-flex>
         </div>
@@ -145,7 +150,7 @@
             :render-target-label="renderLabel" />
 
           <n-flex align="center" justify="center" class="p-16px">
-            <n-button :disabled="selectedValue.length < 2" :color="'var(--hula-accent, #13987f)'" @click="handleCreateGroup">
+            <n-button :disabled="selectedValue.length < 2" :color="'#13987f'" @click="handleCreateGroup">
               {{ t('home.create_group.action') }}
             </n-button>
           </n-flex>

@@ -12,11 +12,7 @@
 
       <div class="toggle-row">
         <span class="toggle-label">{{ isEnabled ? '已启用' : '未启用' }}</span>
-        <n-switch
-          v-model:value="isEnabled"
-          :rail-style="railStyle"
-          @update:value="handleToggleChange"
-        />
+        <n-switch v-model:value="isEnabled" :rail-style="railStyle" @update:value="handleToggleChange" />
       </div>
     </div>
 
@@ -37,8 +33,7 @@
             :key="option.value"
             class="time-option"
             :class="{ 'is-selected': selectedTime === option.value }"
-            @click="selectTime(option.value)"
-          >
+            @click="selectTime(option.value)">
             <div class="option-icon" :style="{ color: option.color }">
               <component :is="option.icon" />
             </div>
@@ -58,10 +53,7 @@
         <div class="custom-time-section">
           <div class="custom-time-header">
             <span>自定义时间</span>
-            <n-switch
-              v-model:value="useCustomTime"
-              size="small"
-            />
+            <n-switch v-model:value="useCustomTime" size="small" />
           </div>
 
           <div v-if="useCustomTime" class="custom-time-inputs">
@@ -71,21 +63,9 @@
               :max="604800"
               placeholder="秒数"
               size="small"
-              class="time-input"
-            />
-            <n-select
-              v-model:value="customTimeUnit"
-              :options="timeUnits"
-              size="small"
-              class="unit-select"
-            />
-            <n-button
-              type="primary"
-              size="small"
-              @click="applyCustomTime"
-            >
-              应用
-            </n-button>
+              class="time-input" />
+            <n-select v-model:value="customTimeUnit" :options="timeUnits" size="small" class="unit-select" />
+            <n-button type="primary" size="small" @click="applyCustomTime">应用</n-button>
           </div>
 
           <div class="time-preview">
@@ -208,7 +188,7 @@ const formattedTime = computed(() => {
 // Switch 轨道样式
 const railStyle = ({ checked }: { focused: boolean; checked: boolean }) => {
   return {
-    backgroundColor: checked ? 'var(--hula-accent, #13987f)' : '#d1d5db'
+    backgroundColor: checked ? '#13987f' : '#d1d5db'
   }
 }
 
@@ -343,7 +323,7 @@ watch(
       }
 
       &.is-selected {
-        border-color: var(--hula-accent, #13987f);
+        border-color: #13987f;
         background: rgba(19, 152, 127, 0.05);
       }
 
@@ -417,7 +397,7 @@ watch(
 
       .preview-value {
         font-weight: 600;
-        color: var(--hula-accent, #13987f);
+        color: #13987f;
       }
     }
   }

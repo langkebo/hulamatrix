@@ -7,7 +7,7 @@
         <n-progress
           type="multiple-circle"
           :circle-gap="-16"
-          :color="showDiskUsage ? ['var(--warning-text)', 'var(--hula-accent, #13987f)'] : ['var(--hula-accent, #13987f)']"
+          :color="showDiskUsage ? ['var(--warning-text)', '#13987f'] : ['#13987f']"
           :rail-style="[
             { stroke: '#7db1ac', opacity: 0.2 },
             { stroke: '#fff', opacity: 0 }
@@ -138,7 +138,7 @@
                 :disabled="scanning">
                 {{ scanning ? t('setting.storage.scanning') : t('setting.storage.select_directory') }}
               </n-button>
-              <n-button size="small" :color="'var(--hula-accent, #13987f)'" @click="startScan" :disabled="scanning || !currentDirectory">
+              <n-button size="small" :color="'#13987f'" @click="startScan" :disabled="scanning || !currentDirectory">
                 {{ scanning ? t('setting.storage.scanning') : t('setting.storage.start_scan') }}
               </n-button>
             </n-flex>
@@ -175,9 +175,9 @@ const {
 
 // 获取占比严重程度颜色
 const getUsageColor = (usage: number) => {
-  if (!diskInfo.value) return 'var(--hula-accent, #13987f)'
+  if (!diskInfo.value) return '#13987f'
   if (usage < 50) {
-    return 'var(--hula-accent, #13987f)'
+    return '#13987f'
   } else if (usage < 80) {
     return '#f0a020'
   } else {

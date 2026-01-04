@@ -23,7 +23,7 @@
       :show-indicator="false"
       :height="6"
       :border-radius="3"
-      :color="'var(--hula-accent, #13987f)'"
+      :color="'#13987f'"
       :rail-color="themes.content === ThemeEnum.DARK ? '#404040' : '#90909040'" />
   </div>
 </template>

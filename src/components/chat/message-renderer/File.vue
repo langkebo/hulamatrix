@@ -14,7 +14,7 @@
             padding: '0 4px',
             borderRadius: '6px',
             color: '#000',
-            background: 'var(--hula-accent, #13987f)'
+            background: '#13987f'
           }" />
         <template v-else>
           {{ truncateFileName(body?.fileName || fallbackFileName) }}
@@ -54,7 +54,7 @@
                 cy="12" />
               <circle
                 class="progress-ring-circle progress-ring-fill"
-                stroke="var(--hula-accent, #13987f)"
+                stroke="#13987f"
                 stroke-width="2"
                 fill="transparent"
                 r="10"
@@ -508,7 +508,7 @@ onMounted(async () => {
 
   &.downloaded {
     background: rgba(19, 152, 127, 0.3);
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
   }
 }
 

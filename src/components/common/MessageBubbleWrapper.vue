@@ -10,8 +10,7 @@
     v-bind="bubbleMaxWidth !== undefined ? { customMaxWidth: bubbleMaxWidth } : {}"
     v-bind="replyMessage !== undefined ? { replyMessage } : {}"
     v-bind="messageActions.length > 0 ? { actions: messageActions } : {}"
-    @click="handleBubbleClick"
-  >
+    @click="handleBubbleClick">
     <!-- 用户头像和名称 -->
     <template #avatar>
       <n-popover
@@ -166,7 +165,9 @@
               <span>复制翻译</span>
             </n-tooltip>
           </n-flex>
-          <svg class="size-10px cursor-pointer" @click="delete (message.message.body as Record<string, unknown>).translatedText">
+          <svg
+            class="size-10px cursor-pointer"
+            @click="delete (message.message.body as Record<string, unknown>).translatedText">
             <use href="#close"></use>
           </svg>
         </n-flex>
@@ -212,7 +213,8 @@
               :class="{ 'emoji-reply-bubble--active': emoji.value && hasUserMarkedEmoji(message, emoji.value) }"
               @click.stop="message && emoji.value && cancelReplyEmoji(message, emoji.value)">
               <img :title="emoji.title || ''" class="size-18px" :src="emoji.url || ''" :alt="emoji.title || ''" />
-              <span :class="emoji.value && hasUserMarkedEmoji(message, emoji.value) ? 'text-#fbb160' : 'text-(12px #eee)'">
+              <span
+                :class="emoji.value && hasUserMarkedEmoji(message, emoji.value) ? 'text-#fbb160' : 'text-(12px #eee)'">
                 {{ message && emoji.value ? getEmojiCount(message, emoji.value) : 0 }}
               </span>
             </div>
@@ -222,12 +224,10 @@
     </template>
 
     <!-- 多选框 -->
-    <template #prefix v-if="chatStore.isMsgMultiChoose && chatStore.msgMultiChooseMode !== 'forward' && !isMultiSelectDisabled">
-      <n-checkbox
-        v-model:checked="message.isCheck"
-        class="select-none"
-        :focusable="false"
-        @click.stop />
+    <template
+      #prefix
+      v-if="chatStore.isMsgMultiChoose && chatStore.msgMultiChooseMode !== 'forward' && !isMultiSelectDisabled">
+      <n-checkbox v-model:checked="message.isCheck" class="select-none" :focusable="false" @click.stop />
     </template>
   </MessageBubble>
 </template>
@@ -553,7 +553,7 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
   color: #909090;
 
   &:hover {
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
   }
 }
 </style>

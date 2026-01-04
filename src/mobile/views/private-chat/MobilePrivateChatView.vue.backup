@@ -234,8 +234,8 @@ import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { matrixPrivateChatAdapter } from '@/adapters'
 import type { PrivateChatSession, PrivateChatMessage } from '@/adapters/service-adapter'
-import PrivateChatDialog from '@/components/rightBox/PrivateChatDialog.vue'
-import PrivateChatSelfDestructPanel from '#/components/chat-room/PrivateChatSelfDestructPanel.vue'
+import PrivateChatDialog from '@/components/chat/PrivateChatDialog.vue'
+import PrivateChatSelfDestructPanel from '#/components/chat/PrivateChatSelfDestructPanel.vue'
 import MobileSelfDestructIndicator from '#/components/message/MobileSelfDestructIndicator.vue'
 
 const router = useRouter()

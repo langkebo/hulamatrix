@@ -405,13 +405,23 @@ try {
 
 // Global Vue error handler - improved with better logging and user feedback
 app.config.errorHandler = (err, instance, info) => {
-  // Log all errors for debugging
-  logger.error('[VueErrorHandler] Error caught:', {
-    error: err instanceof Error ? err.message : String(err),
-    stack: err instanceof Error ? err.stack : undefined,
-    component: instance?.$options?.name || instance?.$?.type?.name || 'Unknown',
-    info
-  })
+  // Enhanced error logging to capture more details
+  const errorDetails = {
+    errorMessage: err instanceof Error ? err.message : String(err),
+    errorStack: err instanceof Error ? err.stack : undefined,
+    errorName: err instanceof Error ? err.name : undefined,
+    componentName: instance?.$options?.name || (instance as any)?.$?.type?.name || 'Unknown',
+    componentTag: (instance as any)?.$type?.__name || (instance as any)?.$?.vnode?.type?.name || 'Unknown',
+    info,
+    fullError: err
+  }
+
+  // Log detailed error information
+  logger.error('[VueErrorHandler] Error caught:', errorDetails)
+
+  // Log the raw error object for debugging
+  console.error('[VueErrorHandler] Raw error:', err)
+  console.error('[VueErrorHandler] Component instance:', instance)
 
   // Handle AppException with user-friendly message
   if (err instanceof AppException) {

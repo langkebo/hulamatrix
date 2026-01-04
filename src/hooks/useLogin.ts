@@ -10,7 +10,7 @@ import { useGlobalStore } from '@/stores/global'
 import { LoginStatus, useWebSocketStore as useWsLoginStore } from '@/stores/websocket'
 import { isDesktop, isMac, isMobile } from '@/utils/PlatformConstants'
 import { clearListener } from '@/utils/ReadCountQueue'
-import { ErrorType, invokeSilently, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import { invokeSilently, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useSettingStore } from '../stores/setting'
 import { useGroupStore } from '../stores/group'
 import { useCachedStore } from '../stores/dataCache'
@@ -152,7 +152,8 @@ export const useLogin = () => {
       // ws 退出连接
       await invokeSilently('ws_disconnect')
       await invokeSilently(TauriCommand.REMOVE_TOKENS)
-      await invokeSilently(TauriCommand.UPDATE_USER_LAST_OPT_TIME)
+      // UPDATE_USER_LAST_OPT_TIME 命令已废弃，无需手动更新
+      // await invokeSilently(TauriCommand.UPDATE_USER_LAST_OPT_TIME)
     }
 
     if (isDesktop()) {
@@ -327,17 +328,18 @@ export const useLogin = () => {
       } catch {}
     }
 
-    // 在 sqlite 中存储用户信息
-    await invokeWithErrorHandler(
-      TauriCommand.SAVE_USER_INFO,
-      {
-        userInfo: currentUser
-      },
-      {
-        customErrorMessage: '保存用户信息失败',
-        errorType: ErrorType.Client
-      }
-    )
+    // SAVE_USER_INFO 命令已在 Phase 4 清理时移除
+    // 用户信息现在通过 Pinia store 持久化存储
+    // await invokeWithErrorHandler(
+    //   TauriCommand.SAVE_USER_INFO,
+    //   {
+    //     userInfo: currentUser
+    //   },
+    //   {
+    //     customErrorMessage: '保存用户信息失败',
+    //     errorType: ErrorType.Client
+    //   }
+    // )
 
     // 数据初始化
     const cachedConfig = localStorage.getItem('config')

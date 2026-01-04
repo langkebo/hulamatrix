@@ -468,7 +468,7 @@ export const useChatStore = defineStore(
           count: data.length
         })
 
-        if (!data) {
+        if (!data || data.length === 0) {
           const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
           if (!isTauri && sessionList.value.length === 0) {
             const now = Date.now()
@@ -496,6 +496,8 @@ export const useChatStore = defineStore(
             sortAndUniqueSessionList()
             updateTotalUnreadCount()
           }
+          // Matrix client not ready yet, will retry later
+          logger.debug('[ChatStore] Matrix client not ready, session list will update when client initializes')
           return
         }
 
@@ -522,7 +524,7 @@ export const useChatStore = defineStore(
         // 获取会话列表后，更新全局未读计数以确保同步
         updateTotalUnreadCount()
       } catch (e) {
-        logger.error('获取会话列表失败11:', e)
+        logger.debug('[ChatStore] 获取会话列表暂时失败，将在 Matrix 客户端初始化后重试:', e)
         sessionOptions.isLoading = false
       } finally {
         sessionOptions.isLoading = false

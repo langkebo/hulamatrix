@@ -135,7 +135,7 @@ class UnifiedMessageReceiver {
   private async initializeMatrixListener(): Promise<void> {
     const client = matrixClientService.getClient()
     if (!client) {
-      logger.warn('[UnifiedMessageReceiver] Matrix client not available')
+      logger.debug('[UnifiedMessageReceiver] Matrix client not available - will initialize after login')
       return
     }
     const c = client as unknown as { on: (event: string, handler: (...args: unknown[]) => void) => void }

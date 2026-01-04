@@ -143,7 +143,8 @@
     "shield_user": "User muted",
     "empty_description": "Start chatting with friends!",
     "empty_action": "Find friends",
-    "default_last_msg": "Welcome to HuLa"
+    "default_last_msg": "Welcome to HuLa",
+    "search_placeholder": "Search conversations"
   },
   "message_menu": {
     "pin_success": "Pinned",

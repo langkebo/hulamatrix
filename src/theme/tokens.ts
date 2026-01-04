@@ -24,7 +24,7 @@ const lightVars: Record<string, string> = {
   '--hover-color': 'var(--hula-bg-page, #f7f7f7)',
 
   // 品牌色 - 使用 HuLa 强调色
-  '--border-active-color': 'var(--hula-accent, #13987f)',
+  '--border-active-color': '#13987f',
 
   // 滚动条 - 使用 HuLa 主色
   '--scrollbar-thumb-color': 'var(--hula-primary-light, #c7c7c7)',

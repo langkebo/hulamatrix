@@ -13,8 +13,7 @@
           clearable
           @input="handleSearchInput"
           @keyup.enter="executeSearch"
-          class="search-input"
-        />
+          class="search-input" />
       </div>
       <n-button text @click="goBack">
         <template #icon>
@@ -30,8 +29,7 @@
         :key="tab.key"
         class="filter-tab"
         :class="{ active: activeFilter === tab.key }"
-        @click="setFilter(tab.key)"
-      >
+        @click="setFilter(tab.key)">
         <n-icon :size="16">
           <component :is="tab.icon" />
         </n-icon>
@@ -52,8 +50,7 @@
                 :options="dateOptions"
                 placeholder="选择日期范围"
                 clearable
-                @update:value="onFilterChange"
-              />
+                @update:value="onFilterChange" />
             </n-form-item>
 
             <!-- Sender Filter -->
@@ -64,21 +61,20 @@
                 multiple
                 placeholder="选择发送者"
                 clearable
-                @update:value="onFilterChange"
-              />
+                @update:value="onFilterChange" />
             </n-form-item>
 
             <!-- Message Type Filter -->
             <n-form-item label="消息类型">
               <n-checkbox-group v-model:value="selectedTypes" @update:value="onFilterChange">
-              <n-space>
-                <n-checkbox value="m.text">文本</n-checkbox>
-                <n-checkbox value="m.image">图片</n-checkbox>
-                <n-checkbox value="m.video">视频</n-checkbox>
-                <n-checkbox value="m.file">文件</n-checkbox>
-                <n-checkbox value="m.audio">音频</n-checkbox>
-              </n-space>
-            </n-checkbox-group>
+                <n-space>
+                  <n-checkbox value="m.text">文本</n-checkbox>
+                  <n-checkbox value="m.image">图片</n-checkbox>
+                  <n-checkbox value="m.video">视频</n-checkbox>
+                  <n-checkbox value="m.file">文件</n-checkbox>
+                  <n-checkbox value="m.audio">音频</n-checkbox>
+                </n-space>
+              </n-checkbox-group>
             </n-form-item>
           </n-space>
         </n-collapse-item>
@@ -98,12 +94,7 @@
       </n-icon>
       <p class="empty-text">输入关键词搜索聊天内容</p>
       <div class="quick-filters">
-        <n-button
-          v-for="quick in quickFilters"
-          :key="quick.key"
-          size="small"
-          @click="applyQuickFilter(quick.key)"
-        >
+        <n-button v-for="quick in quickFilters" :key="quick.key" size="small" @click="applyQuickFilter(quick.key)">
           <template #icon>
             <n-icon><component :is="quick.icon" /></n-icon>
           </template>
@@ -133,12 +124,7 @@
       </div>
 
       <div class="results-list">
-        <div
-          v-for="result in paginatedResults"
-          :key="result.eventId"
-          class="result-item"
-          @click="openResult(result)"
-        >
+        <div v-for="result in paginatedResults" :key="result.eventId" class="result-item" @click="openResult(result)">
           <div class="result-header">
             <div class="result-sender">
               <n-avatar :size="28" :src="result.senderAvatar">
@@ -152,29 +138,21 @@
           </div>
           <div class="result-content" v-html="sanitizeContent(result)"></div>
           <div v-if="result.context" class="result-context">
-            <span v-if="result.context.before?.length" class="context-before">...{{ result.context.before.length }}条消息前...</span>
-            <span v-if="result.context.after?.length" class="context-after">...{{ result.context.after.length }}条消息后...</span>
+            <span v-if="result.context.before?.length" class="context-before">
+              ...{{ result.context.before.length }}条消息前...
+            </span>
+            <span v-if="result.context.after?.length" class="context-after">
+              ...{{ result.context.after.length }}条消息后...
+            </span>
           </div>
         </div>
       </div>
 
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="pagination">
-        <n-button
-          :disabled="currentPage === 1"
-          size="small"
-          @click="currentPage--"
-        >
-          上一页
-        </n-button>
+        <n-button :disabled="currentPage === 1" size="small" @click="currentPage--">上一页</n-button>
         <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
-        <n-button
-          :disabled="currentPage === totalPages"
-          size="small"
-          @click="currentPage++"
-        >
-          下一页
-        </n-button>
+        <n-button :disabled="currentPage === totalPages" size="small" @click="currentPage++">下一页</n-button>
       </div>
     </div>
   </div>
@@ -411,7 +389,7 @@ const updateSenderOptions = (results: SearchResult[]) => {
 const openResult = (result: SearchResult | any) => {
   // Navigate to the message in the chat
   router.push({
-    path: `/mobile/chat-room/${roomId.value}`,
+    path: `/mobile/chatRoom/chatMain/${roomId.value}`,
     query: {
       eventId: result.eventId,
       highlight: 'true'

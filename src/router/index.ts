@@ -81,7 +81,7 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
     {
       path: '/mobile/chatRoom',
       name: 'mobileChatRoom',
-      component: () => import('#/layout/chat-room/ChatRoomLayout.vue'),
+      component: () => import('#/layout/chat/ChatRoomLayout.vue'),
       children: [
         {
           path: '',
@@ -91,50 +91,50 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
         {
           path: 'chatMain/:uid?', // 可选传入，如果传入uid就表示房间属于好友的私聊房间
           name: 'mobileChatMain',
-          component: () => import('#/views/chat-room/MobileChatMain.vue'),
+          component: () => import('#/views/chat/MobileChatMain.vue'),
           props: true,
           meta: { keepAlive: true }
         },
         {
           path: 'setting',
           name: 'mobileChatSetting',
-          component: () => import('#/views/chat-room/ChatSetting.vue')
+          component: () => import('#/views/chat/ChatSetting.vue')
         },
         {
           path: 'searchContent',
           name: 'mobileSearchChatContent',
-          component: () => import('#/views/chat-room/SearchChatContent.vue')
+          component: () => import('#/views/chat/SearchChatContent.vue')
         },
         {
           path: 'mediaViewer',
           name: 'mobileMediaViewer',
-          component: () => import('#/views/chat-room/MediaViewer.vue')
+          component: () => import('#/views/chat/MediaViewer.vue')
         },
 
         {
           path: 'notice',
           name: 'mobileChatNotice',
-          component: () => import('#/views/chat-room/notice/NoticeList.vue'),
+          component: () => import('#/views/chat/notice/NoticeList.vue'),
           children: [
             {
               path: '',
               name: 'mobileChatNoticeList',
-              component: () => import('#/views/chat-room/notice/NoticeList.vue')
+              component: () => import('#/views/chat/notice/NoticeList.vue')
             },
             {
               path: 'add',
               name: 'mobileChatNoticeAdd',
-              component: () => import('#/views/chat-room/notice/NoticeEdit.vue')
+              component: () => import('#/views/chat/notice/NoticeEdit.vue')
             },
             {
               path: 'edit/:id',
               name: 'mobileChatNoticeEdit',
-              component: () => import('#/views/chat-room/notice/NoticeEdit.vue')
+              component: () => import('#/views/chat/notice/NoticeEdit.vue')
             },
             {
               path: 'detail/:id',
               name: 'mobileChatNoticeDetail',
-              component: () => import('#/views/chat-room/notice/NoticeDetail.vue')
+              component: () => import('#/views/chat/notice/NoticeDetail.vue')
             }
           ]
         }
@@ -173,14 +173,14 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
         {
           path: '/mobile/my',
           name: 'mobileMy',
-          component: () => import('#/views/my/index.vue')
+          component: () => import('#/views/profile/index.vue')
         }
       ]
     },
     {
       path: '/mobile/mobileMy',
       name: 'mobileMyLayout',
-      component: () => import('#/layout/my/MyLayout.vue'),
+      component: () => import('#/layout/profile/MyLayout.vue'),
       children: [
         {
           path: '',
@@ -190,28 +190,28 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
         {
           path: 'editProfile',
           name: 'mobileEditProfile',
-          component: () => import('#/views/my/EditProfile.vue')
+          component: () => import('#/views/profile/EditProfile.vue')
         },
         {
           path: 'myMessages',
           name: 'mobileMyMessages',
-          component: () => import('#/views/my/MyMessages.vue')
+          component: () => import('#/views/profile/MyMessages.vue')
         },
         {
           path: 'editBio',
           name: 'mobileEditBio',
-          component: () => import('#/views/my/EditBio.vue')
+          component: () => import('#/views/profile/EditBio.vue')
         },
         {
           path: 'editBirthday',
           name: 'mobileEditBirthday',
-          component: () => import('#/views/my/EditBirthday.vue')
+          component: () => import('#/views/profile/EditBirthday.vue')
         },
         // REMOVED: publishCommunity route - Moments/Feed feature removed (custom backend no longer supported)
         {
           path: 'settings',
           name: 'MobileSettings',
-          component: () => import('#/views/my/MobileSettings.vue')
+          component: () => import('#/views/profile/MobileSettings.vue')
         },
         {
           path: 'settings/cache',
@@ -221,23 +221,23 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
         {
           path: 'scanQRCode',
           name: 'mobileQRCode',
-          component: () => import('#/views/my/MobileQRCode.vue')
+          component: () => import('#/views/profile/MobileQRCode.vue')
         },
         {
           path: 'share',
           name: 'mobileShare',
-          component: () => import('#/views/my/Share.vue')
+          component: () => import('#/views/profile/Share.vue')
         },
         {
           path: 'SimpleBio',
           name: 'mobileSimpleBio',
-          component: () => import('#/views/my/SimpleBio.vue')
+          component: () => import('#/views/profile/SimpleBio.vue')
         },
 
         {
           path: 'myAlbum',
           name: 'mobileMyAlbum',
-          component: () => import('#/views/my/MyAlbum.vue')
+          component: () => import('#/views/profile/MyAlbum.vue')
         },
         {
           path: 'mediaCache',
@@ -316,7 +316,7 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => {
     {
       path: '/mobile/settings/biometric',
       name: 'mobileSettingsBiometric',
-      component: () => import('#/components/my/BiometricSettings.vue'),
+      component: () => import('#/components/profile/BiometricSettings.vue'),
       meta: { keepAlive: false }
     },
     {

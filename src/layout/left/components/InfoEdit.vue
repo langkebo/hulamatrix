@@ -59,7 +59,9 @@
               show-count
               type="text">
               <template #prefix>
-                <span class="pr-6px text-[--hula-gray-500,#909090]">{{ t('home.profile_edit.form.nickname.label') }}</span>
+                <span class="pr-6px text-[--hula-gray-500,#909090]">
+                  {{ t('home.profile_edit.form.nickname.label') }}
+                </span>
               </template>
             </n-input>
           </template>
@@ -72,7 +74,7 @@
         <n-button
           style="color: #fff"
           :disabled="editInfo.content.name === localUserInfo.name || !backendConnected"
-          :color="'var(--hula-accent, #13987f)'"
+          :color="'#13987f'"
           @click="saveEditInfo(localUserInfo as ModifyUserInfoType)">
           {{ t('home.profile_edit.actions.save') }}
         </n-button>

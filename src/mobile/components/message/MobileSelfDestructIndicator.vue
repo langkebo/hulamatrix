@@ -13,8 +13,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="6"
-            opacity="0.2"
-          />
+            opacity="0.2" />
           <circle
             class="ring-progress"
             cx="50"
@@ -26,8 +25,7 @@
             :stroke-dasharray="circumference"
             :stroke-dashoffset="dashOffset"
             transform="rotate(-90 50 50)"
-            :color="ringColor"
-          />
+            :color="ringColor" />
         </svg>
         <div class="timer-content">
           <van-icon name="clock-o" :size="18" :color="ringColor" />
@@ -61,8 +59,7 @@
       <div
         class="destruct-strip"
         :class="{ 'is-warning': isWarning, 'is-critical': isCritical }"
-        :style="{ width: progress + '%' }"
-      >
+        :style="{ width: progress + '%' }">
         <van-icon name="clock-o" :size="14" color="white" />
       </div>
     </div>
@@ -140,7 +137,7 @@ const ringColor = computed(() => {
 const iconColor = computed(() => {
   if (isCritical.value) return '#d03050'
   if (isWarning.value) return '#f0a020'
-  return 'var(--hula-accent, #13987f)'
+  return '#13987f'
 })
 
 const formattedTime = computed(() => {
@@ -386,7 +383,9 @@ watch(
     height: 100%;
     background: #18a058;
     border-radius: 2px;
-    transition: width 0.3s ease, background-color 0.3s ease;
+    transition:
+      width 0.3s ease,
+      background-color 0.3s ease;
 
     &.is-warning {
       background: #f0a020;
@@ -415,7 +414,8 @@ watch(
 
 // 动画
 @keyframes ring-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -424,7 +424,8 @@ watch(
 }
 
 @keyframes icon-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -433,7 +434,8 @@ watch(
 }
 
 @keyframes badge-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

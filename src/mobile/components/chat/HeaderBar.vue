@@ -181,7 +181,7 @@ const onlineCount = computed(() => {
   }
 
   &:hover {
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
   }
 }
 </style>

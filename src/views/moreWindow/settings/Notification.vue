@@ -60,7 +60,12 @@
               @click="batchSetNotification('allow')">
               {{ t('setting.notice.group_notic_type.allow') }}
             </n-button>
-            <n-button size="small" secondary :disabled="isProcessing" data-test="batch-mute" @click="batchSetNotification('mute')">
+            <n-button
+              size="small"
+              secondary
+              :disabled="isProcessing"
+              data-test="batch-mute"
+              @click="batchSetNotification('mute')">
               {{ t('setting.notice.group_notic_type.silent') }}
             </n-button>
             <n-button
@@ -84,7 +89,7 @@
           <n-progress
             id="batch-progress"
             type="line"
-            :color="'var(--hula-accent, #13987f)'"
+            :color="'#13987f'"
             :rail-color="'rgba(19, 152, 127, 0.19)'"
             :percentage="progress"
             :show-indicator="false" />
@@ -95,10 +100,7 @@
         <n-scrollbar
           style="max-height: 420px; padding: 0 12px; box-sizing: border-box"
           :style="{ pointerEvents: isDropdownShow ? 'none' : 'auto' }">
-          <n-virtual-list
-            v-if="filteredGroupSessions.length > 60"
-            :items="filteredGroupSessions"
-            :item-size="58">
+          <n-virtual-list v-if="filteredGroupSessions.length > 60" :items="filteredGroupSessions" :item-size="58">
             <template #default="{ item: session, index }">
               <n-flex align="center" justify="space-between" class="py-14px" data-test="group-item">
                 <n-flex align="center" :size="12">
@@ -120,13 +122,15 @@
                   trigger="click"
                   :scrollable="false"
                   @update:show="(show: boolean) => (isDropdownShow = show)">
-                  <n-button size="small" :color="'var(--hula-accent, #13987f)'" text class="text-(12px [--text-color])">
+                  <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
                     {{ getNotificationStatusText(session) }}
                   </n-button>
                 </n-dropdown>
               </n-flex>
 
-              <span v-if="Number(index) < filteredGroupSessions.length - 1" class="w-full h-1px bg-[--line-color] block"></span>
+              <span
+                v-if="Number(index) < filteredGroupSessions.length - 1"
+                class="w-full h-1px bg-[--line-color] block"></span>
             </template>
           </n-virtual-list>
           <template v-else v-for="(session, index) in filteredGroupSessions" :key="session.roomId">
@@ -150,13 +154,15 @@
                 trigger="click"
                 :scrollable="false"
                 @update:show="(show: boolean) => (isDropdownShow = show)">
-                <n-button size="small" :color="'var(--hula-accent, #13987f)'" text class="text-(12px [--text-color])">
+                <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
                   {{ getNotificationStatusText(session) }}
                 </n-button>
               </n-dropdown>
             </n-flex>
 
-            <span v-if="Number(index) < filteredGroupSessions.length - 1" class="w-full h-1px bg-[--line-color] block"></span>
+            <span
+              v-if="Number(index) < filteredGroupSessions.length - 1"
+              class="w-full h-1px bg-[--line-color] block"></span>
           </template>
         </n-scrollbar>
       </n-flex>
@@ -181,34 +187,31 @@
           </n-flex>
           <n-select
             v-model:value="selectedPreset"
-            :options="presetGroups.map(p=>({label:p.label,value:p.value}))"
+            :options="presetGroups.map((p) => ({ label: p.label, value: p.value }))"
             size="small"
             style="width: 160px"
             placeholder="选择预设" />
           <n-button size="small" @click="applyPreset">应用预设</n-button>
           <n-button size="small" @click="exportPresetJson">导出预设JSON</n-button>
           <n-button size="small" @click="triggerPresetImport">导入预设JSON</n-button>
-          <n-button size="small" type="primary" tertiary data-test="preset-editor-open" @click="openPresetEditor">预设编辑</n-button>
+          <n-button size="small" type="primary" tertiary data-test="preset-editor-open" @click="openPresetEditor">
+            预设编辑
+          </n-button>
         </n-flex>
         <n-flex :size="8" :wrap="false">
-          <n-tag
-            v-for="k in pagedKeywords"
-            :key="k"
-            closable
-            @close="removeKeyword(k)"
-            type="success"
-            size="small">
+          <n-tag v-for="k in pagedKeywords" :key="k" closable @close="removeKeyword(k)" type="success" size="small">
             {{ k }}
           </n-tag>
-          <n-pagination
-            v-model:page="page"
-            :page-count="pageCount"
-            size="small"
-            style="margin-left: auto" />
+          <n-pagination v-model:page="page" :page-count="pageCount" size="small" style="margin-left: auto" />
           <n-input-number v-model:value="page" :min="1" :max="pageCount" size="small" style="width: 90px" />
           <n-select v-model:value="pageSize" :options="pageSizeOptions" size="small" style="width: 90px" />
-          <input ref="fileInput" type="file" accept=".txt,.csv" style="display:none" @change="onFileSelected" />
-          <input ref="presetFileInput" type="file" accept="application/json" style="display:none" @change="onPresetSelected" />
+          <input ref="fileInput" type="file" accept=".txt,.csv" style="display: none" @change="onFileSelected" />
+          <input
+            ref="presetFileInput"
+            type="file"
+            accept="application/json"
+            style="display: none"
+            @change="onPresetSelected" />
         </n-flex>
       </n-flex>
     </n-flex>
@@ -224,9 +227,9 @@
           </n-flex>
           <n-flex align="center" :size="10">
             <span>开始</span>
-          <n-time-picker v-model:value="quietStartMs" size="small" style="width: 120px" format="HH:mm" />
+            <n-time-picker v-model:value="quietStartMs" size="small" style="width: 120px" format="HH:mm" />
             <span>结束</span>
-          <n-time-picker v-model:value="quietEndMs" size="small" style="width: 120px" format="HH:mm" />
+            <n-time-picker v-model:value="quietEndMs" size="small" style="width: 120px" format="HH:mm" />
             <n-button size="small" @click="setPresetNight">夜间</n-button>
             <n-button size="small" @click="setPresetWork">工作时段</n-button>
           </n-flex>
@@ -265,7 +268,7 @@
         <n-flex align="center" :size="10" justify="end">
           <n-button size="small" @click="applySelectedPresets">应用选中分组</n-button>
           <n-button size="small" @click="applyAllPresets">应用所有分组</n-button>
-          <n-button size="small" @click="showPresetEditor=false">取消</n-button>
+          <n-button size="small" @click="showPresetEditor = false">取消</n-button>
           <n-button size="small" type="primary" @click="savePresetEditor">保存</n-button>
         </n-flex>
       </n-flex>

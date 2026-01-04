@@ -753,7 +753,7 @@ onUnmounted(() => {
     cursor: pointer;
 
     &:hover {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
     }
   }
 

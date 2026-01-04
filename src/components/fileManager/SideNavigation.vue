@@ -84,19 +84,19 @@ const getNavigationLabel = (item: NavigationItem) => {
 
   &:hover:not(&--active) {
     background-color: rgba(19, 152, 127, 0.1);
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
 
     .navigation-item__icon svg {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
     }
   }
 
   &--active {
     background-color: rgba(19, 152, 127, 0.2);
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
 
     .navigation-item__icon svg {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
     }
   }
 }

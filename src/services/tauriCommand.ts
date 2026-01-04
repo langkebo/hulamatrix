@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 // WebSocket 已废弃，使用 Matrix SDK
-import { TauriCommand, SexEnum } from '../enums'
+import { SexEnum } from '../enums'
 import { useLogin } from '../hooks/useLogin'
 import { useWindow } from '../hooks/useWindow'
 import { useLoginHistoriesStore } from '../stores/loginHistory'
@@ -9,7 +9,6 @@ import { useSettingStore } from '../stores/setting'
 import { useUserStore } from '../stores/user'
 import { useUserStatusStore } from '../stores/userStatus'
 import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
-import { ErrorType, invokeWithErrorHandler } from '../utils/TauriInvokeHandler'
 import { getEnhancedFingerprint } from './fingerprint'
 import { ensureAppStateReady } from '@/utils/AppStateReady'
 import type { UserInfoType } from './types'
@@ -172,17 +171,18 @@ const loginProcess = async (_token: string, _refreshToken: string, client: strin
 
   loginHistoriesStore.addLoginHistory(account)
 
-  // 在 sqlite 中存储用户信息
-  await invokeWithErrorHandler(
-    TauriCommand.SAVE_USER_INFO,
-    {
-      userInfo: userDetail
-    },
-    {
-      customErrorMessage: '保存用户信息失败',
-      errorType: ErrorType.Client
-    }
-  )
+  // SAVE_USER_INFO 命令已在 Phase 4 清理时移除
+  // 用户信息现在通过 Pinia store 持久化存储
+  // await invokeWithErrorHandler(
+  //   TauriCommand.SAVE_USER_INFO,
+  //   {
+  //     userInfo: userDetail
+  //   },
+  //   {
+  //     customErrorMessage: '保存用户信息失败',
+  //     errorType: ErrorType.Client
+  //   }
+  // )
 
   await setLoginState()
   await openHomeWindow()

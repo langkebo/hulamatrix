@@ -47,7 +47,7 @@
                   autoCapitalize="off"
                   maxlength="6" />
                 <n-button
-                  :color="'var(--hula-accent, #13987f)'"
+                  :color="'#13987f'"
                   ghost
                   :disabled="sendBtnDisabled"
                   :loading="sendingEmailCode"

@@ -173,6 +173,6 @@ defineExpose({
 
 <style scoped>
 .pin-input-field:focus {
-  border: 2px solid var(--hula-accent, #13987f);
+  border: 2px solid #13987f;
 }
 </style>

@@ -50,7 +50,10 @@
     "privacy_security": "隐私安全",
     "all_settings": "所有设置",
     "feedback": "反馈",
-    "logout": "注销"
+    "logout": "注销",
+    "profile_info": "个人资料",
+    "privacy_manage": "隐私管理",
+    "appearance": "外观"
   },
   "action": {
     "save": "保存",

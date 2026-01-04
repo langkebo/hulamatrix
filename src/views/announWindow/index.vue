@@ -89,7 +89,9 @@
                       <div class="text-(12px [--chat-text-color])">
                         {{ groupStore.getUserInfo(announcement.uid)?.name }}
                       </div>
-                      <div class="text-(12px [#909090])">{{ formatTimestamp(announcement?.createTime != null ? Number(announcement.createTime) : 0) }}</div>
+                      <div class="text-(12px [#909090])">
+                        {{ formatTimestamp(announcement?.createTime != null ? Number(announcement.createTime) : 0) }}
+                      </div>
                     </n-flex>
                   </n-flex>
                   <div
@@ -106,7 +108,9 @@
                       </svg>
                     </template>
                   </n-button>
-                  <n-popconfirm v-if="isAdmin && announcementStates[announcement.id]" v-model:show="announcementStates[announcement.id]!.showDeleteConfirm">
+                  <n-popconfirm
+                    v-if="isAdmin && announcementStates[announcement.id]"
+                    v-model:show="announcementStates[announcement.id]!.showDeleteConfirm">
                     <template #icon>
                       <svg class="size-22px"><use href="#explosion"></use></svg>
                     </template>
@@ -114,7 +118,10 @@
                       <n-button
                         size="small"
                         tertiary
-                        @click.stop="announcementStates[announcement.id] && (announcementStates[announcement.id]!.showDeleteConfirm = false)">
+                        @click.stop="
+                          announcementStates[announcement.id] &&
+                          (announcementStates[announcement.id]!.showDeleteConfirm = false)
+                        ">
                         {{ t('announcement.list.delete.cancel') }}
                       </n-button>
                       <n-button
@@ -503,7 +510,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: flex-end;
   margin-top: 4px;
-  color: var(--hula-accent, #13987f);
+  color: #13987f;
   cursor: pointer;
   font-size: 12px;
   svg {
@@ -511,7 +518,7 @@ onMounted(async () => {
   }
 }
 .announcement-link {
-  color: var(--hula-accent, #13987f);
+  color: #13987f;
   cursor: pointer;
   word-break: break-all;
   line-height: 2.1rem;

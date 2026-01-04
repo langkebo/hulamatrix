@@ -42,7 +42,7 @@
           class="cursor-pointer"
           :size="32"
           :border-radius="10"
-          :color="'var(--hula-accent, #13987f)'">
+          :color="'#13987f'">
           <n-popover trigger="hover">
             <template #trigger>
               <n-icon :size="20">
@@ -89,10 +89,14 @@
             </n-popover>
           </n-flex>
           <n-flex align="center" :size="12">
-            <span class="text-(14px [--hula-gray-500,#909090])">{{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}</span>
+            <span class="text-(14px [--hula-gray-500,#909090])">
+              {{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}
+            </span>
             <n-tooltip trigger="hover">
               <template #trigger>
-                <svg class="size-12px cursor-pointer text-gray-500" @click="handleCopy(groupDetail.uid || groupDetail.roomId || '')">
+                <svg
+                  class="size-12px cursor-pointer text-gray-500"
+                  @click="handleCopy(groupDetail.uid || groupDetail.roomId || '')">
                   <use href="#copy"></use>
                 </svg>
               </template>
@@ -107,7 +111,7 @@
         class="cursor-pointer"
         :size="40"
         :border-radius="10"
-        :color="'var(--hula-accent, #13987f)'">
+        :color="'#13987f'">
         <n-icon :size="22">
           <svg class="color-#fff"><use href="#message"></use></svg>
         </n-icon>
@@ -163,7 +167,9 @@
             @keydown.enter="handleNicknameUpdate" />
         </div>
         <span v-else class="flex items-center cursor-pointer" @click="startEditNickname">
-          <p class="text-[--hula-gray-500,#909090]">{{ displayNickname || t('home.chat_details.group.nickname.empty') }}</p>
+          <p class="text-[--hula-gray-500,#909090]">
+            {{ displayNickname || t('home.chat_details.group.nickname.empty') }}
+          </p>
           <n-icon v-if="!groupDetail.myName" size="16" class="ml-1">
             <svg><use href="#right"></use></svg>
           </n-icon>

@@ -50,7 +50,10 @@
     "privacy_security": "Privacy & Security",
     "all_settings": "All Settings",
     "feedback": "Feedback",
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "profile_info": "Profile Info",
+    "privacy_manage": "Privacy Manage",
+    "appearance": "Appearance"
   },
   "action": {
     "save": "Save",

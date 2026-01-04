@@ -154,13 +154,7 @@
           {{ loading ? '注册中...' : '注册' }}
         </n-button>
 
-        <n-button
-          text
-          size="small"
-          @click="closeWindow"
-          class="mt-10px color-#909090">
-          返回登录
-        </n-button>
+        <n-button text size="small" @click="closeWindow" class="mt-10px color-#909090">返回登录</n-button>
       </n-flex>
     </n-flex>
   </n-config-provider>
@@ -353,7 +347,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .gradient-button {
-  background: linear-gradient(145deg, #acd7da, var(--hula-accent, #13987f));
+  background: linear-gradient(145deg, #acd7da, #13987f);
   border: none;
   transition: all 0.3s ease;
 

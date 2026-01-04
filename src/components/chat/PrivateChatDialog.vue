@@ -76,9 +76,7 @@
             :options="selfDestructOptions"
             :placeholder="$t('message.selfDestruct.selectTime')"
             clearable />
-          <n-switch
-            v-model:value="enableDefaultSelfDestruct"
-            :rail-style="railStyle">
+          <n-switch v-model:value="enableDefaultSelfDestruct" :rail-style="railStyle">
             <template #checked>{{ $t('common.enabled') }}</template>
             <template #unchecked>{{ $t('common.disabled') }}</template>
           </n-switch>
@@ -318,12 +316,12 @@ watch(
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: var(--hula-accent, #13987f);
+        border-color: #13987f;
         background-color: rgba(19, 152, 127, 0.05);
       }
 
       &.n-radio--checked {
-        border-color: var(--hula-accent, #13987f);
+        border-color: #13987f;
         background-color: rgba(19, 152, 127, 0.1);
       }
 

@@ -41,7 +41,7 @@
       <!-- 登录表单 -->
       <n-flex v-if="activeTab === 'login'" class="text-center w-80%" vertical :size="16">
         <n-flex justify="center" class="mt--10px">
-          <n-button text :style="{ color: 'var(--hula-accent, #13987f)' }" @click="toggleServerInput()">自定义服务器</n-button>
+          <n-button text :style="{ color: '#13987f' }" @click="toggleServerInput()">自定义服务器</n-button>
         </n-flex>
         <n-collapse-transition :show="matrixStore.serverInputVisible">
           <n-flex vertical :size="8">
@@ -123,7 +123,7 @@
           clearable />
 
         <n-flex justify="flex-end" :size="6">
-          <n-button text :style="{ color: 'var(--hula-accent, #13987f)' }" @click="handleForgetPassword">忘记密码</n-button>
+          <n-button text :style="{ color: '#13987f' }" @click="handleForgetPassword">忘记密码</n-button>
         </n-flex>
 
         <n-button
@@ -671,20 +671,20 @@ onUnmounted(() => {
 
 /* HuLa 品牌色链接 */
 .brand-link {
-  color: var(--hula-accent, #13987f);
+  color: #13987f;
   cursor: pointer;
 
   &:hover {
-    color: var(--hula-accent-hover, #0f7d69);
+    color: #0f7d69;
   }
 
   &:active {
-    color: var(--hula-accent-active, #0c6354);
+    color: #0c6354;
   }
 }
 
 /* HuLa 品牌色背景 */
 .brand-bg {
-  background: var(--hula-accent, #13987f);
+  background: #13987f;
 }
 </style>

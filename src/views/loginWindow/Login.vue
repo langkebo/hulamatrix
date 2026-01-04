@@ -92,7 +92,8 @@
           :class="{
             'bg-#e8f4fd! dark:bg-#1a3a4a!': accountCheckStatus.suggestedAction === 'login',
             'bg-#fff7e8! dark:bg-#4a3a1a!': accountCheckStatus.suggestedAction === 'register',
-            'bg-#f0f0f0! dark:bg-#3a3a3a!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
+            'bg-#f0f0f0! dark:bg-#3a3a3a!':
+              !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
           }">
           <n-spin v-if="accountCheckStatus.checking" :size="12" />
           <span
@@ -256,6 +257,7 @@ import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { suggestActionForLogin } from '@/services/matrixAccountCheck'
 import { useDebounceFn } from '@vueuse/core'
 import { logger } from '@/utils/logger'
+import ActionBar from '@/components/windows/ActionBar.vue'
 
 const { t } = useI18n()
 
@@ -582,12 +584,28 @@ onBeforeMount(async () => {
 onMounted(async () => {
   // 检查引导状态，只有未完成时才启动引导
   if (!isGuideCompleted.value) {
-    startTour()
+    try {
+      startTour()
+    } catch (error) {
+      logger.debug('[Login] Failed to start tour:', error)
+    }
   }
 
   // 只有在需要登录的情况下才显示登录窗口
+  // 检查是否在 Tauri 环境中
   if (!isJumpDirectly.value) {
-    await getCurrentWebviewWindow().show()
+    try {
+      // 检查 Tauri API 是否可用
+      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+        const currentWindow = await getCurrentWebviewWindow()
+        await currentWindow.show()
+      }
+    } catch (error) {
+      // 在非 Tauri 环境（如浏览器开发）中忽略此错误
+      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+        logger.warn('[Login] Failed to show window:', error)
+      }
+    }
   }
 
   useMitt.on(WsResponseMessageType.NO_INTERNET, () => {

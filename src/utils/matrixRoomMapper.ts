@@ -261,12 +261,14 @@ export async function getSessionListFromMatrix(): Promise<SessionItem[]> {
   try {
     const client = matrixClientService.getClient()
     if (!client) {
-      throw new Error('Matrix client not initialized')
+      logger.debug('[MatrixRoomMapper] Matrix client not initialized yet, returning empty session list')
+      return []
     }
 
     const getRoomsMethod = (client as unknown as MatrixClientExtended).getRooms
     if (!getRoomsMethod) {
-      throw new Error('getRooms method not available')
+      logger.warn('[MatrixRoomMapper] getRooms method not available')
+      return []
     }
 
     const rooms = getRoomsMethod.call(client)
@@ -290,8 +292,8 @@ export async function getSessionListFromMatrix(): Promise<SessionItem[]> {
 
     return sessionItems
   } catch (error) {
-    logger.error('[MatrixRoomMapper] Failed to get session list from Matrix:', error)
-    throw error
+    logger.debug('[MatrixRoomMapper] Failed to get session list from Matrix (will retry):', error)
+    return []
   }
 }
 
@@ -306,12 +308,14 @@ export async function getSessionFromMatrix(roomId: string): Promise<SessionItem 
   try {
     const client = matrixClientService.getClient()
     if (!client) {
-      throw new Error('Matrix client not initialized')
+      logger.debug('[MatrixRoomMapper] Matrix client not initialized yet')
+      return null
     }
 
     const getRoomMethod = (client as unknown as MatrixClientExtended).getRoom
     if (!getRoomMethod) {
-      throw new Error('getRoom method not available')
+      logger.warn('[MatrixRoomMapper] getRoom method not available')
+      return null
     }
 
     const room = getRoomMethod.call(client, roomId)

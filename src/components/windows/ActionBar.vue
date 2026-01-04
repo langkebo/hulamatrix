@@ -101,7 +101,7 @@
           </label>
 
           <n-flex justify="end">
-            <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-accent, #13987f)'">确定</n-button>
+            <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">确定</n-button>
             <n-button @click="tipsRef.show = false" class="w-78px" secondary>取消</n-button>
           </n-flex>
         </n-flex>

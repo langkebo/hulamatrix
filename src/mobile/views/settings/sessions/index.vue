@@ -62,11 +62,7 @@
                 @click="handleVerifyDevice(device)">
                 {{ t('setting.sessions.verify') }}
               </n-button>
-              <n-button
-                size="small"
-                type="error"
-                ghost
-                @click="handleSignOutDevice(device)">
+              <n-button size="small" type="error" ghost @click="handleSignOutDevice(device)">
                 {{ t('setting.sessions.sign_out') }}
               </n-button>
             </div>
@@ -278,7 +274,7 @@ onMounted(() => {
 
   &.status-verified {
     background: #e6f7ef;
-    color: var(--hula-accent, #13987f);
+    color: #13987f;
   }
 
   &.status-unverified {

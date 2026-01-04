@@ -77,7 +77,9 @@
       <!-- 底部操作栏 -->
       <div class="px-16px py-10px bg-white border-t border-gray-200 flex justify-between items-center">
         <span class="text-14px">已选择 {{ selectedList.length }} 人</span>
-        <n-button type="primary" :disabled="selectedList.length === 0" :loading="isLoading" @click="createGroup">发起群聊</n-button>
+        <n-button type="primary" :disabled="selectedList.length === 0" :loading="isLoading" @click="createGroup">
+          发起群聊
+        </n-button>
       </div>
     </div>
   </MobileLayout>
@@ -169,7 +171,7 @@ const createGroup = async () => {
     resetCreateGroupState()
 
     // 跳转到聊天页
-    router.push('/mobile/message/chat-room')
+    router.push(`/mobile/chatRoom/chatMain/${roomId}`)
   } catch (error) {
     logger.error('创建群聊失败:', error)
     msg.error('创建群聊失败')

@@ -87,7 +87,7 @@
       filter: grayscale(0);
     }
     svg {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
     }
     span {
       color: var(--reply-hover);
@@ -104,8 +104,8 @@
 /** emoji回复气泡的样式 */
 .emoji-reply-bubble {
   @apply relative flex-y-center gap-4px rounded-50px p-[4px_8px] cursor-pointer select-none text-14px w-fit custom-shadow;
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.4);
-  border: 1px solid var(--hula-accent, #13987f);
+  background-color: rgba(19, 152, 127, 0.4);
+  border: 1px solid #13987f;
 }
 
 /** 当前用户标记消息的样式 */

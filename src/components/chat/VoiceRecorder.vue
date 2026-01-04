@@ -368,7 +368,7 @@ onUnmounted(() => {
   }
 
   .record-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-accent, #13987f));
+    @include base-control-button(rgba(19, 152, 127, 0.5), #13987f);
   }
 
   .stop-btn {
@@ -380,7 +380,7 @@ onUnmounted(() => {
   }
 
   .send-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-accent, #13987f));
+    @include base-control-button(rgba(19, 152, 127, 0.5), #13987f);
 
     .loading-spinner {
       @apply size-16px rounded-full;

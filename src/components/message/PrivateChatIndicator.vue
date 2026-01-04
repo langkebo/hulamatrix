@@ -4,10 +4,7 @@
     <div class="private-chat-badge">
       <Icon icon="mdi:lock" class="lock-icon" />
       <span class="badge-text">私密聊天</span>
-      <n-tag
-        :type="encryptionTagType"
-        size="small"
-        round>
+      <n-tag :type="encryptionTagType" size="small" round>
         {{ encryptionLevelText }}
       </n-tag>
     </div>
@@ -129,7 +126,7 @@ const formatDestructTime = (seconds: number): string => {
     gap: 8px;
 
     .lock-icon {
-      color: var(--hula-accent, #13987f);
+      color: #13987f;
       font-size: 16px;
     }
 

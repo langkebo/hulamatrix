@@ -29,7 +29,7 @@
         :disabled-options="disabledOptions" />
 
       <n-flex align="center" justify="end" class="p-16px">
-        <n-button :color="'var(--hula-accent, #13987f)'" @click="handleInvite">确定</n-button>
+        <n-button :color="'#13987f'" @click="handleInvite">确定</n-button>
         <n-button secondary @click="handleClose">取消</n-button>
       </n-flex>
     </div>

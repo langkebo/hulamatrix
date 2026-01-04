@@ -24,7 +24,16 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Precaching static assets')
-      return cache.addAll(PRECACHE_URLS)
+      // Add each URL individually to handle failures gracefully
+      return Promise.allSettled(
+        PRECACHE_URLS.map((url) => {
+          return cache.add(url).catch((error) => {
+            console.warn('[SW] Failed to cache:', url, error.message)
+            // Don't fail the entire installation if one asset fails
+            return Promise.resolve()
+          })
+        })
+      )
     })
   )
 

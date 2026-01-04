@@ -107,7 +107,7 @@
       :style="{ bottom: '24px', right: '50px' }">
       <div class="float-box" :class="{ max: currentNewMsgCount?.count > 99 }" @click="handleFloatButtonClick">
         <n-flex justify="space-between" align="center">
-          <n-icon :color="currentNewMsgCount?.count > 99 ? '#ce304f' : 'var(--hula-accent, #13987f)'">
+          <n-icon :color="currentNewMsgCount?.count > 99 ? '#ce304f' : '#13987f'">
             <svg>
               <use href="#double-down"></use>
             </svg>
@@ -145,7 +145,9 @@
         <span class="text-14px">{{ tips }}</span>
 
         <n-flex justify="end">
-          <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-accent, #13987f)'">{{ t('home.chat_main.confirm') }}</n-button>
+          <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">
+            {{ t('home.chat_main.confirm') }}
+          </n-button>
           <n-button @click="modalShow = false" class="w-78px" secondary>{{ t('home.chat_main.cancel') }}</n-button>
         </n-flex>
       </div>
@@ -184,7 +186,7 @@
           <n-button @click="groupNicknameModalVisible = false" :disabled="groupNicknameSubmitting" secondary>
             {{ t('home.chat_main.cancel') }}
           </n-button>
-          <n-button :color="'var(--hula-accent, #13987f)'" :loading="groupNicknameSubmitting" @click="handleGroupNicknameConfirm">
+          <n-button :color="'#13987f'" :loading="groupNicknameSubmitting" @click="handleGroupNicknameConfirm">
             {{ t('home.chat_main.confirm') }}
           </n-button>
         </n-flex>
@@ -827,7 +829,7 @@ onUnmounted(() => {
   z-index: 10;
   width: fit-content;
   user-select: none;
-  color: var(--hula-accent, #13987f);
+  color: #13987f;
   cursor: pointer;
 }
 

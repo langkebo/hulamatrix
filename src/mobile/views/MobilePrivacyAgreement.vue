@@ -214,7 +214,7 @@
         color: #333;
         width: fit-content;
         margin-bottom: 15px;
-        border-bottom: 2px solid var(--hula-accent, #13987f);
+        border-bottom: 2px solid #13987f;
         padding-bottom: 5px;
       }
 
