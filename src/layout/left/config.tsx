@@ -4,10 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { MittEnum, ModalEnum, PluginEnum } from '@/enums'
 import { useLogin } from '@/hooks/useLogin'
 import { useMitt } from '@/hooks/useMitt'
-import { useWindow } from '@/hooks/useWindow'
 
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
+import { leftHook } from './hook'
 
 /**
  * 这里的顶部的操作栏使用pinia写入了localstorage中
@@ -61,8 +61,8 @@ const useItemsBottom = () =>
 /** 设置列表菜单项 */
 const useMoreList = () => {
   const { t } = useI18n()
-  const { createWebviewWindow } = useWindow()
   const { logout, resetLoginState } = useLogin()
+  const { pageJumps } = leftHook()
 
   return computed<MenuItem[]>(() => [
     {
@@ -77,15 +77,17 @@ const useMoreList = () => {
     {
       label: t('menu.settings'),
       icon: 'settings',
-      click: async () => {
-        await createWebviewWindow('设置', 'settings', 840, 840)
+      click: () => {
+        // ✅ 使用路由导航而不是创建新窗口
+        pageJumps('settings')
       }
     },
     {
       label: t('menu.about'),
       icon: 'info',
-      click: async () => {
-        await createWebviewWindow('关于', 'about', 360, 480)
+      click: () => {
+        // ✅ 使用路由导航而不是创建新窗口
+        pageJumps('about')
       }
     },
     {

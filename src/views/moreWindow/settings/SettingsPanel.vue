@@ -1,5 +1,11 @@
 <template>
-  <n-modal v-model:show="visible" preset="card" :style="{ width: '880px' }" :segmented="true">
+  <n-modal
+    v-model:show="visible"
+    preset="card"
+    :style="{ width: '880px' }"
+    :segmented="true"
+    @close="handleClose"
+    @update:show="handleClose">
     <template #header>
       <div class="settings-panel-header">
         <span class="settings-panel-title">{{ t('setting.panel.title') }}</span>
@@ -33,21 +39,48 @@
  * - 左侧菜单导航，右侧内容展示
  * - 支持国际化 (i18n)
  * - 使用 Suspense 进行异步组件加载
+ * - 关闭时自动返回消息列表
+ * - 路由变化时自动关闭模态框
  *
  * @author HuLamatrix Team
  */
 
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { NModal, NMenu, type MenuOption } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import SettingsSkeleton from '@/components/settings/SettingsSkeleton.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 
 const visible = ref(true)
 const active = ref<string | null>('appearance')
+
+/**
+ * 关闭设置模态框并返回消息列表
+ * 当用户点击X按钮或关闭模态框时调用
+ */
+const handleClose = () => {
+  visible.value = false
+  // 返回主页面（消息列表）
+  router.push('/message')
+}
+
+/**
+ * 监听路由变化
+ * 如果用户导航离开 /settings 路由，自动关闭模态框
+ */
+watch(
+  () => route.path,
+  (newPath) => {
+    // 如果不在设置相关路由，关闭模态框
+    if (!newPath.startsWith('/settings') && !newPath.startsWith('/e2ee')) {
+      visible.value = false
+    }
+  }
+)
 
 // 菜单配置 - 使用 i18n 翻译
 const menu = computed<MenuOption[]>(() => [

@@ -131,16 +131,45 @@ export const leftHook = () => {
    * @param title 创建窗口时的标题
    * @param size 窗口的大小
    * @param window 窗口参数
-   * */
+   *
+   * 导航策略：
+   * - 核心功能（message, friendsList, settings, about等）始终使用路由导航
+   * - 工具功能（fileManager等）可以使用窗口
+   */
   const pageJumps = (
     url: string,
     title?: string,
     size?: { width: number; height: number; minWidth?: number },
     window?: { resizable: boolean }
   ) => {
+    // ✅ 核心功能列表 - 始终在主窗口内使用路由导航
+    const CORE_FEATURES = [
+      'message',
+      'friendsList',
+      'settings',
+      'about',
+      'rooms/manage',
+      'rooms/search',
+      'spaces',
+      'synapse/friends',
+      'searchDetails',
+      'e2ee/devices',
+      'e2ee/verify',
+      'e2ee/backup'
+    ]
+
+    // ✅ 核心功能始终使用路由导航（在主窗口内切换）
+    if (CORE_FEATURES.includes(url)) {
+      logInfo(`路由导航到: /${url}`)
+      activeUrl.value = url
+      router.push(`/${url}`)
+      return
+    }
+
+    // ⚠️ 工具功能可以创建独立窗口（如文件管理器）
     if (window && isTauri) {
       useTimeoutFn(async () => {
-        logInfo(`打开窗口: ${title}`)
+        logInfo(`打开工具窗口: ${title}`)
         const webview = await createWebviewWindow(
           title!,
           url,
