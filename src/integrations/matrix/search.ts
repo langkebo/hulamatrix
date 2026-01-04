@@ -955,6 +955,7 @@ export interface LegacyRoomSearchResult {
   score: number
   matchType: 'name' | 'topic' | 'alias' | 'member'
   matchingMembers?: string[]
+  isPublic?: boolean
 }
 
 /**
@@ -1176,6 +1177,95 @@ export async function getSearchSuggestionsCompat(partial: string, limit = 5): Pr
   return suggestions.map((s) => s.title)
 }
 
+/**
+ * Search public rooms using SDK's publicRooms API
+ * Replaces roomSearchService.searchPublicRooms()
+ */
+export async function searchPublicRooms(
+  query: string,
+  limit: number = 50,
+  server?: string
+): Promise<LegacyRoomSearchResult[]> {
+  const cacheKey = generateCacheKey('public-rooms', { query, limit, server })
+
+  // Check cache first
+  const cached = searchCache.get<LegacyRoomSearchResult[]>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const client = matrixClientService.getClient() as unknown as MatrixClientLike
+  if (!client) return []
+
+  try {
+    // Define public rooms search options interface
+    interface PublicRoomsOpts {
+      limit?: number
+      include_all_networks?: boolean
+      threshold?: number
+      server?: string
+      filter?: {
+        generic_search_term?: string
+      }
+    }
+
+    const options: PublicRoomsOpts = {
+      limit,
+      include_all_networks: false,
+      threshold: 0.5
+    }
+
+    if (server) {
+      options.server = server
+    }
+
+    if (query) {
+      options.filter = {
+        generic_search_term: query
+      }
+    }
+
+    // Use SDK's publicRooms API
+    const publicRoomsMethod = client.publicRooms as
+      | ((opts: PublicRoomsOpts) => Promise<{ chunk: PublicRoom[] } | undefined>)
+      | undefined
+
+    const response = await publicRoomsMethod?.(options)
+    const rooms = response?.chunk || []
+
+    const results: LegacyRoomSearchResult[] = rooms.map((room) => ({
+      roomId: room.room_id,
+      name: room.name || room.room_id,
+      score: 10,
+      matchType: 'name',
+      topic: room.topic,
+      avatar: room.avatar_url,
+      memberCount: room.num_joined_members,
+      isPublic: room.world_readable || false
+    }))
+
+    // Cache the result
+    searchCache.set(cacheKey, results)
+
+    return results
+  } catch (error) {
+    logger.error('[search] Failed to search public rooms:', error)
+    return []
+  }
+}
+
+// Interface for public room response
+interface PublicRoom {
+  room_id: string
+  name?: string
+  topic?: string
+  avatar_url?: string
+  num_joined_members?: number
+  world_readable?: boolean
+  canonical_alias?: string
+  [key: string]: unknown
+}
+
 // Export singleton-like object for backward compatibility
 export const matrixSearchServiceCompat = {
   searchMessages,
@@ -1185,5 +1275,6 @@ export const matrixSearchServiceCompat = {
   getSearchSuggestions: getSearchSuggestionsCompat,
   saveSearchTerm,
   getRecentSearches,
-  clearSearchHistory: clearSearchHistoryCompat
+  clearSearchHistory: clearSearchHistoryCompat,
+  searchPublicRooms
 }
