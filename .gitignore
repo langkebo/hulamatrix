@@ -63,3 +63,10 @@ rust-clippy-errors.log
 # Migration reports
 imrequest-migration-report.json
 .backup-option-a-*/
+
+# Runtime error logs
+docs/error_log.md
+
+# Temporary files
+src-tauri/*.png
+src-tauri/docs/
