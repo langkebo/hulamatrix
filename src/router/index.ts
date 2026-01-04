@@ -1,5 +1,6 @@
+import { logger, toError } from '@/utils/logger'
+
 import { invoke } from '@tauri-apps/api/core'
-import { type } from '@tauri-apps/plugin-os'
 import {
   createRouter,
   createWebHistory,
@@ -7,329 +8,394 @@ import {
   type RouteLocationNormalized,
   type RouteRecordRaw
 } from 'vue-router'
+import type { Router } from 'vue-router'
 
-import FriendsList from '@/views/homeWindow/FriendsList.vue'
-import Message from '@/views/homeWindow/message/index.vue'
-import SearchDetails from '@/views/homeWindow/SearchDetails.vue'
+// 移除直接导入，全部改为懒加载以优化 Bundle size
+// import FriendsList from '@/views/homeWindow/FriendsList.vue'
+// import SearchDetails from '@/views/homeWindow/SearchDetails.vue'
 
-import ChatRoomLayout from '#/layout/chat-room/ChatRoomLayout.vue'
-import NoticeLayout from '#/layout/chat-room/NoticeLayout.vue'
-import FriendsLayout from '#/layout/friends/FriendsLayout.vue'
-import MobileHome from '#/layout/index.vue'
-import GroupChatMember from '#/views/chat-room/GroupChatMember.vue'
-import MobileInviteGroupMember from '#/views/chat-room/MobileInviteGroupMember.vue'
-import MyLayout from '#/layout/my/MyLayout.vue'
-import MobileLogin from '#/login.vue'
-import ChatSetting from '#/views/chat-room/ChatSetting.vue'
-import MobileChatMain from '#/views/chat-room/MobileChatMain.vue'
-import SearchChatContent from '#/views/chat-room/SearchChatContent.vue'
-import MediaViewer from '#/views/chat-room/MediaViewer.vue'
-import NoticeDetail from '#/views/chat-room/notice/NoticeDetail.vue'
-import NoticeEdit from '#/views/chat-room/notice/NoticeEdit.vue'
-import NoticeList from '#/views/chat-room/notice/NoticeList.vue'
-import MobileCommunity from '#/views/community/index.vue'
-import DynamicDetailPage from '#/views/community/DynamicDetailPage.vue'
-import AddFriends from '#/views/friends/AddFriends.vue'
-import ConfirmAddFriend from '#/views/friends/ConfirmAddFriend.vue'
-import ConfirmAddGroup from '#/views/friends/ConfirmAddGroup.vue'
-import FriendInfo from '#/views/friends/FriendInfo.vue'
-import MobileFriendPage from '#/views/friends/index.vue'
-import StartGroupChat from '#/views/friends/StartGroupChat.vue'
-import MobileMessagePage from '#/views/message/index.vue'
-import EditBio from '#/views/my/EditBio.vue'
-import EditBirthday from '#/views/my/EditBirthday.vue'
-import EditProfile from '#/views/my/EditProfile.vue'
-import MobileMy from '#/views/my/index.vue'
-import MobileQRCode from '#/views/my/MobileQRCode.vue'
-import MobileSettings from '#/views/my/MobileSettings.vue'
-import MyMessages from '#/views/my/MyMessages.vue'
-import PublishCommunity from '#/views/my/PublishCommunity.vue'
-import Share from '#/views/my/Share.vue'
-import SimpleBio from '#/views/my/SimpleBio.vue'
-import AiAssistant from '#/views/my/AiAssistant.vue'
-import MyAlbum from '#/views/my/MyAlbum.vue'
+import { flags } from '@/utils/envFlags'
 import { TauriCommand } from '@/enums'
-import ConfirmQRLogin from '#/views/ConfirmQRLogin.vue'
-import MyQRCode from '#/views/MyQRCode.vue'
-import Splashscreen from '#/views/Splashscreen.vue'
-import MobileForgetPassword from '#/views/MobileForgetPassword.vue'
-import MobileServiceAgreement from '#/views/MobileServiceAgreement.vue'
-import MobilePrivacyAgreement from '#/views/MobilePrivacyAgreement.vue'
-import SyncData from '#/views/SyncData.vue'
 
 /**! 创建窗口后再跳转页面就会导致样式没有生效所以不能使用懒加载路由的方式，有些页面需要快速响应的就不需要懒加载 */
 const { BASE_URL } = import.meta.env
 
-const isMobile = type() === 'ios' || type() === 'android'
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const uaMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+// Tauri window interface for platform detection
+interface TauriWindow extends Window {
+  TAURI_ENV_PLATFORM?: string
+}
+
+let envPlatform = ''
+try {
+  envPlatform = isTauri && typeof window !== 'undefined' ? (window as TauriWindow).TAURI_ENV_PLATFORM || '' : ''
+} catch {}
+
+const isMobile =
+  uaMobile ||
+  envPlatform === 'ios' ||
+  envPlatform === 'android' ||
+  (typeof location !== 'undefined' && location.pathname.startsWith('/mobile'))
 
 // 移动端路由配置 - 使用直接导入避免懒加载问题
-const getMobileRoutes = (): Array<RouteRecordRaw> => [
-  {
-    path: '/',
-    name: 'mobileRoot',
-    redirect: '/mobile/login'
-  },
-  {
-    path: '/mobile/login',
-    name: 'mobileLogin',
-    component: MobileLogin
-  },
-  {
-    path: '/mobile/MobileForgetPassword',
-    name: 'mobileForgetPassword',
-    component: MobileForgetPassword
-  },
-  {
-    path: '/mobile/splashscreen',
-    name: 'splashscreen',
-    component: Splashscreen
-  },
-  {
-    path: '/mobile/serviceAgreement',
-    name: 'mobileServiceAgreement',
-    component: MobileServiceAgreement
-  },
-  {
-    path: '/mobile/privacyAgreement',
-    name: 'mobilePrivacyAgreement',
-    component: MobilePrivacyAgreement
-  },
-  {
-    path: '/mobile/syncData',
-    name: 'mobileSyncData',
-    component: SyncData
-  },
-  {
-    path: '/mobile/chatRoom',
-    name: 'mobileChatRoom',
-    component: ChatRoomLayout,
-    children: [
-      {
-        path: '',
-        name: 'mobileChatRoomDefault',
-        redirect: '/mobile/chatRoom/chatMain'
-      },
-      {
-        path: 'chatMain/:uid?', // 可选传入，如果传入uid就表示房间属于好友的私聊房间
-        name: 'mobileChatMain',
-        component: MobileChatMain,
-        props: true,
-        meta: { keepAlive: true }
-      },
-      {
-        path: 'setting',
-        name: 'mobileChatSetting',
-        component: ChatSetting
-      },
-      {
-        path: 'searchContent',
-        name: 'mobileSearchChatContent',
-        component: SearchChatContent
-      },
-      {
-        path: 'mediaViewer',
-        name: 'mobileMediaViewer',
-        component: MediaViewer
-      },
-      {
-        path: 'groupChatMember',
-        name: 'mobileGroupChatMember',
-        component: GroupChatMember,
-        meta: { keepAlive: true }
-      },
-      {
-        path: 'inviteGroupMember',
-        name: 'mobileInviteGroupMember',
-        component: MobileInviteGroupMember
-      },
-      {
-        path: 'notice',
-        name: 'mobileChatNotice',
-        component: NoticeLayout,
-        children: [
-          {
-            path: '',
-            name: 'mobileChatNoticeList',
-            component: NoticeList
-          },
-          {
-            path: 'add',
-            name: 'mobileChatNoticeAdd',
-            component: NoticeEdit
-          },
-          {
-            path: 'edit/:id',
-            name: 'mobileChatNoticeEdit',
-            component: NoticeEdit
-          },
-          {
-            path: 'detail/:id',
-            name: 'mobileChatNoticeDetail',
-            component: NoticeDetail
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: '/mobile/home',
-    name: 'mobileHome',
-    component: MobileHome,
-    children: [
-      {
-        path: '',
-        name: 'mobileHomeDefault',
-        redirect: '/mobile/message'
-      },
-      {
-        path: '/mobile/message',
-        name: 'mobileMessage',
-        component: MobileMessagePage
-      },
-      {
-        path: '/mobile/friends',
-        name: 'mobileFriends',
-        component: MobileFriendPage
-      },
-      {
-        path: '/mobile/community',
-        name: 'mobileCommunity',
-        component: MobileCommunity
-      },
-      {
-        path: '/mobile/my',
-        name: 'mobileMy',
-        component: MobileMy
-      }
-    ]
-  },
-  {
-    path: '/mobile/mobileMy',
-    name: 'mobileMyLayout',
-    component: MyLayout,
-    children: [
-      {
-        path: '',
-        name: 'mobileMyDefault',
-        redirect: '/mobile/mobileMy/editProfile'
-      },
-      {
-        path: 'editProfile',
-        name: 'mobileEditProfile',
-        component: EditProfile
-      },
-      {
-        path: 'myMessages',
-        name: 'mobileMyMessages',
-        component: MyMessages
-      },
-      {
-        path: 'editBio',
-        name: 'mobileEditBio',
-        component: EditBio
-      },
-      {
-        path: 'editBirthday',
-        name: 'mobileEditBirthday',
-        component: EditBirthday
-      },
-      {
-        path: 'publishCommunity',
-        name: 'mobilePublishCommunity',
-        component: PublishCommunity
-      },
-      {
-        path: 'settings',
-        name: 'MobileSettings',
-        component: MobileSettings
-      },
-      {
-        path: 'scanQRCode',
-        name: 'mobileQRCode',
-        component: MobileQRCode
-      },
-      {
-        path: 'share',
-        name: 'mobileShare',
-        component: Share
-      },
-      {
-        path: 'SimpleBio',
-        name: 'mobileSimpleBio',
-        component: SimpleBio
-      },
-      {
-        path: 'aiAssistant',
-        name: 'mobileAiAssistant',
-        component: AiAssistant
-      },
-      {
-        path: 'myAlbum',
-        name: 'mobileMyAlbum',
-        component: MyAlbum
-      }
-    ]
-  },
-  {
-    path: '/mobile/mobileFriends',
-    name: 'mobileFriendsLayout',
-    component: FriendsLayout,
-    children: [
-      {
-        path: '',
-        name: 'mobileFriendsDefault',
-        redirect: '/mobile/mobileFriends/addFriends'
-      },
-      {
-        path: 'addFriends',
-        name: 'mobileAddFriends',
-        component: AddFriends
-      },
-      {
-        path: 'startGroupChat',
-        name: 'mobileStartGroupChat',
-        component: StartGroupChat
-      },
-      {
-        path: 'confirmAddFriend',
-        name: 'mobileConfirmAddFriend',
-        component: ConfirmAddFriend
-      },
-      {
-        path: 'confirmAddGroup',
-        name: 'mobileConfirmAddGroup',
-        component: ConfirmAddGroup
-      },
-      {
-        path: 'friendInfo/:uid',
-        name: 'mobileFriendInfo',
-        component: FriendInfo
-      }
-    ]
-  },
-  {
-    path: '/mobile/confirmQRLogin/:ip/:expireTime/:deviceType/:locPlace/:qrId',
-    name: 'mobileConfirmQRLogin',
-    component: ConfirmQRLogin,
-    props: true
-  },
-  {
-    path: '/mobile/myQRCode',
-    name: 'mobileMyQRCode',
-    component: MyQRCode
-  },
-  {
-    path: '/mobile/rtcCall',
-    name: 'rtcCall',
-    component: () => import('../mobile/views/rtcCall/index.vue')
-  },
-  {
-    path: '/mobile/dynamic/:id',
-    name: 'mobileDynamicDetail',
-    component: DynamicDetailPage,
-    props: true
-  }
-]
+const getMobileRoutes = (): Array<RouteRecordRaw> => {
+  if (!flags.mobileFeaturesEnabled) return []
+  return [
+    {
+      path: '/',
+      name: 'mobileRoot',
+      redirect: '/mobile/login'
+    },
+    {
+      path: '/mobile/login',
+      name: 'mobileLogin',
+      component: () => import('#/login.vue')
+    },
+    {
+      path: '/mobile/MobileForgetPassword',
+      name: 'mobileForgetPassword',
+      component: () => import('#/views/MobileForgetPassword.vue')
+    },
+    {
+      path: '/mobile/splashscreen',
+      name: 'splashscreen',
+      component: () => import('#/views/Splashscreen.vue')
+    },
+    {
+      path: '/mobile/serviceAgreement',
+      name: 'mobileServiceAgreement',
+      component: () => import('#/views/MobileServiceAgreement.vue')
+    },
+    {
+      path: '/mobile/privacyAgreement',
+      name: 'mobilePrivacyAgreement',
+      component: () => import('#/views/MobilePrivacyAgreement.vue')
+    },
+    {
+      path: '/mobile/syncData',
+      name: 'mobileSyncData',
+      component: () => import('#/views/SyncData.vue')
+    },
+    {
+      path: '/mobile/chatRoom',
+      name: 'mobileChatRoom',
+      component: () => import('#/layout/chat/ChatRoomLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'mobileChatRoomDefault',
+          redirect: '/mobile/chatRoom/chatMain'
+        },
+        {
+          path: 'chatMain/:uid?', // 可选传入，如果传入uid就表示房间属于好友的私聊房间
+          name: 'mobileChatMain',
+          component: () => import('#/views/chat/MobileChatMain.vue'),
+          props: true,
+          meta: { keepAlive: true }
+        },
+        {
+          path: 'setting',
+          name: 'mobileChatSetting',
+          component: () => import('#/views/chat/ChatSetting.vue')
+        },
+        {
+          path: 'searchContent',
+          name: 'mobileSearchChatContent',
+          component: () => import('#/views/chat/SearchChatContent.vue')
+        },
+        {
+          path: 'mediaViewer',
+          name: 'mobileMediaViewer',
+          component: () => import('#/views/chat/MediaViewer.vue')
+        },
+
+        {
+          path: 'notice',
+          name: 'mobileChatNotice',
+          component: () => import('#/views/chat/notice/NoticeList.vue'),
+          children: [
+            {
+              path: '',
+              name: 'mobileChatNoticeList',
+              component: () => import('#/views/chat/notice/NoticeList.vue')
+            },
+            {
+              path: 'add',
+              name: 'mobileChatNoticeAdd',
+              component: () => import('#/views/chat/notice/NoticeEdit.vue')
+            },
+            {
+              path: 'edit/:id',
+              name: 'mobileChatNoticeEdit',
+              component: () => import('#/views/chat/notice/NoticeEdit.vue')
+            },
+            {
+              path: 'detail/:id',
+              name: 'mobileChatNoticeDetail',
+              component: () => import('#/views/chat/notice/NoticeDetail.vue')
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path: '/mobile/home',
+      name: 'mobileHome',
+      component: () => import('#/layout/index.vue'),
+      children: [
+        {
+          path: '',
+          name: 'mobileHomeDefault',
+          redirect: '/mobile/message'
+        },
+        {
+          path: '/mobile/message',
+          name: 'mobileMessage',
+          component: () => import('#/views/message/index.vue')
+        },
+        {
+          path: '/mobile/rooms',
+          name: 'mobileRooms',
+          component: () => import('#/views/rooms/index.vue')
+        },
+        {
+          path: '/mobile/rooms/manage',
+          name: 'mobileRoomsManage',
+          component: () => import('#/views/rooms/Manage.vue')
+        },
+        {
+          path: '/mobile/spaces',
+          name: 'mobileSpaces',
+          component: () => import('#/views/spaces/Index.vue')
+        },
+        {
+          path: '/mobile/my',
+          name: 'mobileMy',
+          component: () => import('#/views/profile/index.vue')
+        }
+      ]
+    },
+    {
+      path: '/mobile/mobileMy',
+      name: 'mobileMyLayout',
+      component: () => import('#/layout/profile/MyLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'mobileMyDefault',
+          redirect: '/mobile/mobileMy/editProfile'
+        },
+        {
+          path: 'editProfile',
+          name: 'mobileEditProfile',
+          component: () => import('#/views/profile/EditProfile.vue')
+        },
+        {
+          path: 'myMessages',
+          name: 'mobileMyMessages',
+          component: () => import('#/views/profile/MyMessages.vue')
+        },
+        {
+          path: 'editBio',
+          name: 'mobileEditBio',
+          component: () => import('#/views/profile/EditBio.vue')
+        },
+        {
+          path: 'editBirthday',
+          name: 'mobileEditBirthday',
+          component: () => import('#/views/profile/EditBirthday.vue')
+        },
+        // REMOVED: publishCommunity route - Moments/Feed feature removed (custom backend no longer supported)
+        {
+          path: 'settings',
+          name: 'MobileSettings',
+          component: () => import('#/views/profile/MobileSettings.vue')
+        },
+        {
+          path: 'settings/cache',
+          name: 'MobileSettingsCache',
+          component: () => import('@/views/moreWindow/settings/ManageStore.vue')
+        },
+        {
+          path: 'scanQRCode',
+          name: 'mobileQRCode',
+          component: () => import('#/views/profile/MobileQRCode.vue')
+        },
+        {
+          path: 'share',
+          name: 'mobileShare',
+          component: () => import('#/views/profile/Share.vue')
+        },
+        {
+          path: 'SimpleBio',
+          name: 'mobileSimpleBio',
+          component: () => import('#/views/profile/SimpleBio.vue')
+        },
+
+        {
+          path: 'myAlbum',
+          name: 'mobileMyAlbum',
+          component: () => import('#/views/profile/MyAlbum.vue')
+        },
+        {
+          path: 'mediaCache',
+          name: 'mobileMediaCache',
+          component: () => import('#/views/media/MediaCache.vue')
+        }
+      ]
+    },
+    // Mobile Settings Module - Independent settings pages
+    {
+      path: '/mobile/settings',
+      name: 'mobileSettings',
+      component: () => import('#/views/settings/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/profile',
+      name: 'mobileSettingsProfile',
+      component: () => import('#/views/settings/profile/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/sessions',
+      name: 'mobileSettingsSessions',
+      component: () => import('#/views/settings/sessions/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/notification',
+      name: 'mobileSettingsNotification',
+      component: () => import('#/views/settings/notification/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/appearance',
+      name: 'mobileSettingsAppearance',
+      component: () => import('#/views/settings/appearance/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/privacy',
+      name: 'mobileSettingsPrivacy',
+      component: () => import('#/views/settings/privacy/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/privacy/manage',
+      name: 'mobileSettingsPrivacyManage',
+      component: () => import('#/views/settings/privacy/manage.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/keyboard',
+      name: 'mobileSettingsKeyboard',
+      component: () => import('#/views/settings/keyboard/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/audio',
+      name: 'mobileSettingsAudio',
+      component: () => import('#/views/settings/audio/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/labs',
+      name: 'mobileSettingsLabs',
+      component: () => import('#/views/settings/labs/index.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/feedback',
+      name: 'mobileSettingsFeedback',
+      component: () => import('#/views/settings/Feedback.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/settings/biometric',
+      name: 'mobileSettingsBiometric',
+      component: () => import('#/components/profile/BiometricSettings.vue'),
+      meta: { keepAlive: false }
+    },
+    {
+      path: '/mobile/mobileFriends',
+      name: 'mobileFriendsLayout',
+      component: () => import('#/layout/friends/FriendsLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'mobileFriendsDefault',
+          redirect: '/mobile/mobileFriends/addFriends'
+        },
+        {
+          path: 'addFriends',
+          name: 'mobileAddFriends',
+          component: () => import('#/views/friends/AddFriends.vue')
+        },
+        {
+          path: 'startGroupChat',
+          name: 'mobileStartGroupChat',
+          component: () => import('#/views/friends/StartGroupChat.vue')
+        },
+        {
+          path: 'confirmAddFriend',
+          name: 'mobileConfirmAddFriend',
+          component: () => import('#/views/friends/ConfirmAddFriend.vue')
+        },
+        {
+          path: 'confirmAddGroup',
+          name: 'mobileConfirmAddGroup',
+          component: () => import('#/views/friends/ConfirmAddGroup.vue')
+        },
+        {
+          path: 'friendInfo/:uid',
+          name: 'mobileFriendInfo',
+          component: () => import('#/views/friends/FriendInfo.vue')
+        }
+      ]
+    },
+    {
+      path: '/mobile/confirmQRLogin/:ip/:expireTime/:deviceType/:locPlace/:qrId',
+      name: 'mobileConfirmQRLogin',
+      component: () => import('#/views/ConfirmQRLogin.vue'),
+      props: true
+    },
+    {
+      path: '/mobile/myQRCode',
+      name: 'mobileMyQRCode',
+      component: () => import('#/views/MyQRCode.vue')
+    },
+    {
+      path: '/mobile/rtcCall',
+      name: 'rtcCall',
+      component: () => import('#/views/rtcCall/index.vue')
+    },
+    {
+      path: '/mobile/rooms/search',
+      name: 'mobileRoomsSearch',
+      component: () => import('#/views/rooms/SearchMobile.vue')
+    },
+    // E2EE (End-to-End Encryption) routes for mobile
+    {
+      path: '/mobile/e2ee/devices',
+      name: 'mobileE2EEDevices',
+      component: () => import('#/views/e2ee/MobileDevices.vue')
+    },
+    {
+      path: '/mobile/e2ee/backup',
+      name: 'mobileE2EEBackup',
+      component: () => import('#/views/e2ee/MobileKeyBackup.vue')
+    },
+    // Private Chat (私密聊天) routes for mobile
+    {
+      path: '/mobile/private-chat',
+      name: 'mobilePrivateChat',
+      component: () => import('#/views/private-chat/MobilePrivateChatView.vue')
+    }
+  ]
+}
 
 // 桌面端路由配置
 const getDesktopRoutes = (): Array<RouteRecordRaw> => [
@@ -341,76 +407,61 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
       {
         path: '/message',
         name: 'message',
-        component: Message
+        component: () => import('@/views/homeWindow/message/index.vue')
       },
       {
         path: '/friendsList',
         name: 'friendsList',
-        component: FriendsList
+        component: () => import('@/views/homeWindow/FriendsList.vue')
       },
       {
         path: '/searchDetails',
         name: 'searchDetails',
-        component: SearchDetails
+        component: () => import('@/views/homeWindow/SearchDetails.vue')
+      },
+      {
+        path: '/synapse/friends',
+        name: 'synapseFriends',
+        component: () => import('@/views/friends/SynapseFriends.vue')
+      },
+      {
+        path: '/rooms/manage',
+        name: 'roomsManage',
+        component: () => import('@/views/rooms/Manage.vue')
+      },
+      {
+        path: '/spaces',
+        name: 'spacesIndex',
+        component: () => import('@/views/spaces/Index.vue')
+      },
+      {
+        path: '/rooms/search',
+        name: 'roomsSearch',
+        component: () => import('@/views/rooms/Search.vue')
+      },
+      // 移除旧设置路由，统一到 SettingsPanel 子路由
+      {
+        path: '/e2ee/devices',
+        name: 'e2eeDevices',
+        component: () => import('@/views/e2ee/Devices.vue')
+      },
+      {
+        path: '/e2ee/verify',
+        name: 'e2eeVerify',
+        component: () => import('@/views/e2ee/VerificationWizard.vue')
+      },
+      {
+        path: '/e2ee/backup',
+        name: 'e2eeBackup',
+        component: () => import('@/views/e2ee/BackupRecovery.vue')
       }
     ]
   },
-  {
-    path: '/robot',
-    name: 'robot',
-    component: () => import('@/plugins/robot/index.vue'),
-    children: [
-      {
-        path: '/welcome',
-        name: 'welcome',
-        component: () => import('@/plugins/robot/views/Welcome.vue')
-      },
-      {
-        path: '/chat',
-        name: 'chat',
-        component: () => import('@/plugins/robot/views/Chat.vue')
-      },
-      {
-        path: '/chatSettings',
-        name: 'chatSettings',
-        component: () => import('@/plugins/robot/views/chatSettings/index.vue')
-      },
-      {
-        path: '/imageGeneration',
-        name: 'imageGeneration',
-        component: () => import('@/plugins/robot/views/ImageGeneration.vue')
-      },
-      {
-        path: '/videoGeneration',
-        name: 'videoGeneration',
-        component: () => import('@/plugins/robot/views/VideoGeneration.vue')
-      }
-    ]
-  },
-  {
-    path: '/mail',
-    name: 'mail',
-    component: () => import('@/views/mailWindow/index.vue')
-  },
+
   {
     path: '/fileManager',
     name: 'fileManager',
     component: () => import('@/views/fileManagerWindow/index.vue')
-  },
-  {
-    path: '/dynamic',
-    name: 'dynamic',
-    component: () => import('@/plugins/dynamic/index.vue')
-  },
-  {
-    path: '/dynamic/:id',
-    name: 'dynamicDetailWithId',
-    component: () => import('@/plugins/dynamic/detail.vue')
-  },
-  {
-    path: '/dynamicDetail',
-    name: 'dynamicDetail',
-    component: () => import('@/plugins/dynamic/detail.vue')
   },
   {
     path: '/onlineStatus',
@@ -440,37 +491,90 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
   {
     path: '/settings',
     name: 'settings',
-    component: () => import('@/views/moreWindow/settings/index.vue'),
+    component: () => import('@/views/moreWindow/settings/SettingsPanel.vue'),
     children: [
+      // Legacy settings routes
       {
-        path: '/general',
+        path: 'general',
         name: 'general',
         component: () => import('@/views/moreWindow/settings/General.vue')
       },
       {
-        path: '/loginSetting',
+        path: 'loginSetting',
         name: 'loginSetting',
         component: () => import('@/views/moreWindow/settings/LoginSetting.vue')
       },
       {
-        path: '/notification',
+        path: 'notification',
         name: 'notification',
         component: () => import('@/views/moreWindow/settings/Notification.vue')
       },
       {
-        path: '/versatile',
+        path: 'versatile',
         name: 'versatile',
         component: () => import('@/views/moreWindow/settings/Versatile.vue')
       },
       {
-        path: '/manageStore',
+        path: 'manageStore',
         name: 'manageStore',
         component: () => import('@/views/moreWindow/settings/ManageStore.vue')
       },
       {
-        path: '/shortcut',
+        path: 'shortcut',
         name: 'shortcut',
         component: () => import('@/views/moreWindow/settings/Shortcut.vue')
+      },
+      // New settings routes with lazy loading
+      // 新设置路由在 moreWindow/settings 目录
+      {
+        path: 'profile',
+        name: 'settingsProfile',
+        component: () => import('@/views/moreWindow/settings/Profile.vue')
+      },
+      {
+        path: 'sessions',
+        name: 'settingsSessions',
+        component: () => import('@/views/moreWindow/settings/Sessions.vue')
+      },
+      {
+        path: 'appearance',
+        name: 'settingsAppearance',
+        component: () => import('@/views/moreWindow/settings/Appearance.vue')
+      },
+      {
+        path: 'keyboard',
+        name: 'settingsKeyboard',
+        component: () => import('@/views/moreWindow/settings/Keyboard.vue')
+      },
+      {
+        path: 'labs',
+        name: 'settingsLabs',
+        component: () => import('@/views/moreWindow/settings/Labs.vue')
+      },
+      {
+        path: 'privacy/manage',
+        name: 'settingsPrivacyManage',
+        component: () => import('@/views/moreWindow/settings/PrivacyManage.vue')
+      },
+      {
+        path: 'privacy',
+        name: 'settingsPrivacy',
+        component: () => import('@/views/moreWindow/settings/Privacy.vue')
+      },
+      {
+        path: 'voiceAudio',
+        name: 'settingsVoiceAudio',
+        component: () => import('@/views/moreWindow/settings/VoiceAudio.vue')
+      },
+      {
+        path: 'feedback',
+        name: 'settingsFeedback',
+        component: () => import('@/views/moreWindow/settings/Feedback.vue')
+      },
+      {
+        path: 'e2ee',
+        name: 'settingsE2EE',
+        component: () => import('@/views/moreWindow/settings/E2EE.vue')
       }
     ]
   },
@@ -520,9 +624,29 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
 // 通用路由配置（所有平台都需要）
 const getCommonRoutes = (): Array<RouteRecordRaw> => [
   {
+    path: '/',
+    name: 'root',
+    redirect: isMobile ? '/mobile/login' : '/login'
+  },
+  {
     path: '/manageGroupMember',
     name: 'manageGroupMember',
     component: () => import('@/views/ManageGroupMember.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/views/admin/AdminLayout.vue')
+  },
+  {
+    path: '/admin/health',
+    name: 'adminHealth',
+    component: () => import('@/components/diagnostics/ServerHealthCheck.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notfound',
+    redirect: isMobile ? '/mobile/login' : '/login'
   },
   {
     path: '/login',
@@ -532,7 +656,7 @@ const getCommonRoutes = (): Array<RouteRecordRaw> => [
   {
     path: '/splashscreen',
     name: 'splashscreen',
-    component: Splashscreen
+    component: () => import('#/views/Splashscreen.vue')
   },
   {
     path: '/register',
@@ -548,6 +672,11 @@ const getCommonRoutes = (): Array<RouteRecordRaw> => [
     path: '/qrCode',
     name: 'qrCode',
     component: () => import('@/views/loginWindow/QRCode.vue')
+  },
+  {
+    path: '/sso/callback',
+    name: 'ssoCallback',
+    component: () => import('@/views/loginWindow/SsoCallback.vue')
   },
   {
     path: '/network',
@@ -609,25 +738,21 @@ const getCommonRoutes = (): Array<RouteRecordRaw> => [
 // 创建所有路由（通用路由 + 平台特定路由）
 const getAllRoutes = (): Array<RouteRecordRaw> => {
   const commonRoutes = getCommonRoutes()
-  if (isMobile) {
-    return [...commonRoutes, ...getMobileRoutes()]
-  } else {
-    return [...commonRoutes, ...getDesktopRoutes()]
-  }
+  return [...commonRoutes, ...getMobileRoutes(), ...getDesktopRoutes()]
 }
 
 // 创建路由
-const router: any = createRouter({
+const router = createRouter({
   history: createWebHistory(BASE_URL),
   routes: getAllRoutes()
-})
+}) as Router
 
 // 在创建路由后，添加全局前置守卫
 // 为解决 “已声明‘to’，但从未读取其值” 的问题，将 to 参数改为下划线开头表示该参数不会被使用
 router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   // 桌面端直接放行
   if (!isMobile) {
-    console.log('[守卫] 非移动端，直接放行')
+    logger.debug('[守卫] 非移动端，直接放行', undefined, 'index')
     return next()
   }
 
@@ -636,31 +761,47 @@ router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormal
     const isSplashPage = to.path === '/mobile/splashscreen'
     const isForgetPage = to.path === '/mobile/MobileForgetPassword'
     const isAgreementPage = to.path === '/mobile/serviceAgreement' || to.path === '/mobile/privacyAgreement'
+    const loginInProgress = typeof localStorage !== 'undefined' && localStorage.getItem('LOGIN_IN_PROGRESS') === '1'
 
     // 闪屏页白名单：不论登录状态都允许进入
-    console.log('路由守卫to->', to.path)
     if (isSplashPage || isForgetPage || isAgreementPage) {
       return next()
     }
 
-    const tokens = await invoke<{ token: string | null; refreshToken: string | null }>(TauriCommand.GET_USER_TOKENS)
-    const isLoggedIn = !!(tokens.token && tokens.refreshToken)
+    if (!isTauri) {
+      return next()
+    }
+    let tokens = await invoke<{ token: string | null; refreshToken: string | null }>(
+      TauriCommand.GET_USER_TOKENS
+    ).catch((): { token: string | null; refreshToken: string | null } => ({ token: null, refreshToken: null }))
+    let isLoggedIn = !!(tokens && tokens.token && tokens.refreshToken)
+    if (!isLoggedIn && loginInProgress) {
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 150))
+        tokens = await invoke<{ token: string | null; refreshToken: string | null }>(
+          TauriCommand.GET_USER_TOKENS
+        ).catch((): { token: string | null; refreshToken: string | null } => ({ token: null, refreshToken: null }))
+        isLoggedIn = !!(tokens && tokens.token && tokens.refreshToken)
+        if (isLoggedIn) break
+      }
+    }
+    logger.debug('[守卫] token状态:', { isLoggedIn, loginInProgress, component: 'index' })
 
     // 未登录且不是登录页 → 跳转登录
     if (!isLoggedIn && !isLoginPage) {
-      console.warn('[守卫] 未登录，强制跳转到 /mobile/login')
+      logger.warn('[守卫] 未登录，强制跳转到 /mobile/login:', { component: 'index' })
       return next('/mobile/login')
     }
 
     return next()
   } catch (error) {
-    console.error('[守卫] 获取token错误:', error)
+    logger.error('[守卫] 获取token错误:', { error: toError(error), component: 'index' })
     // 出错时也跳转登录页（避免死循环）
     if (to.path !== '/mobile/login') {
-      console.warn('[守卫] 出错，强制跳转到 /mobile/login')
+      logger.warn('[守卫] 出错，强制跳转到 /mobile/login:', { component: 'index' })
       return next('/mobile/login')
     }
-    // console.log('[守卫] 出错但目标是登录页，直接放行')
+    // logger.debug('[守卫] 出错但目标是登录页，直接放行', undefined, 'index')
     return next()
   }
 })

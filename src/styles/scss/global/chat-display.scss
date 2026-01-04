@@ -1,0 +1,36 @@
+/* ==========================================================================
+   聊天界面显示修复 - 简化版
+   ========================================================================== */
+
+/* 聊天容器样式 */
+.chat-integration,
+.chat-container,
+.chat-box {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  background: transparent !important;
+}
+
+/* 确保聊天界面元素可见 */
+.chat-header,
+.chat-main,
+.chat-footer {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 右侧面板背景 */
+.right-panel,
+.layout-right {
+  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 深色模式 */
+html[data-theme='dark'] .right-panel,
+html[data-theme='dark'] .layout-right {
+  background: var(--right-theme-bg-color, rgba(24, 24, 28, 0.9)) !important;
+}

@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/*": ["./src/mobile/*"],
+      "~/*": ["./*"],
+      "@@/*": ["./src-tauri/*"],
+      "~~/*": ["./tauri-plugin-hula/*"],
+      "@/stores/setting": ["src/types/test-shims/setting-shim.d.ts"],
+      "@/types/components": ["src/types/test-shims/components-shim.d.ts"],
+      "@/router": ["src/types/test-shims/router-stub.ts"],
+      "@/views/*": ["src/types/test-shims/view-stub.ts"],
+      "@/components/*": ["src/types/test-shims/view-stub.ts"]
+    },
+    "types": ["vitest/globals", "node", "vite/client"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true
+  },
+  "vueCompilerOptions": {
+    "skipTemplateCodegen": true
+  },
+  "include": [
+    "src/__tests__/utils/**/*",
+    "src/__tests__/stores/**/*",
+    "src/stores/__tests__/**/*",
+    "src/integrations/__tests__/**/*",
+    "tests/**/*",
+    "src/types/test-shims/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "dist", "build", "**/*.vue"]
+}

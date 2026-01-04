@@ -1,5 +1,5 @@
 <template>
-  <div id="layout" class="relative flex min-w-310px bg-[--right-bg-color] h-full">
+  <div id="layout" class="relative flex min-w-310px h-full" :style="{ background: 'var(--right-theme-bg)' }">
     <div class="flex flex-1 min-h-0">
       <!-- 使用keep-alive包裹异步组件 -->
       <keep-alive>
@@ -9,41 +9,42 @@
         <AsyncCenter />
       </keep-alive>
       <keep-alive>
-        <AsyncRight v-if="!shrinkStatus" />
+        <AsyncRight v-if="shouldShowRight" />
       </keep-alive>
     </div>
-    <div v-if="overlayVisible" class="absolute inset-0 z-10 flex items-center justify-center bg-[--right-bg-color]">
+    <div v-if="overlayVisible" class="absolute inset-0 z-10 flex items-center justify-center" :style="{ background: 'var(--right-theme-bg)' }">
       <LoadingSpinner :percentage="loadingPercentage" :loading-text="loadingText" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch, defineAsyncComponent, nextTick, onBeforeMount, onMounted, onUnmounted } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { info } from '@tauri-apps/plugin-log'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import { useCheckUpdate } from '@/hooks/useCheckUpdate'
 import { useLogin } from '@/hooks/useLogin'
-import { useMitt } from '@/hooks/useMitt.ts'
-import rustWebSocketClient from '@/services/webSocketRust'
-import { useContactStore } from '@/stores/contacts.ts'
-import { useGlobalStore } from '@/stores/global.ts'
+import { useMitt } from '@/hooks/useMitt'
+import { useGlobalStore } from '@/stores/global'
 import { isMobile, isWindows } from '@/utils/PlatformConstants'
-import { MittEnum, MsgEnum, NotificationTypeEnum, TauriCommand } from '@/enums'
+import { MittEnum, MsgEnum, NotificationTypeEnum } from '@/enums'
 import { clearListener, initListener, readCountQueue } from '@/utils/ReadCountQueue'
 import { emitTo, listen } from '@tauri-apps/api/event'
 import { UserAttentionType } from '@tauri-apps/api/window'
-import type { MessageType } from '@/services/types.ts'
-import { WsResponseMessageType } from '@/services/wsType.ts'
+import type { UnlistenFn } from '@tauri-apps/api/event'
+import type { MessageType } from '@/services/types'
+import { WsResponseMessageType } from '@/services/wsType'
 import { useChatStore } from '@/stores/chat'
 import { useFileStore } from '@/stores/file'
 import { useUserStore } from '@/stores/user'
-import { useSettingStore } from '@/stores/setting.ts'
-import { useInitialSyncStore } from '@/stores/initialSync.ts'
-import { invokeSilently } from '@/utils/TauriInvokeHandler'
+import { useSettingStore } from '@/stores/setting'
+import { useInitialSyncStore } from '@/stores/initialSync'
 import { useRoute } from 'vue-router'
 import { audioManager } from '@/utils/AudioManager'
 import { useOverlayController } from '@/hooks/useOverlayController'
+import { receiveWebSocketMessage } from '@/services/unifiedMessageReceiver'
+import { logger } from '@/utils/logger'
+import { initializeNotifications } from '@/services/notificationService'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -54,7 +55,18 @@ const settingStore = useSettingStore()
 const initialSyncStore = useInitialSyncStore()
 const userUid = computed(() => userStore.userInfo?.uid ?? '')
 const hasCachedSessions = computed(() => chatStore.sessionList.length > 0)
-const appWindow = WebviewWindow.getCurrent()
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+// WebWindowLike interface for cross-platform compatibility
+interface WebWindowLike {
+  label: string
+  listen?: (_event: string, _handler: (...args: unknown[]) => void) => UnlistenFn | Promise<UnlistenFn>
+}
+
+const appWindow = isTauri
+  ? WebviewWindow.getCurrent()
+  : ({ label: 'web', listen: async () => () => {} } as WebWindowLike)
+
 const loadingPercentage = ref(10)
 const loadingText = ref('正在加载应用...')
 const { resetLoginState, logout, init } = useLogin()
@@ -79,6 +91,11 @@ const maybeDelayForInitialRender = async () => {
 
 // 根据当前 uid 判断是否需要阻塞首屏并重新同步（依赖持久化的初始化完成名单）
 const syncInitialSyncState = () => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  if (!isTauri) {
+    requiresInitialSync.value = false
+    return
+  }
   if (!userUid.value || typeof window === 'undefined') {
     requiresInitialSync.value = true
     return
@@ -113,13 +130,13 @@ const runInitWithMode = (block: boolean) => {
   if (block) {
     // 首次完整同步：阻塞并抛出错误
     return p.catch((error) => {
-      console.error('[layout] 首次同步数据失败:', error)
+      logger.error('[layout] 首次同步数据失败:', error)
       throw error
     })
   } else {
     // 增量同步：后台执行，错误只打日志
     p.catch((error) => {
-      console.error('[layout] 增量数据同步失败:', error)
+      logger.error('[layout] 增量数据同步失败:', error)
     })
     return p
   }
@@ -191,23 +208,28 @@ const AsyncRight = defineAsyncComponent({
 })
 
 const globalStore = useGlobalStore()
-const contactStore = useContactStore()
-const { checkUpdate, CHECK_UPDATE_TIME } = useCheckUpdate()
+import { useFriendsStore } from '@/stores/friends'
+const friendsStore = useFriendsStore()
 const shrinkStatus = ref(false)
+const shouldShowRight = computed(() => {
+  const p = route.path
+  const isManage = p.includes('/rooms/manage') || p.includes('/settings') || p.includes('/manage')
+  return !isManage && !shrinkStatus.value
+})
 
 // 导入Web Worker
 const timerWorker = new Worker(new URL('../workers/timer.worker.ts', import.meta.url))
 
 // 添加错误处理
 timerWorker.onerror = (error) => {
-  console.error('[Worker Error]', error)
+  logger.error('[Worker Error]', error)
 }
 
 // 监听 Worker 消息
 timerWorker.onmessage = (e) => {
   const { type } = e.data
   if (type === 'timeout') {
-    checkUpdate('home')
+    // Timer event - currently unused after auto-update removal
   }
 }
 
@@ -253,7 +275,7 @@ const playMessageSound = async () => {
     const audio = new Audio('/sound/message.mp3')
     await audioManager.play(audio, 'message-notification')
   } catch (error) {
-    console.warn('播放消息音效失败:', error)
+    logger.warn('播放消息音效失败:', error)
   }
 }
 
@@ -314,22 +336,29 @@ const addFileToStore = (data: MessageType) => {
 }
 
 useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
-  if (chatStore.checkMsgExist(data.message.roomId, data.message.id)) {
+  // 使用统一消息接收服务处理消息
+  const result = await receiveWebSocketMessage(data)
+
+  // 如果消息是重复的，直接返回
+  if (result.wasDuplicate) {
     return
   }
 
-  chatStore.pushMsg(data, {
-    isActiveChatView: route.path === '/message',
-    activeRoomId: globalStore.currentSessionRoomId || ''
-  })
+  // 处理失败，记录错误
+  if (!result.success) {
+    logger.error('[MessageFlow] Message processing failed:', { error: result.error })
+    return
+  }
 
-  data.message.sendTime = new Date(data.message.sendTime).getTime()
-  await invokeSilently(TauriCommand.SAVE_MSG, {
-    data
-  })
+  // 消息处理成功后的后续操作
+  // 如果是图片或视频消息，添加到 file store（移动端和PC端都需要）
+  // 使用平台适配器判断是否需要缓存
+  const msgType = data.message?.type || (data as { msg_type?: string }).msg_type
+  const isImageVideo = msgType && ['image', 'm.image', 'video', 'm.video'].includes(String(msgType))
 
-  // 如果是图片或视频消息，添加到 file store（仅移动端需要）
-  if (isMobile()) {
+  if (isImageVideo) {
+    // 移动端需要缓存以便在文件管理器中查看
+    // PC端也缓存以便保持一致性
     addFileToStore(data)
   }
 
@@ -342,7 +371,7 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
     // 只有非免打扰的会话才发送通知和触发图标闪烁
     if (session && session.muteNotification !== NotificationTypeEnum.NOT_DISTURB) {
       // 检查 home 窗口状态
-      const home = await WebviewWindow.getByLabel('home')
+      const home = isTauri ? await WebviewWindow.getByLabel('home') : null
       let shouldPlaySound = false
 
       if (home) {
@@ -359,7 +388,7 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
             await home.requestUserAttention(UserAttentionType.Critical)
           }
         } catch (error) {
-          console.warn('检查窗口状态失败:', error)
+          logger.warn('检查窗口状态失败:', error)
           // 如果检查失败，默认播放音效
           shouldPlaySound = true
         }
@@ -378,7 +407,7 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
         globalStore.setTipVisible(true)
       }
 
-      if (WebviewWindow.getCurrent().label === 'home') {
+      if (isTauri && WebviewWindow.getCurrent().label === 'home') {
         await emitTo('notify', 'notify_content', data)
       }
     }
@@ -387,33 +416,40 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
   globalStore.updateGlobalUnreadCount()
 })
 
-listen('relogin', async () => {
-  info('收到重新登录事件')
-  await resetLoginState()
-  await logout()
-})
+if (isTauri) {
+  listen('relogin', async () => {
+    info('收到重新登录事件')
+    await resetLoginState()
+    await logout()
+  })
+}
 
 onBeforeMount(async () => {
-  // 获取最新的未读数
-  await contactStore.getApplyUnReadCount()
-  // 刷新好友申请列表
-  await contactStore.getApplyPage('friend', true)
-  // 刷新好友列表
-  await contactStore.getContactList(true)
+  await friendsStore.refreshAll()
 })
 
+// 根据路由自动控制右侧面板显隐（在管理类页面中隐藏右侧，以腾出空间）
+watch(
+  () => route.path,
+  () => {
+    // 通过 shouldShowRight 计算控制右侧显隐，无需直接修改 shrinkStatus
+  },
+  { immediate: true }
+)
+
 onMounted(async () => {
-  timerWorker.postMessage({
-    type: 'startTimer',
-    msgId: 'checkUpdate',
-    duration: CHECK_UPDATE_TIME
-  })
+  // 初始化统一通知服务
+  await initializeNotifications()
+
+  // Phase 1 Migration: 检查是否禁用WebSocket
+  const websocketDisabled = import.meta.env.VITE_DISABLE_WEBSOCKET === 'true'
 
   // 监听home窗口被聚焦的事件，当窗口被聚焦时自动关闭状态栏通知
+  if (!isTauri) return
   const homeWindow = await WebviewWindow.getByLabel('home')
   if (homeWindow) {
-    // 设置业务消息监听器
-    await rustWebSocketClient.setupBusinessMessageListeners()
+    // WebSocket 已废弃，统一使用 Matrix SDK 处理消息
+    logger.info('Using Matrix SDK for message handling (WebSocket removed)')
 
     // 监听窗口聚焦事件，聚焦时停止tray闪烁
     if (isWindows()) {
@@ -423,7 +459,7 @@ onMounted(async () => {
           await emitTo('tray', 'home_focus', {})
           await emitTo('notify', 'home_focus', {})
         } catch (error) {
-          console.warn('[layout] 向其他窗口广播聚焦事件失败:', error)
+          logger.warn('[layout] 向其他窗口广播聚焦事件失败:', error)
         }
       })
 
@@ -432,7 +468,7 @@ onMounted(async () => {
           await emitTo('tray', 'home_blur', {})
           await emitTo('notify', 'home_blur', {})
         } catch (error) {
-          console.warn('[layout] 向其他窗口广播失焦事件失败:', error)
+          logger.warn('[layout] 向其他窗口广播失焦事件失败:', error)
         }
       })
     }
@@ -452,3 +488,4 @@ onUnmounted(() => {
   timerWorker.terminate()
 })
 </script>
+const isRoomsManage = computed(() => route.path === '/rooms/manage')

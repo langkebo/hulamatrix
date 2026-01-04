@@ -28,5 +28,6 @@ export const useHistoryStore = defineStore(
     share: {
       enable: true
     }
-  }
+  } as { share: { enable: boolean } }
 )
+import { ref } from 'vue'

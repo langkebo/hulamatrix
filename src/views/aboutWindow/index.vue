@@ -9,10 +9,13 @@
           <div
             style="background: rgba(111, 111, 111, 0.1)"
             class="w-170px h-113px absolute top-9% left-51% transform -translate-x-51% -translate-y-9%"></div>
-          <img
-            class="drop-shadow-md absolute top-30% left-1/2 transform -translate-x-1/2 -translate-y-30% w-140px h-60px"
-            src="/hula.png"
-            alt="" />
+          <picture class="drop-shadow-md absolute top-30% left-1/2 transform -translate-x-1/2 -translate-y-30%">
+            <source
+              srcset="/hula.png 1x, /hula.png 2x"
+              type="image/png"
+              sizes="(max-width:640px) 120px, (max-width:1024px) 140px, 160px" />
+            <img class="w-140px h-60px" src="/hula.png" srcset="/hula.png 1x, /hula.png 2x" alt="" />
+          </picture>
         </div>
       </div>
 
@@ -36,16 +39,29 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { reactive, ref, onMounted } from 'vue'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { arch, version } from '@tauri-apps/plugin-os'
 import dayjs from 'dayjs'
 import { getOSType, isWindows } from '@/utils/PlatformConstants'
-import pkg from '~/package.json'
+
+// Vite 环境变量类型定义
+interface ImportMetaEnv {
+  VITE_APP_VERSION?: string
+  [key: string]: string | boolean | undefined
+}
+
+interface ImportMetaWithEnv {
+  env?: ImportMetaEnv
+}
+
+const meta = import.meta as unknown as ImportMetaWithEnv
+const appVersion = meta.env?.VITE_APP_VERSION || ''
 
 const { t } = useI18n()
 
 const _pkg = reactive({
-  version: pkg.version
+  version: appVersion
 })
 const osType = ref()
 const osArch = ref()

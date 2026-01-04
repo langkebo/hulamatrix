@@ -2,6 +2,7 @@
   <Screenshot :is-capturing="isCapturing" />
 </template>
 <script setup lang="ts">
+import { ref, watchEffect, nextTick } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useTauriListener } from '@/hooks/useTauriListener'
 

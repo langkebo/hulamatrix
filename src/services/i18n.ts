@@ -13,6 +13,7 @@ import { createI18n } from 'vue-i18n'
 import type { Locale } from 'vue-i18n'
 import { useSettingStore } from '../stores/setting'
 import { setDayjsLocale } from '@/utils/ComputedTime'
+import { logger } from '@/utils/logger'
 
 const i18n = createI18n({
   legacy: false,
@@ -40,6 +41,7 @@ const locales = Object.entries(import.meta.glob('../../locales/**/*.json'))
     (acc, item) => {
       if (!item) return acc
       const [locale, part, loader] = item
+      if (!locale || !part) return acc
       acc[locale] ??= {}
       acc[locale][part] = loader
       return acc
@@ -55,7 +57,7 @@ const loadedLanguages: Locale[] = []
 function getLangPrefix(lang: string) {
   const normalized = lang.replace('_', '-').trim()
   const parts = normalized.split('-')
-  return parts[0].toLowerCase()
+  return parts[0]?.toLowerCase() || ''
 }
 
 // 统一的前缀映射表，后续需要支持其他语言时只需在此添加映射
@@ -124,7 +126,7 @@ export async function loadLanguage(lang: Locale) {
 
   const messageParts = findLocales(resolvedLang)
   if (!messageParts) {
-    console.warn(`No locale data found for: ${resolvedLang}`)
+    logger.warn(`No locale data found for: ${resolvedLang}`)
     return
   }
 
@@ -155,6 +157,6 @@ export async function loadLanguage(lang: Locale) {
 export const setupI18n = (app: App) => {
   const settingStore = useSettingStore()
 
-  loadLanguage(settingStore.page.lang ?? 'en')
+  loadLanguage(settingStore.page.lang ?? 'zh-CN')
   app.use(i18n)
 }

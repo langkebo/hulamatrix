@@ -17,29 +17,31 @@
       }
 
       .size-50px {
-        width: 50px;
-        height: 50px;
+        width: clamp(40px, 8vw, 50px);
+        height: clamp(40px, 8vw, 50px);
       }
 
       .w-300px {
-        width: 300px;
+        width: clamp(220px, 80vw, 300px);
       }
 
       .h-200px {
-        height: 200px;
+        height: clamp(160px, 40vh, 200px);
       }
 
       .w-78px {
-        width: 78px;
+        width: clamp(64px, 12vw, 78px);
       }
 
       .h-40px {
-        height: 40px;
+        height: clamp(36px, 6vh, 40px);
       }
 
       .mb-140px {
-        margin-bottom: 140px;
+        margin-bottom: clamp(80px, 10vh, 140px);
       }
+
+      html, body { overflow-x: hidden; }
     </style>
   </head>
 

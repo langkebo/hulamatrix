@@ -1,5 +1,35 @@
 import { invoke } from '@tauri-apps/api/core'
 import { AppException, ErrorType } from '@/common/exception'
+import { logger, toError } from '@/utils/logger'
+
+/**
+ * Tauri 命令参数类型
+ */
+type InvokeArgs = Record<string, unknown>
+
+/**
+ * 错误处理选项
+ */
+export interface InvokeErrorOptions {
+  /** 是否显示错误提示，默认为 true */
+  showError?: boolean
+  /** 自定义错误消息 */
+  customErrorMessage?: string
+  /** 是否为重试相关的错误，默认为 false */
+  isRetryError?: boolean
+  /** 错误类型，默认为 Unknown */
+  errorType?: ErrorType
+}
+
+/**
+ * 重试选项
+ */
+interface RetryOptions extends InvokeErrorOptions {
+  /** 最大重试次数，默认为 3 */
+  maxRetries?: number
+  /** 重试间隔（毫秒），默认为 1000 */
+  retryDelay?: number
+}
 
 /**
  * Tauri invoke 调用的统一错误处理包装器
@@ -8,27 +38,22 @@ import { AppException, ErrorType } from '@/common/exception'
  * @param options 错误处理选项
  * @returns Promise<T>
  */
-export async function invokeWithErrorHandler<T = any>(
+export async function invokeWithErrorHandler<T = unknown>(
   command: string,
-  args?: Record<string, any>,
-  options?: {
-    /** 是否显示错误提示，默认为 true */
-    showError?: boolean
-    /** 自定义错误消息 */
-    customErrorMessage?: string
-    /** 是否为重试相关的错误，默认为 false */
-    isRetryError?: boolean
-    /** 错误类型，默认为 Unknown */
-    errorType?: ErrorType
-  }
+  args?: InvokeArgs,
+  options?: InvokeErrorOptions
 ): Promise<T> {
   const { showError = true, customErrorMessage, isRetryError = false, errorType = ErrorType.Unknown } = options || {}
 
   try {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    if (!isTauri) {
+      return null as unknown as T
+    }
     const result = await invoke<T>(command, args)
     return result
   } catch (error) {
-    console.error(`[Tauri Invoke Error] 命令: ${command}`, error)
+    logger.error(`[Tauri Invoke Error] 命令: ${command}`, toError(error))
 
     // 构造错误消息
     let errorMessage = customErrorMessage
@@ -62,7 +87,7 @@ export async function invokeWithErrorHandler<T = any>(
  * @param args 命令参数
  * @returns Promise<T | null> 成功返回结果，失败返回 null
  */
-export async function invokeSilently<T = any>(command: string, args?: Record<string, any>): Promise<T | null> {
+export async function invokeSilently<T = unknown>(command: string, args?: InvokeArgs): Promise<T | null> {
   try {
     return await invokeWithErrorHandler<T>(command, args, { showError: false })
   } catch {
@@ -77,37 +102,30 @@ export async function invokeSilently<T = any>(command: string, args?: Record<str
  * @param options 重试选项
  * @returns Promise<T>
  */
-export async function invokeWithRetry<T = any>(
+export async function invokeWithRetry<T = unknown>(
   command: string,
-  args?: Record<string, any>,
-  options?: {
-    /** 最大重试次数，默认为 3 */
-    maxRetries?: number
-    /** 重试间隔（毫秒），默认为 1000 */
-    retryDelay?: number
-    /** 是否显示错误提示，默认为 true */
-    showError?: boolean
-    /** 自定义错误消息 */
-    customErrorMessage?: string
-  }
+  args?: InvokeArgs,
+  options?: RetryOptions
 ): Promise<T> {
   const { maxRetries = 3, retryDelay = 1000, showError = true, customErrorMessage } = options || {}
 
-  let lastError: any
+  let lastError: unknown
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await invokeWithErrorHandler<T>(command, args, {
+      const opts: InvokeErrorOptions = {
         showError: attempt === maxRetries ? showError : false,
-        customErrorMessage: attempt === maxRetries ? customErrorMessage : undefined,
         isRetryError: attempt < maxRetries,
         errorType: ErrorType.Network
-      })
+      }
+      if (attempt === maxRetries && typeof customErrorMessage === 'string') {
+        opts.customErrorMessage = customErrorMessage
+      }
+      return await invokeWithErrorHandler<T>(command, args, opts)
     } catch (error) {
       lastError = error
 
       if (attempt < maxRetries) {
-        console.log(`重试 ${command} 命令 (${attempt}/${maxRetries})...`)
         await new Promise((resolve) => setTimeout(resolve, retryDelay))
       }
     }

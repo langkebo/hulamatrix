@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { select } from '@inquirer/prompts'
-import { spawn } from 'child_process'
-import os from 'os'
+import { spawn } from 'node:child_process'
+import os from 'node:os'
 
 // 检测当前平台
 function getCurrentPlatform() {

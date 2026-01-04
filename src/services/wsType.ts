@@ -1,4 +1,4 @@
-import type { UserInfoType } from '@/services/types.ts'
+import type { UserInfoType } from '@/services/types'
 
 // 1.登录返回二维码 2.用户扫描成功等待授权 3.用户登录成功返回用户信息 4.收到消息 5.上下线推送 6.前端token失效
 export enum WsResponseMessageType {
@@ -79,6 +79,13 @@ export enum WsResponseMessageType {
   FEED_SEND_MSG = 'feedSendMsg',
   /** 朋友圈通知（点赞/评论，通过 comment 字段判断） */
   FEED_NOTIFY = 'feedNotify'
+}
+
+/** 视频通话请求事件 */
+export interface VideoCallRequestEvent {
+  callerUid: string
+  roomId: string
+  isVideo: boolean
 }
 
 export enum NoticeTypeEnum {
@@ -171,10 +178,13 @@ export interface CallResponseData {
   accepted: boolean
 }
 
+// WebRTC 信令数据类型（可以是 SDP 或 ICE Candidate）
+export type WebRtcSignal = RTCSessionDescriptionInit | RTCIceCandidateInit
+
 // 信令数据类型
 export interface SignalData {
   roomId: string
-  signal: any // WebRTC信令
+  signal: WebRtcSignal // WebRTC信令
   mediaType: 'AudioSignal' | 'VideoSignal' // 语音通话、视频通话
 }
 

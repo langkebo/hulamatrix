@@ -1,20 +1,42 @@
+import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import { info } from '@tauri-apps/plugin-log'
 import { useTimeoutFn } from '@vueuse/core'
-import { IsYesEnum, MittEnum, ThemeEnum } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { MittEnum, ThemeEnum } from '@/enums'
+import { useMitt } from '@/hooks/useMitt'
+import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
-import type { BadgeType, UserInfoType } from '@/services/types.ts'
+import type { UserInfoType } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
-import { useLoginHistoriesStore } from '@/stores/loginHistory.ts'
-import { useMenuTopStore } from '@/stores/menuTop.ts'
-import { useSettingStore } from '@/stores/setting.ts'
-import { useUserStore } from '@/stores/user.ts'
-import { useUserStatusStore } from '@/stores/userStatus.ts'
-import { ModifyUserInfo, setUserBadge } from '@/utils/ImRequestUtils'
+import { useLoginHistoriesStore } from '@/stores/loginHistory'
+// 迁移: useMenuTopStore → useMenuTopStoreCompat (兼容层)
+import { useMenuTopStoreCompat as useMenuTopStore } from '@/stores/compatibility'
+import { useSettingStore } from '@/stores/setting'
+import { useUserStore } from '@/stores/user'
+import { useUserStatusStore } from '@/stores/userStatus'
+import { userProfileService } from '@/services/userProfileService'
+
+import { msg } from '@/utils/SafeUI'
 import { storeToRefs } from 'pinia'
+import { logger } from '@/utils/logger'
+
+// Type definitions for Mitt events
+interface ToSendMsgEvent {
+  url: string
+}
 
 export const leftHook = () => {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  const logInfo = (...args: unknown[]) => {
+    if (isTauri) {
+      try {
+        const msg = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+        info(msg)
+      } catch {}
+    } else {
+      const msgStr = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+      logger.info(msgStr)
+    }
+  }
   const prefers = matchMedia('(prefers-color-scheme: dark)')
   const { createWebviewWindow } = useWindow()
   const settingStore = useSettingStore()
@@ -39,16 +61,10 @@ export const leftHook = () => {
   const editInfo = ref<{
     show: boolean
     content: Partial<UserInfoType>
-    badgeList: BadgeType[]
   }>({
     show: false,
-    content: {},
-    badgeList: []
+    content: {}
   })
-  /** 当前用户佩戴的徽章  */
-  const currentBadge = computed(() =>
-    editInfo.value.badgeList.find((item) => item.obtain === IsYesEnum.YES && item.wearing === IsYesEnum.YES)
-  )
 
   /* =================================== 方法 =============================================== */
 
@@ -68,7 +84,7 @@ export const leftHook = () => {
   })
 
   /** 更新缓存里面的用户信息 */
-  const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: any) => {
+  const updateCurrentUserCache = (key: 'name' | 'avatar', value: string) => {
     const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
     if (currentUser) {
       currentUser[key] = value // 更新缓存里面的用户信息
@@ -76,58 +92,37 @@ export const leftHook = () => {
   }
 
   /** 保存用户信息 */
-  const saveEditInfo = (localUserInfo: any) => {
+  const saveEditInfo = async (localUserInfo: Partial<UserInfoType>) => {
     if (!localUserInfo.name || localUserInfo.name.trim() === '') {
-      window.$message.error('昵称不能为空')
+      msg.error?.('昵称不能为空')
       return
     }
     if (localUserInfo.modifyNameChance === 0) {
-      window.$message.error('改名次数不足')
+      msg.error?.('改名次数不足')
       return
     }
-    ModifyUserInfo(localUserInfo).then(() => {
+    try {
+      await userProfileService.setDisplayName(localUserInfo.name!)
       // 更新本地缓存的用户信息
       userStore.userInfo!.name = localUserInfo.name!
       loginHistoriesStore.updateLoginHistory(<UserInfoType>userStore.userInfo) // 更新登录历史记录
-      updateCurrentUserCache('name', localUserInfo.name) // 更新缓存里面的用户信息
+      updateCurrentUserCache('name', localUserInfo.name!) // 更新缓存里面的用户信息
       if (!editInfo.value.content.modifyNameChance) return
       editInfo.value.content.modifyNameChance -= 1
-      window.$message.success('保存成功')
-    })
-  }
-
-  /** 佩戴徽章 */
-  const toggleWarningBadge = async (badge: BadgeType) => {
-    if (!badge?.id) return
-    try {
-      await setUserBadge({ badgeId: badge.id })
-      // 更新本地缓存中的用户徽章信息
-      const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
-      if (currentUser) {
-        // 更新当前佩戴的徽章ID
-        currentUser.wearingItemId = badge.id
-        // 更新用户信息中的佩戴徽章ID
-        userStore.userInfo!.wearingItemId = badge.id
-        // 更新徽章列表中的佩戴状态
-        editInfo.value.badgeList = editInfo.value.badgeList.map((item) => ({
-          ...item,
-          wearing: item.id === badge.id ? IsYesEnum.YES : IsYesEnum.NO,
-          obtain: item.obtain // 保持原有的obtain状态
-        }))
-      }
-      // 确保在状态更新后再显示成功消息
-      nextTick(() => {
-        window.$message.success('佩戴成功')
-      })
-    } catch (_error) {
-      window.$message.error('佩戴失败，请稍后重试')
+      msg.success?.('保存成功')
+    } catch (error) {
+      logger.error('[leftHook] Failed to save user info:', error)
+      msg.error?.('保存失败，请重试')
     }
   }
 
   /* 打开并且创建modal */
   const handleEditing = () => {
-    // TODO 暂时使用mitt传递参数，不然会导致子组件的响应式丢失 (nyh -> 2024-06-25 09:53:43)
-    useMitt.emit(MittEnum.OPEN_EDIT_INFO)
+    // 使用 mitt 事件来触发编辑弹窗，避免直接传递响应式数据
+    // 组件内部通过 watch 或 store 获取最新数据，确保响应式正常
+    useMitt.emit(MittEnum.OPEN_EDIT_INFO, {
+      timestamp: Date.now() // 添加时间戳确保事件能被触发
+    })
   }
 
   /**
@@ -136,16 +131,45 @@ export const leftHook = () => {
    * @param title 创建窗口时的标题
    * @param size 窗口的大小
    * @param window 窗口参数
-   * */
+   *
+   * 导航策略：
+   * - 核心功能（message, friendsList, settings, about等）始终使用路由导航
+   * - 工具功能（fileManager等）可以使用窗口
+   */
   const pageJumps = (
     url: string,
     title?: string,
     size?: { width: number; height: number; minWidth?: number },
     window?: { resizable: boolean }
   ) => {
-    if (window) {
+    // ✅ 核心功能列表 - 始终在主窗口内使用路由导航
+    const CORE_FEATURES = [
+      'message',
+      'friendsList',
+      'settings',
+      'about',
+      'rooms/manage',
+      'rooms/search',
+      'spaces',
+      'synapse/friends',
+      'searchDetails',
+      'e2ee/devices',
+      'e2ee/verify',
+      'e2ee/backup'
+    ]
+
+    // ✅ 核心功能始终使用路由导航（在主窗口内切换）
+    if (CORE_FEATURES.includes(url)) {
+      logInfo(`路由导航到: /${url}`)
+      activeUrl.value = url
+      router.push(`/${url}`)
+      return
+    }
+
+    // ⚠️ 工具功能可以创建独立窗口（如文件管理器）
+    if (window && isTauri) {
       useTimeoutFn(async () => {
-        info(`打开窗口: ${title}`)
+        logInfo(`打开工具窗口: ${title}`)
         const webview = await createWebviewWindow(
           title!,
           url,
@@ -156,11 +180,12 @@ export const leftHook = () => {
           <number>size?.minWidth
         )
         openWindowsList.value.add(url)
-
-        const unlisten = await webview?.onCloseRequested(() => {
-          openWindowsList.value.delete(url)
-          if (unlisten) unlisten()
-        })
+        if (webview) {
+          const unlisten = await webview.onCloseRequested(() => {
+            openWindowsList.value.delete(url)
+            if (unlisten) unlisten()
+          })
+        }
       }, 300)
     } else {
       activeUrl.value = url
@@ -177,13 +202,18 @@ export const leftHook = () => {
    * */
   const openContent = (title: string, label: string, w = 840, h = 600) => {
     useTimeoutFn(async () => {
-      await createWebviewWindow(title, label, w, h)
+      if (isTauri) {
+        await createWebviewWindow(title, label, w, h)
+      } else {
+        router.push(`/${label}`)
+      }
     }, 300)
     infoShow.value = false
   }
 
-  const closeMenu = (event: any) => {
-    if (!event.target.matches('.setting-item, .more, .more *')) {
+  const closeMenu = (event: Event) => {
+    const target = event.target as Element
+    if (target && !target.matches('.setting-item, .more, .more *')) {
       settingShow.value = false
     }
   }
@@ -193,14 +223,15 @@ export const leftHook = () => {
     pageJumps(activeUrl.value)
     window.addEventListener('click', closeMenu, true)
 
-    useMitt.on(MittEnum.SHRINK_WINDOW, (event: any) => {
+    useMitt.on(MittEnum.SHRINK_WINDOW, (event: unknown) => {
       shrinkStatus.value = event as boolean
     })
     useMitt.on(MittEnum.CLOSE_INFO_SHOW, () => {
       infoShow.value = false
     })
-    useMitt.on(MittEnum.TO_SEND_MSG, (event: any) => {
-      activeUrl.value = event.url
+    useMitt.on(MittEnum.TO_SEND_MSG, (event: unknown) => {
+      const msgEvent = event as ToSendMsgEvent
+      activeUrl.value = msgEvent.url
     })
   })
 
@@ -218,12 +249,10 @@ export const leftHook = () => {
     themeColor,
     openWindowsList,
     editInfo,
-    currentBadge,
     handleEditing,
     pageJumps,
     openContent,
     saveEditInfo,
-    toggleWarningBadge,
     updateCurrentUserCache,
     followOS
   }

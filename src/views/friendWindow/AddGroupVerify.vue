@@ -18,7 +18,7 @@
     <div class="bg-[--bg-edit] w-380px h-full box-border flex flex-col">
       <n-flex vertical justify="center" :size="20" class="p-[55px_20px]" data-tauri-drag-region>
         <n-flex align="center" justify="center" :size="20" data-tauri-drag-region>
-          <n-avatar round size="large" :src="userInfo.avatar" />
+          <n-avatar round size="large" :src="userInfo.avatar ?? ''" />
 
           <n-flex vertical :size="10">
             <p class="text-[--text-color]">{{ userInfo.name }}</p>
@@ -42,7 +42,7 @@
           type="textarea"
           :placeholder="t('message.group_verify.placeholder')" />
 
-        <n-button class="mt-120px" color="#13987f" @click="addFriend">
+        <n-button class="mt-120px" :color="'#13987f'" @click="addFriend">
           {{ t('message.group_verify.send_btn') }}
         </n-button>
       </n-flex>
@@ -50,12 +50,15 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { useCommon } from '@/hooks/useCommon.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useUserStore } from '@/stores/user.ts'
-import { applyGroup } from '@/utils/ImRequestUtils'
+import { useCommon } from '@/hooks/useCommon'
+import { useGlobalStore } from '@/stores/global'
+import { useUserStore } from '@/stores/user'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { useI18n } from 'vue-i18n'
+
+import { msg } from '@/utils/SafeUI'
 
 const { t } = useI18n()
 const globalStore = useGlobalStore()
@@ -67,26 +70,27 @@ const requestMsg = ref()
 
 watch(
   () => globalStore.addGroupModalInfo,
-  (newUid) => {
+  (newUid: { show: boolean; name?: string; avatar?: string; account?: string }) => {
     userInfo.value = { ...newUid }
   }
 )
 
 const addFriend = async () => {
-  await applyGroup({
-    msg: requestMsg.value,
-    account: String(globalStore.addGroupModalInfo.account),
-    type: 1
+  await requestWithFallback({
+    url: 'apply_group',
+    body: {
+      msg: requestMsg.value,
+      account: String(globalStore.addGroupModalInfo.account),
+      type: 1
+    }
   })
-  window.$message.success(t('message.group_verify.toast_success'))
+  msg.success(t('message.group_verify.toast_success'))
   setTimeout(async () => {
     await getCurrentWebviewWindow().close()
   }, 2000)
 }
 
 onMounted(async () => {
-  console.log(userInfo.value)
-
   await getCurrentWebviewWindow().show()
   requestMsg.value = t('message.group_verify.default_msg', { name: userStore.userInfo!.name })
 })

@@ -1,0 +1,96 @@
+{
+  "title": "好友",
+  "add_friend_title": "添加好友",
+  "verify_message": "验证消息",
+  "verify_message_placeholder": "请输入验证消息（可选）",
+  "default_verify_message": "你好，我想添加你为好友",
+  "request_sent_success": "好友请求已发送",
+  "request_sent_failed": "发送好友请求失败",
+  "list": {
+    "title": "好友列表",
+    "search_placeholder": "搜索好友",
+    "no_friends": "暂无好友",
+    "no_results": "未找到匹配的好友",
+    "add_friend": "添加好友",
+    "category_management": "分类管理",
+    "all_friends": "全部好友 ({count})"
+  },
+  "actions": {
+    "add": "添加好友",
+    "chat": "发送消息",
+    "set_remark": "设置备注",
+    "set_category": "设置分类",
+    "remove": "删除好友",
+    "block": "拉黑用户"
+  },
+  "status": {
+    "online": "在线",
+    "offline": "离线",
+    "unavailable": "忙碌",
+    "away": "离开",
+    "unknown": "未知"
+  },
+  "requests": {
+    "title": "好友请求",
+    "pending_title": "待处理的好友请求",
+    "no_requests": "没有待处理的好友请求",
+    "from": "来自",
+    "message": "验证消息",
+    "message_placeholder": "介绍一下自己（可选）",
+    "send_request": "发送请求",
+    "accept": "接受",
+    "reject": "拒绝",
+    "accepted": "已添加好友",
+    "rejected": "已拒绝请求",
+    "sent": "好友请求已发送",
+    "send_failed": "发送请求失败",
+    "error": "操作失败"
+  },
+  "category": {
+    "title": "分类管理",
+    "create": "创建分类",
+    "create_title": "创建分类",
+    "name": "分类名称",
+    "name_placeholder": "请输入分类名称",
+    "description": "描述",
+    "description_placeholder": "分类描述（可选）",
+    "color": "颜色",
+    "select": "选择分类（可选）",
+    "no_category": "无分类",
+    "delete": "删除分类",
+    "delete_confirm_title": "删除分类",
+    "delete_confirm_content": "确定要删除这个分类吗？好友不会被删除。",
+    "delete_success": "分类已删除",
+    "delete_failed": "删除分类失败",
+    "create_success": "分类已创建",
+    "create_failed": "创建分类失败",
+    "set_success": "分类已更新",
+    "set_failed": "更新分类失败"
+  },
+  "remark": {
+    "title": "设置备注",
+    "placeholder": "输入备注",
+    "save": "保存",
+    "update_success": "备注已更新",
+    "update_failed": "更新备注失败"
+  },
+  "remove": {
+    "confirm_title": "删除好友",
+    "confirm_content": "确定要删除 {name} 吗？",
+    "success": "好友已删除",
+    "failed": "删除好友失败"
+  },
+  "errors": {
+    "load_failed": "加载好友列表失败",
+    "search_failed": "搜索好友失败",
+    "get_presence_failed": "获取在线状态失败"
+  },
+  "dialogs": {
+    "user_id_label": "用户ID",
+    "user_id_placeholder": "请输入用户ID (如: {'@'}username:server.com)",
+    "user_id_required": "请输入用户ID"
+  },
+  "validation": {
+    "category_name_required": "请输入分类名称"
+  }
+}

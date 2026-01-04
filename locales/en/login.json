@@ -112,7 +112,7 @@
       "suffix": "Suffix"
     },
     "placeholder": {
-      "host": "127.0.0.1 or hulaspark.com",
+      "host": "matrix.example.com or https://matrix.example.com",
       "port": "443",
       "api_suffix": "api",
       "ws_suffix": "websocket"

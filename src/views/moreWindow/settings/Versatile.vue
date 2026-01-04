@@ -2,7 +2,6 @@
   <n-flex vertical :size="30">
     <n-flex align="end" :size="20">
       <component :is="versatileModel" />
-
       <n-flex vertical :size="20">
         <n-flex
           @click="handleVersatile('default')"
@@ -10,18 +9,15 @@
           align="center"
           class="bg-[--bg-setting-item] p-[2px_6px] cursor-pointer rounded-50px w-80px h-30px">
           <svg class="size-22px outline-none color-[--chat-text-color]"><use href="#forbid"></use></svg>
-
           <p class="text-(12px [--chat-text-color])">{{ t('setting.theme.restore_default') }}</p>
         </n-flex>
       </n-flex>
     </n-flex>
-
     <n-flex vertical align="start" :size="20" class="variation-item">
       <n-flex :size="20" align="end">
         <p class="text-(16px [--text-color])">{{ t('setting.theme.versatile.title') }}</p>
         <p class="text-(12px #999)">{{ t('setting.theme.versatile.description') }}</p>
       </n-flex>
-
       <n-flex align="center" :size="20">
         <div
           @click="handleVersatile('simple')"
@@ -35,19 +31,17 @@
   </n-flex>
 </template>
 <script setup lang="ts">
-import { useSettingStore } from '@/stores/setting.ts'
-import { versatileModel } from './model.tsx'
+import { computed } from 'vue'
+import { useSettingStore } from '@/stores/setting'
+import { versatileModel } from './model'
 import { useI18n } from 'vue-i18n'
-
 const { t } = useI18n()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
-
+const themes = computed(() => settingStore.themes)
 const handleVersatile = (val: string) => {
   themes.value.versatile = val
 }
 </script>
-
 <style scoped lang="scss">
 .variation-item {
   @apply border-(solid 1px [--line-color]) custom-shadow

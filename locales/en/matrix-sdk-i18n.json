@@ -1,0 +1,317 @@
+{
+  "presence": {
+    "online": "Online",
+    "offline": "Offline",
+    "unavailable": "Away",
+    "unknown": "Unknown",
+    "last_seen_now": "Just now",
+    "last_seen_minutes": "{minutes}m ago",
+    "last_seen_hours": "{hours}h ago",
+    "last_seen_days": "{days}d ago"
+  },
+  "typing": {
+    "single": "{name} is typing...",
+    "two": "{name1} and {name2} are typing...",
+    "many": "{count} people are typing..."
+  },
+  "read_receipt": {
+    "no_readers": "No one has read this yet",
+    "just_now": "Just now",
+    "minutes_ago": "{minutes}m ago",
+    "hours_ago": "{hours}h ago",
+    "date": "{date}"
+  },
+  "setting": {
+    "e2ee": {
+      "title": "End-to-End Encryption",
+      "status": {
+        "enabled": "Encryption Enabled",
+        "disabled": "Encryption Disabled",
+        "enabled_desc": "Your messages are protected with end-to-end encryption",
+        "disabled_desc": "End-to-end encryption is not enabled"
+      },
+      "cross_signing": {
+        "title": "Cross-Signing",
+        "status": "Status",
+        "ready": "Ready",
+        "not_ready": "Not Ready",
+        "setup_button": "Setup",
+        "master_key": "Master Key",
+        "user_signing_key": "User Signing Key",
+        "self_signing_key": "Self Signing Key",
+        "set": "Set",
+        "not_set": "Not Set"
+      },
+      "key_backup": {
+        "title": "Key Backup",
+        "view_status": "View Status",
+        "create_new": "Create New Backup",
+        "restore_backup": "Restore Backup",
+        "storage": "Backup Storage",
+        "storage_ready": "Backup is ready",
+        "storage_not_ready": "Backup not ready",
+        "manage_button": "Manage",
+        "create_button": "Create Backup",
+        "version": "Version",
+        "key_count": "Keys",
+        "trust_status": "Trust Status",
+        "trusted": "Trusted",
+        "not_trusted": "Not Trusted",
+        "restore_button": "Restore",
+        "delete_button": "Delete",
+        "no_backup": "No Backup Found",
+        "no_backup_desc": "You don't have a key backup yet. Create one to secure your encrypted messages.",
+        "backup_exists": "Key Backup Exists",
+        "backup_exists_desc": "Your encrypted messages are backed up safely.",
+        "create_warning": "The recovery key is the ONLY way to restore your encrypted messages if you lose access to your account. Keep it safe!",
+        "loading": "Loading backup status...",
+        "creating": "Creating backup...",
+        "restoring": "Restoring backup...",
+        "created": "Backup Created Successfully",
+        "restored": "Backup Restored Successfully",
+        "create_desc": "A recovery key will be generated. Save it in a safe place.",
+        "start_create": "Create Recovery Key",
+        "save_warning": "Make sure to save this recovery key in a safe place. You cannot recover your encrypted messages without it!",
+        "confirm_save": "I have saved my recovery key in a safe place",
+        "finish_button": "Finish",
+        "copy_button": "Copy",
+        "download_button": "Download",
+        "copied": "Copied to clipboard",
+        "downloaded": "Downloaded",
+        "enter_recovery_key": "Enter your recovery key",
+        "imported": "Imported",
+        "total": "Total",
+        "enter_key_first": "Please enter your recovery key",
+        "create_success": "Backup created successfully",
+        "create_failed": "Failed to create backup",
+        "restore_success": "Backup restored successfully",
+        "restore_failed": "Failed to restore backup"
+      },
+      "devices": {
+        "title": "Devices",
+        "refresh_button": "Refresh",
+        "unknown_device": "Unknown Device",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "last_seen": "Last seen just now",
+        "last_seen_now": "Just now",
+        "minutes_ago": "{minutes}m ago",
+        "hours_ago": "{hours}h ago",
+        "days_ago": "{days}d ago",
+        "no_devices": "No devices found",
+        "verify_title": "Verify Device",
+        "verify_method": "Choose verification method",
+        "verify_emoji": "Emoji",
+        "verify_emoji_desc": "Compare emojis displayed on both devices",
+        "verify_key": "Key",
+        "verify_key_desc": "Compare the entire key",
+        "compare_emoji": "Compare Emojis",
+        "compare_key": "Compare Keys",
+        "emoji_instruction": "Make sure the emojis below match the ones shown on the other device",
+        "key_instruction": "Make sure the key below matches the one shown on the other device",
+        "emoji_match": "They Match",
+        "key_match": "They Match",
+        "not_match": "They Don't Match",
+        "not_match_title": "Verification Failed",
+        "not_match_content": "The verification failed. The device may be compromised or there may be a typo.",
+        "verifying": "Verifying...",
+        "verification_success": "Device verified successfully",
+        "verification_failed": "Verification failed",
+        "verification_cancelled": "Verification cancelled",
+        "block_confirm_title": "Block Device",
+        "block_confirm_content": "Are you sure you want to block device {deviceName}?",
+        "block": "Block",
+        "blocked": "Device blocked",
+        "unblock_confirm_title": "Unblock Device",
+        "unblock_confirm_content": "Are you sure you want to unblock device {deviceName}?",
+        "unblock": "Unblock",
+        "unblocked": "Device unblocked"
+      },
+      "security": {
+        "title": "Security Settings",
+        "auto_verify": "Auto-verify devices",
+        "auto_verify_desc": "Automatically verify devices from same user",
+        "block_unverified": "Block unverified devices",
+        "block_unverified_desc": "Block messages from unverified devices",
+        "show_indicator": "Show encryption indicator",
+        "show_indicator_desc": "Show lock icon for encrypted messages"
+      },
+      "setup": {
+        "success": "Setup completed successfully",
+        "failed": "Setup failed",
+        "device_refreshed": "Device list refreshed",
+        "verification_success": "Device verified"
+      }
+    },
+    "uia": {
+      "title": "Authentication",
+      "register_title": "Create Account",
+      "password_title": "Change Password",
+      "loading": "Processing...",
+      "steps": {
+        "password": "Password",
+        "email": "Email",
+        "msisdn": "Phone",
+        "terms": "Terms",
+        "recaptcha": "Captcha",
+        "dummy": "Confirm"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password",
+        "required": "Password is required"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "your@email.com",
+        "required": "Email is required",
+        "invalid": "Invalid email format",
+        "code_label": "Verification Code",
+        "code_placeholder": "Enter 6-digit code",
+        "code_required": "Verification code is required",
+        "description": "We'll send a verification code to your email address",
+        "send_code": "Send Code",
+        "code_sent": "Code sent to your email",
+        "resend": "Resend"
+      },
+      "msisdn": {
+        "label": "Phone Number",
+        "placeholder": "+1 234 567 8900",
+        "required": "Phone number is required",
+        "code_label": "SMS Code",
+        "code_placeholder": "Enter 6-digit code",
+        "code_required": "SMS code is required",
+        "send_code": "Send SMS",
+        "code_sent": "SMS sent to your phone",
+        "resend": "Resend"
+      },
+      "terms": {
+        "description": "Please read and accept the Terms of Service",
+        "accept": "I accept the Terms of Service"
+      },
+      "recaptcha": {
+        "description": "Please complete the CAPTCHA to continue"
+      },
+      "dummy": {
+        "title": "Complete Authentication",
+        "submit": "Complete"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard"
+    },
+    "stats": {
+      "total_users": "Total Users",
+      "active_users": "Active Users",
+      "total_rooms": "Total Rooms",
+      "media_storage": "Media Storage"
+    },
+    "quick_actions": "Quick Actions",
+    "recent_activity": "Recent Activity",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "refreshed": "Refreshed",
+    "manage_users": "Manage Users",
+    "manage_rooms": "Manage Rooms",
+    "manage_media": "Manage Media",
+    "users": {
+      "title": "User Management",
+      "search_placeholder": "Search users...",
+      "create_button": "Create User",
+      "no_users": "No users found",
+      "edit_title": "Edit User: {userId}",
+      "create_title": "Create New User",
+      "table": {
+        "avatar": "Avatar",
+        "user_id": "User ID",
+        "display_name": "Display Name",
+        "admin": "Admin",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "deactivated": "Deactivated"
+      },
+      "actions": {
+        "edit": "Edit",
+        "make_admin": "Make Admin",
+        "revoke_admin": "Revoke Admin",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "delete": "Delete"
+      },
+      "confirm_revoke_admin": "Revoke Admin Privileges?",
+      "confirm_revoke_admin_content": "Are you sure you want to revoke admin privileges from {userId}?",
+      "confirm_make_admin": "Grant Admin Privileges?",
+      "confirm_make_admin_content": "Are you sure you want to grant admin privileges to {userId}?",
+      "confirm_activate": "Activate Account?",
+      "confirm_activate_content": "Are you sure you want to activate {userId}?",
+      "confirm_deactivate": "Deactivate Account?",
+      "confirm_deactivate_content": "Are you sure you want to deactivate {userId}?",
+      "confirm_delete": "Delete User?",
+      "confirm_delete_content": "Are you sure you want to delete {userId}? This action cannot be undone.",
+      "admin_revoked": "Admin privileges revoked",
+      "admin_granted": "Admin privileges granted",
+      "activated": "Account activated",
+      "deactivated": "Account deactivated",
+      "deleted": "User deleted",
+      "form": {
+        "display_name": "Display Name",
+        "display_name_placeholder": "Enter display name",
+        "display_name_required": "Display name is required",
+        "password": "Password",
+        "password_placeholder": "Enter password",
+        "password_required": "Password is required",
+        "admin": "Administrator",
+        "deactivated": "Deactivated"
+      },
+      "update_not_implemented": "User update not implemented",
+      "create_not_implemented": "User creation not implemented"
+    },
+    "rooms": {
+      "title": "Room Management",
+      "search_placeholder": "Search rooms...",
+      "no_rooms": "No rooms found",
+      "table": {
+        "avatar": "",
+        "room_id": "Room ID",
+        "name": "Name",
+        "topic": "Topic",
+        "members": "Members",
+        "actions": "Actions"
+      },
+      "confirm_delete": "Delete Room?",
+      "confirm_delete_content": "Are you sure you want to delete {name} ({roomId})?",
+      "deleted": "Room deleted"
+    },
+    "error": {
+      "load_stats_failed": "Failed to load statistics",
+      "load_users_failed": "Failed to load users",
+      "load_rooms_failed": "Failed to load rooms",
+      "toggle_admin_failed": "Failed to toggle admin status",
+      "toggle_status_failed": "Failed to toggle account status",
+      "delete_user_failed": "Failed to delete user",
+      "delete_room_failed": "Failed to delete room",
+      "submit_user_failed": "Failed to submit user data"
+    },
+    "time": {
+      "just_now": "Just now",
+      "minutes_ago": "{minutes}m ago",
+      "hours_ago": "{hours}h ago"
+    }
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next"
+  }
+}

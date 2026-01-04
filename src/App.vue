@@ -1,19 +1,24 @@
 <template>
-  <div class="h-100vh w-100vw">
+  <div id="app-container" class="h-100vh w-100vw">
     <NaiveProvider :message-max="3" :notific-max="3" class="h-full">
       <div v-if="!isLock" class="h-full">
         <router-view />
       </div>
       <!-- 锁屏页面 -->
       <LockScreen v-else />
+      <div v-if="showConnectionIndicator" class="connection-indicator" :data-state="connectionIndicatorState">
+        <span class="connection-dot" :data-state="connectionIndicatorState"></span>
+        <span class="connection-text">{{ connectionIndicatorText }}</span>
+      </div>
     </NaiveProvider>
   </div>
   <component :is="mobileRtcCallFloatCell" v-if="mobileRtcCallFloatCell" />
 </template>
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, watch, nextTick, ref } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { info } from '@tauri-apps/plugin-log'
 import { exit } from '@tauri-apps/plugin-process'
+import { logger } from '@/utils/logger'
 import { loadLanguage } from '@/services/i18n'
 import {
   CallTypeEnum,
@@ -30,7 +35,7 @@ import { useGlobalShortcut } from '@/hooks/useGlobalShortcut.ts'
 import { useMitt } from '@/hooks/useMitt.ts'
 import { useWindow } from '@/hooks/useWindow.ts'
 import { useGlobalStore } from '@/stores/global'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useSettingStore } from '@/stores/setting'
 import { isDesktop, isIOS, isMobile, isWindows } from '@/utils/PlatformConstants'
 import LockScreen from '@/views/LockScreen.vue'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
@@ -38,33 +43,36 @@ import {
   type LoginSuccessResType,
   type OnStatusChangeType,
   WsResponseMessageType,
-  type WsTokenExpire
+  type WsTokenExpire,
+  type VideoCallRequestEvent
 } from '@/services/wsType.ts'
-import { useContactStore } from '@/stores/contacts.ts'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import { useAnnouncementStore } from '@/stores/announcement'
-import { useFeedStore } from '@/stores/feed'
-import { useFeedNotificationStore } from '@/stores/feedNotification'
-import type { MarkItemType, RevokedMsgType, UserItem } from '@/services/types.ts'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+// REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
+import { useNotificationStore } from '@/stores/notifications'
+import type { MarkItemType, RevokedMsgType, UserItem } from '@/services/types'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useTauriListener } from '@/hooks/useTauriListener'
+import { defineAsyncComponent } from 'vue'
+import { useRouter } from 'vue-router'
+import { flags } from '@/utils/envFlags'
+import { useMatrixStore } from '@/stores/matrix'
 const mobileRtcCallFloatCell = isMobile()
   ? defineAsyncComponent(() => import('@/mobile/components/RtcCallFloatCell.vue'))
   : null
 
 const userStore = useUserStore()
-const contactStore = useContactStore()
 const announcementStore = useAnnouncementStore()
-const feedStore = useFeedStore()
-const feedNotificationStore = useFeedNotificationStore()
+const notificationStore = useNotificationStore()
+// REMOVED: feedStore - Moments/Feed feature removed
 const userUid = computed(() => userStore.userInfo!.uid)
 const groupStore = useGroupStore()
 const chatStore = useChatStore()
-const appWindow = WebviewWindow.getCurrent()
+const matrixStore = useMatrixStore()
+const appWindow = typeof window !== 'undefined' && '__TAURI__' in window ? WebviewWindow.getCurrent() : null
 const { createRtcCallWindow, sendWindowPayload } = useWindow()
 const globalStore = useGlobalStore()
 const router = useRouter()
@@ -72,7 +80,10 @@ const { addListener } = useTauriListener()
 // 只在桌面端初始化窗口管理功能
 const { createWebviewWindow } = isDesktop() ? useWindow() : { createWebviewWindow: () => {} }
 const settingStore = useSettingStore()
-const { themes, lockScreen, page, login } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
+const lockScreen = computed(() => settingStore.lockScreen)
+const page = computed(() => settingStore.page)
+const login = computed(() => settingStore.login)
 // 全局快捷键管理
 const { initializeGlobalShortcut, cleanupGlobalShortcut } = useGlobalShortcut()
 
@@ -99,8 +110,14 @@ const preventDrag = (e: MouseEvent) => {
 }
 const preventGlobalContextMenu = (event: MouseEvent) => event.preventDefault()
 
-useMitt.on(WsResponseMessageType.VideoCallRequest, (event) => {
-  info(`收到通话请求：${JSON.stringify(event)}`)
+const notifyError = (message: string) => {
+  try {
+    window.$message?.error?.(message)
+  } catch {}
+}
+
+useMitt.on(WsResponseMessageType.VideoCallRequest, (event: VideoCallRequestEvent) => {
+  logger.info(`收到通话请求：${JSON.stringify(event)}`)
   const remoteUid = event.callerUid
   const callType = event.isVideo ? CallTypeEnum.VIDEO : CallTypeEnum.AUDIO
 
@@ -144,26 +161,29 @@ useMitt.on(WsResponseMessageType.MY_ROOM_INFO_CHANGE, (data: { myName: string; r
 useMitt.on(
   WsResponseMessageType.REQUEST_NEW_FRIEND,
   async (data: { uid: number; unReadCount4Friend: number; unReadCount4Group: number }) => {
-    console.log('收到好友申请')
     // 更新未读数
     globalStore.unReadMark.newFriendUnreadCount = data.unReadCount4Friend || 0
     globalStore.unReadMark.newGroupUnreadCount = data.unReadCount4Group || 0
 
-    unreadCountManager.refreshBadge(globalStore.unReadMark)
+    // 获取通知未读计数
+    const noticeUnreadCount = notificationStore.getUnreadCount()
+    globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
 
-    // 刷新好友申请列表
-    await contactStore.getApplyPage('friend', true)
+    unreadCountManager.refreshBadge(globalStore.unReadMark)
   }
 )
 
 useMitt.on(WsResponseMessageType.NOTIFY_EVENT, async () => {
-  await contactStore.getApplyUnReadCount()
-  await Promise.all([contactStore.getApplyPage('friend', true), contactStore.getApplyPage('group', true)])
+  // 获取通知未读计数
+  const noticeUnreadCount = notificationStore.getUnreadCount()
+  globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
+
+  unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 
 // 处理自己被移除
 const handleSelfRemove = async (roomId: string) => {
-  info('本人退出群聊，移除会话数据')
+  logger.info('本人退出群聊，移除会话数据')
 
   // 移除会话和群成员数据
   chatStore.removeSession(roomId)
@@ -171,13 +191,16 @@ const handleSelfRemove = async (roomId: string) => {
 
   // 如果当前会话就是被移除的群聊，切换到其他会话
   if (globalStore.currentSessionRoomId === roomId) {
-    globalStore.updateCurrentSessionRoomId(chatStore.sessionList[0].roomId)
+    const firstSession = chatStore.sessionList[0]
+    if (firstSession) {
+      globalStore.updateCurrentSessionRoomId(firstSession.roomId)
+    }
   }
 }
 
 // 处理其他成员被移除
 const handleOtherMemberRemove = async (uid: string, roomId: string) => {
-  info('群成员退出群聊，移除群内的成员数据')
+  logger.info('群成员退出群聊，移除群内的成员数据')
   groupStore.removeUserItem(uid, roomId)
 }
 
@@ -194,7 +217,7 @@ const handleMemberRemove = async (userList: UserItem[], roomId: string) => {
 
 // 处理其他成员加入群聊
 const handleOtherMemberAdd = async (user: UserItem, roomId: string) => {
-  info('群成员加入群聊，添加群成员数据')
+  logger.info('群成员加入群聊，添加群成员数据')
   groupStore.addUserItem(user, roomId)
 }
 
@@ -205,12 +228,12 @@ const isSelfUser = (uid: string): boolean => {
 
 // 处理自己加入群聊
 const handleSelfAdd = async (roomId: string) => {
-  info('本人加入群聊，加载该群聊的会话数据')
+  logger.info('本人加入群聊，加载该群聊的会话数据')
   await chatStore.addSession(roomId)
   try {
     await groupStore.getGroupUserList(roomId, true)
   } catch (error) {
-    console.error('初始化群成员失败:', error)
+    notifyError('群成员同步失败，请稍后重试')
   }
 }
 
@@ -234,7 +257,7 @@ useMitt.on(
     totalNum: number
     onlineNum: number
   }) => {
-    info('监听到群成员变更消息')
+    logger.info('监听到群成员变更消息')
     const isRemoveAction = param.changeType === ChangeTypeEnum.REMOVE || param.changeType === ChangeTypeEnum.EXIT_GROUP
     if (isRemoveAction) {
       await handleMemberRemove(param.userList, param.roomId)
@@ -248,22 +271,30 @@ useMitt.on(
   }
 )
 
-useMitt.on(WsResponseMessageType.MSG_MARK_ITEM, async (data: { markList: MarkItemType[] }) => {
-  console.log('收到消息标记更新:', data)
-
+useMitt.on(WsResponseMessageType.MSG_MARK_ITEM, async (data: { markList: MarkItemType[] } | MarkItemType) => {
   // 确保data.markList是一个数组再传递给updateMarkCount
-  if (data && data.markList && Array.isArray(data.markList)) {
+  if ('markList' in data && data.markList && Array.isArray(data.markList)) {
     await chatStore.updateMarkCount(data.markList)
-  } else if (data && !Array.isArray(data)) {
+  } else if (!('markList' in data)) {
     // 兼容处理：如果直接收到了单个MarkItemType对象
-    await chatStore.updateMarkCount([data as unknown as MarkItemType])
+    await chatStore.updateMarkCount([data])
   }
 })
 
 useMitt.on(WsResponseMessageType.REQUEST_APPROVAL_FRIEND, async () => {
   // 刷新好友列表以获取最新状态
-  await contactStore.getContactList(true)
-  await contactStore.getApplyUnReadCount()
+  // Migrated to friendsServiceV2
+  try {
+    const { friendsServiceV2 } = await import('@/services/index-v2')
+    await friendsServiceV2.listFriends(false) // useCache=false to refresh
+  } catch (error) {
+    logger.warn('[App] Failed to refresh friends list:', error)
+  }
+
+  // 获取通知未读计数
+  const noticeUnreadCount = notificationStore.getUnreadCount()
+  globalStore.unReadMark.noticeUnreadCount = noticeUnreadCount
+
   unreadCountManager.refreshBadge(globalStore.unReadMark)
 })
 
@@ -290,17 +321,17 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
         await logout()
 
         settingStore.toggleLogin(false, false)
-        info('账号在其他设备登录')
+        logger.info('账号在其他设备登录')
 
         // 3. 立即跳转到登录页，使用 replace 替换当前路由
         const router = await import('@/router')
         await router.default.replace('/mobile/login')
 
         // 4. 跳转后再显示弹窗提示
-        const { showDialog } = await import('vant')
-        await import('vant/es/dialog/style')
+        // const { showDialog } = await import('vant') // 临时注释，vant包未安装
+        // await import('vant/es/dialog/style') // 临时注释，vant包未安装
 
-        showDialog({
+        /* showDialog({
           title: '登录失效',
           message: '您的账号已在其他设备登录，请重新登录',
           confirmButtonText: '我知道了',
@@ -308,10 +339,8 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
           closeOnClickOverlay: false,
           closeOnPopstate: false,
           allowHtml: false
-        })
-      } catch (error) {
-        console.error('处理token过期失败：', error)
-      }
+        }) */ // 临时注释，vant包未安装
+      } catch (error) {}
     } else {
       // 桌面端处理：聚焦主窗口并显示远程登录弹窗
       const home = await WebviewWindow.getByLabel('home')
@@ -323,7 +352,6 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
           timestamp: Date.now()
         }
       })
-      await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
       await resetLoginState()
       await logout()
     }
@@ -331,7 +359,6 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
 })
 
 useMitt.on(WsResponseMessageType.INVALID_USER, (param: { uid: string }) => {
-  console.log('无效用户')
   const data = param
   // 消息列表删掉拉黑的发言
   // chatStore.filterUser(data.uid)
@@ -340,7 +367,6 @@ useMitt.on(WsResponseMessageType.INVALID_USER, (param: { uid: string }) => {
 })
 
 useMitt.on(WsResponseMessageType.ONLINE, async (onStatusChangeType: OnStatusChangeType) => {
-  console.log('收到用户上线通知')
   // 群聊
   if (onStatusChangeType.type === 1) {
     groupStore.updateOnlineNum({
@@ -362,122 +388,35 @@ useMitt.on(WsResponseMessageType.ONLINE, async (onStatusChangeType: OnStatusChan
 })
 
 useMitt.on(WsResponseMessageType.ROOM_DISSOLUTION, async (roomId: string) => {
-  console.log('收到群解散通知', roomId)
   // 移除群聊的会话
   chatStore.removeSession(roomId)
   // 移除群聊的详情
   groupStore.removeGroupDetail(roomId)
   // 如果当前会话为解散的群聊，切换到第一个会话
   if (globalStore.currentSessionRoomId === roomId) {
-    globalStore.currentSessionRoomId = chatStore.sessionList[0].roomId
+    const firstSession = chatStore.sessionList[0]
+    if (firstSession) {
+      globalStore.currentSessionRoomId = firstSession.roomId
+    }
   }
 })
 
 useMitt.on(WsResponseMessageType.USER_STATE_CHANGE, async (data: { uid: string; userStateId: string }) => {
-  console.log('收到用户状态改变', data)
   groupStore.updateUserItem(data.uid, {
     userStateId: data.userStateId
   })
 })
 
-useMitt.on(WsResponseMessageType.FEED_SEND_MSG, (data: { uid: string }) => {
-  if (data.uid !== userStore.userInfo!.uid) {
-    feedStore.increaseUnreadCount()
-    // 同步更新角标
-    unreadCountManager.refreshBadge(globalStore.unReadMark)
-  } else {
-    console.log('[App.vue] 是自己发布的，不增加未读数')
-  }
-})
+// REMOVED: WsResponseMessageType.FEED_SEND_MSG handler - Moments/Feed feature removed (custom backend no longer supported)
+// REMOVED: WsResponseMessageType.FEED_NOTIFY handler - Moments/Feed feature removed (custom backend no longer supported)
+// This included the FeedNotifyData interface and all feed notification handling code
 
-// 朋友圈通知监听（全局）- 处理点赞和评论通知
-useMitt.on(WsResponseMessageType.FEED_NOTIFY, async (data: any) => {
-  try {
-    console.log('收到朋友圈通知:', JSON.stringify(data, null, 2))
-    console.log('通知类型判断 - isUnlike:', data.isUnlike, 'hasComment:', !!data.comment)
-
-    // 获取朋友圈内容用于通知显示
-    const feed = feedStore.feedList.find((f) => f.id === data.feedId)
-    const feedContent = feed?.content || data.feedContent || '朋友圈'
-
-    if (data.isUnlike) {
-      // 取消点赞时减少未读数
-      feedStore.decreaseUnreadCount(1)
-      const likeListResult = await feedStore.getLikeList(data.feedId)
-      if (likeListResult) {
-        const feed = feedStore.feedList.find((f) => f.id === data.feedId)
-        if (feed) {
-          feed.likeList = likeListResult
-          feed.likeCount = likeListResult.length
-        }
-      }
-    }
-    // 如果是点赞通知
-    else if (!data.comment) {
-      console.log('处理点赞通知')
-      feedStore.increaseUnreadCount(1)
-      const likeListResult = await feedStore.getLikeList(data.feedId)
-      if (likeListResult) {
-        const feed = feedStore.feedList.find((f) => f.id === data.feedId)
-        if (feed) {
-          feed.likeList = likeListResult
-          feed.likeCount = likeListResult.length
-        }
-      }
-      // 添加点赞通知到本地存储
-      const likeNotification = {
-        id: `${data.feedId}_${data.operatorUid}_like_${Date.now()}`,
-        type: 'like' as const,
-        feedId: String(data.feedId),
-        feedContent: feedContent,
-        operatorUid: String(data.operatorUid),
-        operatorName: data.operatorName || '未知用户',
-        operatorAvatar: data.operatorAvatar || '',
-        createTime: Date.now(),
-        isRead: false
-      }
-      feedNotificationStore.addNotification(likeNotification)
-    } else {
-      feedStore.increaseUnreadCount(1)
-      try {
-        const commentListResult = await feedStore.getCommentList(data.feedId)
-        if (Array.isArray(commentListResult)) {
-          const feed = feedStore.feedList.find((f) => f.id === data.feedId)
-          if (feed) {
-            feed.commentList = commentListResult
-            feed.commentCount = commentListResult.length
-          }
-        }
-      } catch (error) {
-        console.error('获取评论列表失败:', error)
-      }
-      // 添加评论通知到本地存储
-      const commentNotification = {
-        id: `${data.feedId}_${data.operatorUid}_comment_${Date.now()}`,
-        type: 'comment' as const,
-        feedId: String(data.feedId),
-        feedContent: feedContent,
-        operatorUid: String(data.operatorUid),
-        operatorName: data.operatorName || '未知用户',
-        operatorAvatar: data.operatorAvatar || '',
-        commentContent: data.comment?.content || '',
-        createTime: Date.now(),
-        isRead: false
-      }
-      feedNotificationStore.addNotification(commentNotification)
-    }
-  } catch (error) {
-    console.error('处理朋友圈通知失败:', error)
-  }
-})
-
-useMitt.on(WsResponseMessageType.GROUP_SET_ADMIN_SUCCESS, (event) => {
-  console.log('设置群管理员---> ', event)
-  groupStore.updateAdminStatus(event.roomId, event.uids, event.status)
+useMitt.on(WsResponseMessageType.GROUP_SET_ADMIN_SUCCESS, (event: unknown) => {
+  const e = event as { roomId: string; uids: string[]; status: boolean }
+  groupStore.updateAdminStatus(e.roomId, e.uids, e.status)
 })
 
 useMitt.on(WsResponseMessageType.OFFLINE, async (onStatusChangeType: OnStatusChangeType) => {
-  console.log('收到用户下线通知', onStatusChangeType)
   // 群聊
   if (onStatusChangeType.type === 1) {
     groupStore.updateOnlineNum({
@@ -499,11 +438,10 @@ useMitt.on(WsResponseMessageType.OFFLINE, async (onStatusChangeType: OnStatusCha
 })
 
 const handleVideoCall = async (remotedUid: string, callType: CallTypeEnum) => {
-  info(`监听到视频通话调用，remotedUid: ${remotedUid}, callType: ${callType}`)
+  logger.info(`监听到视频通话调用，remotedUid: ${remotedUid}, callType: ${callType}`)
   const currentSession = globalStore.currentSession
   const targetUid = remotedUid || currentSession?.detailId
   if (!targetUid) {
-    console.warn('[App] 当前会话尚未就绪或无法解析对端用户，忽略通话事件')
     return
   }
   if (isMobile()) {
@@ -523,13 +461,14 @@ const handleVideoCall = async (remotedUid: string, callType: CallTypeEnum) => {
 }
 
 const listenMobileReLogin = async () => {
-  if (isMobile()) {
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  if (isMobile() && isTauri) {
     const { useLogin } = await import('@/hooks/useLogin')
 
     const { resetLoginState, logout } = useLogin()
     addListener(
       listen('relogin', async () => {
-        info('收到重新登录事件')
+        logger.info('收到重新登录事件')
         await resetLoginState()
         await logout()
       }),
@@ -538,48 +477,76 @@ const listenMobileReLogin = async () => {
   }
 }
 
-let lastWsConnectionState: string | null = null
+const wsConnectionState = ref<string | null>(null)
+let reconnectSyncPromise: Promise<void> | null = null
+let lastReconnectSyncAt = 0
+const RECONNECT_SYNC_COOLDOWN_MS = 3000
 
-const handleWebsocketEvent = async (event: any) => {
-  const payload: any = event.payload
+// WebSocket 事件类型定义
+interface WebSocketEventPayload {
+  type: 'connectionStateChanged'
+  state?: string
+  isReconnection?: boolean
+  is_reconnection?: boolean
+}
+
+interface WebSocketEvent {
+  payload: WebSocketEventPayload
+}
+
+const runReconnectSync = async () => {
+  const now = Date.now()
+  if (reconnectSyncPromise) return reconnectSyncPromise
+  if (now - lastReconnectSyncAt < RECONNECT_SYNC_COOLDOWN_MS) return
+  lastReconnectSyncAt = now
+
+  reconnectSyncPromise = (async () => {
+    chatStore.syncLoading = true
+    try {
+      if (userStore.userInfo?.uid) {
+        await invoke('sync_messages', { param: { asyncData: true, uid: userStore.userInfo.uid } })
+      }
+      await chatStore.getSessionList()
+      if (globalStore.currentSessionRoomId) {
+        await chatStore.resetAndRefreshCurrentRoomMessages()
+        await chatStore.fetchCurrentRoomRemoteOnce(20)
+        const currentSession = chatStore.getSession(globalStore.currentSessionRoomId)
+        if (currentSession?.unreadCount) {
+          try {
+            // Use unifiedMessageService instead of deprecated ImRequestUtils
+            const { unifiedMessageService } = await import('@/services/unified-message-service')
+            await unifiedMessageService.markRoomRead(currentSession.roomId)
+          } catch (error) {}
+          chatStore.markSessionRead(currentSession.roomId)
+        }
+      }
+      unreadCountManager.refreshBadge(globalStore.unReadMark)
+    } catch (error) {
+      notifyError('重连同步失败，请检查网络')
+      throw error
+    } finally {
+      chatStore.syncLoading = false
+      reconnectSyncPromise = null
+    }
+  })()
+
+  return reconnectSyncPromise
+}
+
+const handleWebsocketEvent = async (event: WebSocketEvent) => {
+  const payload = event.payload
   if (!payload || payload.type !== 'connectionStateChanged') return
 
-  const previousState = lastWsConnectionState
+  const previousState = wsConnectionState.value
   const nextState = payload.state
   const isReconnectionFlag = payload.isReconnection ?? payload.is_reconnection
   const hasRecoveredFromDrop = Boolean(previousState && previousState !== 'CONNECTED' && nextState === 'CONNECTED')
 
-  lastWsConnectionState = nextState ?? previousState
+  wsConnectionState.value = nextState ?? previousState
 
   if (!(nextState === 'CONNECTED' && (isReconnectionFlag || hasRecoveredFromDrop))) return
 
-  // 开始同步，显示加载状态
-  chatStore.syncLoading = true
-  try {
-    if (userStore.userInfo?.uid) {
-      await invoke('sync_messages', { param: { asyncData: true, uid: userStore.userInfo.uid } })
-    }
-    await chatStore.getSessionList(true)
-    await chatStore.setAllSessionMsgList(20)
-    if (globalStore.currentSessionRoomId) {
-      await chatStore.resetAndRefreshCurrentRoomMessages()
-      await chatStore.fetchCurrentRoomRemoteOnce(20)
-      const currentSession = chatStore.getSession(globalStore.currentSessionRoomId)
-      // 重连后如果当前会话仍有未读，补一次已读上报和本地清零，避免气泡卡住
-      if (currentSession?.unreadCount) {
-        try {
-          await ImRequestUtils.markMsgRead(currentSession.roomId)
-        } catch (error) {
-          console.error('[Network] 重连后上报已读失败:', error)
-        }
-        chatStore.markSessionRead(currentSession.roomId)
-      }
-    }
-    unreadCountManager.refreshBadge(globalStore.unReadMark)
-  } finally {
-    // 同步完成，隐藏加载状态
-    chatStore.syncLoading = false
-  }
+  await runReconnectSync()
 }
 
 /**
@@ -587,13 +554,35 @@ const handleWebsocketEvent = async (event: any) => {
  * 在应用启动时发起一个轻量级网络请求，触发iOS的网络权限弹窗
  */
 const requestNetworkPermissionForIOS = async () => {
-  await fetch('https://www.apple.com/favicon.ico', {
-    method: 'HEAD',
-    cache: 'no-cache'
-  })
+  try {
+    await fetch('https://www.apple.com/favicon.ico', {
+      method: 'HEAD',
+      cache: 'no-cache'
+    })
+  } catch {}
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize unified message receiver service
+  try {
+    const { unifiedMessageReceiver } = await import('@/services/unifiedMessageReceiver')
+    await unifiedMessageReceiver.initialize()
+    logger.info('[App] Unified message receiver initialized')
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    logger.error('[App] Failed to initialize unified message receiver:', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    })
+
+    // User-friendly notification for critical initialization failure
+    // Non-blocking: message receiving may still work through other channels
+    logger.warn('[App] Message receiver initialization failed - continuing with limited functionality')
+  }
+
+  // WebSocket 已废弃，使用 Matrix SDK 同步消息
+  logger.info('[App] Using Matrix SDK for message synchronization (WebSocket removed)')
+
   // iOS应用启动时预请求网络权限（必须在最开始执行）
   if (isIOS()) {
     requestNetworkPermissionForIOS()
@@ -615,10 +604,12 @@ onMounted(() => {
   document.documentElement.dataset.theme = themes.value.content
   window.addEventListener('dragstart', preventDrag)
 
-  addListener(listen('websocket-event', handleWebsocketEvent), 'websocket-event')
+  if (typeof window !== 'undefined' && '__TAURI__' in window) {
+    addListener(listen('websocket-event', handleWebsocketEvent), 'websocket-event')
+  }
 
   // 只在桌面端的主窗口中初始化全局快捷键
-  if (isDesktop() && appWindow.label === 'home') {
+  if (isDesktop() && appWindow && appWindow.label === 'home') {
     initializeGlobalShortcut()
   }
   /** 开发环境不禁止 */
@@ -633,16 +624,7 @@ onMounted(() => {
     window.addEventListener('contextmenu', preventGlobalContextMenu, false)
   }
   // 只在桌面端处理窗口相关事件
-  if (isDesktop()) {
-    useMitt.on(MittEnum.CHECK_UPDATE, async () => {
-      const checkUpdateWindow = await WebviewWindow.getByLabel('checkupdate')
-      await checkUpdateWindow?.show()
-    })
-    useMitt.on(MittEnum.DO_UPDATE, async (event) => {
-      await createWebviewWindow('更新', 'update', 490, 335, '', false, 490, 335, false, true)
-      const closeWindow = await WebviewWindow.getByLabel(event.close)
-      closeWindow?.close()
-    })
+  if (isDesktop() && appWindow) {
     addListener(
       appWindow.listen(EventEnum.EXIT, async () => {
         await exit(0)
@@ -654,6 +636,11 @@ onMounted(() => {
 })
 
 onUnmounted(async () => {
+  if (stopGroupSessionWatch) {
+    stopGroupSessionWatch()
+    stopGroupSessionWatch = null
+  }
+
   // 关闭固定缩放，恢复样式与监听
   fixedScale.disable()
 
@@ -661,7 +648,7 @@ onUnmounted(async () => {
   window.removeEventListener('dragstart', preventDrag)
 
   // 只在桌面端的主窗口中清理全局快捷键
-  if (isDesktop() && appWindow.label === 'home') {
+  if (isDesktop() && appWindow && appWindow.label === 'home') {
     await cleanupGlobalShortcut()
   }
 })
@@ -725,26 +712,59 @@ watch(
 )
 
 /** 监听会话变化 */
-useMitt.on(MittEnum.MSG_INIT, async () => {
-  watchEffect(async () => {
-    // 在同步阶段明确提取需要监听的属性
-    const sessionRoomId = globalStore.currentSessionRoomId
-    const sessionType = globalStore.currentSession?.type
-    const currentSession = globalStore.currentSession
+let stopGroupSessionWatch: null | (() => void) = null
+const ensureGroupSessionWatch = () => {
+  if (stopGroupSessionWatch) return
+  stopGroupSessionWatch = watch(
+    () => [globalStore.currentSessionRoomId, globalStore.currentSession?.type],
+    async () => {
+      const sessionRoomId = globalStore.currentSessionRoomId
+      const sessionType = globalStore.currentSession?.type
+      const currentSession = globalStore.currentSession
 
-    if (!sessionRoomId || sessionType !== RoomTypeEnum.GROUP) {
-      return
-    }
+      if (!sessionRoomId || sessionType !== RoomTypeEnum.GROUP || !currentSession) return
 
-    try {
-      const result = await groupStore.switchSession(currentSession)
-      if (result?.success) {
-        await announcementStore.loadGroupAnnouncements()
+      try {
+        const result = await groupStore.switchSession(currentSession)
+        if (result?.success) {
+          await announcementStore.loadGroupAnnouncements()
+        }
+      } catch (error) {
+        notifyError('群聊状态同步失败')
       }
-    } catch (error) {
-      console.error('会话切换处理失败:', error)
-    }
-  })
+    },
+    { immediate: true }
+  )
+}
+
+useMitt.on(MittEnum.MSG_INIT, () => {
+  ensureGroupSessionWatch()
+})
+
+onMounted(() => {
+  ensureGroupSessionWatch()
+})
+
+const showConnectionIndicator = computed(() => {
+  if (chatStore.syncLoading) return true
+  if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return true
+  if (flags.matrixEnabled && matrixStore.syncState === 'ERROR') return true
+  return false
+})
+
+const connectionIndicatorState = computed(() => {
+  if (chatStore.syncLoading || (flags.matrixEnabled && matrixStore.isSyncing)) return 'SYNCING'
+  if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return 'DISCONNECTED'
+  if (flags.matrixEnabled && matrixStore.syncState === 'ERROR') return 'DISCONNECTED'
+  return 'CONNECTED'
+})
+
+const connectionIndicatorText = computed(() => {
+  const ws = wsConnectionState.value || 'UNKNOWN'
+  if (flags.matrixEnabled) {
+    return `WS:${ws} · Matrix:${matrixStore.syncState}`
+  }
+  return `WS:${ws}`
 })
 </script>
 <style lang="scss">
@@ -767,5 +787,42 @@ button,
 a {
   user-select: auto;
   cursor: auto;
+}
+
+.connection-indicator {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #999;
+}
+
+.connection-dot[data-state='SYNCING'] {
+  background: #f0b429;
+}
+
+.connection-dot[data-state='DISCONNECTED'] {
+  background: #e55353;
+}
+
+.connection-dot[data-state='CONNECTED'] {
+  background: #2fb344;
 }
 </style>

@@ -52,12 +52,21 @@ export class UnreadCountManager {
    */
   public calculateTotal(
     sessionList: SessionItem[],
-    unReadMark: { newFriendUnreadCount: number; newGroupUnreadCount: number; newMsgUnreadCount: number }
+    unReadMark: {
+      newFriendUnreadCount: number
+      newGroupUnreadCount: number
+      newMsgUnreadCount: number
+      noticeUnreadCount: number
+    }
   ) {
-    // 检查当前窗口标签
-    const webviewWindowLabel = WebviewWindow.getCurrent()
-    if (webviewWindowLabel.label !== 'home' && webviewWindowLabel.label !== 'mobile-home') {
-      return
+    // 检查当前窗口标签 (在测试环境中 Tauri API 不可用，跳过窗口检查)
+    try {
+      const webviewWindowLabel = WebviewWindow.getCurrent()
+      if (webviewWindowLabel.label !== 'home' && webviewWindowLabel.label !== 'mobile-home') {
+        return
+      }
+    } catch {
+      // Tauri API 不可用 (如测试环境)，继续执行
     }
 
     info('[UnreadCountManager] 计算全局未读消息计数')
@@ -73,7 +82,7 @@ export class UnreadCountManager {
     // 更新全局未读计数
     unReadMark.newMsgUnreadCount = totalUnread
 
-    // 更新系统徽章
+    // 更新系统徽章 (包含通知未读数)
     this.updateSystemBadge(unReadMark)
   }
 
@@ -94,23 +103,49 @@ export class UnreadCountManager {
     newFriendUnreadCount: number
     newGroupUnreadCount: number
     newMsgUnreadCount: number
+    noticeUnreadCount: number
   }): Promise<void> {
     const messageUnread = Math.max(0, unReadMark.newMsgUnreadCount || 0)
     const friendUnread = Math.max(0, unReadMark.newFriendUnreadCount || 0)
     const groupUnread = Math.max(0, unReadMark.newGroupUnreadCount || 0)
-    const badgeTotal = messageUnread + friendUnread + groupUnread
+    const noticeUnread = Math.max(0, unReadMark.noticeUnreadCount || 0)
+    const badgeTotal = messageUnread + friendUnread + groupUnread + noticeUnread
+
     if (isMac()) {
       const count = badgeTotal > 0 ? badgeTotal : undefined
       await invokeWithErrorHandler('set_badge_count', { count })
     }
 
     // 更新tipVisible状态，用于控制托盘通知显示
-    if (messageUnread > 0) {
-      // 有新消息时，设置tipVisible为true，触发托盘闪烁
+    if (messageUnread > 0 || noticeUnread > 0) {
+      // 有新消息或通知时，设置tipVisible为true，触发托盘闪烁
       this.setTipVisible?.(true)
     } else {
-      // 没有未读消息时，设置tipVisible为false
+      // 没有未读消息或通知时，设置tipVisible为false
       this.setTipVisible?.(false)
+    }
+  }
+
+  /**
+   * 标记消息为已读
+   * @param sessionId 会话ID
+   * @param sessionList 会话列表
+   * @param unReadMark 未读标记对象
+   */
+  public markRead(
+    sessionId: string,
+    sessionList: SessionItem[],
+    unReadMark: {
+      newFriendUnreadCount: number
+      newGroupUnreadCount: number
+      newMsgUnreadCount: number
+      noticeUnreadCount: number
+    }
+  ) {
+    const session = sessionList.find((s) => s.id === sessionId)
+    if (session) {
+      session.unreadCount = 0
+      this.calculateTotal(sessionList, unReadMark)
     }
   }
 
@@ -121,6 +156,7 @@ export class UnreadCountManager {
     newFriendUnreadCount: number
     newGroupUnreadCount: number
     newMsgUnreadCount: number
+    noticeUnreadCount: number
   }) {
     this.updateSystemBadge(unReadMark)
   }

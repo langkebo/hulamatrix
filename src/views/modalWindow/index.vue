@@ -29,20 +29,23 @@
         :disabled-options="disabledOptions" />
 
       <n-flex align="center" justify="end" class="p-16px">
-        <n-button color="#13987f" @click="handleInvite">确定</n-button>
+        <n-button :color="'#13987f'" @click="handleInvite">确定</n-button>
         <n-button secondary @click="handleClose">取消</n-button>
       </n-flex>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
-import { getDisabledOptions, getFilteredOptions, renderLabel, renderSourceList } from '@/layout/center/model.tsx'
+import { getDisabledOptions, getFilteredOptions, renderLabel, renderSourceList } from '@/layout/center/model'
 import { useGroupStore } from '@/stores/group'
-import { inviteGroupMember } from '@/utils/ImRequestUtils'
+import { sdkInviteToRoom } from '@/services/rooms'
 
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
 const { getWindowPayload } = useWindow()
 const groupStore = useGroupStore()
 const windowTitle = ref('')
@@ -66,19 +69,16 @@ const handleInvite = async () => {
   if (selectedValue.value.length < 1) return
 
   try {
-    // 调用邀请群成员API
-    await inviteGroupMember({
-      roomId: roomId.value,
-      uidList: selectedValue.value
-    })
+    // 使用 Matrix SDK 邀请用户加入房间
+    await sdkInviteToRoom(roomId.value, selectedValue.value)
 
-    window.$message.success('邀请成功')
+    msg.success('邀请成功')
     setTimeout(() => {
       handleClose()
     }, 1000)
   } catch (error) {
-    console.error('邀请失败:', error)
-    window.$message.error('邀请失败，请重试')
+    logger.error('邀请失败:', error instanceof Error ? error : new Error(String(error)))
+    msg.error('邀请失败，请重试')
   }
 }
 

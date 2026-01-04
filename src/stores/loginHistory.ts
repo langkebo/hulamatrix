@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { StoresEnum } from '@/enums'
-import type { UserInfoType } from '@/services/types.ts'
+import type { UserInfoType } from '@/services/types'
 
 export const useLoginHistoriesStore = defineStore(
   StoresEnum.LOGIN_HISTORY,
@@ -38,5 +38,6 @@ export const useLoginHistoriesStore = defineStore(
       enable: true,
       initialize: true
     }
-  }
+  } as { share: { enable: boolean; initialize: boolean } }
 )
+import { ref } from 'vue'

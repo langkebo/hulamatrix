@@ -38,6 +38,67 @@
     "processing": "Processing audio",
     "error": "Recording failed"
   },
+  "toast": {
+    "feature_not_ready": "Feature not available yet",
+    "copy_empty": "No content to copy",
+    "no_content_to_translate": "No content to translate",
+    "deleted_success": "Message deleted",
+    "file_saved": "File saved locally",
+    "file_download_failed": "File download failed, please retry",
+    "file_not_downloaded_hint": "File not downloaded, please download first",
+    "image_saved": "Image saved locally",
+    "image_download_failed": "Image download failed, please retry",
+    "image_locate_failed": "Unable to locate the image"
+  },
+  "selfDestruct": {
+    "seconds": "s",
+    "minutes": "m",
+    "hours": "h",
+    "willDestroy": "Will self-destruct",
+    "aboutToDestroy": "About to self-destruct",
+    "warningMessage": "Warning: Message will self-destruct soon",
+    "privateMessage": "Private message",
+    "setTimer": "Set self-destruct timer",
+    "sendMessage": "Send self-destructing message",
+    "createPrivateChat": "Create Private Chat",
+    "participants": "Participants",
+    "selectParticipants": "Select chat participants",
+    "chatName": "Chat Name",
+    "chatNamePlaceholder": "Enter private chat name",
+    "securitySettings": "Security Settings",
+    "defaultSelfDestruct": "Default Message Self-Destruct",
+    "selectTime": "Select self-destruct time",
+    "topic": "Chat Topic",
+    "topicPlaceholder": "Enter chat description (optional)",
+    "createChat": "Create Private Chat",
+    "chatCreatedSuccess": "Private chat created successfully",
+    "createChatFailed": "Failed to create private chat",
+    "standardDesc": "Suitable for general private conversations, 7-day key rotation",
+    "highDesc": "Suitable for highly sensitive conversations, key rotation after 50 messages",
+    "messageDestroyed": "Message self-destructed",
+    "remainingTime": "{time} remaining",
+    "destroyedAt": "Self-destructed at {time}",
+    "encryptedMessage": "End-to-end encrypted message",
+    "countdown": {
+      "days": "d",
+      "hours": "h",
+      "minutes": "m",
+      "seconds": "s"
+    },
+    "timeOptions": {
+      "30s": "30 seconds",
+      "1m": "1 minute",
+      "5m": "5 minutes",
+      "30m": "30 minutes",
+      "1h": "1 hour",
+      "1d": "1 day",
+      "1w": "1 week"
+    },
+    "encryptionLevel": {
+      "standard": "Standard encryption",
+      "high": "High encryption"
+    }
+  },
   "call_window": {
     "incoming": "Incoming call",
     "video_call": "Video call",
@@ -82,7 +143,8 @@
     "shield_user": "User muted",
     "empty_description": "Start chatting with friends!",
     "empty_action": "Find friends",
-    "default_last_msg": "Welcome to HuLa"
+    "default_last_msg": "Welcome to HuLa",
+    "search_placeholder": "Search conversations"
   },
   "message_menu": {
     "pin_success": "Pinned",
@@ -98,7 +160,9 @@
     "dissolve_group_success": "Group dissolved",
     "quit_group_success": "Left group",
     "notification_allowed": "Notifications enabled",
-    "notification_silent": "Receiving silently"
+    "notification_silent": "Receiving silently",
+    "mark_unread_success": "Marked as unread",
+    "clear_all_unread_success": "All unread messages cleared"
   },
   "image_viewer": {
     "zoom_out": "Zoom out",
@@ -257,5 +321,101 @@
     "forward_success": "Messages forwarded",
     "forward_failed": "Failed to forward",
     "non_text_message": "[Non-text message]"
+  },
+  "migration": {
+    "prompt": {
+      "title": "Architecture Upgrade Notification",
+      "subtitle": "HuLa is upgrading to a new architecture",
+      "description": "We are upgrading the system to a decentralized architecture based on the Matrix protocol, which will bring better performance, security, and cross-platform experience.",
+      "benefits": {
+        "title": "Upgrade Benefits",
+        "improved_security": "End-to-end encryption to protect your privacy",
+        "better_performance": "Optimized sync mechanism for faster message delivery",
+        "cross_platform": "Full platform support, seamless device switching",
+        "decentralized": "Decentralized architecture with no single point of failure",
+        "end_to_end_encryption": "End-to-end encrypted communication"
+      },
+      "options": {
+        "later": "Remind Later",
+        "now": "Upgrade Now",
+        "schedule": "Schedule Upgrade"
+      },
+      "schedule": {
+        "placeholder": "Select upgrade time"
+      },
+      "confirm": {
+        "later": "Remind Later",
+        "now": "Start Now",
+        "schedule": "Start Scheduled",
+        "default": "Confirm"
+      },
+      "dismiss": "Dismiss",
+      "learn_more": "Learn More"
+    },
+    "steps": {
+      "prerequisites": "Verify Upgrade Prerequisites",
+      "backup": "Backup Current Data",
+      "profile": "Migrate User Profile",
+      "rooms": "Migrate Room List",
+      "messages": "Migrate Historical Messages",
+      "files": "Migrate File Resources",
+      "settings": "Update System Settings",
+      "verification": "Verify Upgrade Results",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    },
+    "phases": {
+      "preparation": "Preparation Phase",
+      "data_migration": "Data Migration",
+      "service_migration": "Service Migration",
+      "verification": "Verification Phase",
+      "completed": "Migration Completed"
+    },
+    "progress": {
+      "remaining_minutes": "About {count} minutes",
+      "soon": "Almost done"
+    },
+    "error": {
+      "title": "Migration Failed"
+    },
+    "start": "Start Migration",
+    "cancel": "Cancel Migration",
+    "close": "Close",
+    "rollback": "Rollback",
+    "show_details": "Show Details",
+    "hide_details": "Hide Details",
+    "settings": {
+      "title": "Architecture Migration",
+      "section_title": "System Architecture",
+      "description": "Upgrade to Matrix protocol architecture for a more secure and efficient communication experience.",
+      "status": {
+        "migrated": "Upgraded",
+        "migrating": "Upgrading",
+        "websocket": "Not Upgraded"
+      },
+      "start": "Start Upgrade",
+      "view_details": "View Details",
+      "view_report": "View Report",
+      "learn_more": "Learn More",
+      "history": {
+        "title": "Migration History"
+      }
+    },
+    "stats": {
+      "total_rooms": "Total Rooms",
+      "migrated": "Migrated",
+      "failed": "Failed"
+    },
+    "history": {
+      "success": "Success",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "report": {
+      "success_message": "Congratulations! The system has been successfully upgraded to the new architecture."
+    },
+    "status": {
+      "indicator": "Upgrading {progress}%"
+    }
   }
 }

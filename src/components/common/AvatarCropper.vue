@@ -30,21 +30,26 @@
 
       <!-- 主体内容 -->
       <n-flex align="center">
-        <!-- 裁剪区域 -->
-        <div class="w-320px h-320px p-10px mr-20px">
+        <!-- 头像裁剪区域 -->
+        <n-flex vertical class="px-20px">
           <vue-cropper
             ref="cropperRef"
             :img="localImageUrl"
-            :outputSize="0.4"
-            :autoCrop="true"
-            :fixedBox="true"
-            :fixed="true"
-            :centerBox="true"
-            :autoCropWidth="320"
-            :autoCropHeight="320"
-            :fixedNumber="[1, 1]"
-            @realTime="handleRealTime" />
-        </div>
+            :output-size="1"
+            :output-type="'png'"
+            :info="true"
+            :full="false"
+            :can-move="true"
+            :can-scale="true"
+            :auto-crop="true"
+            :fixed-box="false"
+            :fixed-number="[1, 1]"
+            :center-box="true"
+            :background-color="'#f0f0f0'"
+            @real-time="handleRealTime"
+            class="w-300px h-300px"
+          />
+        </n-flex>
 
         <!-- 预览区域 -->
         <n-flex vertical class="px-20px">
@@ -100,9 +105,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, onUnmounted } from 'vue'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
-import 'vue-cropper/dist/index.css'
-import { VueCropper } from 'vue-cropper'
+import 'vue-cropper/next/dist/index.css'
+import VueCropper from 'vue-cropper/next'
+import { logger, toError } from '@/utils/logger'
 
 const localImageUrl = ref('')
 const cropperRef = ref()
@@ -110,7 +117,7 @@ const loading = ref(false)
 const loadingText = ref('确定')
 const previewUrl = ref<{
   url: string
-  img: any
+  img: Record<string, string> | null
   w: number
   h: number
 }>()
@@ -133,17 +140,27 @@ watch(
   { immediate: true }
 )
 
-const handleRealTime = (data: { url: string; img: any; w: number; h: number }) => {
+const handleRealTime = (data: { url: string; img: Record<string, string>; w: number; h: number }) => {
   previewUrl.value = data
 }
 
 const handleCrop = () => {
   loading.value = true
-  loadingText.value = '上传中...'
+  loadingText.value = '裁剪中...'
 
-  cropperRef.value?.getCropBlob((blob: Blob) => {
-    emit('crop', blob)
-  })
+  if (cropperRef.value) {
+    cropperRef.value.getCropBlob((blob: Blob) => {
+      emit('crop', blob)
+    })
+  } else {
+    // 如果裁剪器未初始化，返回原图
+    if (localImageUrl.value) {
+      fetch(localImageUrl.value)
+        .then((res) => res.blob())
+        .then((blob) => emit('crop', blob))
+        .catch((err) => logger.error('获取头像blob失败:', toError(err)))
+    }
+  }
 }
 
 /** 关闭裁剪窗口 */
@@ -167,7 +184,6 @@ defineExpose<AvatarCropperInstance>({
   finishLoading
 })
 
-// 确保在组件卸载时清理预览
 onUnmounted(() => {
   previewUrl.value = {
     url: '',

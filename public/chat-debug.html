@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聊天界面调试</title>
+  <style>
+    body {
+      font-family: 'PingFang', sans-serif;
+      background: radial-gradient(
+        circle at top left,
+        rgba(255, 209, 255, 0.3) 20%,
+        rgba(130, 193, 187, 0.3) 100%
+      );
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .debug-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #13987f;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border-left: 4px solid #13987f;
+    }
+
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+
+    .status.ok {
+      background: #f0f9eb;
+      color: #52c41a;
+    }
+
+    .status.error {
+      background: #fef0f0;
+      color: #f5222d;
+    }
+
+    .status.warning {
+      background: #fffbe6;
+      color: #faad14;
+    }
+
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .debug-button {
+      background: #13987f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .debug-button:hover {
+      background: #0f7d69;
+    }
+
+    .debug-result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0f9eb;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .route-info {
+      font-family: monospace;
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .component-check {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .check-item {
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="debug-container">
+    <h1>🔧 聊天界面调试工具</h1>
+
+    <div class="status warning">
+      聊天界面只显示渐变背景，但没有实际的聊天组件
+    </div>
+
+    <div class="section">
+      <h2>当前路由信息</h2>
+      <div class="route-info" id="routeInfo">/</div>
+      <p>当前路由应该包含 "/message" 才能显示聊天界面</p>
+    </div>
+
+    <div class="section">
+      <h2>组件检查</h2>
+      <div class="component-check">
+        <div class="check-item">
+          <strong>ChatIntegration 组件</strong>
+          <div id="chatIntegrationStatus" class="status error">未找到</div>
+        </div>
+        <div class="check-item">
+          <strong>ChatBox 组件</strong>
+          <div id="chatBoxStatus" class="status error">未找到</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>CSS 变量检查</h2>
+      <div class="status">
+        <strong>--right-theme-bg-color:</strong>
+        <code id="var1">检查中...</code>
+      </div>
+      <div class="status">
+        <strong>--hula-primary:</strong>
+        <code id="var2">检查中...</code>
+      </div>
+      <div class="status">
+        <strong>--chat-integration 样式:</strong>
+        <code id="var3">检查中...</code>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>调试工具</h2>
+      <button class="debug-button" onclick="checkComponents()">检查组件</button>
+      <button class="debug-button" onclick="applyFix()">应用修复</button>
+      <button class="debug-button" onclick="showChatElements()">显示聊天元素</button>
+      <button class="debug-button" onclick="forceShow()">强制显示</button>
+    </div>
+
+    <div class="debug-result" id="debugResult">
+      <h3>调试结果</h3>
+      <div id="debugOutput"></div>
+    </div>
+
+    <div class="section">
+      <h2>可能的原因</h2>
+      <ol>
+        <li>路由不正确 - 当前路径不包含 "/message"</li>
+        <li>组件未正确导入或注册</li>
+        <li>CSS 样式冲突导致隐藏</li>
+        <li>组件渲染条件不满足</li>
+        <li>Vue 组件编译错误</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    // 检查路由
+    const currentPath = window.location.pathname;
+    document.getElementById('routeInfo').textContent = currentPath;
+
+    if (currentPath.includes('/message')) {
+      document.getElementById('routeInfo').style.color = '#52c41a';
+    } else {
+      document.getElementById('routeInfo').style.color = '#f5222d';
+    }
+
+    // 检查CSS变量
+    const rootStyle = getComputedStyle(document.documentElement);
+
+    const checkVars = () => {
+      const var1 = rootStyle.getPropertyValue('--right-theme-bg-color') || '未定义';
+      const var2 = rootStyle.getPropertyValue('--hula-primary') || '未定义';
+      const var3 = rootStyle.getPropertyValue('--chat-integration') || '未定义';
+
+      document.getElementById('var1').textContent = var1;
+      document.getElementById('var2').textContent = var2;
+      document.getElementById('var3').textContent = var3;
+
+      if (var1 !== '未定义') {
+        document.getElementById('var1').parentElement.className = 'status ok';
+      }
+      if (var2 !== '未定义') {
+        document.getElementById('var2').parentElement.className = 'status ok';
+      }
+      if (var3 !== '未定义') {
+        document.getElementById('var3').parentElement.className = 'status ok';
+      }
+    };
+
+    // 立即检查
+    checkVars();
+
+    // 检查组件
+    function checkComponents() {
+      const result = document.getElementById('debugOutput');
+      let output = '<h3>组件检查结果:</h3>';
+
+      // 检查ChatIntegration
+      const chatIntegrations = document.querySelectorAll('.chat-integration, [class*="chat-integration"]');
+      if (chatIntegrations.length > 0) {
+        document.getElementById('chatIntegrationStatus').textContent = '找到 ' + chatIntegrations.length + ' 个';
+        document.getElementById('chatIntegrationStatus').className = 'status ok';
+        output += '<p>✅ ChatIntegration 组件已找到</p>';
+      } else {
+        output += '<p>❌ ChatIntegration 组件未找到</p>';
+      }
+
+      // 检查ChatBox
+      const chatBoxes = document.querySelectorAll('.chat-box, [class*="chat-box"]');
+      if (chatBoxes.length > 0) {
+        document.getElementById('chatBoxStatus').textContent = '找到 ' + chatBoxes.length + ' 个';
+        document.getElementById('chatBoxStatus').className = 'status ok';
+        output += '<p>✅ ChatBox 组件已找到</p>';
+      } else {
+        output += '<p>❌ ChatBox 组件未找到</p>';
+      }
+
+      result.innerHTML = output;
+      document.getElementById('debugResult').style.display = 'block';
+    }
+
+    // 应用修复
+    function applyFix() {
+      const style = document.createElement('style');
+      style.textContent = `
+        /* 强制显示聊天组件 */
+        .chat-integration, .chat-box, .chat-container {
+          display: flex !important;
+          flex-direction: column !important;
+          height: 100vh !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+          position: relative !important;
+          z-index: 1 !important;
+        }
+
+        .chat-integration > *, .chat-box > * {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        /* 确保右侧面板显示 */
+        .layout-right, main[data-tauri-drag-region] {
+          background: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* 调试边框 */
+        .chat-integration {
+          border: 2px dashed #13987f !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      document.getElementById('debugOutput').innerHTML = '<h3>修复已应用</h3><p>已添加强制显示聊天组件的样式</p>';
+      document.getElementById('debugResult').style.display = 'block';
+    }
+
+    // 显示聊天元素
+    function showChatElements() {
+      const elements = document.querySelectorAll('*');
+      let chatElements = [];
+
+      elements.forEach(el => {
+        const className = el.className || '';
+        const id = el.id || '';
+
+        if (className.includes('chat') || id.includes('chat') ||
+            className.includes('Chat') || id.includes('Chat')) {
+          chatElements.push(el);
+        }
+      });
+
+      const output = '<h3>找到的聊天相关元素:</h3>';
+      chatElements.forEach((el, index) => {
+        output += `<p>${index + 1}. Tag: ${el.tagName}, Class: ${el.className || '无'}, ID: ${el.id || '无'}</p>`;
+      });
+
+      document.getElementById('debugOutput').innerHTML = output;
+      document.getElementById('debugResult').style.display = 'block';
+    }
+
+    // 强制显示
+    function forceShow() {
+      // 强制显示所有可能包含聊天的容器
+      const containers = document.querySelectorAll('main, .flex-1, [class*="flex"], [class*="chat"]');
+      containers.forEach(container => {
+        if (container.style.display === 'none') {
+          container.style.display = 'flex';
+        }
+        if (container.style.visibility === 'hidden') {
+          container.style.visibility = 'visible';
+        }
+        if (container.style.opacity === '0') {
+          container.style.opacity = '1';
+        }
+      });
+
+      document.getElementById('debugOutput').innerHTML = '<h3>强制显示完成</h3><p>已清除所有隐藏样式</p>';
+      document.getElementById('debugResult').style.display = 'block';
+    }
+
+    // 设置CSS变量
+    document.documentElement.style.setProperty('--hula-primary', '#64a29c');
+    document.documentElement.style.setProperty('--right-theme-bg-color', 'radial-gradient(circle at top left, rgba(255, 209, 255, 0.3) 20%, rgba(130, 193, 187, 0.3) 100%)');
+
+    // 5秒后自动检查
+    setTimeout(() => {
+      checkComponents();
+    }, 1000);
+  </script>
+</body>
+</html>

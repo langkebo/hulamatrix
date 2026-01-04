@@ -4,13 +4,18 @@
     data-tauri-drag-region
     id="center"
     :class="{ 'rounded-r-8px': shrinkStatus }"
-    class="resizable select-none flex flex-col border-r-(1px solid [--right-chat-footer-line-color])"
+    class="resizable select-none flex flex-col border-r-(1px solid [--right-chat-footer-line-color]) pr-24px box-border"
     :style="centerStyle">
     <!-- 分隔条 -->
-    <div v-show="!shrinkStatus" class="resize-handle transition-all duration-600 ease-in-out" @mousedown="initDrag">
+    <div
+      v-if="!shrinkStatus && !isManageRoute"
+      class="resize-handle transition-all duration-600 ease-in-out pointer-events-none">
       <div :class="{ 'opacity-100': isDragging }" class="transition-all duration-600 ease-in-out opacity-0 drag-icon">
-        <div style="border-radius: 8px 0 0 8px" class="bg-#c8c8c833 h-60px w-14px absolute top-40% right-0 drag-icon">
-          <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 color-#909090">
+        <div
+          style="border-radius: 8px 0 0 8px"
+          class="bg-#c8c8c833 h-60px w-14px absolute top-40% right--18px drag-icon pointer-events-auto z-10"
+          @mousedown="initDrag">
+          <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500">
             <use href="#sliding"></use>
           </svg>
         </div>
@@ -25,7 +30,7 @@
       :current-label="appWindow.label" />
 
     <!-- 顶部搜索栏 -->
-    <header class="mt-30px pb-10px flex-1 flex-col-x-center border-b-(1px solid [--right-chat-footer-line-color])">
+    <header class="mt-30px pb-10px flex-col-x-center border-b-(1px solid [--right-chat-footer-line-color])">
       <div class="flex-center gap-5px w-full pr-16px pl-16px box-border">
         <n-input
           id="search"
@@ -76,9 +81,27 @@
       </div>
     </header>
 
-    <!-- 列表 -->
-    <div id="centerList" class="h-full" :class="{ 'shadow-inner': page.shadow }">
-      <router-view v-slot="{ Component }">
+    <!-- 中间栏：当选中空间时显示空间树，否则显示原列表 -->
+    <div
+      id="centerList"
+      class="h-full overflow-y-auto overflow-x-auto pr-24px box-border"
+      :class="{ 'shadow-inner': page.shadow }">
+      <div v-if="devBackendError" class="w-full h-full flex items-center justify-center">
+        <div
+          class="rounded-8px border-(1px solid [--right-chat-footer-line-color]) p-24px w-420px text-center bg-[--bg-edit]">
+          <div class="mb-16px">
+            <svg class="size-42px text-error"><use href="#close"></use></svg>
+          </div>
+          <div class="text-(18px [--text-color]) mb-8px)">加载失败</div>
+          <div class="text-(12px [--chat-text-color]) mb-16px)">{{ devBackendMsg }}</div>
+          <n-flex :size="12" justify="center">
+            <n-button :color="'#13987f'" @click="handleRetry">重试</n-button>
+            <n-button secondary @click="handleRefresh">刷新</n-button>
+          </n-flex>
+        </div>
+      </div>
+      <SpaceTree v-if="showSpaceTree && !devBackendError" @room-selected="handleOpenRoom" />
+      <router-view v-else v-slot="{ Component }">
         <keep-alive :include="['message', 'friendsList']">
           <component :is="Component" />
         </keep-alive>
@@ -127,7 +150,7 @@
             :render-target-label="renderLabel" />
 
           <n-flex align="center" justify="center" class="p-16px">
-            <n-button :disabled="selectedValue.length < 2" color="#13987f" @click="handleCreateGroup">
+            <n-button :disabled="selectedValue.length < 2" :color="'#13987f'" @click="handleCreateGroup">
               {{ t('home.create_group.action') }}
             </n-button>
           </n-flex>
@@ -138,18 +161,23 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, onMounted, onUnmounted, ref, watch, shallowRef, watchEffect, computed } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useWindowSize } from '@vueuse/core'
 import { MittEnum } from '@/enums'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
-import { useChatStore } from '@/stores/chat.ts'
-import { useGlobalStore } from '@/stores/global.ts'
+import SpaceTree from '@/layout/left/components/SpaceTree.vue'
+import { useSpacesStore } from '@/stores/spaces'
+import { useChatStore } from '@/stores/chat'
+import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { useSettingStore } from '@/stores/setting.ts'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { useSettingStore } from '@/stores/setting'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
+import { sdkCreateRoom } from '@/services/rooms'
+
+import { msg } from '@/utils/SafeUI'
 import { options, renderLabel, renderSourceList, renderTargetList } from './model.tsx'
 import { useI18n } from 'vue-i18n'
 
@@ -157,21 +185,30 @@ const { t } = useI18n()
 const { createWebviewWindow } = useWindow()
 
 const chatStore = useChatStore()
+const spacesStore = useSpacesStore()
 const settingStore = useSettingStore()
 const globalStore = useGlobalStore()
 const groupStore = useGroupStore()
-const { page } = storeToRefs(settingStore)
-const appWindow = WebviewWindow.getCurrent()
+const page = computed(() => settingStore.page)
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
+// App window interface (Tauri WebviewWindow or web fallback)
+interface AppWindow {
+  label: string
+  [key: string]: unknown
+}
+
+const appWindow: AppWindow = isTauri ? (WebviewWindow.getCurrent() as unknown as AppWindow) : { label: 'web' }
 const selectedValue = ref<string[]>([])
 const createGroupModal = ref(false)
 const preSelectedFriendId = ref('')
 const isFromChatbox = ref(false) // 标记是否来自聊天框
 /** 设置最小宽度 */
-const minWidth = 160
+const minWidth = 240
 /** 设置最大宽度 */
-const maxWidth = 300
+const maxWidth = 480
 /** 初始化宽度 */
-const initWidth = ref(250)
+const initWidth = ref(360)
 /**! 使用(vueUse函数获取)视口宽度 */
 const { width } = useWindowSize()
 /** 是否拖拽 */
@@ -274,13 +311,15 @@ const centerWidth = computed(() => {
 })
 
 // 根据布局状态产出中心面板最终的 flex 配置
-const centerStyle = computed(() => {
-  const { lockThreshold, layoutWidth, collapsedWidth } = layoutMetrics.value
+const isManageRoute = computed(() => router.currentRoute.value.path.includes('/rooms/manage'))
 
-  if (shrinkStatus.value) {
+const centerStyle = computed(() => {
+  const { lockThreshold, layoutWidth } = layoutMetrics.value
+
+  if (shrinkStatus.value || isManageRoute.value) {
     return {
       flex: '1 1 auto',
-      width: `${collapsedWidth}px`,
+      width: 'auto',
       minWidth: '0',
       maxWidth: 'none'
     }
@@ -328,6 +367,33 @@ watch(selectedValue, (newValue) => {
   }
 })
 
+const showSpaceTree = computed(() => !!spacesStore.selectedSpaceId)
+const handleOpenRoom = (roomId: string) => {
+  router.push('/message')
+  useMitt.emit(MittEnum.OPEN_ROOM, { roomId })
+}
+const devBackendError = ref(false)
+const devBackendMsg = ref('后端未接入（DEV 降级），部分会话操作仅更新本地状态')
+const handleRetry = async () => {
+  devBackendError.value = false
+  try {
+    await spacesStore.refresh()
+  } catch {
+    devBackendError.value = true
+  }
+}
+const handleRefresh = () => {
+  window.location.reload()
+}
+onMounted(() => {
+  window.addEventListener('backend-disconnected', (e: Event) => {
+    const ce = e as CustomEvent<unknown>
+    devBackendError.value = true
+    devBackendMsg.value = '后端未接入（DEV 降级），部分会话操作仅更新本地状态'
+    void ce
+  })
+})
+
 const resetCreateGroupState = () => {
   selectedValue.value = []
   preSelectedFriendId.value = ''
@@ -338,10 +404,14 @@ const resetCreateGroupState = () => {
 const handleCreateGroup = async () => {
   if (selectedValue.value.length < 2) return
   try {
-    const result: any = await ImRequestUtils.createGroup({ uidList: selectedValue.value })
+    // 使用 Matrix SDK 创建房间
+    const result = (await sdkCreateRoom(selectedValue.value)) as {
+      roomId?: string | number
+      id?: string | number
+    }
 
     // 创建成功后刷新会话列表以显示新群聊
-    await chatStore.getSessionList(true)
+    await chatStore.getSessionList()
 
     const resultRoomId = result?.roomId != null ? String(result.roomId) : undefined
     const resultId = result?.id != null ? String(result.id) : undefined
@@ -364,9 +434,9 @@ const handleCreateGroup = async () => {
     }
 
     resetCreateGroupState()
-    window.$message.success(t('home.create_group.success'))
+    msg.success(t('home.create_group.success'))
   } catch (error) {
-    window.$message.error(t('home.create_group.fail'))
+    msg.error(t('home.create_group.fail'))
   }
 }
 

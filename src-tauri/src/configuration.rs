@@ -88,9 +88,9 @@ impl DatabaseSettings {
                     db_path
                 }
                 Err(e) => {
-                    let error_msg = format!("Mobile: Failed to get app_data_dir: {}", e);
+                    let error_msg = format!("Mobile: Failed to get app_data_dir: {e}");
                     tracing::error!("{}", error_msg);
-                    return Err(CommonError::RequestError(error_msg).into());
+                    return Err(CommonError::RequestError(error_msg));
                 }
             }
         };
@@ -111,7 +111,7 @@ impl DatabaseSettings {
 
         let db: DatabaseConnection = Database::connect(opt)
             .await
-            .map_err(|e| anyhow::anyhow!("Database connection failed: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Database connection failed: {e}"))?;
         Ok(db)
     }
 }
@@ -122,6 +122,7 @@ impl Environment {
     ///
     /// # 返回值
     /// * `&'static str` - 对应的环境字符串
+    #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Local => "local",
@@ -147,15 +148,14 @@ impl TryFrom<String> for Environment {
             "local" => Ok(Self::Local),
             "production" => Ok(Self::Production),
             other => Err(format!(
-                "{} is not a supported environment. Use either `local` or `production`.",
-                other
+                "{other} is not a supported environment. Use either `local` or `production`."
             )),
         }
     }
 }
 
 /// 获取应用程序配置
-/// 根据APP_ENVIRONMENT环境变量确定运行环境，按优先级加载配置：
+/// `根据APP_ENVIRONMENT环境变量确定运行环境，按优先级加载配置`：
 /// 1. 桌面开发环境：文件系统配置文件
 /// 2. 其他环境：资源目录配置文件
 /// 3. 回退：编译时嵌入的配置文件
@@ -250,16 +250,15 @@ fn get_config_path_buf(
     is_desktop_dev: bool,
 ) -> Result<(PathBuf, PathBuf), config::ConfigError> {
     let dir = if is_desktop_dev {
-        let base_path = std::env::current_dir().map_err(|e| {
-            config::ConfigError::Message(format!("Failed to get current dir: {}", e))
-        })?;
+        let base_path = std::env::current_dir()
+            .map_err(|e| config::ConfigError::Message(format!("Failed to get current dir: {e}")))?;
 
         base_path.join("configuration")
     } else {
         app_handle
             .path()
             .resource_dir()
-            .map_err(|e| config::ConfigError::NotFound(format!("resource not find: {}", e)))?
+            .map_err(|e| config::ConfigError::NotFound(format!("resource not find: {e}")))?
             .join("configuration")
     };
 
@@ -281,7 +280,7 @@ fn get_config_path_buf(
     };
 
     let active_config = base_config.get_string("active_config")?;
-    println!("active_config: {:?}", active_config);
+    println!("active_config: {active_config:?}");
     let active_config_path_buf = dir.clone().join(active_config);
     Ok((base_path, active_config_path_buf))
 }

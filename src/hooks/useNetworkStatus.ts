@@ -1,3 +1,6 @@
+import { ref } from 'vue'
+import { useEventManager } from '@/composables/useEventManager'
+
 /**
  * 网络状态监测钩子
  */
@@ -14,29 +17,19 @@ export const useNetworkStatus = () => {
     isOnline.value = false
   }
 
-  // 初始化网络状态监听
-  const initNetworkListener = () => {
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-  }
+  const { addWindowListener } = useEventManager()
 
-  // 清理网络状态监听
-  const cleanupNetworkListener = () => {
-    window.removeEventListener('online', handleOnline)
-    window.removeEventListener('offline', handleOffline)
+  // 初始化网络状态监听（自动清理）
+  const initNetworkListener = () => {
+    addWindowListener('online', handleOnline)
+    addWindowListener('offline', handleOffline)
   }
 
   // 自动初始化监听器
   initNetworkListener()
 
-  // 在组件卸载时清理监听器
-  onUnmounted(() => {
-    cleanupNetworkListener()
-  })
-
   return {
     isOnline,
-    initNetworkListener,
-    cleanupNetworkListener
+    initNetworkListener
   }
 }

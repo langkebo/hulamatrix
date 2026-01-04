@@ -129,29 +129,39 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { cloneDeep } from 'es-toolkit'
-import { storeToRefs } from 'pinia'
 import FloatBlockList from '@/components/common/FloatBlockList.vue'
 import { PluginEnum } from '@/enums'
-import { usePluginsList } from '@/layout/left/config.tsx'
-import { usePluginsStore } from '@/stores/plugins.ts'
+import { usePluginsList } from '@/layout/left/config'
+import { usePluginsStore } from '@/stores/plugins'
+
+// Local interface for plugin state management (extends base PluginItem)
+interface LocalPluginItem {
+  url: string
+  isAdd?: boolean
+  state?: PluginEnum
+  progress?: number
+  [key: string]: unknown
+}
 
 const { t } = useI18n()
 const appWindow = WebviewWindow.getCurrent()
 const pluginsStore = usePluginsStore()
 const pluginsList = usePluginsList()
-const { plugins } = storeToRefs(pluginsStore)
+const plugins = computed(() => pluginsStore.plugins)
 const isCurrently = ref(-1)
-const allPlugins = ref([] as STO.Plugins<PluginEnum>[])
-const pluginsLists = ref<STO.Plugins<PluginEnum>[]>(cloneDeep(pluginsList.value))
+const allPlugins = ref<LocalPluginItem[]>([])
+const pluginsLists = ref<LocalPluginItem[]>(cloneDeep(pluginsList.value) as LocalPluginItem[])
 
 // 同步插件状态
-const syncPlugins = (list: STO.Plugins<PluginEnum>[]) =>
-  list.map((item: STO.Plugins<PluginEnum>) => {
-    const matched = plugins.value.find((z: STO.Plugins<PluginEnum>) => z.url === item.url)
+const syncPlugins = (list: LocalPluginItem[]) =>
+  list.map((item: LocalPluginItem) => {
+    const matchedIndex = plugins.value.findIndex((z) => z.url === item.url)
+    const matched = matchedIndex !== -1 ? plugins.value[matchedIndex] : undefined
     return matched
       ? {
           ...item,
@@ -161,12 +171,12 @@ const syncPlugins = (list: STO.Plugins<PluginEnum>[]) =>
       : item
   })
 
-const handleState = (plugin: STO.Plugins<PluginEnum>) => {
+const handleState = (plugin: LocalPluginItem) => {
   if (plugin.state === PluginEnum.INSTALLED) return
   plugin.state = PluginEnum.DOWNLOADING
   const interval = setInterval(() => {
-    if (plugin.progress < 100) {
-      plugin.progress += 50
+    if ((plugin.progress ?? 0) < 100) {
+      plugin.progress = (plugin.progress ?? 0) + 50
     } else {
       clearInterval(interval)
       plugin.state = PluginEnum.INSTALLED
@@ -176,7 +186,7 @@ const handleState = (plugin: STO.Plugins<PluginEnum>) => {
   }, 500)
 }
 
-const handleUnload = (plugin: STO.Plugins<PluginEnum>) => {
+const handleUnload = (plugin: LocalPluginItem) => {
   plugin.state = PluginEnum.UNINSTALLING
   setTimeout(() => {
     handleDelete(plugin)
@@ -186,7 +196,7 @@ const handleUnload = (plugin: STO.Plugins<PluginEnum>) => {
   }, 2000)
 }
 
-const handleDelete = (p: STO.Plugins<PluginEnum>) => {
+const handleDelete = (p: LocalPluginItem) => {
   const plugin = plugins.value.find((i) => i.url === p.url)
   if (plugin) {
     setTimeout(() => {
@@ -197,7 +207,7 @@ const handleDelete = (p: STO.Plugins<PluginEnum>) => {
   }
 }
 
-const handleAdd = (p: STO.Plugins<PluginEnum>) => {
+const handleAdd = (p: LocalPluginItem) => {
   const plugin = plugins.value.find((i) => i.url === p.url)
   if (plugin) {
     setTimeout(() => {
@@ -218,7 +228,7 @@ const closeMenu = (event: Event) => {
 watch(
   pluginsList,
   (latest) => {
-    pluginsLists.value = cloneDeep(latest)
+    pluginsLists.value = cloneDeep(latest) as LocalPluginItem[]
     allPlugins.value = syncPlugins(pluginsLists.value)
   },
   { immediate: false }

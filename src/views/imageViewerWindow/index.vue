@@ -111,16 +111,23 @@ import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewW
 import { save } from '@tauri-apps/plugin-dialog'
 import { NTooltip } from 'naive-ui'
 import ActionBar from '@/components/windows/ActionBar.vue'
-import { useDownload } from '@/hooks/useDownload'
+import { fileService } from '@/services/file-service'
+import { writeFile, BaseDirectory } from '@tauri-apps/plugin-fs'
 import { useImageViewer as useImageViewerHook } from '@/hooks/useImageViewer'
 import { useTauriListener } from '@/hooks/useTauriListener'
-import { useImageViewer as useImageViewerStore } from '@/stores/imageViewer.ts'
 import { useI18n } from 'vue-i18n'
+import { ref, reactive, computed, useTemplateRef, onMounted, onUnmounted } from 'vue'
 
 const { t } = useI18n()
 const { addListener } = useTauriListener()
-const { downloadFile } = useDownload()
-const imageViewerStore = useImageViewerStore()
+const downloadFile = async (url: string, savePath: string, baseDir: BaseDirectory = BaseDirectory.AppData) => {
+  const res = await fileService.downloadWithResume(url)
+  const blob = res.blob as Blob
+  const buffer = await blob.arrayBuffer()
+  const data = new Uint8Array(buffer)
+  await writeFile(savePath, data, { baseDir })
+}
+const imageViewerStore = reactive({ isSingleMode: false, singleImage: '', imageList: [] as string[], currentIndex: 0 })
 const { downloadOriginalByIndex } = useImageViewerHook()
 const appWindow = WebviewWindow.getCurrent()
 
@@ -277,7 +284,7 @@ const resetImage = (immediate = false) => {
 }
 
 const saveImage = async () => {
-  const imageUrl = currentImage.value
+  const imageUrl = currentImage.value || ''
   const suggestedName = imageUrl.split('/').pop() || 'image.png'
 
   const savePath = await save({
@@ -291,7 +298,7 @@ const saveImage = async () => {
   })
 
   if (savePath) {
-    await downloadFile(imageUrl, savePath)
+    await downloadFile(imageUrl || '', savePath)
   }
 }
 
@@ -378,7 +385,7 @@ onMounted(async () => {
   await getCurrentWebviewWindow().show()
 
   await addListener(
-    appWindow.listen('update-image', (event: any) => {
+    appWindow.listen('update-image', (event: { payload: { index: number } }) => {
       const { index } = event.payload
       imageList.value = imageViewerStore.imageList
       syncCurrentIndex(index)

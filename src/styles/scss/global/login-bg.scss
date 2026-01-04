@@ -22,6 +22,12 @@
   animation: 8s movement linear infinite;
 }
 
+.simple-bg {
+  background-image: none;
+  animation: none;
+  background-color: #f7f7f8;
+}
+
 @keyframes movement {
   0%,
   100% {

@@ -137,22 +137,24 @@
   </n-flex>
 </template>
 <script setup lang="tsx">
+import { ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { NSwitch } from 'naive-ui'
 import { CloseBxEnum, ShowModeEnum } from '@/enums'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useSettingStore } from '@/stores/setting'
 import { isWindows } from '@/utils/PlatformConstants'
-import { useFontOptions, useTranslateOptions, langOptions } from './config.ts'
-import { useTopicsList } from './model.tsx'
+import { useFontOptions, useTranslateOptions, langOptions } from './config'
+import { useTopicsList } from './model'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const appWindow = WebviewWindow.getCurrent()
 const settingStore = useSettingStore()
 const { themes, tips, chat, page } = settingStore
-const { showMode, escClose } = storeToRefs(settingStore)
+const showMode = computed(() => settingStore.showMode)
+const escClose = computed(() => settingStore.escClose)
 const activeItem = ref<string>(themes.pattern)
 const topicsList = useTopicsList()
 const translateOptions = useTranslateOptions()
@@ -160,7 +162,7 @@ const fontOptions = useFontOptions()
 
 const showText = computed({
   get: () => showMode.value === ShowModeEnum.TEXT,
-  set: async (v: any) => {
+  set: async (v: boolean) => {
     settingStore.setShowMode(v ? ShowModeEnum.TEXT : ShowModeEnum.ICON)
     await setHomeHeight()
     await emitTo(appWindow.label, 'startResize')
@@ -180,6 +182,8 @@ const setHomeHeight = async () => {
 </script>
 <style scoped lang="scss">
 .item {
-  @apply bg-[--bg-setting-item] rounded-12px size-full p-12px box-border border-(solid 1px [--line-color]) custom-shadow;
+  @apply bg-[--bg-setting-item] rounded-12px size-full box-border border-(solid 1px [--line-color]) custom-shadow;
+  padding: var(--pad-container-x);
+  font-size: clamp(12px, 2vw, 14px);
 }
 </style>

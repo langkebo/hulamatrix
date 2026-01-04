@@ -16,7 +16,7 @@ svg {
 ::selection {
   background: rgba(19, 152, 127, 0.3); /** 输入框选中文本背景色 */
 }
-/**! 主题变量 */
+/**! 主题变量 - 基于HuLa配色方案 */
 /* todo: 这里只需要定义单个颜色的变量即可无需重复定义组件的颜色 */
 :root {
   // 是否启用阴影
@@ -25,11 +25,24 @@ svg {
   --font-family: 'PingFang';
   // 是否启用透明高斯模糊
   --blur-enabled: 1;
-    // 应用背景色
+    // 应用背景色 - 使用HuLa的渐变背景
   --app-bg-color: #FAFAFA;
+  --app-bg-gradient: radial-gradient(
+    circle at top left,
+    rgba(255, 209, 255, 0.3) 20%,
+    rgba(130, 193, 187, 0.3) 100%
+  );
 
   --center-bg-color: #fff;
   --right-bg-color: #f1f1f1;
+
+  // HuLa主色调 - 青色系
+  --hula-primary: #64a29c;
+  --hula-primary-light: #82b2ac;
+  --hula-primary-dark: #4d8b85;
+  --hula-accent: #13987f;
+  --hula-accent-hover: #0f7d69;
+  --hula-accent-active: #0c6354;
   // 阴影样式的颜色
   --box-shadow-color: rgba(0, 0, 0, 0.08);
   // 文字颜色
@@ -131,7 +144,24 @@ svg {
   // --safe-area-inset-right: 0px;
   // --safe-area-inset-bottom: 16px;
   // --safe-area-inset-left: 0px;
-  --van-dialog-confirm-button-text-color: #169b80;
+  --n-dialog-confirm-color: #169b80;
+  --sz-avatar-xl: clamp(96px, 25vw, 146px);
+  --sz-avatar-lg: clamp(80px, 22vw, 106px);
+  --pad-container-x: clamp(16px, 3vw, 40px);
+  --touch-min-h: clamp(44px, 6vh, 56px);
+  --sz-chat-bubble-pad-x: clamp(10px, 2vw, 16px);
+  --sz-chat-bubble-pad-y: clamp(6px, 1.2vw, 10px);
+  --sz-chat-bubble-radius: clamp(14px, 2vw, 18px);
+  --sz-chat-bubble-line-h: clamp(20px, 2.2vh, 22px);
+  --sz-chat-bubble-max-w: clamp(240px, 32vw, 720px);
+  --bubble-max-width: var(--sz-chat-bubble-max-w);
+  --sz-chat-input-min-h: clamp(36px, 6vh, 62px);
+  --sz-chat-input-min-h-mobile: 2.5rem;
+  --sz-chat-input-line-h: 20px;
+  --sz-chat-input-line-h-mobile: 2rem;
+  --sz-chat-input-pad-x: clamp(8px, 1.5vw, 16px);
+  --sz-chat-input-pad-y: clamp(4px, 1vh, 8px);
+  --sz-chat-input-font-size: 14px;
 }
 
 html[data-theme='dark'] {
@@ -233,6 +263,16 @@ html[data-theme='dark'] {
   --group-notice-list-bg: #262626;
   // 文件文本的背景颜色
   --file-bg-color: #222;
+}
+@media (min-width: 640px) {
+  :root {
+    --sz-chat-bubble-max-w: clamp(280px, 42vw, 720px);
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --sz-chat-bubble-max-w: clamp(320px, 36vw, 840px);
+  }
 }
 /**! end */
 // 线性动画

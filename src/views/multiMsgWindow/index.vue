@@ -25,7 +25,7 @@
             :content="item"
             class="w-fit relative flex flex-col pl-44px text-(14px [--text-color]) leading-26px user-select-text"
             :data-key="item.fromUser.uid === userUid ? `U${item.message.id}` : `Q${item.message.id}`"
-            :special-menu="specialMenuList(item.message.type)"
+            :special-menu="(specialMenuList(item.message.type) as never)"
             @select="$event.click(item)">
             <div :class="{ bubble: !isSpecialMsgType(item.message.type) }">
               <RenderMessage
@@ -44,8 +44,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-import RenderMessage from '@/components/rightBox/renderMessage/index.vue'
+import RenderMessage from '@/components/chat/message-renderer/index.vue'
 import { MsgEnum } from '@/enums'
 import { useChatMain } from '@/hooks/useChatMain'
 import { useImageViewer } from '@/hooks/useImageViewer'
@@ -55,8 +57,9 @@ import type { MessageType, UserItem } from '@/services/types'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { getMsgList, getUserByIds } from '@/utils/ImRequestUtils'
+import { formatTimestamp } from '@/utils/ComputedTime'
+// 消息和用户查询已迁移到 Matrix SDK
+import { logger } from '@/utils/logger'
 
 type Msg = {
   msgId: string
@@ -103,7 +106,7 @@ const getAvatarSrc = (uid: string) => {
 // 获取当前页面的所有图片和表情URL
 const getAllImageUrls = computed(() => {
   const imageUrls: string[] = []
-  msgs.value.forEach((message) => {
+  msgs.value.forEach((message: MessageType) => {
     if (
       (message.message.type === MsgEnum.IMAGE || message.message.type === MsgEnum.EMOJI) &&
       message.message.body?.url
@@ -117,7 +120,7 @@ const getAllImageUrls = computed(() => {
 // 获取当前页面的所有视频URL
 const getAllVideoUrls = computed(() => {
   const videoUrls: string[] = []
-  msgs.value.forEach((message) => {
+  msgs.value.forEach((message: MessageType) => {
     if (message.message.type === MsgEnum.VIDEO && message.message.body?.url) {
       videoUrls.push(message.message.body.url)
     }
@@ -145,13 +148,24 @@ const handleVideoClick = async (videoUrl: string) => {
 }
 
 const getAllMsg = async () => {
-  const msgIds = choosedMsgs.value.map((msg) => msg.msgId)
-  msgs.value = await getMsgList({ msgIds })
+  // 消息已经在 choosedMsgs 中，直接转换为 MessageType
+  // choosedMsgs 实际上是传入的完整消息数据（从 route.query.key 获取）
+  // 需要将其转换为 MessageType 格式
+  msgs.value = choosedMsgs.value as unknown as MessageType[]
 }
 
 const getAllUserInfo = async () => {
   const uids = choosedMsgs.value.map((msg) => msg.fromUid)
-  users.value = await getUserByIds(uids)
+  try {
+    // 使用 Matrix SDK 获取用户信息
+    const { userQueryService } = await import('@/services/userQueryService')
+    const userInfo = await userQueryService.getUsersByIds(uids)
+    users.value = userInfo as UserItem[]
+  } catch (error) {
+    logger.error('获取用户信息失败:', error)
+    // 降级：使用 userId 作为后备
+    users.value = uids.map((uid) => ({ uid, name: uid })) as UserItem[]
+  }
 }
 
 onMounted(async () => {
@@ -163,7 +177,7 @@ onMounted(async () => {
       await getAllUserInfo()
     })
     .catch((e) => {
-      console.error(e)
+      logger.error(e)
     })
 })
 </script>

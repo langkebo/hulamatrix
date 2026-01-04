@@ -23,6 +23,10 @@
   user-select: none !important;
   -webkit-user-select: none !important;
   -webkit-touch-callout: none !important;
+  --chat-text-color: #333;
+  --chat-bg-color: #ffffff;
+  --btn-primary-bg: #13987f;
+  --btn-primary-text: #ffffff;
 }
 
 /* 移动端特定样式 */
@@ -31,10 +35,82 @@
   top: var(--safe-area-inset-top);
 }
 
+.dark,
+[data-theme='DARK'],
+[data-theme='dark'] {
+  --chat-text-color: #e6e6e6;
+  --chat-bg-color: #111315;
+  --btn-primary-bg: #13987f;
+  --btn-primary-text: #ffffff;
+}
+
+.mobile-page-bg {
+  background-color: var(--chat-bg-color);
+}
+
 .chat-message-max-width {
   max-width: fit-content;
 }
 
 .chat-bot-message-gap {
   gap: 4px;
+}
+
+.typing-hint{
+  font-size: 12px;
+  color: var(--chat-text-color);
+  background: rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 4px 8px;
+  backdrop-filter: blur(4px);
+}
+.dot-online{
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #1aaa55;
+}
+.mobile-action-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  background-color: var(--chat-bg-color);
+  box-shadow: 0 -3px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-primary-btn {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .mobile-primary-btn {
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.06);
+}
+[data-theme='dark'] .n-dialog,
+[data-theme='dark'] .n-modal,
+[data-theme='dark'] .n-card,
+[data-theme='dark'] .n-dropdown-menu,
+[data-theme='dark'] .n-popover {
+  border-radius: 12px;
+}
+
+.n-dialog,
+.n-modal,
+.n-card,
+.n-dropdown-menu,
+.n-popover {
+  border-radius: 12px;
+}
+
+.n-dialog__action {
+  gap: 12px;
+}
+
+.n-upload,
+.n-upload-trigger,
+.n-upload-file-list {
+  border-radius: 8px;
 }

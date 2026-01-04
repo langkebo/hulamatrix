@@ -1,10 +1,10 @@
 import { MsgEnum, RoomTypeEnum } from '@/enums'
-import { useCommon } from '@/hooks/useCommon.ts'
+import { useCommon } from '@/hooks/useCommon'
 import type { MessageType } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
-import { renderReplyContent } from '@/utils/RenderReplyContent.ts'
+import { renderReplyContent } from '@/utils/RenderReplyContent'
 
 /**
  * 用于处理消息内容展示的hook，包括@提醒和撤回消息处理
@@ -132,10 +132,12 @@ export const useReplaceMsg = () => {
     }
 
     // 正常消息，处理内容
+    const bodyContent = message.message?.body?.content
+    const content = typeof bodyContent === 'string' ? bodyContent : JSON.stringify(bodyContent)
     return renderReplyContent(
       senderName,
       message.message?.type,
-      message.message?.body?.content || message.message?.body,
+      content || JSON.stringify(message.message?.body),
       roomType
     ) as string
   }

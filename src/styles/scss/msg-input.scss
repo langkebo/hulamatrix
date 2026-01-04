@@ -1,13 +1,13 @@
 #message-input {
-  padding: 4px 24px 4px 4px; /** 输入框内填充 */
-  font-size: 14px; /** 字体大小 */
+  padding: var(--sz-chat-input-pad-y) calc(var(--sz-chat-input-pad-x) * 1.5) var(--sz-chat-input-pad-y) var(--sz-chat-input-pad-x);
+  font-size: var(--sz-chat-input-font-size);
   color: inherit; /** 继承颜色 */
   cursor: text; /** 文本输入光标 */
   resize: none; /** 不允许调整尺寸 */
   background: none; /** 无背景 */
   border: none; /** 边框样式，可根据需求修改 */
   border-radius: 0; /** 边框圆角 */
-  line-height: 20px; /** 行高 */
+  line-height: var(--sz-chat-input-line-h);
   overflow-y: visible; /** 由 n-scrollbar 组件处理滚动 */
   overflow-x: hidden; /** 内容过多时不允许横向滚动 */
   flex: 1; /** 弹性盒自适应填充可用空间 */

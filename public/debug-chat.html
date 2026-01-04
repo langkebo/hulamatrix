@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聊天界面调试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'PingFang', sans-serif;
+      background: radial-gradient(
+        circle at top left,
+        rgba(255, 209, 255, 0.3) 20%,
+        rgba(130, 193, 187, 0.3) 100%
+      );
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .debug-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #13987f;
+      margin-bottom: 20px;
+    }
+
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+
+    .status.ok {
+      background: #f0f9eb;
+      border-left: 4px solid #52c41a;
+      color: #52c41a;
+    }
+
+    .status.error {
+      background: #fef0f0;
+      border-left: 4px solid #f5222d;
+      color: #f5222d;
+    }
+
+    .status.warning {
+      background: #fffbe6;
+      border-left: 4px solid #faad14;
+      color: #faad14;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e3e3e3;
+    }
+
+    .checklist li::before {
+      content: "✓ ";
+      color: #52c41a;
+      font-weight: bold;
+    }
+
+    .code-block {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .fix-button {
+      background: #13987f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+
+    .fix-button:hover {
+      background: #0f7d69;
+    }
+  </style>
+</head>
+<body>
+  <div class="debug-container">
+    <h1>🔧 HuLamatrix 聊天界面调试工具</h1>
+
+    <div class="status ok">
+      ✓ 背景渐变已成功应用
+    </div>
+
+    <div class="status warning">
+      ⚠️ 如果聊天界面不显示，请检查以下项目：
+    </div>
+
+    <h2>检查清单</h2>
+    <ul class="checklist">
+      <li>确保 ChatIntegration 组件正确导入</li>
+      <li>检查 ChatBox 组件路径是否正确</li>
+      <li>确认 CSS 变量已定义</li>
+      <li>验证 z-index 层级设置</li>
+      <li>检查是否有 display: none 样式</li>
+    </ul>
+
+    <h2>CSS 变量检查</h2>
+    <div class="code-block">
+      <p>--hula-primary: <span id="var-primary"></span></p>
+      <p>--right-theme-bg-color: <span id="var-bg"></span></p>
+      <p>--text-color: <span id="var-text"></span></p>
+    </div>
+
+    <h2>修复建议</h2>
+    <div style="margin-top: 20px;">
+      <button class="fix-button" onclick="applyFix1()">修复 1: 强制显示聊天容器</button>
+      <button class="fix-button" onclick="applyFix2()">修复 2: 重置 z-index</button>
+      <button class="fix-button" onclick="applyFix3()">修复 3: 清除隐藏样式</button>
+    </div>
+
+    <div id="fix-result" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    // 检查CSS变量
+    const rootStyle = getComputedStyle(document.documentElement);
+    document.getElementById('var-primary').textContent = rootStyle.getPropertyValue('--hula-primary') || '未定义';
+    document.getElementById('var-bg').textContent = rootStyle.getPropertyValue('--right-theme-bg-color') || '未定义';
+    document.getElementById('var-text').textContent = rootStyle.getPropertyValue('--text-color') || '未定义';
+
+    // 修复函数
+    function applyFix1() {
+      const style = document.createElement('style');
+      style.textContent = `
+        .chat-integration, .chat-box, .chat-container {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          height: 100% !important;
+        }
+      `;
+      document.head.appendChild(style);
+      document.getElementById('fix-result').innerHTML = '<div class="status ok">✓ 修复1已应用：强制显示聊天容器</div>';
+    }
+
+    function applyFix2() {
+      const style = document.createElement('style');
+      style.textContent = `
+        .layout-right, .right-panel {
+          position: relative !important;
+          z-index: 1 !important;
+        }
+      `;
+      document.head.appendChild(style);
+      document.getElementById('fix-result').innerHTML = '<div class="status ok">✓ 修复2已应用：重置 z-index</div>';
+    }
+
+    function applyFix3() {
+      const elements = document.querySelectorAll('.chat-integration, .chat-box, .chat-container');
+      elements.forEach(el => {
+        el.style.display = '';
+        el.style.visibility = '';
+        el.style.opacity = '';
+      });
+      document.getElementById('fix-result').innerHTML = '<div class="status ok">✓ 修复3已应用：清除隐藏样式</div>';
+    }
+
+    // 设置CSS变量
+    document.documentElement.style.setProperty('--hula-primary', '#64a29c');
+    document.documentElement.style.setProperty('--right-theme-bg-color', 'radial-gradient(circle at top left, rgba(255, 209, 255, 0.3) 20%, rgba(130, 193, 187, 0.3) 100%)');
+    document.documentElement.style.setProperty('--text-color', '#18181c');
+  </script>
+</body>
+</html>

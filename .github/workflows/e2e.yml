@@ -1,0 +1,37 @@
+name: e2e
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  e2e:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Run vitest e2e
+        env:
+          E2E_MATRIX_SERVER: ${{ secrets.E2E_MATRIX_SERVER }}
+          E2E_MATRIX_USER: ${{ secrets.E2E_MATRIX_USER }}
+          E2E_MATRIX_PASSWORD: ${{ secrets.E2E_MATRIX_PASSWORD }}
+          E2E_PUBLIC_ROOM_ALIAS: ${{ secrets.E2E_PUBLIC_ROOM_ALIAS }}
+        run: pnpm vitest run tests/e2e --reporter=dot --isolate --passWithNoTests
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install
+      - name: Run Playwright tests
+        env:
+          E2E_MATRIX_SERVER: ${{ secrets.E2E_MATRIX_SERVER }}
+          E2E_MATRIX_USER: ${{ secrets.E2E_MATRIX_USER }}
+          E2E_MATRIX_PASSWORD: ${{ secrets.E2E_MATRIX_PASSWORD }}
+          E2E_PUBLIC_ROOM_ALIAS: ${{ secrets.E2E_PUBLIC_ROOM_ALIAS }}
+          PLAYWRIGHT_BASE_URL: ${{ secrets.PLAYWRIGHT_BASE_URL }}
+        run: pnpm exec playwright test

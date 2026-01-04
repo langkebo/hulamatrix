@@ -32,14 +32,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { CallTypeEnum, MittEnum } from '@/enums'
 import { useMitt } from '@/hooks/useMitt'
 import { useMobileStore } from '@/stores/mobile'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import rustWebSocketClient from '@/services/webSocketRust'
+import { sendMatrixRtcSignal } from '@/integrations/matrix/rtc'
 import { CallResponseStatus, WsRequestMsgType, WsResponseMessageType } from '@/services/wsType'
+import { logger } from '@/utils/logger'
+import type { MatrixRtcPayload } from '@/types/matrix'
 
 type CallPayload = {
   callerUid?: string
@@ -150,16 +154,14 @@ const handleReject = async () => {
   if (!call) return
 
   try {
-    await rustWebSocketClient.sendMessage({
-      type: WsRequestMsgType.VIDEO_CALL_RESPONSE,
-      data: {
-        callerUid: call.callerUid,
-        roomId: call.roomId,
-        accepted: CallResponseStatus.REJECTED
-      }
+    // WebSocket 已废弃，使用 Matrix RTC
+    await sendMatrixRtcSignal(call.roomId, 'reject', {
+      call_id: `call_${Date.now()}`,
+      version: 1,
+      reason: 'user_rejected'
     })
   } catch (error) {
-    console.error('发送拒绝响应失败:', error)
+    logger.error('发送拒绝响应失败:', error)
   } finally {
     clearCall()
   }
@@ -180,7 +182,7 @@ const handleAccept = async () => {
   try {
     await router.push({ path: '/mobile/rtcCall', query })
   } catch (error) {
-    console.error('跳转通话页面失败:', error)
+    logger.error('跳转通话页面失败:', error)
   } finally {
     clearCall()
   }

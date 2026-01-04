@@ -1,8 +1,12 @@
+import { logger, toError } from '@/utils/logger'
+
 import { invoke } from '@tauri-apps/api/core'
 import { appCacheDir, appDataDir, join, resourceDir } from '@tauri-apps/api/path'
 import { BaseDirectory, exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { type FileTypeResult, fileTypeFromBuffer } from 'file-type'
 import type { FilesMeta } from '@/services/types'
+
+import { msg } from '@/utils/SafeUI'
 import { isMobile } from './PlatformConstants'
 
 // Tauri 资源目录下存放用户数据的根目录名
@@ -11,8 +15,6 @@ const USER_DATA = 'userData'
 const MODELS_DIR = 'models'
 // 用户专属表情包目录名
 const EMOJIS_DIR = 'emojis'
-// AI 生成资源目录名
-const AI_DIR = 'ai'
 
 /**
  * 确保资源目录下存在 userData 根目录。
@@ -100,78 +102,6 @@ const getImageCache = (subFolder: string, userUid: string): string => {
   return 'cache/' + String(userUid) + '/' + subFolder + '/'
 }
 
-// 确保 userData/ai 根目录存在，移动端使用 AppData，桌面使用 Resource
-const ensureAiDir = async (): Promise<string> => {
-  await ensureUserDataRoot()
-  const aiRoot = await join(USER_DATA, AI_DIR)
-  const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
-  const hasAiDir = await exists(aiRoot, { baseDir })
-  if (!hasAiDir) {
-    await mkdir(aiRoot, {
-      baseDir,
-      recursive: true
-    })
-  }
-  return aiRoot
-}
-
-// 确保 AI 图片目录 userData/ai/{uid}/{conversationId} 存在，并返回相对路径
-const ensureAiConversationDir = async (userUid: string, conversationId: string): Promise<string> => {
-  const aiRoot = await ensureAiDir()
-  const aiConversationDir = await join(aiRoot, userUid, conversationId)
-  const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
-  const hasConversationDir = await exists(aiConversationDir, { baseDir })
-  if (!hasConversationDir) {
-    await mkdir(aiConversationDir, {
-      baseDir,
-      recursive: true
-    })
-  }
-  return aiConversationDir
-}
-
-// 生成 AI 图片的相对/绝对路径以及对应的 BaseDirectory 配置
-const buildAiImagePaths = async (options: {
-  userUid: string
-  conversationId: string
-  fileName: string
-}): Promise<{
-  relativePath: string
-  absolutePath: string
-  baseDir: BaseDirectory
-}> => {
-  const { userUid, conversationId, fileName } = options
-  const aiDir = await ensureAiConversationDir(userUid, conversationId)
-  const relativePath = await join(aiDir, fileName)
-  const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
-  const baseDirPath = isMobile() ? await appDataDir() : await resourceDir()
-  const absolutePath = await join(baseDirPath, relativePath)
-  return { relativePath, absolutePath, baseDir }
-}
-
-// 检查 AI 图片是否已存在，返回存在状态和路径
-export const resolveAiImagePath = async (options: {
-  userUid: string
-  conversationId: string
-  fileName: string
-}): Promise<{ exists: boolean; relativePath: string; absolutePath: string }> => {
-  const { relativePath, absolutePath, baseDir } = await buildAiImagePaths(options)
-  const existsFlag = await exists(relativePath, { baseDir })
-  return { exists: existsFlag, relativePath, absolutePath }
-}
-
-// 将 AI 图片二进制内容写入 userData/ai/{uid}/{conversationId} 并返回路径
-export const persistAiImageFile = async (options: {
-  userUid: string
-  conversationId: string
-  fileName: string
-  data: Uint8Array
-}): Promise<{ relativePath: string; absolutePath: string }> => {
-  const { relativePath, absolutePath, baseDir } = await buildAiImagePaths(options)
-  await writeFile(relativePath, options.data, { baseDir })
-  return { relativePath, absolutePath }
-}
-
 /**
  * 确保模型存储目录 userData/models 存在，并返回该目录的相对路径。
  */
@@ -235,23 +165,28 @@ export async function detectRemoteFileType(options: {
     const headResponse = await fetch(url, { method: 'HEAD' })
 
     if (!headResponse.ok) {
-      window.$message?.error('找不到文件了😞 ~')
+      msg.error?.('找不到文件了😞 ~')
       throw new Error(`文件不存在, 状态: ${headResponse.status}`)
     }
 
     // 2. 如果是空文件，直接返回 undefined
     if (fileSize === 0) {
-      console.log('文件大小为 0 字节，尝试使用后缀名检测')
+      logger.debug('文件大小为 0 字节，尝试使用后缀名检测', undefined, 'PathUtil')
       try {
         const result = await invoke<FilesMeta>('get_files_meta', { filesPath: [url] })
         const meta = result[0]
+
+        if (!meta) {
+          logger.warn(`该资源无法识别类型：${url}`)
+          return void 0
+        }
 
         return {
           ext: meta.file_type,
           mime: meta.mime_type
         }
       } catch (_error) {
-        console.warn(`该资源无法识别类型：${url}`)
+        logger.warn(`该资源无法识别类型：${url}`)
         return void 0
       }
     }
@@ -271,13 +206,17 @@ export async function detectRemoteFileType(options: {
     // 4. 如果 buffer 有数据，尝试解析文件类型
     return buffer.byteLength > 0 ? await fileTypeFromBuffer(buffer) : void 0
   } catch (error) {
-    console.error('尝试解析远程文件类型时出现错误：', error)
+    logger.error('尝试解析远程文件类型时出现错误：', toError(error))
     return void 0
   }
 }
 
 export async function getFile(absolutePath: string) {
   const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath])
+
+  if (!fileMeta) {
+    throw new Error(`Unable to get file metadata for: ${absolutePath}`)
+  }
 
   const fileData = await readFile(absolutePath)
   const fileName = fileMeta.name
@@ -286,7 +225,7 @@ export async function getFile(absolutePath: string) {
   const fileType = fileMeta?.mime_type || fileMeta?.file_type
 
   return {
-    file: new File([blob], fileName, { type: fileType }),
+    file: new File([blob], fileName, fileType ? { type: fileType } : {}),
     meta: fileMeta
   }
 }
@@ -300,7 +239,7 @@ export async function getRemoteFileSize(url: string): Promise<number | null> {
     const length = response.headers.get('content-length')
     return length ? Number(length) : null
   } catch (error) {
-    console.warn('获取远程文件大小失败:', error)
+    logger.warn('获取远程文件大小失败:', toError(error))
     return null
   }
 }
@@ -322,12 +261,10 @@ export async function getRemoteFileSize(url: string): Promise<number | null> {
  * // 查询本地绝对路径文件元信息
  * const meta = await getFilesMeta<FilesMeta>(['C:\\Users\\User\\Documents\\file.docx'])
  * if (meta[0].exists) {
- *   console.log('文件存在，类型为', meta[0].file_type)
  * }
  *
  * // 查询远程 URL 文件元信息
  * const metas = await getFilesMeta<FilesMeta>(['https://example.com/file.pdf'])
- * metas.forEach(m => console.log(m.file_type))
  */
 export async function getFilesMeta<T>(filesPath: string[]) {
   return invoke<T>('get_files_meta', {

@@ -4,6 +4,7 @@
   "settings": "设置",
   "about": "关于",
   "sign_out": "退出登录",
+  "logout": "退出登录",
   "select": "选择",
   "add_sticker": "添加表情",
   "forward": "转发",
@@ -48,6 +49,7 @@
   "delete_friend": "删除好友",
   "dissolve_group": "解散群聊",
   "leave_group": "退出群聊",
+  "clear_all_unread": "清空所有未读",
   "today": "今天",
   "yesterday": "昨天"
 }

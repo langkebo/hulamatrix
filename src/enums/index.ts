@@ -72,6 +72,10 @@ export enum MittEnum {
   APPLY_SHOW = 'applyShow',
   /** 回复消息 */
   REPLY_MEG = 'replyMsg',
+  /** 转发消息 */
+  FORWARD_MESSAGE = 'forwardMessage',
+  /** 保存媒体文件 */
+  SAVE_MEDIA = 'saveMedia',
   /** 手动触发InfoPopover */
   INFO_POPOVER = 'infoPopover',
   /** 打开个人信息编辑窗口 */
@@ -100,10 +104,6 @@ export enum MittEnum {
   CHAT_SCROLL_BOTTOM = 'chatScrollBottom',
   /** 创建群聊 */
   CREATE_GROUP = 'createGroup',
-  /** 更新提示 */
-  CHECK_UPDATE = 'checkUpdate',
-  /** 强制更新 */
-  DO_UPDATE = 'doUpdate',
   /** 视频下载状态更新 */
   VIDEO_DOWNLOAD_STATUS_UPDATED = 'videoDownloadStatusUpdated',
   /** 切换语言页面 */
@@ -121,7 +121,15 @@ export enum MittEnum {
   /** 会话切换完成*/
   SESSION_CHANGED = 'sessionChanged',
   /** 更新会话最后一条消息 */
-  UPDATE_SESSION_LAST_MSG = 'updateSessionLastMsg'
+  UPDATE_SESSION_LAST_MSG = 'updateSessionLastMsg',
+  /** Space 选中事件 */
+  SPACE_SELECTED = 'spaceSelected',
+  /** 打开房间 */
+  OPEN_ROOM = 'openRoom',
+  /** 显示创建空间弹窗 */
+  SHOW_CREATE_SPACE_MODAL = 'showCreateSpaceModal',
+  /** 刷新空间列表 */
+  REFRESH_SPACES = 'refreshSpaces'
 }
 
 /** 主题类型 */
@@ -176,6 +184,8 @@ export enum StoresEnum {
   CACHED = 'cached',
   /** 配置 */
   CONFIG = 'config',
+  /** 私密聊天 */
+  PRIVATE_CHAT = 'privateChat',
   /** 视频查看器数据 */
   VIDEOVIEWER = 'videoViewer',
   /** 文件下载管理 */
@@ -197,7 +207,18 @@ export enum StoresEnum {
   /** 缩略图缓存 */
   THUMBNAIL_CACHE = 'thumbnailCache',
   /** 初始化同步状态 */
-  INITIAL_SYNC = 'initialSync'
+  INITIAL_SYNC = 'initialSync',
+  /** 优化后的核心Store */
+  /** 媒体管理 */
+  MEDIA = 'media',
+  /** 通知管理 */
+  NOTIFICATION = 'notification',
+  /** 缓存管理 */
+  CACHE = 'cache',
+  /** 认证管理 */
+  AUTH = 'auth',
+  /** 联系人管理 */
+  CONTACT = 'contact'
 }
 
 /**
@@ -239,25 +260,10 @@ export enum MsgEnum {
   AIT,
   /** 回复 16*/
   REPLY,
-  /** AI 17*/
-  AI,
-  /** 位置 18*/
-  LOCATION
-}
-
-/**
- * AI 消息内容类型枚举
- * 用于标识 AI 生成的消息内容类型（文本、图片、视频、音频）
- */
-export enum AiMsgContentTypeEnum {
-  /** 文本 1 */
-  TEXT = 1,
-  /** 图片 2 */
-  IMAGE = 2,
-  /** 视频 3 */
-  VIDEO = 3,
-  /** 音频 4 */
-  AUDIO = 4
+  /** 位置 17*/
+  LOCATION,
+  /** 提示 18*/
+  TIP
 }
 
 /**
@@ -414,9 +420,7 @@ export enum WorkerMsgEnum {
 /** 左边菜单弹出框类型 */
 export enum ModalEnum {
   /** 锁屏弹窗 */
-  LOCK_SCREEN,
-  /** 检查更新弹窗 */
-  CHECK_UPDATE
+  LOCK_SCREEN
 }
 
 /** MacOS键盘映射 */
@@ -465,14 +469,16 @@ export enum ShowModeEnum {
 export enum MessageStatusEnum {
   PENDING = 'pending',
   SENDING = 'sending',
+  SENT = 'sent', // 兼容旧代码
   SUCCESS = 'success',
+  DELIVERED = 'delivered',
+  READ = 'read',
   FAILED = 'failed'
 }
 
 /** 触发类型枚举 */
 export enum TriggerEnum {
   MENTION = '@',
-  AI = '/',
   TOPIC = '#'
 }
 
@@ -528,26 +534,33 @@ export enum NotificationTypeEnum {
   NOT_DISTURB = 1
 }
 
-/** Tauri 命令 */
+/**
+ * Tauri 命令
+ *
+ * Phase 4 WebSocket 迁移说明:
+ * 以下命令已迁移到 Matrix SDK 并移除
+ * - PAGE_ROOM → client.getRooms() [已移除]
+ * - LIST_CONTACTS → enhancedFriendsService.listFriends() [已移除]
+ * - PAGE_MSG → sdkPageMessagesWithCursor() [已移除]
+ * - SEND_MSG → client.sendEvent() [已移除]
+ *
+ * @deprecated 建议使用 Matrix SDK 或相应的服务类替代
+ */
 export enum TauriCommand {
   /** 更新我的群聊信息 */
   UPDATE_MY_ROOM_INFO = 'update_my_room_info',
   /** 获取房间成员 */
   GET_ROOM_MEMBERS = 'get_room_members',
-  /** 分页查询所有房间 */
-  PAGE_ROOM = 'page_room',
+  // PAGE_ROOM removed in Phase 4 cleanup - replaced by client.getRooms()
   /** 分页查询房间成员 */
   CURSOR_PAGE_ROOM_MEMBERS = 'cursor_page_room_members',
-  /** 列出所有会话列表 */
-  LIST_CONTACTS = 'list_contacts_command',
-  /** 分页查询会话消息 */
-  PAGE_MSG = 'page_msg',
+  // LIST_CONTACTS removed in Phase 4 cleanup - replaced by enhancedFriendsService.listFriends()
+  // PAGE_MSG removed in Phase 4 cleanup - replaced by sdkPageMessagesWithCursor()
   /** 保存用户信息 */
   SAVE_USER_INFO = 'save_user_info',
   /** 更新用户最后操作时间 */
   UPDATE_USER_LAST_OPT_TIME = 'update_user_last_opt_time',
-  /** 发送消息 */
-  SEND_MSG = 'send_msg',
+  // SEND_MSG removed in Phase 4 cleanup - replaced by client.sendEvent() and messageService.sendMessage()
   /** 保存消息 */
   SAVE_MSG = 'save_msg',
   /** 保存消息标记 */
@@ -565,9 +578,7 @@ export enum TauriCommand {
   /** 移除 token */
   REMOVE_TOKENS = 'remove_tokens',
   /** 查询聊天历史记录 */
-  QUERY_CHAT_HISTORY = 'query_chat_history',
-  /** AI 消息流式发送 */
-  AI_MESSAGE_SEND_STREAM = 'ai_message_send_stream'
+  QUERY_CHAT_HISTORY = 'query_chat_history'
 }
 
 // 通话状态枚举
@@ -609,8 +620,6 @@ export enum ImUrlEnum {
   INIT_CONFIG = 'initConfig',
   /** 文件上传 */
   FILE_UPLOAD = 'fileUpload',
-  /** 获取模型列表 */
-  GET_ASSISTANT_MODEL_LIST = 'getAssistantModelList',
 
   // 验证码相关
   /** 发送验证码 */
@@ -731,16 +740,10 @@ export enum ImUrlEnum {
   DELETE_EMOJI = 'deleteEmoji',
   /** 添加表情 */
   ADD_EMOJI = 'addEmoji',
-  /** 设置用户徽章 */
-  SET_USER_BADGE = 'setUserBadge',
   /** 修改用户基础信息 */
   MODIFY_USER_INFO = 'ModifyUserInfo',
   /** 获取用户信息详情 */
   GET_USER_INFO_DETAIL = 'getUserInfoDetail',
-  /** 批量获取徽章 */
-  GET_BADGES_BATCH = 'getBadgesBatch',
-  /** 获取徽章列表 */
-  GET_BADGE_LIST = 'getBadgeList',
   /** 拉黑用户 */
   BLOCK_USER = 'blockUser',
 
@@ -805,10 +808,6 @@ export enum ImUrlEnum {
   MERGE_MSG = 'mergeMsg',
   GET_USER_BY_IDS = 'getUserByIds',
 
-  /** 发送 AI 消息 */
-  MESSAGE_SEND_STREAM = 'messageSendStream',
-  /** 保存生成内容消息（用于音频、图片、视频等生成功能） */
-  MESSAGE_SAVE_GENERATED_CONTENT = 'messageSaveGeneratedContent',
   /** 获取指定会话消息列表 */
   MESSAGE_LIST_BY_CONVERSATION_ID = 'messageListByConversationId',
   /** 删除单条消息 */
@@ -825,52 +824,6 @@ export enum ImUrlEnum {
   CONVERSATION_UPDATE_MY = 'conversationUpdateMy',
   /** 删除会话 */
   CONVERSATION_DELETE_MY = 'conversationDeleteMy',
-  /** 模型页面 */
-  MODEL_PAGE = 'modelPage',
-  /** 创建模型 */
-  MODEL_CREATE = 'modelCreate',
-  /** 更新模型 */
-  MODEL_UPDATE = 'modelUpdate',
-  /** 删除模型 */
-  MODEL_DELETE = 'modelDelete',
-
-  // ==================== AI 图片生成 ====================
-  /** 获取【我的】图片生成分页 */
-  IMAGE_MY_PAGE = 'imageMyPage',
-  /** 获取【我的】图片生成记录 */
-  IMAGE_GET = 'imageGet',
-  /** 根据ID列表获取【我的】图片记录 */
-  IMAGE_MY_LIST_BY_IDS = 'imageMyListByIds',
-  /** 生成图片 */
-  IMAGE_DRAW = 'imageDraw',
-  /** 删除【我的】图片记录 */
-  IMAGE_DELETE_MY = 'imageDeleteMy',
-
-  // ==================== AI 视频生成 ====================
-  /** 获取【我的】视频生成分页 */
-  VIDEO_MY_PAGE = 'videoMyPage',
-  /** 获取【我的】视频生成记录 */
-  VIDEO_GET = 'videoGet',
-  /** 根据ID列表获取【我的】视频记录 */
-  VIDEO_MY_LIST_BY_IDS = 'videoMyListByIds',
-  /** 生成视频 */
-  VIDEO_GENERATE = 'videoGenerate',
-  /** 删除【我的】视频记录 */
-  VIDEO_DELETE_MY = 'videoDeleteMy',
-
-  // ==================== AI 音频生成 ====================
-  /** 获取【我的】音频生成分页 */
-  AUDIO_MY_PAGE = 'audioMyPage',
-  /** 获取【我的】音频生成记录 */
-  AUDIO_GET_MY = 'audioGetMy',
-  /** 根据ID列表获取【我的】音频记录 */
-  AUDIO_MY_LIST_BY_IDS = 'audioMyListByIds',
-  /** 生成音频 */
-  AUDIO_GENERATE = 'audioGenerate',
-  /** 删除【我的】音频记录 */
-  AUDIO_DELETE_MY = 'audioDeleteMy',
-  /** 获取指定模型支持的声音列表 */
-  AUDIO_VOICES = 'audioVoices',
 
   /** API 密钥分页 */
   API_KEY_PAGE = 'apiKeyPage',
@@ -911,6 +864,12 @@ export enum ScrollIntentEnum {
 export enum MergeMessageType {
   SINGLE = 1,
   MERGE = 2
+}
+
+// 是否全部用户
+export enum IsAllUserEnum {
+  ALL = 1,
+  NOT_ALL = 0
 }
 
 // 用户类型

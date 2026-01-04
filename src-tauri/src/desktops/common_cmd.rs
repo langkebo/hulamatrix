@@ -29,32 +29,6 @@ pub struct WindowsScaleInfo {
     /// 是否检测到文本缩放
     pub has_text_scaling: bool,
 }
-// // 定义用户信息结构体
-// #[derive(Debug, Clone, Serialize)]
-// pub struct UserInfo {
-//     user_id: i64,
-//     username: String,
-//     token: String,
-//     portrait: String,
-//     is_sign: bool,
-// }
-
-// impl Default for UserInfo {
-//     fn default() -> Self {
-//         UserInfo {
-//             user_id: -1,
-//             username: String::new(),
-//             token: String::new(),
-//             portrait: String::new(),
-//             is_sign: false,
-//         }
-//     }
-// }
-
-// // 全局变量
-// lazy_static! {
-//     static ref USER_INFO: Arc<RwLock<UserInfo>> = Arc::new(RwLock::new(UserInfo::default()));
-// }
 
 #[tauri::command]
 pub fn default_window_icon<R: Runtime>(
@@ -69,7 +43,7 @@ pub fn default_window_icon<R: Runtime>(
 
 #[tauri::command]
 pub fn screenshot(x: &str, y: &str, width: &str, height: &str) -> Result<String, String> {
-    let screen = Screen::from_point(100, 100).map_err(|e| format!("获取屏幕信息失败: {}", e))?;
+    let screen = Screen::from_point(100, 100).map_err(|e| format!("获取屏幕信息失败: {e}"))?;
 
     let x = x
         .parse::<i32>()
@@ -86,7 +60,7 @@ pub fn screenshot(x: &str, y: &str, width: &str, height: &str) -> Result<String,
 
     let image = screen
         .capture_area(x, y, width, height)
-        .map_err(|e| format!("截图失败: {}", e))?;
+        .map_err(|e| format!("截图失败: {e}"))?;
 
     let buffer = image.as_raw();
     let base64_str = general_purpose::STANDARD_NO_PAD.encode(buffer);
@@ -115,14 +89,14 @@ fn play_audio_internal(path: &str, handle: &AppHandle) -> Result<(), String> {
     let audio_path = handle
         .path()
         .resolve(path, BaseDirectory::Resource)
-        .map_err(|e| format!("解析音频路径失败: {}", e))?;
+        .map_err(|e| format!("解析音频路径失败: {e}"))?;
 
-    let audio = File::open(audio_path).map_err(|e| format!("打开音频文件失败: {}", e))?;
+    let audio = File::open(audio_path).map_err(|e| format!("打开音频文件失败: {e}"))?;
 
     let file = BufReader::new(audio);
     let stream = rodio::OutputStreamBuilder::open_default_stream()
-        .map_err(|e| format!("创建音频输出流失败: {}", e))?;
-    let source = Decoder::new(file).map_err(|e| format!("解码音频文件失败: {}", e))?;
+        .map_err(|e| format!("创建音频输出流失败: {e}"))?;
+    let source = Decoder::new(file).map_err(|e| format!("解码音频文件失败: {e}"))?;
 
     stream.mixer().add(source);
     thread::sleep(Duration::from_millis(3000));
@@ -137,18 +111,18 @@ pub fn set_height(height: u32, handle: AppHandle) -> Result<(), String> {
 
     let sf = home_window
         .scale_factor()
-        .map_err(|e| format!("获取窗口缩放因子失败: {}", e))?;
+        .map_err(|e| format!("获取窗口缩放因子失败: {e}"))?;
 
     let out_size = home_window
         .inner_size()
-        .map_err(|e| format!("获取窗口尺寸失败: {}", e))?;
+        .map_err(|e| format!("获取窗口尺寸失败: {e}"))?;
 
     home_window
         .set_size(LogicalSize::new(
             out_size.to_logical(sf).width,
             cmp::max(out_size.to_logical(sf).height, height),
         ))
-        .map_err(|e| format!("设置窗口高度失败: {}", e))?;
+        .map_err(|e| format!("设置窗口高度失败: {e}"))?;
 
     Ok(())
 }
@@ -269,7 +243,7 @@ pub fn set_window_level_above_menubar(window_label: &str, handle: AppHandle) -> 
 fn get_webview_window(handle: &AppHandle, window_label: &str) -> Result<WebviewWindow, String> {
     handle
         .get_webview_window(window_label)
-        .ok_or_else(|| format!("Window '{}' not found", window_label))
+        .ok_or_else(|| format!("Window '{window_label}' not found"))
 }
 
 #[cfg(target_os = "macos")]
@@ -278,8 +252,8 @@ fn get_nswindow_from_webview_window(
 ) -> Result<Retained<NSWindow>, String> {
     webview_window
         .ns_window()
-        .map_err(|e| format!("Failed to get NSWindow: {}", e))
-        .map(|ptr| unsafe { Retained::retain(ptr as *mut NSWindow) })?
+        .map_err(|e| format!("Failed to get NSWindow: {e}"))
+        .map(|ptr| unsafe { Retained::retain(ptr.cast::<NSWindow>()) })?
         .ok_or_else(|| "Failed to retain NSWindow".to_string())
 }
 
@@ -361,7 +335,7 @@ unsafe fn get_text_scale_from_registry() -> Result<f64, String> {
                     return Ok(1.0); // LogPixels不是文本缩放，返回默认值
                 } else {
                     // TextScaleFactor 是百分比值 (100 = 100%, 150 = 150%)
-                    return Ok(data as f64 / 100.0);
+                    Ok(data as f64 / 100.0)
                 }
             }
         }

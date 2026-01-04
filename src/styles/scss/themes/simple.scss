@@ -1,0 +1,69 @@
+/* ==========================================================================
+   简洁主题 - 纯色背景的主题
+   ========================================================================== */
+
+/* 亮色模式 */
+:root[data-theme-style="simple"] {
+  /* 左侧栏样式 */
+  --left-bg-color: #f8f8f8;
+  --left-active-bg-color: rgba(19, 152, 127, 0.08);
+  --left-text-color: var(--text-primary);
+  --left-icon-color: var(--icon-color);
+  --left-active-hover: var(--primary-color);
+  --left-bg-hover: rgba(0, 0, 0, 0.03);
+  --left-active-icon-color: var(--primary-color);
+  --left-win-icon-color: rgba(0, 0, 0, 0.3);
+
+  /* 选中状态 */
+  --border-active-color: var(--primary-color);
+
+  /* 右侧区域纯色背景 */
+  --right-theme-bg: #f5f5f5;
+
+  /* 聊天框样式 */
+  --chat-reply-color: #f0f0f0;
+  --chat-reply-active: var(--bg-selected);
+  --chat-footer-border: rgba(0, 0, 0, 0.08);
+
+  /* 消息列表 */
+  --msg-list-active: var(--primary-color);
+
+  /* 群公告 */
+  --group-notice-bg: #fff;
+
+  /* 列表hover */
+  --list-hover: rgba(0, 0, 0, 0.04);
+
+  /* 图标hover */
+  --icon-hover-bg: rgba(0, 0, 0, 0.04);
+}
+
+/* 暗色模式 */
+html[data-theme='dark'][data-theme-style="simple"] {
+  /* 左侧栏样式 */
+  --left-bg-color: #1a1a1a;
+  --left-active-bg-color: rgba(19, 152, 127, 0.12);
+  --left-text-color: var(--text-primary);
+  --left-icon-color: var(--icon-color);
+  --left-active-hover: var(--primary-hover);
+  --left-bg-hover: rgba(255, 255, 255, 0.03);
+  --left-active-icon-color: var(--primary-hover);
+  --left-win-icon-color: rgba(19, 152, 127, 0.5);
+
+  /* 右侧区域纯色背景 */
+  --right-theme-bg: #141414;
+
+  /* 聊天框样式 */
+  --chat-reply-color: #1f1f1f;
+  --chat-reply-active: rgba(19, 152, 127, 0.12);
+  --chat-footer-border: rgba(255, 255, 255, 0.08);
+
+  /* 群公告 */
+  --group-notice-bg: #1f1f1f;
+
+  /* 列表hover */
+  --list-hover: rgba(255, 255, 255, 0.03);
+
+  /* 图标hover */
+  --icon-hover-bg: rgba(255, 255, 255, 0.03);
+}

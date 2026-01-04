@@ -1,8 +1,18 @@
+/**
+ * 字体配置 - Phase 4 优化
+ * 策略：系统字体优先，自定义字体按需加载
+ */
+
+/*
+ * 自定义字体的 @font-face 定义
+ * 注意：这些字体文件较大（5.3MB），仅在用户主动选择时加载
+ * 默认使用系统字体以优化首屏加载
+ */
 @font-face {
   font-family: 'AliFangYuan';
   src: url('/src/assets/fonts/AlimamaFangYuanTiVF-Thin.woff2') format('woff2');
   font-style: normal;
-  font-display: swap;
+  font-display: swap; /* 使用 swap 避免文本闪烁 */
 }
 
 @font-face {
@@ -11,3 +21,15 @@
   font-style: normal;
   font-display: swap;
 }
+
+/*
+ * 字体族变量定义
+ * 优先使用系统字体以优化首屏加载性能
+ * 自定义字体作为降级选项
+ */
+
+// 系统字体优先 (默认)
+$font-family-system: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'STHeiti', 'Microsoft YaHei', 'Segoe UI', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Micro Hei', sans-serif;
+
+// 自定义字体优先 (当用户选择自定义字体时使用)
+$font-family-custom: 'AliFangYuan', 'PingFang', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', sans-serif;

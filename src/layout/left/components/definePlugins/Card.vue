@@ -27,15 +27,15 @@
                 ]">
                 <div
                   :style="{
-                    width: plugin.state === PluginEnum.DOWNLOADING ? `${plugin?.progress * 0.8}px` : 'auto'
+                    width: plugin.state === PluginEnum.DOWNLOADING ? `${(plugin.progress ?? 0) * 0.8}px` : 'auto'
                   }"
                   :class="[
-                    plugin?.progress < 100 ? 'rounded-l-24px rounded-r-0' : 'rounded-24px',
-                    plugin?.progress > 0 ? 'h-18px border-(1px solid transparent)' : 'h-20px'
+                    (plugin.progress ?? 0) < 100 ? 'rounded-l-24px rounded-r-0' : 'rounded-24px',
+                    (plugin.progress ?? 0) > 0 ? 'h-18px border-(1px solid transparent)' : 'h-20px'
                   ]"
                   v-if="plugin.state === PluginEnum.DOWNLOADING"
                   class="bg-#8CA9F4">
-                  <p class="absolute-center text-(12px #4C77BD)">{{ plugin?.progress }}%</p>
+                  <p class="absolute-center text-(12px #4C77BD)">{{ plugin.progress ?? 0 }}%</p>
                 </div>
 
                 <p v-else class="text-(12px #4C77BD center)">{{ t('home.plugins.actions.install') }}</p>
@@ -142,31 +142,44 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { cloneDeep } from 'es-toolkit'
-import { storeToRefs } from 'pinia'
 import { PluginEnum } from '@/enums'
-import { usePluginsList } from '@/layout/left/config.tsx'
-import { usePluginsStore } from '@/stores/plugins.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { usePluginsList } from '@/layout/left/config'
+import { usePluginsStore } from '@/stores/plugins'
+import { useSettingStore } from '@/stores/setting'
+
+interface PluginItem {
+  url: string
+  title?: string
+  icon?: string
+  iconAction?: string
+  version?: string
+  isAdd?: boolean
+  state?: PluginEnum
+  progress?: number
+  [key: string]: unknown
+}
 
 const { t } = useI18n()
 const appWindow = WebviewWindow.getCurrent()
 const settingStore = useSettingStore()
 const pluginsStore = usePluginsStore()
 const pluginsList = usePluginsList()
-const { page } = storeToRefs(settingStore)
-const { plugins } = storeToRefs(pluginsStore)
+const page = computed(() => settingStore.page)
+const plugins = computed(() => pluginsStore.plugins)
 const isCurrently = ref(-1)
-const allPlugins = ref([] as STO.Plugins<PluginEnum>[])
-const pluginsLists = ref<STO.Plugins<PluginEnum>[]>(cloneDeep(pluginsList.value))
+const allPlugins = ref<PluginItem[]>([])
+const pluginsLists = ref<PluginItem[]>(cloneDeep(pluginsList.value))
 
 // 同步插件状态
-const syncPlugins = (list: STO.Plugins<PluginEnum>[]) =>
-  list.map((item: STO.Plugins<PluginEnum>) => {
-    const matched = plugins.value.find((z: STO.Plugins<PluginEnum>) => z.url === item.url)
+const syncPlugins = (list: PluginItem[]) =>
+  list.map((item: PluginItem) => {
+    const matchedIndex = plugins.value.findIndex((z) => z.url === item.url)
+    const matched = matchedIndex !== -1 ? plugins.value[matchedIndex] : undefined
     return matched
       ? {
           ...item,
@@ -176,12 +189,12 @@ const syncPlugins = (list: STO.Plugins<PluginEnum>[]) =>
       : item
   })
 
-const handleState = (plugin: STO.Plugins<PluginEnum>) => {
+const handleState = (plugin: PluginItem) => {
   if (plugin.state === PluginEnum.INSTALLED) return
   plugin.state = PluginEnum.DOWNLOADING
   const interval = setInterval(() => {
-    if (plugin.progress < 100) {
-      plugin.progress += 50
+    if ((plugin.progress ?? 0) < 100) {
+      plugin.progress = (plugin.progress ?? 0) + 50
     } else {
       clearInterval(interval)
       plugin.state = PluginEnum.INSTALLED
@@ -191,7 +204,7 @@ const handleState = (plugin: STO.Plugins<PluginEnum>) => {
   }, 500)
 }
 
-const handleUnload = (plugin: STO.Plugins<PluginEnum>) => {
+const handleUnload = (plugin: PluginItem) => {
   plugin.state = PluginEnum.UNINSTALLING
   setTimeout(() => {
     handleDelete(plugin)
@@ -201,23 +214,25 @@ const handleUnload = (plugin: STO.Plugins<PluginEnum>) => {
   }, 2000)
 }
 
-const handleDelete = (p: STO.Plugins<PluginEnum>) => {
-  const plugin = plugins.value.find((i) => i.url === p.url)
+const handleDelete = (p: PluginItem) => {
+  const pid: string = String(p.url)
+  const plugin = plugins.value.find((i) => String(i.url) === pid)
   if (plugin) {
     setTimeout(() => {
       pluginsStore.updatePlugin({ ...plugin, isAdd: false })
-      p.isAdd = false
+      ;(p as PluginItem).isAdd = false
       emitTo(appWindow.label, 'startResize')
     }, 300)
   }
 }
 
-const handleAdd = (p: STO.Plugins<PluginEnum>) => {
-  const plugin = plugins.value.find((i) => i.url === p.url)
+const handleAdd = (p: PluginItem) => {
+  const pid: string = String(p.url)
+  const plugin = plugins.value.find((i) => String(i.url) === pid)
   if (plugin) {
     setTimeout(() => {
       pluginsStore.updatePlugin({ ...plugin, isAdd: true })
-      p.isAdd = true
+      ;(p as PluginItem).isAdd = true
       emitTo(appWindow.label, 'startResize')
     }, 300)
   }

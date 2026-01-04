@@ -5,15 +5,24 @@ import { MsgEnum } from '@/enums'
  */
 export const SUPPORTED_VIDEO_EXTENSIONS = ['mp4', 'mov', 'avi', 'wmv', 'mkv', 'flv', 'webm', 'm4v'] as const
 
+/** 支持的视频扩展名类型 */
+export type SupportedVideoExtension = (typeof SUPPORTED_VIDEO_EXTENSIONS)[number]
+
 /**
  * 支持的音频扩展名
  */
 export const SUPPORTED_AUDIO_EXTENSIONS = ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'] as const
 
+/** 支持的音频扩展名类型 */
+export type SupportedAudioExtension = (typeof SUPPORTED_AUDIO_EXTENSIONS)[number]
+
 /**
  * 支持的图片扩展名
  */
 export const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'] as const
+
+/** 支持的图片扩展名类型 */
+export type SupportedImageExtension = (typeof SUPPORTED_IMAGE_EXTENSIONS)[number]
 
 /**
  * 视频MIME类型映射
@@ -79,7 +88,7 @@ const checkFileType = (
   if (typeof fileOrName === 'string') {
     // 如果是字符串，检查扩展名
     const extension = getFileExtension(fileOrName)
-    return supportedExtensions.includes(extension as any)
+    return supportedExtensions.includes(extension)
   }
 
   // 如果是File对象，先检查MIME类型，再检查扩展名
@@ -96,7 +105,7 @@ const checkFileType = (
   }
 
   // 如果MIME类型为空或不明确，检查文件扩展名
-  return supportedExtensions.includes(extension as any)
+  return supportedExtensions.includes(extension)
 }
 
 /**
@@ -147,11 +156,11 @@ export const fixFileMimeType = (file: File): File => {
   let correctMimeType = ''
 
   // 根据扩展名确定正确的MIME类型
-  if (SUPPORTED_VIDEO_EXTENSIONS.includes(extension as any)) {
+  if (SUPPORTED_VIDEO_EXTENSIONS.includes(extension as SupportedVideoExtension)) {
     correctMimeType = getVideoMimeType(file.name)
-  } else if (SUPPORTED_AUDIO_EXTENSIONS.includes(extension as any)) {
+  } else if (SUPPORTED_AUDIO_EXTENSIONS.includes(extension as SupportedAudioExtension)) {
     correctMimeType = getAudioMimeType(file.name)
-  } else if (SUPPORTED_IMAGE_EXTENSIONS.includes(extension as any)) {
+  } else if (SUPPORTED_IMAGE_EXTENSIONS.includes(extension as SupportedImageExtension)) {
     correctMimeType = getImageMimeType(file.name)
   } else {
     // 如果不是媒体文件，保持原有类型

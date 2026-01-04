@@ -1,0 +1,96 @@
+{
+  "title": "Friends",
+  "add_friend_title": "Add Friend",
+  "verify_message": "Verification Message",
+  "verify_message_placeholder": "Enter verification message (optional)",
+  "default_verify_message": "Hi, I'd like to add you as a friend",
+  "request_sent_success": "Friend request sent",
+  "request_sent_failed": "Failed to send friend request",
+  "list": {
+    "title": "Friends List",
+    "search_placeholder": "Search friends",
+    "no_friends": "No friends yet",
+    "no_results": "No matching friends found",
+    "add_friend": "Add Friend",
+    "category_management": "Category Management",
+    "all_friends": "All Friends ({count})"
+  },
+  "actions": {
+    "add": "Add Friend",
+    "chat": "Send Message",
+    "set_remark": "Set Remark",
+    "set_category": "Set Category",
+    "remove": "Remove Friend",
+    "block": "Block User"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "unavailable": "Busy",
+    "away": "Away",
+    "unknown": "Unknown"
+  },
+  "requests": {
+    "title": "Friend Requests",
+    "pending_title": "Pending Friend Requests",
+    "no_requests": "No pending friend requests",
+    "from": "From",
+    "message": "Verification message",
+    "message_placeholder": "Introduce yourself (optional)",
+    "send_request": "Send Request",
+    "accept": "Accept",
+    "reject": "Reject",
+    "accepted": "Friend added",
+    "rejected": "Request rejected",
+    "sent": "Friend request sent",
+    "send_failed": "Failed to send request",
+    "error": "Operation failed"
+  },
+  "category": {
+    "title": "Category Management",
+    "create": "Create Category",
+    "create_title": "Create Category",
+    "name": "Category name",
+    "name_placeholder": "Enter category name",
+    "description": "Description",
+    "description_placeholder": "Category description (optional)",
+    "color": "Color",
+    "select": "Select category (optional)",
+    "no_category": "No category",
+    "delete": "Delete category",
+    "delete_confirm_title": "Delete Category",
+    "delete_confirm_content": "Are you sure you want to delete this category? Friends will not be deleted.",
+    "delete_success": "Category deleted",
+    "delete_failed": "Failed to delete category",
+    "create_success": "Category created",
+    "create_failed": "Failed to create category",
+    "set_success": "Category updated",
+    "set_failed": "Failed to update category"
+  },
+  "remark": {
+    "title": "Set Remark",
+    "placeholder": "Enter remark",
+    "save": "Save",
+    "update_success": "Remark updated",
+    "update_failed": "Failed to update remark"
+  },
+  "remove": {
+    "confirm_title": "Remove Friend",
+    "confirm_content": "Are you sure you want to remove {name}?",
+    "success": "Friend removed",
+    "failed": "Failed to remove friend"
+  },
+  "errors": {
+    "load_failed": "Failed to load friends list",
+    "search_failed": "Failed to search friends",
+    "get_presence_failed": "Failed to get online status"
+  },
+  "dialogs": {
+    "user_id_label": "User ID",
+    "user_id_placeholder": "Enter user ID (e.g., {'@'}username:server.com)",
+    "user_id_required": "Please enter user ID"
+  },
+  "validation": {
+    "category_name_required": "Please enter category name"
+  }
+}

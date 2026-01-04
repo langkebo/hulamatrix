@@ -1,0 +1,1332 @@
+<template>
+  <!-- 顶部操作栏和显示用户名 -->
+  <main
+    v-if="currentSession"
+    data-tauri-drag-region
+    class="z-999 flex-y-center flex-shrink-0 border-b-(1px solid [--right-chat-footer-line-color]) select-none cursor-default justify-between p-[6px_22px_10px]">
+    <n-flex align="center">
+      <Transition name="loading" mode="out-in">
+        <n-flex align="center">
+          <n-avatar
+            :class="[
+              'rounded-8px select-none',
+              { grayscale: currentSession?.type === RoomTypeEnum.SINGLE && !isOnline }
+            ]"
+            :size="28"
+            :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
+            :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
+            :src="currentUserAvatar" />
+          <label class="flex-y-center gap-6px">
+            <p class="text-(16px [--text-color])">{{ roomStore.currentRoom?.name || currentSession?.name }}</p>
+            <p
+              v-if="
+                currentSession?.type === RoomTypeEnum.GROUP &&
+                (formattedStats.hasData || roomStore.currentRoom?.memberCount)
+              "
+              class="text-(11px #808080)">
+              [{{ formattedStats.hasData ? formattedStats.memberCount : roomStore.currentRoom?.memberCount || 0 }}]
+            </p>
+            <!-- bot用户标签 -->
+            <div
+              v-if="false"
+              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid #13987f) border-(1px solid #13987f) flex-center px-8px py-4px rounded-6px">
+              <p class="text-(11px) text-brand">{{ t('home.chat_header.bot_tag') }}</p>
+            </div>
+          </label>
+          <svg
+            v-if="currentSession?.hotFlag === IsAllUserEnum.Yes"
+            class="size-20px text-brand select-none outline-none">
+            <use href="#auth"></use>
+          </svg>
+          <n-flex v-else-if="currentSession?.type === RoomTypeEnum.SINGLE" align="center">
+            <template v-if="shouldShowDeleteFriend">
+              <n-flex align="center" :size="6">
+                <!-- 状态图标 -->
+                <img v-if="hasCustomState && statusIcon" :src="statusIcon" class="size-18px rounded-50%" alt="" />
+                <n-badge v-else :color="isOnline ? '#1ab292' : '#909090'" dot />
+
+                <!-- 状态文本 -->
+                <p class="text-(12px [--text-color])">
+                  {{ statusTitle }}
+                </p>
+              </n-flex>
+            </template>
+
+            <template v-else>
+              <n-flex align="center" :size="4">
+                <svg class="size-16px color-#d03553">
+                  <use href="#close"></use>
+                </svg>
+                <p class="text-(12px [--text-color])">{{ t('home.chat_header.status_abnormal') }}</p>
+              </n-flex>
+            </template>
+          </n-flex>
+        </n-flex>
+      </Transition>
+    </n-flex>
+    <n-flex v-if="isTyping" align="center" :size="6" class="pl-22px">
+      <span class="dot-online" v-if="onlineCount > 0"></span>
+      <span class="typing-hint">正在输入…</span>
+    </n-flex>
+    <!-- 顶部右边选项栏 -->
+    <nav v-if="currentSession" class="options flex-y-center gap-20px color-[--icon-color]">
+      <!-- 语音通话按钮 -->
+      <div class="options-box">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg @click="startRtcCall(CallTypeEnum.AUDIO)">
+              <use href="#phone-telephone"></use>
+            </svg>
+          </template>
+          <span>{{ t('home.chat_header.toolbar.audio_call') }}</span>
+        </n-popover>
+      </div>
+
+      <!-- 视频通话按钮 -->
+      <div class="options-box">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg @click="startRtcCall(CallTypeEnum.VIDEO)">
+              <use href="#video-one"></use>
+            </svg>
+          </template>
+          <span>{{ t('home.chat_header.toolbar.video_call') }}</span>
+        </n-popover>
+      </div>
+
+      <div v-if="!isChannel" class="options-box">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg @click="handleMedia">
+              <use href="#screen-sharing"></use>
+            </svg>
+          </template>
+          <span>{{ t('home.chat_header.toolbar.screen_share') }}</span>
+        </n-popover>
+      </div>
+
+      <div v-if="!isChannel" class="options-box">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg @click="handleAssist">
+              <use href="#remote-control"></use>
+            </svg>
+          </template>
+          <span>{{ t('home.chat_header.toolbar.remote_assist') }}</span>
+        </n-popover>
+      </div>
+
+      <div v-if="!isChannel && currentSession?.roomId !== '1'" class="options-box" @click="handleCreateGroupOrInvite">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg>
+              <use href="#launch"></use>
+            </svg>
+          </template>
+          <span v-if="currentSession?.type === RoomTypeEnum.GROUP">
+            {{ t('home.chat_header.toolbar.invite_to_group') }}
+          </span>
+          <span v-else>{{ t('home.chat_header.toolbar.start_group_chat') }}</span>
+        </n-popover>
+      </div>
+
+      <!-- 私密聊天按钮 -->
+      <div v-if="!isChannel" class="options-box">
+        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
+          <template #trigger>
+            <svg @click="handleCreatePrivateChat" class="private-chat-icon">
+              <use href="#lock"></use>
+            </svg>
+          </template>
+          <span>{{ t('home.chat_header.toolbar.private_chat') }}</span>
+        </n-popover>
+      </div>
+
+      <div class="options-box" @click="sidebarShow = !sidebarShow">
+        <svg>
+          <use href="#more"></use>
+        </svg>
+      </div>
+    </nav>
+
+    <!-- 侧边选项栏 -->
+    <Transition v-if="shouldShowDeleteFriend || chatStore.isGroup" name="sidebar">
+      <div v-if="sidebarShow" style="border: 1px solid rgba(90, 90, 90, 0.1)" class="sidebar">
+        <n-scrollbar style="height: calc(100vh / var(--page-scale, 1) - 24px)" class="p-22px box-border">
+          <!-- 单聊侧边栏选项 -->
+          <template v-if="!chatStore.isGroup">
+            <div class="box-item flex-col-y-center">
+              <div class="flex-between-center">
+                <p>{{ t('home.chat_header.sidebar.single.pin') }}</p>
+                <n-switch size="small" :value="currentSession?.top" @update:value="handleTop" />
+              </div>
+              <div class="h-1px bg-[--setting-item-line] m-[10px_0]"></div>
+              <div class="flex-between-center">
+                <p>{{ t('home.chat_header.sidebar.single.mute') }}</p>
+                <n-switch
+                  size="small"
+                  :value="currentSession?.muteNotification === NotificationTypeEnum.NOT_DISTURB"
+                  @update:value="handleNotification" />
+              </div>
+            </div>
+
+            <div class="box-item">
+              <div class="flex-between-center">
+                <p>{{ t('home.chat_header.sidebar.single.shield') }}</p>
+                <n-switch size="small" :value="currentSession?.shield" @update:value="handleShield" />
+              </div>
+            </div>
+
+            <div class="box-item cursor-pointer" @click="handleDelete(RoomActEnum.DELETE_RECORD)">
+              <p>{{ t('home.chat_header.sidebar.single.delete_history') }}</p>
+            </div>
+
+            <div class="box-item flex-x-center cursor-pointer" @click="handleDelete(RoomActEnum.DELETE_FRIEND)">
+              <p class="color-#d03553">{{ t('home.chat_header.sidebar.single.delete_friend') }}</p>
+            </div>
+
+            <p class="m-[0_auto] text-(12px) text-brand center mt-20px cursor-pointer">
+              {{ t('home.chat_header.sidebar.single.report') }}
+            </p>
+          </template>
+
+          <!-- 群聊侧边栏选项 -->
+          <template v-else>
+            <div class="box-item cursor-default">
+              <n-flex
+                align="center"
+                :justify="allowScanEnter ? 'space-between' : 'start'"
+                :size="allowScanEnter ? 0 : 12">
+                <!-- 群头像 -->
+                <div class="relative group">
+                  <!-- 群主可以编辑头像，显示黑色蒙层和上传图标 -->
+                  <div v-if="isGroupOwner" class="avatar-wrapper relative" @click="handleUploadAvatar">
+                    <n-avatar round :size="40" :src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
+                    <div class="avatar-hover absolute size-full rounded-50% flex-center">
+                      <svg class="size-14px color-#fefefe">
+                        <use href="#Export"></use>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <n-avatar v-else round :size="40" :src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
+                </div>
+
+                <n-flex vertical :size="6">
+                  <!-- 群名称 -->
+                  <n-flex :size="10" align="center">
+                    <div v-if="isGroupOwner && isEditingGroupName">
+                      <n-input
+                        ref="groupNameInputRef"
+                        v-model:value="editingGroupName"
+                        @blur.stop="handleGroupNameChange"
+                        @keydown.enter.stop="handleGroupNameChange"
+                        size="tiny"
+                        style="width: 100px; height: 22px"
+                        maxlength="12"
+                        spellCheck="false"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        class="border-(solid 1px [--line-color])"
+                        :placeholder="t('home.chat_header.sidebar.group.name_placeholder')" />
+                    </div>
+                    <div
+                      v-else
+                      class="text-(14px --text-color) leading-loose cursor-default h-22px flex-center"
+                      :class="{ 'cursor-pointer': isGroupOwner }"
+                      @click="isGroupOwner && startEditGroupName()">
+                      <p :title="currentSession?.name" class="max-w-100px truncate">{{ currentSession?.name }}</p>
+                      <!-- 显示编辑图标 -->
+                      <svg v-if="isGroupOwner" class="size-14px ml-1 inline-block color-[--icon-color]">
+                        <use href="#edit"></use>
+                      </svg>
+                    </div>
+
+                    <n-popover
+                      trigger="hover"
+                      v-if="currentSession?.hotFlag === IsAllUserEnum.Yes && !isEditingGroupName">
+                      <template #trigger>
+                        <svg class="size-20px select-none outline-none cursor-pointer text-brand">
+                          <use href="#auth"></use>
+                        </svg>
+                      </template>
+                      <span>{{ t('home.chat_header.sidebar.group.official_badge') }}</span>
+                    </n-popover>
+                  </n-flex>
+
+                  <n-flex align="center" :size="8">
+                    <!-- hula号 -->
+                    <p
+                      class="text-(12px center [--chat-text-color]) rounded-4px w-100px py-2px bg-[#e3e3e3] dark:bg-[#505050]">
+                      {{ currentSession?.account }}
+                    </p>
+
+                    <n-tooltip trigger="hover">
+                      <template #trigger>
+                        <svg
+                          class="size-12px cursor-pointer hover:color-#909090 hover:transition-colors"
+                          @click="handleCopy">
+                          <use href="#copy"></use>
+                        </svg>
+                      </template>
+                      <span>{{ t('home.chat_header.sidebar.group.copy') }}</span>
+                    </n-tooltip>
+                  </n-flex>
+                </n-flex>
+
+                <div
+                  v-if="allowScanEnter"
+                  class="flex-center cursor-pointer bg-#e3e3e380 dark:bg-#303030 border-(1px solid #90909080) gap-6px px-4px py-6px rounded-6px"
+                  @click="showQRCodeModal = true">
+                  <svg class="size-16px"><use href="#pay-code-one"></use></svg>
+                  <p class="text-(12px [--chat-text-color])">{{ t('home.chat_header.sidebar.group.qr') }}</p>
+                </div>
+              </n-flex>
+            </div>
+
+            <!-- 群聊成员列表 -->
+            <div class="box-item cursor-default">
+              <n-flex vertical justify="center" :size="16">
+                <p class="text-(14px --text-color)">
+                  {{
+                    currentSession?.hotFlag !== IsAllUserEnum.Yes
+                      ? t('home.chat_header.sidebar.group.members')
+                      : t('home.chat_header.sidebar.group.channel_members')
+                  }}
+                </p>
+
+                <n-flex align="center" justify="start" :size="[24, 20]">
+                  <template v-for="(item, _index) in userList" :key="_index">
+                    <n-flex vertical justify="center" align="center" :size="10">
+                      <n-avatar round :size="30" :src="AvatarUtils.getAvatarUrl(item.avatar)" />
+
+                      <p class="text-(10px --text-color center) w-30px truncate">{{ item.name }}</p>
+                    </n-flex>
+                  </template>
+                </n-flex>
+              </n-flex>
+            </div>
+
+            <!-- 我本群的昵称 -->
+            <p class="text-(12px [--chat-text-color]) mt-20px mb-10px">
+              {{ t('home.chat_header.sidebar.group.my_name') }}
+            </p>
+            <n-input
+              class="border-(solid 1px [--line-color]) custom-shadow"
+              spellCheck="false"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              :maxlength="12"
+              clearable
+              v-model:value="localMyName"
+              @blur.stop="handleGroupInfoChange" />
+            <!-- 群备注 -->
+            <p class="flex-start-center gap-10px text-(12px [--chat-text-color]) mt-20px mb-10px">
+              {{ t('home.chat_header.sidebar.group.remark') }}
+              <span class="text-(10px #909090)">{{ t('home.chat_header.sidebar.group.remark_desc') }}</span>
+            </p>
+            <n-input
+              class="border-(solid 1px [--line-color]) custom-shadow"
+              v-model:value="localRemark"
+              spellCheck="false"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              clearable
+              @blur.stop="handleGroupInfoChange" />
+
+            <!-- 群设置选项 -->
+            <div class="box-item cursor-default">
+              <n-flex vertical justify="center" :size="4">
+                <p class="text-(12px #909090) pb-14px">{{ t('home.chat_header.sidebar.group.settings.title') }}</p>
+
+                <div class="flex-between-center">
+                  <p>{{ t('home.chat_header.sidebar.group.settings.pin') }}</p>
+                  <n-switch size="small" :value="currentSession?.top" @update:value="handleTop" />
+                </div>
+
+                <div class="h-1px bg-[--setting-item-line] m-[10px_0]"></div>
+
+                <div class="flex-between-center">
+                  <p>{{ t('home.chat_header.sidebar.group.settings.mute') }}</p>
+                  <n-switch
+                    size="small"
+                    :value="currentSession?.muteNotification === NotificationTypeEnum.NOT_DISTURB"
+                    @update:value="handleNotification" />
+                </div>
+                <template v-if="isAdminOrOwner">
+                  <div class="h-1px bg-[--setting-item-line] m-[10px_0]"></div>
+
+                  <div class="flex-between-center">
+                    <p>{{ t('home.chat_header.sidebar.group.settings.scan') }}</p>
+                    <n-switch size="small" :value="allowScanEnter" @update:value="handleJoinRuleChange" />
+                  </div>
+                </template>
+              </n-flex>
+            </div>
+
+            <!-- 群消息设置（仅在消息免打扰开启时显示） -->
+            <div
+              v-if="currentSession?.muteNotification === NotificationTypeEnum.NOT_DISTURB"
+              class="box-item cursor-default">
+              <n-flex vertical justify="center" :size="4">
+                <p class="text-(12px #909090) pb-14px">
+                  {{ t('home.chat_header.sidebar.group.message_settings.title') }}
+                </p>
+
+                <div class="flex-between-center">
+                  <n-select
+                    v-model:value="messageSettingType"
+                    :options="messageSettingOptions"
+                    @update:value="handleMessageSetting" />
+                </div>
+              </n-flex>
+            </div>
+
+            <!-- 管理群成员（仅管理员和群主可见） -->
+            <div
+              v-if="isAdminOrOwner && currentSession?.hotFlag !== IsAllUserEnum.Yes && currentSession?.roomId !== '1'"
+              class="box-item cursor-pointer mb-20px"
+              @click="handleManageGroupMember">
+              <p>{{ t('home.chat_header.sidebar.group.manage_members') }}</p>
+            </div>
+
+            <div class="box-item cursor-pointer mb-20px" @click="handleDelete(RoomActEnum.DELETE_RECORD)">
+              <p>{{ t('home.chat_header.sidebar.group.delete_history') }}</p>
+            </div>
+
+            <div
+              v-if="currentSession?.hotFlag !== IsAllUserEnum.Yes"
+              class="box-item flex-x-center cursor-pointer mb-20px"
+              @click="
+                handleDelete(
+                  currentSession?.operate === SessionOperateEnum.DISSOLUTION_GROUP
+                    ? RoomActEnum.DISSOLUTION_GROUP
+                    : RoomActEnum.EXIT_GROUP
+                )
+              ">
+              <p class="color-#d03553">
+                {{
+                  currentSession?.operate === SessionOperateEnum.DISSOLUTION_GROUP
+                    ? t('home.chat_header.sidebar.group.dissolve')
+                    : t('home.chat_header.sidebar.group.exit')
+                }}
+              </p>
+            </div>
+
+            <p
+              v-if="currentSession?.hotFlag !== IsAllUserEnum.Yes"
+              class="text-(12px) text-brand center my-20px cursor-pointer">
+              {{ t('home.chat_header.sidebar.group.report') }}
+            </p>
+          </template>
+        </n-scrollbar>
+      </div>
+    </Transition>
+  </main>
+
+  <!-- 弹出框 -->
+  <n-modal v-model:show="modalShow" class="w-350px rounded-8px">
+    <div class="bg-[--bg-popover] w-360px h-full p-6px box-border flex flex-col">
+      <div
+        v-if="isMac()"
+        @click="modalShow = false"
+        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+          <use href="#close"></use>
+        </svg>
+      </div>
+
+      <svg v-if="isWindows()" @click="modalShow = false" class="size-12px ml-a cursor-pointer select-none">
+        <use href="#close"></use>
+      </svg>
+      <div class="flex flex-col gap-30px p-[22px_10px_10px_22px] select-none">
+        <span class="text-14px">{{ tips }}</span>
+
+        <n-flex justify="end">
+          <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">
+            {{ t('home.chat_header.modal.confirm') }}
+          </n-button>
+          <n-button @click="handleCancel" class="w-78px" secondary>{{ t('home.chat_header.modal.cancel') }}</n-button>
+        </n-flex>
+      </div>
+    </div>
+  </n-modal>
+
+  <!-- 群二维码分享弹窗 -->
+  <n-modal v-model:show="showQRCodeModal" class="w-400px rounded-8px">
+    <div class="bg-[--bg-popover] w-400px p-6px box-border flex flex-col">
+      <div
+        v-if="isMac()"
+        @click="showQRCodeModal = false"
+        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+          <use href="#close"></use>
+        </svg>
+      </div>
+
+      <svg v-if="isWindows()" @click="showQRCodeModal = false" class="size-12px ml-a cursor-pointer select-none">
+        <use href="#close"></use>
+      </svg>
+
+      <div class="flex flex-col gap-20px p-[22px_20px_20px_22px] select-none">
+        <div class="flex flex-col items-center gap-16px">
+          <n-qr-code
+            style="border-radius: 16px"
+            :value="JSON.stringify({ type: 'scanEnterGroup', roomId: currentSession?.roomId })"
+            :size="200"
+            :color="themes.content === ThemeEnum.DARK ? '#202020' : '#000000'"
+            :background-color="themes.content === ThemeEnum.DARK ? '#e3e3e3' : '#e3e3e382'"
+            :icon-src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
+
+          <div class="text-center">
+            <p class="text-(16px [--text-color]) font-bold pb-24px">{{ currentSession?.name }}</p>
+            <p class="text-(12px [--chat-text-color])">{{ t('home.chat_header.qr.tip') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </n-modal>
+
+  <!-- 管理群成员弹窗 -->
+  <n-modal v-model:show="showManageGroupMemberModal" class="w-600px rounded-8px" :mask-closable="false">
+    <div class="bg-[--bg-popover] w-600px p-6px box-border flex flex-col">
+      <div
+        v-if="isMac()"
+        @click="showManageGroupMemberModal = false"
+        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+          <use href="#close"></use>
+        </svg>
+      </div>
+
+      <svg
+        v-if="isWindows()"
+        @click="showManageGroupMemberModal = false"
+        class="size-12px ml-a cursor-pointer select-none">
+        <use href="#close"></use>
+      </svg>
+
+      <div class="flex flex-col h-600px">
+        <ManageGroupMember @close="showManageGroupMemberModal = false" />
+      </div>
+    </div>
+  </n-modal>
+
+  <!-- 添加裁剪组件和文件输入框 -->
+  <input
+    ref="fileInput"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    class="hidden"
+    @change="handleFileChange" />
+  <AvatarCropper ref="cropperRef" v-model:show="showCropper" :image-url="localImageUrl" @crop="handleCrop" />
+
+  <!-- 私密聊天对话框 -->
+  <PrivateChatDialog v-model:show="showPrivateChatDialog" @chat-created="handlePrivateChatCreated" />
+
+  <!-- 私密聊天按钮组件（用于对话框） -->
+  <PrivateChatButton ref="privateChatButtonRef" :show="false" @chat-created="handlePrivateChatCreated" />
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, useTemplateRef, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ErrorType } from '@/common/exception'
+import { useDisplayMedia } from '@vueuse/core'
+import AvatarCropper from '@/components/common/AvatarCropper.vue'
+import ManageGroupMember from '@/views/ManageGroupMember.vue'
+import {
+  CallTypeEnum,
+  MittEnum,
+  NotificationTypeEnum,
+  RoleEnum,
+  RoomActEnum,
+  RoomTypeEnum,
+  SessionOperateEnum,
+  ThemeEnum,
+  TauriCommand,
+  OnlineEnum
+} from '@/enums'
+import { useAvatarUpload } from '@/hooks/useAvatarUpload'
+import { useMyRoomInfoUpdater } from '@/hooks/useMyRoomInfoUpdater'
+import { useMitt } from '@/hooks/useMitt'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { useWindow } from '@/hooks/useWindow'
+import { IsAllUserEnum } from '@/services/types'
+import { WsResponseMessageType } from '@/services/wsType'
+import { useChatStore } from '@/stores/chat'
+import { useGlobalStore } from '@/stores/global'
+import { useRoomStore } from '@/stores/room'
+import { useSettingStore } from '@/stores/setting'
+import { useUserStore } from '@/stores/user'
+import { friendsServiceV2 } from '@/services/friendsServiceV2'
+import { AvatarUtils } from '@/utils/AvatarUtils'
+import { matrixClientService } from '@/integrations/matrix/client'
+import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import { isMac, isWindows } from '@/utils/PlatformConstants'
+import { useTypingStore } from '@/integrations/matrix/typing'
+import { usePresenceStore } from '@/stores/presence'
+import { msg } from '@/utils/SafeUI'
+import { getRoom } from '@/utils/matrixClientUtils'
+import { useRoomStats } from '@/composables/useRoomStats'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
+import PrivateChatButton from '@/components/chat/PrivateChatButton.vue'
+import PrivateChatDialog from '@/components/chat/PrivateChatDialog.vue'
+import { sdkSetSessionTop, sdkUpdateRoomName } from '@/services/rooms'
+import { flags } from '@/utils/envFlags'
+import { logger } from '@/utils/logger'
+
+const { t } = useI18n()
+const { createModalWindow, startRtcCall } = useWindow()
+// 使用useDisplayMedia获取屏幕共享的媒体流
+const { stream, stop } = useDisplayMedia()
+const chatStore = useChatStore()
+const roomStore = useRoomStore()
+const globalStore = useGlobalStore()
+// const contactStore = useContactStore()
+const userStore = useUserStore()
+const settingStore = useSettingStore()
+const themes = computed(() => settingStore.themes)
+/** 提醒框标题 */
+const tips = ref()
+const optionsType = ref<RoomActEnum>()
+const modalShow = ref(false)
+const sidebarShow = ref(false)
+const showQRCodeModal = ref(false)
+const showManageGroupMemberModal = ref(false)
+const currentSession = computed(() => globalStore.currentSession)
+const { persistMyRoomInfo, resolveMyRoomNickname } = useMyRoomInfoUpdater()
+
+// 房间统计信息
+const { formattedStats } = useRoomStats()
+
+const typingStore = useTypingStore()
+const presenceStore = usePresenceStore()
+//
+
+// 私密聊天相关状态
+const showPrivateChatDialog = ref(false)
+const privateChatButtonRef = ref()
+
+const typingUsers = computed(() => {
+  const list = typingStore.get(globalStore.currentSessionRoomId)
+  const selfIds = [userStore.userInfo?.uid, userStore.userInfo?.account].filter(Boolean)
+  return list.filter((u) => !selfIds.includes(u))
+})
+const isTyping = computed(() => typingUsers.value.length > 0)
+interface MatrixMember {
+  userId: string
+}
+
+const onlineCount = computed(() => {
+  try {
+    const client = matrixClientService.getClient()
+    const room = getRoom(client, globalStore.currentSessionRoomId) as { getJoinedMembers?: () => MatrixMember[] } | null
+    const members = room?.getJoinedMembers?.()?.map((m: MatrixMember) => m.userId) || []
+    return members.filter((uid: string) => presenceStore.isOnline(uid)).length
+  } catch {
+    return 0
+  }
+})
+
+// 是否为频道（仅显示 more 按钮）
+const isChannel = computed(
+  () => currentSession.value?.hotFlag === IsAllUserEnum.Yes || currentSession.value?.roomId === '1'
+)
+// 是否为群主
+const isGroupOwner = computed(() => {
+  if (currentSession.value?.type !== RoomTypeEnum.GROUP) return false
+  return roomStore.currentUserRole === 'owner'
+})
+
+const isAdminOrOwner = computed(() => {
+  if (currentSession.value?.type !== RoomTypeEnum.GROUP) return false
+  return roomStore.currentUserRole === 'owner' || roomStore.currentUserRole === 'admin'
+})
+
+const allowScanEnter = computed(() => {
+  return roomStore.currentRoom?.joinRule === 'public'
+})
+
+// 是否正在编辑群名称
+const isEditingGroupName = ref(false)
+// 编辑中的群名称
+const editingGroupName = ref('')
+// 群名称输入框引用
+const groupNameInputRef = useTemplateRef<HTMLInputElement | null>('groupNameInputRef')
+// 待保存的群信息
+const pendingGroupInfo = ref<{
+  groupName?: string
+  myName?: string
+  remark?: string
+} | null>(null)
+// 本地暂存的群昵称和群备注（避免实时修改store）
+const localMyName = ref('')
+const localRemark = ref('')
+
+// 初始化本地变量
+const initLocalValues = () => {
+  if (!currentSession.value?.roomId) return
+  const myUid = userStore.userInfo?.uid
+  const member = myUid ? roomStore.getMember(currentSession.value.roomId, myUid) : undefined
+  localMyName.value = resolveMyRoomNickname({
+    roomId: currentSession.value.roomId!,
+    myName: member?.displayName || ''
+  })
+  localRemark.value = currentSession.value?.remark || ''
+}
+
+const currentMemberDisplayName = computed(() => {
+  if (!currentSession.value?.roomId || !userStore.userInfo?.uid) return undefined
+  return roomStore.getMember(currentSession.value.roomId, userStore.userInfo.uid)?.displayName
+})
+
+watch(
+  () => currentMemberDisplayName.value,
+  (newName) => {
+    if (!currentSession.value?.roomId) return
+    const normalized = resolveMyRoomNickname({
+      roomId: currentSession.value.roomId!,
+      myName: newName || ''
+    })
+    if (localMyName.value !== normalized) {
+      localMyName.value = normalized
+    }
+  }
+)
+// 监听当前会话变化，重新初始化本地变量
+watch(
+  () => currentSession.value?.roomId,
+  () => {
+    if (currentSession.value?.roomId) {
+      nextTick(() => {
+        initLocalValues()
+      })
+    }
+  }
+)
+
+const messageSettingType = computed(() => {
+  // 群消息设置只在免打扰模式下有意义
+  if (currentSession.value?.muteNotification === NotificationTypeEnum.NOT_DISTURB) {
+    return currentSession.value?.shield ? 'shield' : 'notification'
+  }
+  // 非免打扰模式下，默认返回 notification
+  return 'notification'
+})
+const messageSettingOptions = computed(() => [
+  { label: t('home.chat_header.message_setting.receive_no_alert'), value: 'notification' },
+  { label: t('home.chat_header.message_setting.shield'), value: 'shield' }
+])
+
+const chatTargetUid = computed(() => {
+  const session = currentSession.value
+  if (!session || session.type === RoomTypeEnum.GROUP) return undefined
+  return session.detailId
+})
+const { isOnline, statusIcon, statusTitle, hasCustomState } = useOnlineStatus(chatTargetUid)
+
+interface FriendItem {
+  user_id: string | number
+}
+
+/** 是否还是好友 */
+const shouldShowDeleteFriend = computed(() => {
+  const session = currentSession.value
+  if (!session || session.type === RoomTypeEnum.GROUP) return false
+  try {
+    const friendsStore = require('@/stores/friends').useFriendsStore()
+    return (friendsStore.friends || []).some((f: FriendItem) => String(f.user_id) === String(session.detailId))
+  } catch {
+    return false
+  }
+})
+const userList = computed(() => {
+  if (currentSession.value?.type === RoomTypeEnum.GROUP) {
+    return (roomStore.currentMembers || [])
+      .filter((m) => m.userId !== '1')
+      .map((m) => ({
+        uid: m.userId,
+        name: m.displayName || m.userId,
+        avatar: m.avatarUrl || '',
+        roleId: m.role === 'owner' ? RoleEnum.LORD : m.role === 'admin' ? RoleEnum.ADMIN : RoleEnum.NORMAL,
+        activeStatus: OnlineEnum.OFFLINE
+      }))
+      .slice(0, 10)
+  }
+  return []
+})
+
+// 获取用户的最新头像
+const currentUserAvatar = computed(() => {
+  const session = currentSession.value
+  if (!session) return ''
+  // if (session.type === RoomTypeEnum.SINGLE) {
+  //   const info = groupStore.getUserInfo(session.detailId)
+  //   return AvatarUtils.getAvatarUrl(info?.avatar || session.avatar)
+  // }
+  return AvatarUtils.getAvatarUrl(session.avatar)
+})
+// 使用自定义hook处理头像上传
+const {
+  fileInput,
+  localImageUrl,
+  showCropper,
+  cropperRef,
+  openFileSelector,
+  handleFileChange,
+  handleCrop: onCrop
+} = useAvatarUpload({
+  onSuccess: async (mxcUrl) => {
+    const session = currentSession.value
+    if (!session) return
+    // 使用 Matrix SDK 更新房间头像
+    const { sdkUpdateRoomAvatar } = await import('@/services/rooms')
+    await sdkUpdateRoomAvatar(session.roomId, mxcUrl)
+    // Update local session
+    chatStore.updateSession(session.roomId, { avatar: mxcUrl })
+  }
+})
+
+watchEffect(() => {
+  stream.value?.getVideoTracks()[0]?.addEventListener('ended', () => {
+    stop()
+  })
+})
+
+// 处理复制账号
+const handleCopy = () => {
+  const session = currentSession.value
+  if (!session?.account) return
+  navigator.clipboard.writeText(session.account)
+  msg.success(t('home.chat_header.toast.copy_success', { account: session.account }))
+}
+
+/** 处理创建私密聊天 */
+const handleCreatePrivateChat = () => {
+  showPrivateChatDialog.value = true
+  if (privateChatButtonRef.value) {
+    privateChatButtonRef.value.openPrivateChatDialog()
+  }
+}
+
+/** 处理私密聊天创建成功 */
+const handlePrivateChatCreated = async (roomId: string) => {
+  try {
+    showPrivateChatDialog.value = false
+    await globalStore.updateCurrentSessionRoomId(roomId)
+  } catch (error) {
+    logger.error(
+      '[ChatHeader] Failed to handle private chat created:',
+      error instanceof Error ? error : new Error(String(error))
+    )
+  }
+}
+
+/** 处理创建群聊或邀请进群 */
+const handleCreateGroupOrInvite = () => {
+  const session = currentSession.value
+  if (!session) return
+  if (session.type === RoomTypeEnum.GROUP) {
+    handleInvite()
+  } else {
+    handleCreateGroup()
+  }
+}
+
+/** 处理创建群聊 */
+const handleCreateGroup = () => {
+  const session = currentSession.value
+  if (!session) return
+  useMitt.emit(MittEnum.CREATE_GROUP, { id: session.detailId })
+}
+
+/** 处理邀请进群 */
+const handleInvite = async () => {
+  const session = currentSession.value
+  if (!session) return
+  // 使用封装后的createModalWindow方法创建模态窗口，并传递当前会话的 roomId
+  await createModalWindow(t('home.chat_header.modal.invite_friends'), 'modal-invite', 600, 500, 'home', {
+    roomId: session.roomId,
+    type: session.type
+  })
+}
+
+/** 处理管理群成员 */
+const handleManageGroupMember = () => {
+  // 打开管理群成员弹窗
+  showManageGroupMemberModal.value = true
+}
+
+// 保存群聊信息
+const saveGroupInfo = async () => {
+  const session = currentSession.value
+  if (!session?.roomId || session.type !== RoomTypeEnum.GROUP) return
+
+  const pendingInfo = pendingGroupInfo.value
+  if (!pendingInfo) return
+
+  const myName = pendingInfo.myName ?? ''
+  const remark = pendingInfo.remark ?? ''
+
+  try {
+    await persistMyRoomInfo({
+      roomId: session.roomId,
+      myName,
+      remark
+    })
+
+    localMyName.value = resolveMyRoomNickname({
+      roomId: session.roomId,
+      myName
+    })
+    localRemark.value = remark
+
+    msg.success(t('home.chat_header.toast.group_info_updated'))
+    pendingGroupInfo.value = null
+  } catch (error) {
+    logger.error('更新群聊信息失败:', error instanceof Error ? error : new Error(String(error)))
+    msg.error(t('home.chat_header.toast.group_info_update_failed'))
+  }
+}
+
+const handleAssist = () => {
+  msg.warning(t('home.chat_header.toast.todo'))
+}
+
+const handleMedia = () => {
+  msg.warning(t('home.chat_header.toast.todo'))
+}
+
+/** 置顶 */
+const handleTop = async (value: boolean) => {
+  const session = currentSession.value
+  if (!session) return
+
+  try {
+    await sessionSettingsService.setSessionTop(session.roomId, value)
+    // 更新本地会话状态
+    chatStore.updateSession(session.roomId, { top: value })
+    msg.success(value ? t('home.chat_header.toast.pin_on') : t('home.chat_header.toast.pin_off'))
+  } catch (e) {
+    msg.error(t('home.chat_header.toast.pin_failed'))
+  }
+}
+
+/** 处理消息免打扰 */
+const handleNotification = async (value: boolean) => {
+  const session = currentSession.value
+  if (!session) return
+  const newMode = value ? 'not_disturb' : 'reception'
+  // 如果当前是屏蔽状态，需要先取消屏蔽
+  if (session.shield) {
+    await handleShield(false)
+  }
+  try {
+    // 使用 Matrix SDK 设置通知模式
+    await sessionSettingsService.setNotificationMode(session.roomId, newMode)
+    // 更新本地会话状态
+    const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
+    chatStore.updateSession(session.roomId, {
+      muteNotification: newType
+    })
+
+    // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
+    if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
+    if (newType === NotificationTypeEnum.NOT_DISTURB) {
+      chatStore.updateTotalUnreadCount()
+    }
+
+    msg.success(value ? t('home.chat_header.toast.mute_on') : t('home.chat_header.toast.mute_off'))
+  } catch (error) {
+    msg.error(t('home.chat_header.toast.action_failed'))
+  }
+}
+
+/** 处理屏蔽消息 */
+const handleShield = async (value: boolean) => {
+  const session = currentSession.value
+  if (!session) return
+  try {
+    await sessionSettingsService.setSessionShield(session.roomId, value)
+    // 更新本地会话状态
+    chatStore.updateSession(session.roomId, {
+      shield: value
+    })
+
+    // 1. 先保存当前聊天室ID
+    const tempRoomId = globalStore.currentSessionRoomId
+
+    // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
+    nextTick(() => {
+      globalStore.updateCurrentSessionRoomId(tempRoomId)
+    })
+
+    msg.success(value ? t('home.chat_header.toast.shield_on') : t('home.chat_header.toast.shield_off'))
+  } catch (error) {
+    msg.error(t('home.chat_header.toast.action_failed'))
+  }
+}
+
+const handleMessageSetting = async (value: string) => {
+  const session = currentSession.value
+  if (!session) return
+  if (value === 'shield') {
+    // 设置为屏蔽消息
+    if (!session.shield) {
+      await handleShield(true)
+    }
+  } else if (value === 'notification') {
+    // 设置为接收消息但不提醒
+    if (session.shield) {
+      await handleShield(false)
+    }
+  }
+}
+
+/** 处理房间加入规则修改 */
+const handleJoinRuleChange = async (val: boolean) => {
+  const client = matrixClientService.getClient()
+  const session = currentSession.value
+  if (!client || !session) return
+  try {
+    // 使用 Matrix SDK 设置房间加入规则
+    const setJoinRule = client.setJoinRule as ((roomId: string, joinRule: string) => Promise<unknown>) | undefined
+    if (setJoinRule) {
+      await setJoinRule(session.roomId, val ? 'public' : 'invite')
+      msg.success(val ? '已开启扫码入群' : '已关闭扫码入群')
+    }
+  } catch (error) {
+    logger.error('设置房间加入规则失败:', error)
+    msg.error('设置失败')
+  }
+}
+
+/** 处理群名称修改失焦 */
+const handleGroupNameChange = () => {
+  const session = currentSession.value
+  if (!session) return
+  const trimmedName = editingGroupName.value.trim()
+
+  // 检查名称是否有变化
+  if (trimmedName !== session.name) {
+    // 检查名称是否为空或超过12个字符
+    if (trimmedName === '') {
+      msg.warning(t('home.chat_header.toast.group_name_empty'))
+      return
+    }
+    if (trimmedName.length > 12) {
+      msg.warning(t('home.chat_header.toast.group_name_too_long'))
+      return
+    }
+
+    // 保存待修改的群名称并触发确认弹窗
+    pendingGroupInfo.value = { groupName: trimmedName }
+    handleDelete(RoomActEnum.UPDATE_GROUP_NAME)
+  } else {
+    // 名称没有变化，直接退出编辑模式
+    isEditingGroupName.value = false
+  }
+}
+
+/** 处理群信息修改失焦 */
+const handleGroupInfoChange = () => {
+  // 检查是否有修改
+  const myUid = userStore.userInfo?.uid
+  const member =
+    myUid && currentSession.value?.roomId ? roomStore.getMember(currentSession.value.roomId, myUid) : undefined
+  const originalMyName = member?.displayName || ''
+  const originalRemark = currentSession.value?.remark || ''
+
+  if (localMyName.value !== originalMyName || localRemark.value !== originalRemark) {
+    // 保存待修改的群信息并触发确认弹窗
+    pendingGroupInfo.value = {
+      myName: localMyName.value,
+      remark: localRemark.value
+    }
+    handleDelete(RoomActEnum.UPDATE_GROUP_INFO)
+  }
+}
+
+const deleteRoomMessages = async (roomId: string) => {
+  if (!roomId) return
+  try {
+    await invokeWithErrorHandler(
+      TauriCommand.DELETE_ROOM_MESSAGES,
+      { roomId },
+      {
+        customErrorMessage: t('home.chat_header.toast.delete_history_failed'),
+        errorType: ErrorType.Client
+      }
+    )
+    chatStore.clearRoomMessages(roomId)
+    useMitt.emit(MittEnum.UPDATE_SESSION_LAST_MSG, { roomId })
+    msg.success(t('home.chat_header.toast.delete_history_success'))
+    modalShow.value = false
+    sidebarShow.value = false
+  } catch (error) {
+    logger.error('删除聊天记录失败:', error instanceof Error ? error : new Error(String(error)))
+  }
+}
+
+/** 删除操作二次提醒 */
+const handleDelete = (label: RoomActEnum) => {
+  modalShow.value = true
+  optionsType.value = label
+  if (label === RoomActEnum.DELETE_FRIEND) {
+    tips.value = t('home.chat_header.modal.tips.delete_friend')
+  } else if (label === RoomActEnum.DISSOLUTION_GROUP) {
+    tips.value = t('home.chat_header.modal.tips.dissolve_group')
+  } else if (label === RoomActEnum.EXIT_GROUP) {
+    tips.value = t('home.chat_header.modal.tips.exit_group')
+  } else if (label === RoomActEnum.UPDATE_GROUP_NAME) {
+    tips.value = t('home.chat_header.modal.tips.rename_group', {
+      name: pendingGroupInfo.value?.groupName ?? ''
+    })
+  } else if (label === RoomActEnum.UPDATE_GROUP_INFO) {
+    tips.value = t('home.chat_header.modal.tips.update_info')
+  } else {
+    tips.value = t('home.chat_header.modal.tips.delete_history')
+    optionsType.value = RoomActEnum.DELETE_RECORD
+  }
+}
+
+const handleConfirm = async () => {
+  const currentOption = optionsType.value
+  const targetRoomId = currentSession.value?.roomId
+  const targetDetailId = currentSession.value?.detailId
+
+  if (currentOption === undefined || currentOption === null || !targetRoomId) return
+
+  if (currentOption === RoomActEnum.DELETE_FRIEND && targetDetailId) {
+    try {
+      // 使用 Matrix SDK 删除好友
+      await friendsServiceV2.removeFriend(targetDetailId)
+      await require('@/stores/friends').useFriendsStore().refreshAll()
+      useMitt.emit(MittEnum.DELETE_SESSION, targetRoomId)
+      msg.success(t('home.chat_header.toast.delete_friend_success'))
+      modalShow.value = false
+      sidebarShow.value = false
+    } catch (error) {
+      logger.error('删除好友失败:', error instanceof Error ? error : new Error(String(error)))
+    }
+  } else if (currentOption === RoomActEnum.DISSOLUTION_GROUP) {
+    if (targetRoomId === '1') {
+      msg.warning(t('home.chat_header.toast.dissolve_not_allowed'))
+      modalShow.value = false
+      return
+    }
+
+    try {
+      // await groupStore.exitGroup(targetRoomId)
+      const service = roomStore.getService()
+      if (service) {
+        await service.leaveRoom(targetRoomId)
+      }
+      msg.success(t('home.chat_header.toast.dissolve_success'))
+      // 删除当前的会话
+      useMitt.emit(MittEnum.DELETE_SESSION, targetRoomId)
+      modalShow.value = false
+      sidebarShow.value = false
+    } catch (error) {
+      logger.error('解散群聊失败:', error instanceof Error ? error : new Error(String(error)))
+    }
+  } else if (currentOption === RoomActEnum.EXIT_GROUP) {
+    if (targetRoomId === '1') {
+      msg.warning(t('home.chat_header.toast.exit_not_allowed'))
+      modalShow.value = false
+      return
+    }
+
+    try {
+      // await groupStore.exitGroup(targetRoomId)
+      const service = roomStore.getService()
+      if (service) {
+        await service.leaveRoom(targetRoomId)
+      }
+      msg.success(t('home.chat_header.toast.exit_success'))
+      // 删除当前的会话
+      useMitt.emit(MittEnum.DELETE_SESSION, targetRoomId)
+      modalShow.value = false
+      sidebarShow.value = false
+    } catch (error) {
+      logger.error('退出群聊失败:', error instanceof Error ? error : new Error(String(error)))
+    }
+  } else if (currentOption === RoomActEnum.DELETE_RECORD) {
+    await deleteRoomMessages(targetRoomId)
+  } else if (currentOption === RoomActEnum.UPDATE_GROUP_NAME) {
+    // 确认修改群名称
+    await saveGroupName()
+    modalShow.value = false
+  } else if (currentOption === RoomActEnum.UPDATE_GROUP_INFO) {
+    // 确认修改群信息
+    await saveGroupInfo()
+    modalShow.value = false
+  }
+}
+
+const handleCancel = () => {
+  const session = currentSession.value
+  // 如果是取消群信息修改，需要恢复原始值
+  if (optionsType.value === RoomActEnum.UPDATE_GROUP_NAME) {
+    // 取消群名称修改，退出编辑模式
+    isEditingGroupName.value = false
+    editingGroupName.value = session?.name || ''
+  } else if (optionsType.value === RoomActEnum.UPDATE_GROUP_INFO) {
+    // 取消群信息修改，恢复本地变量到原始值
+    const myUid = userStore.userInfo?.uid
+    const member =
+      myUid && currentSession.value?.roomId ? roomStore.getMember(currentSession.value.roomId, myUid) : undefined
+    localMyName.value = member?.displayName || ''
+    localRemark.value = currentSession.value?.remark || ''
+  }
+
+  // 清空待保存的群信息
+  pendingGroupInfo.value = null
+  modalShow.value = false
+}
+
+// 开始编辑群名称
+const startEditGroupName = () => {
+  if (!isGroupOwner.value) return
+
+  editingGroupName.value = currentSession.value?.name || ''
+  isEditingGroupName.value = true
+
+  // 在下一个事件循环中聚焦输入框
+  nextTick(() => {
+    groupNameInputRef.value?.focus()
+  })
+}
+
+// 保存群名称
+const saveGroupName = async () => {
+  const session = currentSession.value
+  if (!isGroupOwner.value || !session?.roomId) return
+
+  isEditingGroupName.value = false
+
+  // 使用 pendingGroupInfo 中的群名称
+  const trimmedName = pendingGroupInfo.value?.groupName
+  if (!trimmedName) return
+
+  try {
+    // 使用 Matrix SDK 更新房间名称
+    await sdkUpdateRoomName(session.roomId, trimmedName)
+    // Matrix SDK might auto-update room name via sync events, but we can also update local optimistically
+    chatStore.updateSession(session.roomId, { name: trimmedName })
+    // 清空待保存的群信息
+    pendingGroupInfo.value = null
+  } catch (error) {
+    msg.error(t('home.chat_header.toast.group_name_update_failed'))
+    logger.error('更新群名称失败:', error instanceof Error ? error : new Error(String(error)))
+  }
+}
+
+// 处理上传头像
+const handleUploadAvatar = () => {
+  if (!isGroupOwner.value || !currentSession.value?.roomId) return
+
+  openFileSelector()
+}
+
+// 处理裁剪，调用hook中的方法
+const handleCrop = async (cropBlob: Blob) => {
+  await onCrop(cropBlob)
+}
+
+const closeMenu = (event: Event) => {
+  /** 点击非侧边栏元素时，关闭侧边栏，但点击弹出框元素、侧边栏图标、还有侧边栏里面的元素时不关闭 */
+  const target = event.target as HTMLElement
+  if (!target.matches('.sidebar, .sidebar *, .n-modal-mask, .options-box *, .n-modal *') && !modalShow.value) {
+    sidebarShow.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', closeMenu, true)
+  // 初始化本地变量
+  initLocalValues()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeMenu, true)
+  useMitt.off(WsResponseMessageType.VideoCallRequest, () => {})
+})
+</script>
+
+<style scoped lang="scss">
+@use '@/styles/scss/chat-header';
+
+.loading-enter-active,
+.loading-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.loading-enter-from,
+.loading-leave-to {
+  opacity: 0;
+}
+
+.avatar-wrapper {
+  cursor: pointer;
+
+  .avatar-hover {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    top: 0;
+    left: 0;
+  }
+
+  &:hover .avatar-hover {
+    opacity: 1;
+  }
+}
+
+:deep(.n-scrollbar > .n-scrollbar-container > .n-scrollbar-content) {
+  padding-left: 2px;
+}
+
+.typing-hint {
+  @apply text-12px;
+  color: var(--chat-text-color);
+}
+.dot-online {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #1aaa55;
+}
+
+.private-chat-icon {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #13987f;
+    transform: scale(1.1);
+  }
+}
+
+.options-box {
+  position: relative;
+
+  .private-chat-icon {
+    color: var(--icon-color);
+
+    &:hover {
+      color: #13987f;
+    }
+  }
+}
+</style>

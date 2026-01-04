@@ -22,15 +22,45 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type Emits = (e: 'click', item: any) => void
+// Type definitions
+interface UserItem {
+  name?: string
+  nickname?: string
+  userName?: string
+  remark?: string
+  avatar?: string
+  isOnline?: boolean
+  [key: string]: unknown
+}
+
+interface RoomItem {
+  roomName?: string
+  groupName?: string
+  roomAvatar?: string
+  avatar?: string
+  memberCount?: number
+  unreadCount?: number
+  activeStatus?: number
+  lastMessage?: string
+  [key: string]: unknown
+}
+
+interface ContactItem {
+  name?: string
+  avatar?: string
+  [key: string]: unknown
+}
+
+type Emits = (e: 'click', item: Record<string, unknown>) => void
 
 const props = withDefaults(
   defineProps<{
-    user?: any
-    room?: any
-    contact?: any
+    user?: UserItem
+    room?: RoomItem
+    contact?: ContactItem
     isSelected?: boolean
   }>(),
   {
@@ -42,34 +72,45 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
 // 统一的数据格式
-const itemData = computed(() => {
+interface ItemData {
+  name: string
+  avatar: string
+  isOnline: boolean
+  subtitle: string | undefined
+  [key: string]: unknown
+}
+
+const itemData = computed<ItemData>(() => {
   const item = props.user || props.room || props.contact || {}
 
   return {
-    name:
-      item.name ||
+    name: (item.name ||
       item.roomName ||
       item.groupName ||
       item.nickname ||
       item.userName ||
       item.remark ||
-      t('fileManager.common.unknown'),
-    avatar: item.avatar || item.roomAvatar || '',
-    isOnline: item.isOnline || item.activeStatus === 1,
-    subtitle: getSubtitle(item),
-    count: item.memberCount || item.unreadCount,
+      t('fileManager.common.unknown')) as string,
+    avatar: (item.avatar || item.roomAvatar || '') as string,
+    isOnline: (item.isOnline || item.activeStatus === 1) as boolean,
+    subtitle: getSubtitle(item) as string | undefined,
     ...item
   }
 })
 
-const getSubtitle = (item: any) => {
-  if (item.roomName) {
-    // 群聊显示成员数量
-    return item.memberCount ? t('fileManager.userList.memberCount', { count: item.memberCount }) : ''
+const getSubtitle = (item: unknown) => {
+  const i = item as {
+    roomName?: string
+    memberCount?: number
+    lastMessage?: string
   }
-  if (item.lastMessage) {
+  if (i.roomName) {
+    // 群聊显示成员数量
+    return i.memberCount ? t('fileManager.userList.memberCount', { count: i.memberCount }) : ''
+  }
+  if (i.lastMessage) {
     // 会话显示最后一条消息
-    return item.lastMessage
+    return i.lastMessage
   }
   return ''
 }
@@ -107,7 +148,7 @@ const handleAvatarError = (event: Event) => {
   user-select: none;
 
   &:hover:not(&--selected) {
-    background-color: #f5f5f5;
+    background-color: var(--hula-gray-100, #f5f5f5);
   }
 
   &--selected {

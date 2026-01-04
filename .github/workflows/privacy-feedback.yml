@@ -1,0 +1,42 @@
+name: Privacy and Feedback API Tests
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+jobs:
+  run-tests:
+    if: ${{ secrets.MATRIX_BASE != '' && secrets.MATRIX_USER != '' && secrets.MATRIX_PASS != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y curl jq
+      - name: Login to matrix
+        env:
+          BASE: ${{ secrets.MATRIX_BASE }}
+          USER: ${{ secrets.MATRIX_USER }}
+          PASS: ${{ secrets.MATRIX_PASS }}
+        run: |
+          chmod +x scripts/login-secure.sh
+          ./scripts/login-secure.sh
+      - name: Run privacy and feedback tests
+        env:
+          BASE: ${{ secrets.MATRIX_BASE }}
+          TOKEN: ${{ secrets.MATRIX_TOKEN || '' }}
+        run: |
+          if [ -z "$TOKEN" ]; then TOKEN="$(cat .hula_token)"; fi
+          chmod +x scripts/privacy-feedback-test.sh
+          BASE="$BASE" TOKEN="$TOKEN" ./scripts/privacy-feedback-test.sh
+      - name: Run E2EE tests
+        env:
+          BASE: ${{ secrets.MATRIX_BASE }}
+          TOKEN: ${{ secrets.MATRIX_TOKEN || '' }}
+        run: |
+          if [ -z "$TOKEN" ]; then TOKEN="$(cat .hula_token)"; fi
+          chmod +x scripts/e2ee-test.sh
+          BASE="$BASE" TOKEN="$TOKEN" ./scripts/e2ee-test.sh > e2ee-report.txt
+      - name: Upload E2EE Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2ee-report
+          path: e2ee-report.txt

@@ -1,10 +1,45 @@
+import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { RoleEnum, RoomTypeEnum, StoresEnum } from '@/enums'
+import { RoleEnum, RoomTypeEnum, StoresEnum, OnlineEnum } from '@/enums'
 import type { GroupDetailReq, UserItem } from '@/services/types'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { useChatStore } from './chat'
+import { sdkGetJoinedMembers } from '@/services/messages'
+import { sdkSetPowerLevel, sdkKickFromRoom, sdkLeaveRoom } from '@/services/rooms'
+import { flags } from '@/utils/envFlags'
+import { logger } from '@/utils/logger'
+import { onUnmounted } from 'vue'
+import { createGroupToRoomAdapter, type GroupToRoomAdapter } from '@/adapters/group-to-room-adapter'
+import { matrixClientService } from '@/integrations/matrix/client'
+import type { MatrixClient } from 'matrix-js-sdk'
+
+/** 会话项类型 */
+interface SessionItem {
+  roomId: string
+  type?: RoomTypeEnum
+  [key: string]: unknown
+}
+
+/** Matrix 成员类型 */
+interface MatrixMember {
+  userId?: string
+  name?: string
+  powerLevel?: number
+  getMxcAvatarUrl?: () => string
+}
+
+/** 扩展的 Matrix 客户端类型 */
+interface ExtendedMatrixClient extends MatrixClient {
+  getGroups?: () => unknown
+}
+
+/** Pinia 共享选项类型 */
+interface PiniaShareOptions {
+  enable: boolean
+  initialize?: boolean
+}
 
 export const useGroupStore = defineStore(
   StoresEnum.GROUP,
@@ -12,6 +47,88 @@ export const useGroupStore = defineStore(
     const globalStore = useGlobalStore()
     const userStore = useUserStore()
     const chatStore = useChatStore()
+
+    // 初始化房间适配器
+    let roomAdapter: GroupToRoomAdapter | null = null
+
+    // 初始化适配器
+    const initAdapter = () => {
+      if (flags.matrixEnabled && !roomAdapter) {
+        const client = matrixClientService.getClient() as ExtendedMatrixClient | null
+        if (client) {
+          roomAdapter = createGroupToRoomAdapter(client)
+        }
+      }
+      return roomAdapter
+    }
+
+    // 获取适配器
+    const getAdapter = () => {
+      if (!roomAdapter) {
+        return initAdapter()
+      }
+      return roomAdapter
+    }
+
+    // 清理适配器
+    const cleanup = () => {
+      if (roomAdapter) {
+        roomAdapter.destroy()
+        roomAdapter = null
+      }
+    }
+
+    // 组件卸载时清理
+    onUnmounted(() => {
+      cleanup()
+    })
+
+    // 群公告相关
+    const setGroupAnnouncement = async (roomId: string, announcement: string): Promise<void> => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          await adapter.setGroupAnnouncement(roomId, announcement)
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to set announcement for ${roomId}:`, error)
+          // 降级到原有方式
+          await requestWithFallback({
+            url: 'set_group_announcement',
+            body: { roomId, announcement }
+          })
+        }
+      } else {
+        // 使用原有方式
+        await requestWithFallback({
+          url: 'set_group_announcement',
+          body: { roomId, announcement }
+        })
+      }
+    }
+
+    const getGroupAnnouncement = async (roomId: string): Promise<string> => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          return await adapter.getGroupAnnouncement(roomId)
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to get announcement for ${roomId}:`, error)
+          // 降级到原有方式
+          const result = (await requestWithFallback({
+            url: 'get_group_announcement',
+            params: { roomId }
+          })) as string | undefined
+          return result || ''
+        }
+      } else {
+        // 使用原有方式
+        const result = (await requestWithFallback({
+          url: 'get_group_announcement',
+          params: { roomId }
+        })) as string | undefined
+        return result || ''
+      }
+    }
 
     // 动态加载没有的群组 [防止并发冲突加载]
     const groupDetailsCache = ref<Record<string, GroupDetailReq>>({})
@@ -49,7 +166,9 @@ export const useGroupStore = defineStore(
 
       members.forEach((member) => {
         if (member.__order === undefined) {
-          member.__order = memberOrderCounters[roomId]++
+          const currentOrder = memberOrderCounters[roomId] || 0
+          memberOrderCounters[roomId] = currentOrder + 1
+          member.__order = currentOrder
         }
       })
     }
@@ -126,7 +245,7 @@ export const useGroupStore = defineStore(
     /**
      * 添加会话切换方法
      */
-    const switchSession = async (newSession: any, _oldSession?: any) => {
+    const switchSession = async (newSession: SessionItem, _oldSession?: SessionItem) => {
       if (!newSession?.roomId || newSession.roomId === currentSessionState.value.roomId) {
         return
       }
@@ -159,7 +278,7 @@ export const useGroupStore = defineStore(
           roomId: newSession.roomId
         }
       } catch (error) {
-        console.error('切换会话失败:', error)
+        logger.error('切换会话失败:', error)
         currentSessionState.value.loading = false
         throw error
       } finally {
@@ -174,16 +293,91 @@ export const useGroupStore = defineStore(
     })
 
     const setGroupDetails = async () => {
-      const data = await ImRequestUtils.groupList()
-      groupDetails.value = data
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        // 使用房间适配器获取群列表
+        try {
+          const data = await adapter.getGroupList()
+          // GroupListReq 需要转换为 GroupDetailReq 格式
+          const convertedData: GroupDetailReq[] = []
+
+          for (const group of data) {
+            try {
+              // 获取详细统计信息
+              const stats = await adapter.getGroupStats(group.roomId)
+
+              convertedData.push({
+                avatar: group.avatar || '',
+                groupName: group.roomName,
+                onlineNum: stats.onlineNum,
+                roleId: RoleEnum.NORMAL, // 需要根据用户权限设置
+                roomId: group.roomId,
+                account: group.roomId,
+                memberNum: stats.totalNum,
+                remark: group.remark || '',
+                myName: '', // 需要获取用户在此群的昵称
+                allowScanEnter: true // 默认允许扫描进入
+              })
+            } catch (error) {
+              // 如果获取统计失败，使用默认值
+              logger.warn(`[GroupStore] Failed to get stats for ${group.roomId}:`, error)
+              convertedData.push({
+                avatar: group.avatar || '',
+                groupName: group.roomName,
+                onlineNum: 0,
+                roleId: RoleEnum.NORMAL,
+                roomId: group.roomId,
+                account: group.roomId,
+                memberNum: 0,
+                remark: group.remark || '',
+                myName: '',
+                allowScanEnter: true
+              })
+            }
+          }
+
+          groupDetails.value = convertedData
+        } catch (error) {
+          logger.error('[GroupStore] Failed to get group list from adapter:', error)
+          // 降级到原有方式
+          const data = (await requestWithFallback({ url: 'get_room_list' })) as GroupDetailReq[]
+          groupDetails.value = data
+        }
+      } else {
+        // 使用原有方式
+        const data = (await requestWithFallback({ url: 'get_room_list' })) as GroupDetailReq[]
+        groupDetails.value = data
+      }
     }
 
     const addGroupDetail = async (roomId: string) => {
       if (groupDetails.value.find((item) => item.roomId === roomId)) {
         return
       }
-      const data = await ImRequestUtils.getGroupDetail(roomId)
-      groupDetails.value.push(data)
+
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          // 使用房间适配器获取群详情
+          const data = await adapter.getGroupDetail(roomId)
+          groupDetails.value.push(data)
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to get group detail for ${roomId}:`, error)
+          // 降级到原有方式
+          const data = (await requestWithFallback({
+            url: 'get_room_detail',
+            params: { roomId }
+          })) as GroupDetailReq
+          groupDetails.value.push(data)
+        }
+      } else {
+        // 使用原有方式
+        const data = (await requestWithFallback({
+          url: 'get_room_detail',
+          params: { roomId }
+        })) as GroupDetailReq
+        groupDetails.value.push(data)
+      }
     }
 
     const getUserInfo = computed(() => (uid: string, roomId?: string) => {
@@ -295,7 +489,7 @@ export const useGroupStore = defineStore(
     const updateAdminStatus = (roomId: string, uids: string[], isAdmin: boolean) => {
       const currentUserList = userListMap[roomId]
       if (!currentUserList) {
-        console.warn(`未找到房间 ${roomId} 的用户列表`)
+        logger.warn(`未找到房间 ${roomId} 的用户列表`)
         return
       }
 
@@ -413,7 +607,7 @@ export const useGroupStore = defineStore(
         // 4. 等待请求完成并返回结果
         return await fetchPromisesMap.value[roomId]
       } catch (error) {
-        console.error(`获取群组 ${roomId} 详情失败:`, error)
+        logger.error(`获取群组 ${roomId} 详情失败:`, error)
         throw error
       }
     }
@@ -452,6 +646,107 @@ export const useGroupStore = defineStore(
       }
     }
 
+    /**
+     * 刷新群统计信息
+     */
+    const refreshGroupStats = async (roomId: string): Promise<void> => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          const stats = await adapter.getGroupStats(roomId)
+
+          // 更新群详情
+          const group = groupDetails.value.find((item) => item.roomId === roomId)
+          if (group) {
+            group.memberNum = stats.totalNum
+            group.onlineNum = stats.onlineNum
+          }
+
+          // 更新缓存的群详情
+          if (groupDetailsCache.value[roomId]) {
+            groupDetailsCache.value[roomId].memberNum = stats.totalNum
+            groupDetailsCache.value[roomId].onlineNum = stats.onlineNum
+          }
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to refresh stats for ${roomId}:`, error)
+        }
+      }
+    }
+
+    // ===== 搜索功能 =====
+
+    /**
+     * 搜索已加入的群
+     */
+    const searchGroups = async (
+      options: {
+        query?: string
+        limit?: number
+        roomTypes?: ('public' | 'private' | 'direct')[]
+        memberCountRange?: {
+          min?: number
+          max?: number
+        }
+        sortBy?: 'name' | 'member_count' | 'activity'
+      } = {}
+    ) => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          const results = await adapter.searchGroups(options)
+          logger.info(`[GroupStore] Found ${results.length} groups matching query: ${options.query}`)
+          return results
+        } catch (error) {
+          logger.error('[GroupStore] Failed to search groups:', error)
+          throw error
+        }
+      } else {
+        // 使用 WebSocket API 或返回空数组
+        logger.warn('[GroupStore] Group search not available, returning empty result')
+        return []
+      }
+    }
+
+    /**
+     * 搜索公开群
+     */
+    const searchPublicGroups = async (options: { query?: string; limit?: number; server?: string } = {}) => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          const results = await adapter.searchPublicGroups(options)
+          logger.info(`[GroupStore] Found ${results.length} public groups matching query: ${options.query}`)
+          return results
+        } catch (error) {
+          logger.error('[GroupStore] Failed to search public groups:', error)
+          throw error
+        }
+      } else {
+        logger.warn('[GroupStore] Public group search not available, returning empty result')
+        return []
+      }
+    }
+
+    /**
+     * 获取群搜索建议
+     */
+    const getGroupSearchSuggestions = async (query: string, limit: number = 5) => {
+      const adapter = getAdapter()
+      if (adapter && flags.matrixEnabled) {
+        try {
+          const suggestions = await adapter.getGroupSearchSuggestions(query, limit)
+          logger.info(`[GroupStore] Got ${suggestions.length} search suggestions for query: ${query}`)
+          return suggestions
+        } catch (error) {
+          logger.error('[GroupStore] Failed to get search suggestions:', error)
+          return []
+        }
+      } else {
+        logger.warn('[GroupStore] Group search suggestions not available, returning empty result')
+        return []
+      }
+    }
+
     // 校验合法的群聊/频道才会触发成员刷新
     const isValidGroupRoom = (roomId?: string | null): roomId is string => {
       if (!roomId) return false
@@ -467,7 +762,7 @@ export const useGroupStore = defineStore(
      */
     const getGroupUserList = async (roomId: string, forceRefresh = false) => {
       if (!isValidGroupRoom(roomId)) {
-        console.warn('[group] skip member refresh, invalid room id:', roomId)
+        logger.warn('[group] skip member refresh, invalid room id:', roomId)
         return []
       }
 
@@ -481,7 +776,64 @@ export const useGroupStore = defineStore(
         setRoomMemberList(roomId, [])
       }
 
-      const data = await ImRequestUtils.groupListMember(roomId)
+      let data: UserItem[] = []
+      const adapter = getAdapter()
+
+      if (adapter && flags.matrixEnabled) {
+        try {
+          // 使用房间适配器获取群成员
+          data = await adapter.getGroupMembers(roomId)
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to get group members for ${roomId}:`, error)
+          // 降级到原有方式
+          try {
+            const members = await sdkGetJoinedMembers(roomId)
+            data = members.map((m: MatrixMember) => ({
+              uid: m.userId ?? '',
+              name: m.name || m.userId || '',
+              avatar: m.getMxcAvatarUrl?.() || '',
+              activeStatus: OnlineEnum.OFFLINE,
+              lastOptTime: Date.now(),
+              roleId:
+                (m.powerLevel ?? 0) >= 100
+                  ? RoleEnum.LORD
+                  : (m.powerLevel ?? 0) >= 50
+                    ? RoleEnum.ADMIN
+                    : RoleEnum.NORMAL,
+              account: m.userId ?? '',
+              locPlace: ''
+            }))
+          } catch (e) {
+            logger.error('Failed to get matrix members:', e)
+          }
+        }
+      } else if (flags.matrixEnabled) {
+        // Matrix 模式但适配器不可用
+        try {
+          const members = await sdkGetJoinedMembers(roomId)
+          data = members.map((m: MatrixMember) => ({
+            uid: m.userId ?? '',
+            name: m.name || m.userId || '',
+            avatar: m.getMxcAvatarUrl?.() || '',
+            activeStatus: OnlineEnum.OFFLINE,
+            lastOptTime: Date.now(),
+            roleId:
+              (m.powerLevel ?? 0) >= 100 ? RoleEnum.LORD : (m.powerLevel ?? 0) >= 50 ? RoleEnum.ADMIN : RoleEnum.NORMAL,
+            account: m.userId ?? '',
+            locPlace: ''
+          }))
+        } catch (e) {
+          logger.error('Failed to get matrix members:', e)
+        }
+      } else {
+        // WebSocket 模式
+        const res = await requestWithFallback({
+          url: 'get_room_members',
+          params: { roomId }
+        })
+        data = Array.isArray(res) ? [...res] : []
+      }
+
       if (!data) {
         userListOptions.loading = false
         return []
@@ -523,12 +875,12 @@ export const useGroupStore = defineStore(
      */
     const updateUserItem = (uid: string, updates: Partial<UserItem>, roomId: string | 'all' = 'all'): boolean => {
       if (!uid || typeof uid !== 'string') {
-        console.warn('[updateUserItem] invalid uid:', uid)
+        logger.warn('[updateUserItem] invalid uid:', uid)
         return false
       }
 
       if (!updates || typeof updates !== 'object') {
-        console.warn('[updateUserItem] invalid update payload:', updates)
+        logger.warn('[updateUserItem] invalid update payload:', updates)
         return false
       }
 
@@ -554,7 +906,7 @@ export const useGroupStore = defineStore(
 
       refreshTargets.forEach((validRoomId) => {
         getGroupUserList(validRoomId, true).catch((error) => {
-          console.error('[group] refresh members failed:', error)
+          logger.error('[group] refresh members failed:', error)
         })
       })
 
@@ -570,18 +922,18 @@ export const useGroupStore = defineStore(
      */
     const addUserItem = (userItem: UserItem, roomId?: string): boolean => {
       if (!userItem || typeof userItem !== 'object' || !userItem.uid) {
-        console.warn('[addUserItem] invalid user info:', userItem)
+        logger.warn('[addUserItem] invalid user info:', userItem)
         return false
       }
 
       const targetRoomId = roomId || globalStore.currentSessionRoomId
       if (!isValidGroupRoom(targetRoomId)) {
-        console.warn('[addUserItem] cannot determine target room id')
+        logger.warn('[addUserItem] cannot determine target room id')
         return false
       }
 
       getGroupUserList(targetRoomId, true).catch((error) => {
-        console.error('[group] refresh members failed:', error)
+        logger.error('[group] refresh members failed:', error)
       })
 
       return true
@@ -595,18 +947,18 @@ export const useGroupStore = defineStore(
      */
     const removeUserItem = (uid: string, roomId?: string): boolean => {
       if (!uid || typeof uid !== 'string') {
-        console.warn('[removeUserItem] invalid uid:', uid)
+        logger.warn('[removeUserItem] invalid uid:', uid)
         return false
       }
 
       const targetRoomId = roomId || globalStore.currentSessionRoomId
       if (!isValidGroupRoom(targetRoomId)) {
-        console.warn('[removeUserItem] cannot determine target room id')
+        logger.warn('[removeUserItem] cannot determine target room id')
         return false
       }
 
       getGroupUserList(targetRoomId, true).catch((error) => {
-        console.error('[group] refresh members failed:', error)
+        logger.error('[group] refresh members failed:', error)
       })
 
       return true
@@ -625,11 +977,32 @@ export const useGroupStore = defineStore(
      * @param uidList 要添加为管理员的用户ID列表
      */
     const addAdmin = async (uidList: string[]) => {
-      await ImRequestUtils.addAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
-      // 更新本地群成员列表中的角色信息
       const targetRoomId = globalStore.currentSessionRoomId
       if (!targetRoomId) return
 
+      const adapter = getAdapter()
+
+      if (adapter && flags.matrixEnabled) {
+        // 使用房间适配器设置管理员
+        try {
+          await Promise.all(uidList.map((uid) => adapter.setGroupAdmin(targetRoomId, uid)))
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to set admin for ${targetRoomId}:`, error)
+          // 降级到原有方式
+          await Promise.all(uidList.map((uid) => sdkSetPowerLevel(targetRoomId, uid, 50)))
+        }
+      } else if (flags.matrixEnabled) {
+        // Matrix 模式但适配器不可用
+        await Promise.all(uidList.map((uid) => sdkSetPowerLevel(targetRoomId, uid, 50)))
+      } else {
+        // WebSocket 模式
+        await requestWithFallback({
+          url: 'add_room_admin',
+          body: { roomId: targetRoomId, uidList }
+        })
+      }
+
+      // 更新本地群成员列表中的角色信息
       const currentUserList = userListMap[targetRoomId] || []
       const updatedList = currentUserList.map((user: UserItem) => {
         if (uidList.includes(user.uid)) {
@@ -645,11 +1018,32 @@ export const useGroupStore = defineStore(
      * @param uidList 要撤销的管理员ID列表
      */
     const revokeAdmin = async (uidList: string[]) => {
-      await ImRequestUtils.revokeAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
-      // 更新本地群成员列表中的角色信息
       const targetRoomId = globalStore.currentSessionRoomId
       if (!targetRoomId) return
 
+      const adapter = getAdapter()
+
+      if (adapter && flags.matrixEnabled) {
+        // 使用房间适配器撤销管理员
+        try {
+          await Promise.all(uidList.map((uid) => adapter.unsetGroupAdmin(targetRoomId, uid)))
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to unset admin for ${targetRoomId}:`, error)
+          // 降级到原有方式
+          await Promise.all(uidList.map((uid) => sdkSetPowerLevel(targetRoomId, uid, 0)))
+        }
+      } else if (flags.matrixEnabled) {
+        // Matrix 模式但适配器不可用
+        await Promise.all(uidList.map((uid) => sdkSetPowerLevel(targetRoomId, uid, 0)))
+      } else {
+        // WebSocket 模式
+        await requestWithFallback({
+          url: 'revoke_room_admin',
+          body: { roomId: targetRoomId, uidList }
+        })
+      }
+
+      // 更新本地群成员列表中的角色信息
       const currentUserList = userListMap[targetRoomId] || []
       const updatedList = currentUserList.map((user: UserItem) => {
         if (uidList.includes(user.uid)) {
@@ -671,8 +1065,27 @@ export const useGroupStore = defineStore(
         throw new Error('无法确定目标房间ID')
       }
 
-      // 调用踢人接口
-      await ImRequestUtils.removeGroupMember({ roomId: targetRoomId, uidList })
+      const adapter = getAdapter()
+
+      if (adapter && flags.matrixEnabled) {
+        // 使用房间适配器踢出成员
+        try {
+          await Promise.all(uidList.map((uid) => adapter.kickFromGroup(targetRoomId, uid)))
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to kick members from ${targetRoomId}:`, error)
+          // 降级到原有方式
+          await sdkKickFromRoom(targetRoomId, uidList)
+        }
+      } else if (flags.matrixEnabled) {
+        // Matrix 模式但适配器不可用
+        await sdkKickFromRoom(targetRoomId, uidList)
+      } else {
+        // WebSocket 模式
+        await requestWithFallback({
+          url: 'remove_group_member',
+          body: { roomId: targetRoomId, uidList }
+        })
+      }
 
       // 更新本地群成员列表，移除被踢出的成员
       const currentUserList = userListMap[targetRoomId] || []
@@ -687,7 +1100,27 @@ export const useGroupStore = defineStore(
     const exitGroup = async (roomId: string) => {
       if (!roomId) return
 
-      await ImRequestUtils.exitGroup({ roomId })
+      const adapter = getAdapter()
+
+      if (adapter && flags.matrixEnabled) {
+        // 使用房间适配器退出群聊
+        try {
+          await adapter.leaveGroup(roomId)
+        } catch (error) {
+          logger.error(`[GroupStore] Failed to leave group ${roomId}:`, error)
+          // 降级到原有方式
+          await sdkLeaveRoom(roomId)
+        }
+      } else if (flags.matrixEnabled) {
+        // Matrix 模式但适配器不可用
+        await sdkLeaveRoom(roomId)
+      } else {
+        // WebSocket 模式
+        await requestWithFallback({
+          url: 'exit_group',
+          body: { roomId }
+        })
+      }
 
       // 更新群成员缓存，移除自己
       const currentUserList = userListMap[roomId] || []
@@ -697,8 +1130,8 @@ export const useGroupStore = defineStore(
       // 删除对应的群详情缓存
       removeGroupDetail(roomId)
 
-      // 更新会话列表，使用传入的 roomId
-      chatStore.removeSession(roomId)
+      // 更新会话列表，使用传入的 roomId，并调用Matrix leave接口
+      await chatStore.removeSession(roomId, { leaveRoom: true })
 
       // 如果退出的是当前选中的会话，则切换到新的当前会话
       if (globalStore.currentSessionRoomId === roomId) {
@@ -805,6 +1238,7 @@ export const useGroupStore = defineStore(
       groupDetails,
       getGroupDetailByRoomId,
       getGroupDetail,
+      fetchGroupDetailSafely,
       loadGroupDetails,
       updateGroupNumber,
       removeGroupDetail,
@@ -820,7 +1254,20 @@ export const useGroupStore = defineStore(
       isCurrentLord,
       isAdmin,
       isAdminOrLord,
-      cleanupSession
+      cleanupSession,
+      // 新增的适配器相关方法
+      initAdapter,
+      getAdapter,
+      cleanup,
+      // 群公告相关
+      setGroupAnnouncement,
+      getGroupAnnouncement,
+      // 统计信息相关
+      refreshGroupStats,
+      // 搜索功能相关
+      searchGroups,
+      searchPublicGroups,
+      getGroupSearchSuggestions
     }
   },
   {
@@ -828,5 +1275,5 @@ export const useGroupStore = defineStore(
       enable: true,
       initialize: true
     }
-  }
+  } as { share: PiniaShareOptions }
 )

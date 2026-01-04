@@ -4,6 +4,7 @@
   "settings": "Settings",
   "about": "About",
   "sign_out": "Sign Out",
+  "logout": "Sign Out",
   "select": "Select",
   "add_sticker": "Add Sticker",
   "forward": "Forward",
@@ -48,6 +49,7 @@
   "delete_friend": "Remove friend",
   "dissolve_group": "Disband group",
   "leave_group": "Leave Group",
+  "clear_all_unread": "Clear all unread",
   "today": "Today",
   "yesterday": "Yesterday"
 }

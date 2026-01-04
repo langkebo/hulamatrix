@@ -3,7 +3,7 @@
     <!-- 上部分操作栏 -->
     <header ref="header" class="flex-col-x-center gap-10px color-[--left-icon-color]">
       <div
-        v-for="(item, index) in menuTop"
+        v-for="(item, index) in menuTopProcessed"
         :key="index"
         :class="[
           { active: activeUrl === item.url },
@@ -11,7 +11,7 @@
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
         style="text-align: center"
-        @click="pageJumps(item.url, item.title, item.size, item.window)"
+        @click="pageJumps(item.url, item.title, item.size, { resizable: !!item.window?.resizable })"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
         <n-popover :show-arrow="false" v-if="openWindowsList.has(item.url)" trigger="hover" placement="right">
@@ -75,12 +75,12 @@
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
         style="text-align: center"
-        @click="pageJumps(item.url, item.title, item.size, item.window)"
+        @click="pageJumps(item.url, item.title, item.size, { resizable: !!item.window?.resizable })"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
         <n-popover :show-arrow="false" v-if="openWindowsList.has(item.url)" trigger="hover" placement="right">
           <template #trigger>
-            <n-badge :max="99" :value="item.badge">
+            <n-badge :max="99" :value="typeof item.badge === 'object' ? (item.badge?.count ?? 0) : (item.badge ?? 0)">
               <svg class="size-22px" @click="tipShow = false">
                 <use
                   :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction || item.icon : item.icon}`"></use>
@@ -92,7 +92,11 @@
         <!-- 该选项有提示时展示 -->
         <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
           <template #trigger>
-            <n-badge :max="99" :value="item.badge" dot :show="item.dot">
+            <n-badge
+              :max="99"
+              :value="typeof item.badge === 'object' ? (item.badge?.count ?? 0) : (item.badge ?? 0)"
+              dot
+              :show="item.dot">
               <svg class="size-22px" @click="handleTipShow(item)">
                 <use
                   :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -107,7 +111,7 @@
           </n-flex>
         </n-popover>
         <!-- 该选项无提示时展示 -->
-        <n-badge v-else :max="99" :value="item.badge" :show="(item.badge ?? 0) > 0">
+        <n-badge v-else :max="99" :value="getBadgeValue(item.badge)" :show="getBadgeValue(item.badge) > 0">
           <svg class="size-22px">
             <use
               :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -116,6 +120,17 @@
         <p v-if="showMode === ShowModeEnum.TEXT && item.title" class="text-(10px center)">
           {{ item.shortTitle }}
         </p>
+        <!-- 创建空间按钮：放在房间按钮下方，仅悬停显示文案 -->
+        <div v-if="item.url === 'rooms' || item.title === '房间'" class="top-action flex-col-center p-[6px_8px]">
+          <n-tooltip trigger="hover" placement="right">
+            <template #trigger>
+              <svg class="size-22px" @click.stop="emitCreateSpace">
+                <use href="#plus"></use>
+              </svg>
+            </template>
+            <span>创建空间</span>
+          </n-tooltip>
+        </div>
       </div>
 
       <!-- (独立)菜单选项 -->
@@ -133,9 +148,9 @@
           </template>
           <div v-if="miniShowPlugins.length">
             <n-flex
-              v-for="(item, index) in miniShowPlugins as any"
+              v-for="(item, index) in miniShowPlugins"
               :key="'excess-' + index"
-              @click="pageJumps(item.url, item.title, item.size, item.window)"
+              @click="pageJumps(item.url, item.title, item.size, { resizable: !!item.window?.resizable })"
               class="p-[6px_5px] rounded-4px cursor-pointer hover:bg-[--setting-item-line]"
               :size="5">
               <svg class="size-16px" @click="tipShow = false">
@@ -170,12 +185,12 @@
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
         style="text-align: center"
-        @click="pageJumps(item.url, item.title, item.size, item.window)"
+        @click="pageJumps(item.url, item.title, item.size, getWindowConfig(item.window))"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
         <n-popover :show-arrow="false" v-if="openWindowsList.has(item.url)" trigger="hover" placement="right">
           <template #trigger>
-            <n-badge :max="99" :value="item.badge">
+            <n-badge :max="99" :value="getBadgeValue(item.badge)">
               <svg class="size-22px" @click="tipShow = false">
                 <use
                   :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -187,7 +202,7 @@
         <!-- 该选项有提示时展示 -->
         <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
           <template #trigger>
-            <n-badge :max="99" :value="item.badge">
+            <n-badge :max="99" :value="getBadgeValue(item.badge)">
               <svg class="size-22px" @click="tipShow = false">
                 <use
                   :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -202,7 +217,7 @@
           </n-flex>
         </n-popover>
         <!-- 该选项无提示时展示 -->
-        <n-badge v-else :max="99" :value="item.badge">
+        <n-badge v-else :max="99" :value="getBadgeValue(item.badge)">
           <svg class="size-22px">
             <use
               :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
@@ -252,31 +267,65 @@
   <DefinePlugins v-model="menuShow" />
 </template>
 <script setup lang="ts">
+import { TIME_INTERVALS } from '@/constants'
+import { ref, computed, watch, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import type { UnlistenFn } from '@tauri-apps/api/event'
 import { PluginEnum, ShowModeEnum } from '@/enums'
-import { useTauriListener } from '@/hooks/useTauriListener.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useMenuTopStore } from '@/stores/menuTop.ts'
-import { usePluginsStore } from '@/stores/plugins.ts'
-import { useSettingStore } from '@/stores/setting.ts'
-import { useFeedStore } from '@/stores/feed.ts'
-import { useItemsBottom, useMoreList } from '../config.tsx'
-import { leftHook } from '../hook.ts'
+import { useTauriListener } from '@/hooks/useTauriListener'
+import { useGlobalStore } from '@/stores/global'
+// 迁移: useMenuTopStore → useMenuTopStoreCompat (兼容层)
+import { useMenuTopStoreCompat as useMenuTopStore, type MenuTopItem } from '@/stores/compatibility'
+import { usePluginsStore } from '@/stores/plugins'
+import { useSettingStore } from '@/stores/setting'
+// REMOVED: useFeedStore - Moments/Feed feature removed (custom backend no longer supported)
+import { useItemsBottom, useMoreList } from '@/layout/left/config'
+import { leftHook } from '@/layout/left/hook'
 import DefinePlugins from './definePlugins/index.vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import type { PluginBadge, PluginItem, PluginWindowConfig } from '@/types'
+import { useMitt } from '@/hooks/useMitt'
+import { MittEnum } from '@/enums'
 
-const appWindow = WebviewWindow.getCurrent()
+// WebWindowLike interface for cross-platform compatibility
+interface WebWindowLike {
+  label: string
+  listen?: () => UnlistenFn | Promise<UnlistenFn>
+}
+
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const appWindow = isTauri
+  ? WebviewWindow.getCurrent()
+  : ({ label: 'web', listen: async () => () => {} } as WebWindowLike)
 const { addListener } = useTauriListener()
 const globalStore = useGlobalStore()
 const pluginsStore = usePluginsStore()
-const feedStore = useFeedStore()
-const { showMode } = storeToRefs(useSettingStore())
-const { menuTop } = storeToRefs(useMenuTopStore())
+// REMOVED: feedStore - Moments/Feed feature removed
+const showMode = computed(() => useSettingStore().showMode)
+const menuTop = computed(() => useMenuTopStore().menuTop)
+const menuTopProcessed = computed(() => {
+  return (menuTop.value || []).map((i: MenuTopItem) => {
+    const badgeVal = typeof i.badge === 'object' && i.badge ? ((i.badge as PluginBadge).count ?? 0) : (i.badge ?? 0)
+    const dotVal = i.dot ?? (typeof i.badge === 'object' && i.badge ? ((i.badge as PluginBadge).dot ?? false) : false)
+    return {
+      badge: badgeVal,
+      tip: '',
+      dot: dotVal,
+      shortTitle: i.shortTitle ?? i.title,
+      window: { resizable: false },
+      size: undefined,
+      icon: i.icon,
+      iconAction: i.iconAction,
+      title: i.title,
+      url: i.url,
+      state: i.state
+    }
+  })
+})
 const itemsBottom = useItemsBottom()
-const { plugins } = storeToRefs(pluginsStore)
-const { unreadCount: feedUnreadCount } = storeToRefs(feedStore)
+const plugins = computed(() => pluginsStore.plugins)
+// REMOVED: unreadCount - Moments/Feed feature removed
 const { t } = useI18n()
 const unReadMark = computed(() => globalStore.unReadMark)
 // const headerRef = useTemplateRef('header')
@@ -286,19 +335,36 @@ const menuShow = ref(false)
 const moreList = useMoreList()
 // 显示在菜单的插件
 const activePlugins = computed(() => {
-  return plugins.value.filter((i) => i.isAdd)
+  return plugins.value.filter((i: PluginItem) => i.isAdd)
 })
 // 显示在菜单外的插件
 const noMiniShowPlugins = computed(() => {
-  return activePlugins.value.filter((i) => !i.miniShow)
+  return activePlugins.value.filter((i: PluginItem) => !i.miniShow)
 })
 // 显示在菜单内的插件
 const miniShowPlugins = computed(() => {
-  return activePlugins.value.filter((i) => i.miniShow)
+  return activePlugins.value.filter((i: PluginItem) => i.miniShow)
 })
 const { activeUrl, openWindowsList, settingShow, tipShow, pageJumps } = leftHook()
+const emitCreateSpace = () => {
+  useMitt.emit(MittEnum.SHOW_CREATE_SPACE_MODAL)
+}
 
-const handleTipShow = (item: any) => {
+/** 获取徽章数值 */
+const getBadgeValue = (badge: number | string | PluginBadge | undefined): number => {
+  if (typeof badge === 'object') {
+    return badge.count ?? 0
+  }
+  return typeof badge === 'number' ? badge : 0
+}
+
+/** 获取窗口配置 */
+const getWindowConfig = (window?: PluginWindowConfig): { resizable: boolean } | undefined => {
+  if (!window) return undefined
+  return { resizable: window.resizable ?? false }
+}
+
+const handleTipShow = (item: { dot?: boolean; url: string }) => {
   tipShow.value = false
   item.dot = false
 }
@@ -348,20 +414,11 @@ const handleResize = async (e: Event) => {
 
 /** 调整主界面高度 */
 const setHomeHeight = () => {
+  if (!isTauri) return
   invoke('set_height', { height: showMode.value === ShowModeEnum.TEXT ? 505 : 423 })
 }
 
-// 监听朋友圈未读数量变化，同步到 dynamic 插件的 badge
-watch(
-  feedUnreadCount,
-  (newCount) => {
-    const dynamicPlugin = plugins.value.find((p) => p.url === 'dynamic')
-    if (dynamicPlugin) {
-      pluginsStore.updatePlugin({ ...dynamicPlugin, badge: newCount })
-    }
-  },
-  { immediate: true }
-)
+// REMOVED: Watch for feed unreadCount - Moments/Feed feature removed (custom backend no longer supported)
 
 onMounted(async () => {
   // 初始化窗口高度
@@ -374,16 +431,20 @@ onMounted(async () => {
   startResize()
 
   // 监听自定义事件，处理设置中菜单显示模式切换和添加插件后，导致高度变化，需重新调整插件菜单显示
-  await addListener(
-    appWindow.listen('startResize', () => {
-      startResize()
-    }),
-    'startResize'
-  )
+  if (isTauri && appWindow.listen) {
+    await addListener(
+      Promise.resolve(
+        appWindow.listen('startResize', () => {
+          startResize()
+        })
+      ),
+      'startResize'
+    )
+  }
 
   if (tipShow.value) {
-    menuTop.value.filter((item) => {
-      if (item.state !== PluginEnum.BUILTIN) {
+    menuTop.value.forEach((item: MenuTopItem) => {
+      if (item.state !== String(PluginEnum.BUILTIN)) {
         item.dot = true
       }
     })
@@ -391,7 +452,7 @@ onMounted(async () => {
   /** 十秒后关闭提示 */
   setTimeout(() => {
     tipShow.value = false
-  }, 5000)
+  }, TIME_INTERVALS.MESSAGE_RETRY_DELAY)
 })
 </script>
 <style lang="scss" scoped>

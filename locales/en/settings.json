@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "title": "Settings",
+    "section": {
+      "account": "Account",
+      "preferences": "Preferences",
+      "privacy_security": "Privacy & Security",
+      "advanced": "Advanced"
+    },
+    "menu": {
+      "profile": "Profile",
+      "sessions": "Active Sessions",
+      "notification": "Notifications",
+      "appearance": "Appearance",
+      "privacy": "Privacy",
+      "biometric": "Biometric",
+      "encryption": "End-to-End Encryption",
+      "keyboard": "Keyboard Shortcuts",
+      "audio": "Voice & Audio",
+      "labs": "Labs",
+      "feedback": "Feedback"
+    }
+  }
+}

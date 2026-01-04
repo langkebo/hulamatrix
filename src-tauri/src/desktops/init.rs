@@ -41,6 +41,8 @@ impl<R: Runtime> CustomInit for tauri::Builder<R> {
             .plugin(tauri_plugin_global_shortcut::Builder::new().build())
             .plugin(tauri_plugin_updater::Builder::new().build());
 
+        // 启用开发工具插件 - 允许 F12 和右键打开控制台
+        // 暂时禁用：devtools 插件导致应用崩溃，已通过 errorLogger 实现错误捕获
         // #[cfg(debug_assertions)]
         // let builder = builder.plugin(tauri_plugin_devtools::init());
 
@@ -51,9 +53,7 @@ impl<R: Runtime> CustomInit for tauri::Builder<R> {
 impl<R: Runtime> DesktopCustomInit for tauri::Builder<R> {
     // 初始化web窗口事件
     fn init_webwindow_event(self) -> Self {
-        self.on_webview_event(|_, event| match event {
-            _ => (),
-        })
+        self.on_webview_event(|_, _event| ())
     }
 
     // 初始化系统窗口事件
@@ -67,10 +67,11 @@ impl<R: Runtime> DesktopCustomInit for tauri::Builder<R> {
                         let _ = tray_window.hide();
                     }
                 }
-                if window.label().eq("tray") && !flag {
-                    if let Err(e) = window.hide() {
-                        tracing::warn!("Failed to hide tray window: {}", e);
-                    }
+                if window.label().eq("tray")
+                    && !flag
+                    && let Err(e) = window.hide()
+                {
+                    tracing::warn!("Failed to hide tray window: {}", e);
                 }
                 #[cfg(target_os = "windows")]
                 if !window.label().eq("notify") && *flag {

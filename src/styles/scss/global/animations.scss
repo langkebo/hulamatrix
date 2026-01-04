@@ -1,0 +1,507 @@
+/* ==========================================================================
+   全局过渡动画和微交互
+   ========================================================================== */
+
+/* ==========================================================================
+   过渡动画类
+   ========================================================================== */
+
+/* 淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-base);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 快速淡入淡出 */
+.fade-fast-enter-active,
+.fade-fast-leave-active {
+  transition: opacity var(--transition-fast);
+}
+
+.fade-fast-enter-from,
+.fade-fast-leave-to {
+  opacity: 0;
+}
+
+/* 滑动进入 - 从右 */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform var(--transition-base);
+}
+
+.slide-right-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+/* 滑动进入 - 从左 */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform var(--transition-base);
+}
+
+.slide-left-enter-from {
+  transform: translateX(-100%);
+}
+
+.slide-left-leave-to {
+  transform: translateX(-100%);
+}
+
+/* 滑动进入 - 从上 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform var(--transition-base);
+}
+
+.slide-up-enter-from {
+  transform: translateY(100%);
+}
+
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+
+/* 滑动进入 - 从下 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: transform var(--transition-base);
+}
+
+.slide-down-enter-from {
+  transform: translateY(-100%);
+}
+
+.slide-down-leave-to {
+  transform: translateY(-100%);
+}
+
+/* 缩放进入 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all var(--transition-base);
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* 弹性缩放进入 */
+.bounce-scale-enter-active {
+  animation: bounce-scale-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bounce-scale-leave-active {
+  animation: bounce-scale-out 0.3s ease-in;
+}
+
+/* ==========================================================================
+   微交互动画
+   ========================================================================== */
+
+/* 悬停提升效果 */
+.hover-lift {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* 悬停缩放效果 */
+.hover-scale {
+  transition: transform var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* 悬停发光效果 */
+.hover-glow {
+  transition: all var(--transition-fast);
+
+  &:hover {
+    box-shadow: 0 0 20px rgba(19, 152, 127, 0.3);
+  }
+}
+
+/* 点击涟漪效果 */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+  }
+
+  &:active::after {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+/* 加载闪烁效果 */
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-hover) 25%,
+    var(--bg-selected) 50%,
+    var(--bg-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+/* 脉冲效果 */
+.pulse-effect {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 呼吸效果 */
+.breathe-effect {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* 摇摆效果 */
+.shake-effect {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 弹跳效果 */
+.bounce-effect {
+  animation: bounce 0.6s ease-in-out;
+}
+
+/* 旋转效果 */
+.rotate-effect {
+  animation: rotate 0.5s linear;
+}
+
+/* 翻转效果 */
+.flip-effect {
+  animation: flip 0.6s ease-in-out;
+}
+
+/* ==========================================================================
+   列表动画
+   ========================================================================== */
+
+/* 列表项进入动画 */
+.list-enter-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* 列表项离开动画 */
+.list-leave-active {
+  transition: all 0.3s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* 列表项移动动画 */
+.list-move {
+  transition: transform 0.3s ease;
+}
+
+/* ==========================================================================
+   页面过渡动画
+   ========================================================================== */
+
+/* 页面切换动画 */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translate3d(0, -20px, 0);
+}
+
+/* 模态框动画 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all var(--transition-base);
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* 抽屉动画 */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform var(--transition-base);
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(-100%);
+}
+
+.drawer-right-enter-from,
+.drawer-right-leave-to {
+  transform: translateX(100%);
+}
+
+/* ==========================================================================
+   消息动画
+   ========================================================================== */
+
+/* 消息进入动画 */
+.message-enter-active {
+  animation: message-slide-in 0.3s ease-out;
+}
+
+/* 消息打字效果 */
+.typing-effect {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+}
+
+/* 光标闪烁效果 */
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background: var(--text-primary);
+  animation: blink 1s infinite;
+}
+
+/* ==========================================================================
+   滚动条动画
+   ========================================================================== */
+
+/* 平滑滚动 */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* 滚动条渐显 */
+.scrollbar-fade {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  transition: scrollbar-color var(--transition-base);
+
+  &:hover {
+    scrollbar-color: var(--text-tertiary) transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+    transition: background var(--transition-base);
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+  }
+
+  &:hover::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+  }
+}
+
+/* ==========================================================================
+   关键帧动画定义
+   ========================================================================== */
+
+@keyframes bounce-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-scale-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flip {
+  0% {
+    transform: perspective(400px) rotateY(0);
+  }
+  40% {
+    transform: perspective(400px) rotateY(-180deg);
+  }
+  100% {
+    transform: perspective(400px) rotateY(-180deg);
+  }
+}
+
+@keyframes message-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typing {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   减少动画（用户偏好设置）
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .rotate-effect {
+    animation: none !important;
+  }
+}

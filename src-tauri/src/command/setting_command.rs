@@ -25,10 +25,6 @@ pub async fn update_settings(
     config.backend.base_url = settings.base_url.clone();
     config.backend.ws_url = settings.ws_url;
     info!("update settings: {:?}", config);
-    state
-        .rc
-        .lock()
-        .await
-        .set_base_url(settings.base_url.clone());
+    // Note: ImRequestClient has been removed, settings are now only stored in config
     Ok(())
 }

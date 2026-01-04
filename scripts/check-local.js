@@ -1,6 +1,6 @@
 import chalk from 'chalk'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 // 用于检查和创建 src-tauri/configuration/local.yaml 配置文件
 const configDir = join(process.cwd(), 'src-tauri', 'configuration')

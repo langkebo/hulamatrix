@@ -1,6 +1,6 @@
 import type { UnlistenFn } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { error, info } from '@tauri-apps/plugin-log'
+import { info } from '@tauri-apps/plugin-log'
 import { getCurrentInstance, onUnmounted } from 'vue'
 
 // 全局监听器管理
@@ -15,8 +15,8 @@ const safeUnlisten = (unlisten: UnlistenFn) => {
     if (calledUnlisteners.has(unlisten)) return
     unlisten()
     calledUnlisteners.add(unlisten)
-  } catch (e) {
-    console.warn('safeUnlisten error:', e)
+  } catch {
+    // 忽略错误
   }
 }
 
@@ -24,7 +24,9 @@ const safeUnlisten = (unlisten: UnlistenFn) => {
 export const useTauriListener = () => {
   const listeners: Promise<UnlistenFn>[] = []
   const instance = getCurrentInstance()
-  const windowLabel = WebviewWindow.getCurrent().label
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  const currentWindow = isTauri ? WebviewWindow.getCurrent() : null
+  const windowLabel = currentWindow?.label ?? 'web'
   let isComponentMounted = true
 
   /**
@@ -37,8 +39,8 @@ export const useTauriListener = () => {
       try {
         const unlisten = await listener
         safeUnlisten(unlisten)
-      } catch (e) {
-        error(`[跟踪] 取消新监听器失败:${listenerId}, 错误:${e}`)
+      } catch {
+        // 取消监听器失败
       }
     } else {
       // 添加新的监听器
@@ -78,15 +80,17 @@ export const useTauriListener = () => {
     // 只有当存在监听器时才打印日志和执行清理
     if (listeners.length > 0) {
       const componentName = instance?.type?.name || instance?.type?.__name || '未知组件'
-      info(`[useTauriListener]清除组件[${componentName}]的Tauri 监听器，监听器数量:[${listeners.length}]`)
+      try {
+        info(`[useTauriListener]清除组件[${componentName}]的Tauri 监听器，监听器数量:[${listeners.length}]`)
+      } catch {}
       try {
         // 等待所有的 unlisten 函数 resolve
         const unlistenFns = await Promise.all(listeners)
         // 执行所有的 unlisten 函数
         unlistenFns.forEach((unlisten) => safeUnlisten(unlisten))
         listeners.length = 0
-      } catch (error) {
-        console.error('清理监听器失败:', error)
+      } catch {
+        // 忽略错误
       }
     }
   }
@@ -98,7 +102,9 @@ export const useTauriListener = () => {
     const windowListeners = globalListeners.get(windowLabel)
     if (!windowListeners) return
 
-    info(`[useTauriListener]清除窗口[${windowLabel}]的所有Tauri监听器，监听器数量:[${windowListeners.length}]`)
+    try {
+      info(`[useTauriListener]清除窗口[${windowLabel}]的所有Tauri监听器，监听器数量:[${windowListeners.length}]`)
+    } catch {}
     try {
       // 等待所有的 unlisten 函数 resolve
       const unlistenFns = await Promise.all(windowListeners)
@@ -107,14 +113,15 @@ export const useTauriListener = () => {
 
       // 清理全局状态
       globalListeners.delete(windowLabel)
-    } catch (error) {
-      console.error('清理监听器失败:', error)
+    } catch {
+      // 忽略错误
     }
   }
 
   // 监听窗口关闭事件来自动清理监听器
   const setupWindowCloseListener = async () => {
     try {
+      if (!isTauri) return
       const appWindow = WebviewWindow.getCurrent()
       const currentWindowLabel = appWindow.label
 
@@ -125,9 +132,13 @@ export const useTauriListener = () => {
 
       // 监听窗口关闭请求事件
       if (currentWindowLabel !== 'home') {
-        info(`[useTauriListener]当前窗口标签设置关闭监听: ${currentWindowLabel}`)
+        try {
+          info(`[useTauriListener]当前窗口标签设置关闭监听: ${currentWindowLabel}`)
+        } catch {}
         const closeUnlisten = await appWindow.onCloseRequested(async () => {
-          info(`[useTauriListener]监听[${currentWindowLabel}]窗口关闭事件-清理所有监听器`)
+          try {
+            info(`[useTauriListener]监听[${currentWindowLabel}]窗口关闭事件-清理所有监听器`)
+          } catch {}
           // 清理该窗口的所有监听器
           await cleanupAllListenersForWindow(currentWindowLabel)
           // 清理窗口关闭监听器
@@ -137,8 +148,8 @@ export const useTauriListener = () => {
         // 保存窗口关闭监听器
         windowCloseListenerSetup.set(currentWindowLabel, closeUnlisten)
       }
-    } catch (error) {
-      console.warn('设置窗口关闭监听器失败:', error)
+    } catch {
+      // 忽略错误
     }
   }
 

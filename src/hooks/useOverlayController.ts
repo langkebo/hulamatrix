@@ -1,4 +1,6 @@
+import { ref, computed, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
+import { useTimerManager } from '@/composables/useTimerManager'
 
 type OverlayControllerOptions = {
   /** 是否为首次登录（需要阻塞首屏） */
@@ -20,28 +22,30 @@ type OverlayControllerOptions = {
 export const useOverlayController = (options: OverlayControllerOptions) => {
   const asyncTarget = options.asyncTotal ?? 3
   const minDisplayMs = options.minDisplayMs ?? 600
+  const timerManager = useTimerManager()
 
-  // 是否已经触发过“首次登录遮罩”逻辑。一旦触发，直到流程结束才会隐藏。
+  // 是否已经触发过"首次登录遮罩"逻辑。一旦触发，直到流程结束才会隐藏。
   const activated = ref(options.isInitialSync.value)
   const overlayVisible = ref(activated.value)
   const asyncLoadedCount = ref(0)
   const asyncComponentsReady = computed(() => asyncLoadedCount.value >= asyncTarget)
 
-  let hideTimer: number | null = null
+  let hideTimerId: number | null = null
 
   const clearHideTimer = () => {
-    if (hideTimer) {
-      clearTimeout(hideTimer)
-      hideTimer = null
+    if (hideTimerId !== null) {
+      timerManager.clearTimer(hideTimerId)
+      hideTimerId = null
     }
   }
 
   const scheduleHide = () => {
     clearHideTimer()
-    hideTimer = window.setTimeout(() => {
+    const { id } = timerManager.setTimer(() => {
       overlayVisible.value = false
-      hideTimer = null
+      hideTimerId = null
     }, minDisplayMs)
+    hideTimerId = id
   }
 
   const evaluateOverlay = () => {
@@ -69,7 +73,7 @@ export const useOverlayController = (options: OverlayControllerOptions) => {
   // 仅当 isInitialSync 首次为 true 时激活遮罩，之后不再因 isInitialSync 变 false 而提前隐藏
   watch(
     options.isInitialSync,
-    (val) => {
+    (val: boolean) => {
       if (val) {
         activated.value = true
         overlayVisible.value = true

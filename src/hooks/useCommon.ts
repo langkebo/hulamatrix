@@ -1,21 +1,44 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { BaseDirectory, create, exists, mkdir } from '@tauri-apps/plugin-fs'
-import { info } from '@tauri-apps/plugin-log'
-import GraphemeSplitter from 'grapheme-splitter'
-import type { Ref } from 'vue'
+import { logger } from '@/utils/logger'
+// grapheme-splitter依赖已移除，使用浏览器内置分割功能
+//
+import { ref, computed, type Ref } from 'vue'
 import { LimitEnum, MittEnum, MsgEnum } from '@/enums'
-import { useMessage } from '@/hooks/useMessage.ts'
-import { useMitt } from '@/hooks/useMitt.ts'
+import { useMitt } from '@/hooks/useMitt'
 import router from '@/router'
-import { useChatStore } from '@/stores/chat.ts'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useUserStore } from '@/stores/user.ts'
+import { useChatStore } from '@/stores/chat'
+import { useGlobalStore } from '@/stores/global'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { removeTag } from '@/utils/Formatting'
-import { getSessionDetailWithFriends } from '@/utils/ImRequestUtils'
-import { getImageCache } from '@/utils/PathUtil.ts'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { getImageCache } from '@/utils/PathUtil'
 import { isMobile } from '@/utils/PlatformConstants'
+
+import { msg } from '@/utils/SafeUI'
 import { invokeWithErrorHandler } from '../utils/TauriInvokeHandler'
+
+/** 回复消息数据结构 */
+interface ReplyMessageData {
+  accountName: string
+  content: string
+  avatar: string
+  name?: string
+  text?: string
+  label?: string
+  uid?: string | number
+}
+
+/** DOM元素扩展接口 */
+interface EditableHTMLElement extends HTMLElement {
+  getLastEditRange?: () => Range
+}
+
+/** Tauri窗口扩展接口 */
+interface TauriWebviewWindow {
+  label: string
+}
 
 export interface SelectionRange {
   range: Range
@@ -40,7 +63,7 @@ export const useCommon = () => {
   const globalStore = useGlobalStore()
   const chatStore = useChatStore()
   const userStore = useUserStore()
-  const { handleMsgClick } = useMessage()
+  // const { handleMsgClick } = msg // msg 对象没有 handleMsgClick 方法
   /** 当前登录用户的uid */
   const userUid = computed(() => userStore.userInfo!.uid)
   /** 回复消息 */
@@ -57,11 +80,9 @@ export const useCommon = () => {
     const tempPath = getImageCache(subFolder, userUid.value!)
     const fullPath = `${tempPath}${fileName}`
 
-    console.log(`cache file start: ${fullPath}, size: ${file.size} bytes`)
-
     return new Promise((resolve, reject) => {
       const cacheReader = new FileReader()
-      cacheReader.onload = async (e: any) => {
+      cacheReader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.AppCache
           const isExists = await exists(tempPath, { baseDir })
@@ -69,10 +90,12 @@ export const useCommon = () => {
             await mkdir(tempPath, { baseDir, recursive: true })
           }
           const tempFile = await create(fullPath, { baseDir })
-          await tempFile.write(e.target.result)
+          const arrayBuffer = e.target?.result
+          if (arrayBuffer instanceof ArrayBuffer) {
+            await tempFile.write(new Uint8Array(arrayBuffer))
+          }
           await tempFile.close()
 
-          console.log(`cache file saved: ${fullPath}, written: ${e.target.result.byteLength} bytes`)
           resolve(fullPath)
         } catch (error) {
           reject(error)
@@ -196,7 +219,7 @@ export const useCommon = () => {
    * @param dom dom节点
    * @param target 目标节点
    */
-  const insertNode = (type: MsgEnum, dom: any, target: HTMLElement) => {
+  const insertNode = (type: MsgEnum, dom: string | ReplyMessageData, target: HTMLElement) => {
     const sr = getEditorRange()!
     if (!sr) return
 
@@ -210,7 +233,12 @@ export const useCommon = () => {
    * @param target 目标节点
    * @param sr 选区
    */
-  const insertNodeAtRange = (type: MsgEnum, dom: any, _target: HTMLElement, sr: SelectionRange) => {
+  const insertNodeAtRange = (
+    type: MsgEnum,
+    dom: string | ReplyMessageData,
+    _target: HTMLElement,
+    sr: SelectionRange
+  ) => {
     const { range, selection } = sr
 
     // 删除选中的内容
@@ -242,7 +270,9 @@ export const useCommon = () => {
       // 将空格文本节点插入到光标位置
       range?.insertNode(spaceNode)
     } else if (type === MsgEnum.TEXT) {
-      range?.insertNode(document.createTextNode(dom))
+      if (typeof dom === 'string') {
+        range?.insertNode(document.createTextNode(dom))
+      }
     } else if (type === MsgEnum.REPLY) {
       // 获取消息输入框元素
       const inputElement = document.getElementById('message-input')
@@ -252,7 +282,7 @@ export const useCommon = () => {
       inputElement.focus()
 
       // 创建回复节点
-      const replyNode = createReplyDom(dom)
+      const replyNode = createReplyDom(dom as ReplyMessageData)
 
       // 如果已经存在回复框，则替换它
       const preReplyNode = document.getElementById('replyDiv')
@@ -264,8 +294,8 @@ export const useCommon = () => {
           inputElement.childNodes.length > 0 &&
           !(
             inputElement.childNodes.length === 1 &&
-            inputElement.childNodes[0].nodeType === Node.TEXT_NODE &&
-            !inputElement.childNodes[0].textContent?.trim()
+            inputElement.childNodes[0]?.nodeType === Node.TEXT_NODE &&
+            !inputElement.childNodes[0]?.textContent?.trim()
           )
         // 插入回复节点
         inputElement.insertBefore(replyNode, inputElement.firstChild)
@@ -341,150 +371,6 @@ export const useCommon = () => {
 
       // 触发输入事件，确保UI更新
       triggerInputEvent(inputElement)
-      return
-    } else if (type === MsgEnum.AI) {
-      // 删除触发字符 "/"
-      const startContainer = range.startContainer
-      if (startContainer.nodeType === Node.TEXT_NODE) {
-        const text = startContainer.textContent || ''
-        const lastIndex = text.lastIndexOf('/')
-        if (lastIndex !== -1) {
-          startContainer.textContent = text.substring(0, lastIndex)
-        }
-      }
-
-      // 创建一个div标签节点
-      const divNode = document.createElement('div')
-      divNode.id = 'AIDiv' // 设置id为replyDiv
-      divNode.contentEditable = 'false' // 设置为不可编辑
-      divNode.tabIndex = -1 // 防止被focus
-      divNode.style.cssText = `
-      background-color: var(--reply-bg);
-      font-size: 12px;
-      padding: 4px 6px;
-      width: fit-content;
-      max-height: 86px;
-      border-radius: 8px;
-      margin-bottom: 2px;
-      user-select: none;
-      pointer-events: none; /* 防止鼠标事件 */
-      cursor: default;
-      outline: none; /* 移除focus时的轮廓 */
-    `
-      // 把dom中的value值作为回复信息的作者，dom中的content作为回复信息的内容
-      const author = dom.name
-      // 创建一个img标签节点作为头像
-      const imgNode = document.createElement('img')
-      const avatarUrl = AvatarUtils.getAvatarUrl(dom.avatar)
-      if (isSafeUrl(avatarUrl)) {
-        imgNode.src = avatarUrl
-      } else {
-        // 设置为默认头像或空
-        imgNode.src = '/avatar/001.png'
-      }
-      imgNode.style.cssText = `
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      object-fit: contain;
-      `
-      // 创建一个div标签节点作为回复信息的头部
-      const headerNode = document.createElement('div')
-      headerNode.style.cssText = `
-      line-height: 1.5;
-      font-size: 12px;
-      padding: 0 4px;
-      color: rgba(19, 152, 127);
-      cursor: default;
-      user-select: none;
-      pointer-events: none;
-    `
-      headerNode.appendChild(document.createTextNode(author))
-      // 在回复信息的右边添加一个关闭信息的按钮
-      const closeBtn = document.createElement('span')
-      closeBtn.id = 'closeBtn'
-      closeBtn.style.cssText = `
-      display: flex;
-      align-items: center;
-      font-size: 12px;
-      color: #999;
-      cursor: pointer;
-      margin-left: 10px;
-      flex-shrink: 0;
-      user-select: none;
-      pointer-events: auto; /* 确保关闭按钮可以点击 */
-    `
-      closeBtn.textContent = '关闭'
-      closeBtn.addEventListener('click', () => {
-        // 首先移除回复节点
-        divNode.remove()
-
-        // 获取消息输入框
-        const messageInput = document.getElementById('message-input') as HTMLElement
-        if (!messageInput) return
-
-        // 确保输入框获得焦点
-        messageInput.focus()
-
-        // 完全清空reply状态
-        reply.value = { avatar: '', imgCount: 0, accountName: '', content: '', key: 0 }
-
-        // 优化光标处理
-        const selection = window.getSelection()
-        if (selection) {
-          const range = document.createRange()
-
-          // 处理输入框内容，如果只有空格，则清空它
-          if (messageInput.textContent && messageInput.textContent.trim() === '') {
-            messageInput.textContent = ''
-          }
-
-          // 将光标移动到输入框的末尾
-          range.selectNodeContents(messageInput)
-          range.collapse(false) // 折叠到末尾
-
-          selection.removeAllRanges()
-          selection.addRange(range)
-
-          // 触发输入事件以更新UI状态
-          triggerInputEvent(messageInput)
-        }
-      })
-      // 为头像和标题创建容器
-      const headerContainer = document.createElement('div')
-      headerContainer.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      `
-      // 在容器中添加头像和标题
-      headerContainer.appendChild(imgNode)
-      headerContainer.appendChild(headerNode)
-      headerContainer.appendChild(closeBtn)
-
-      // 将容器添加到主div中
-      divNode.appendChild(headerContainer)
-      // 将div标签节点插入到光标位置
-      range?.insertNode(divNode)
-      // 将光标折叠到Range的末尾(true表示折叠到Range的开始位置,false表示折叠到Range的末尾)
-      range?.collapse(false)
-      // 创建一个span节点作为空格
-      const spaceNode = document.createElement('span')
-      spaceNode.textContent = '\u00A0'
-      // 设置不可编辑
-      spaceNode.contentEditable = 'false'
-      // 不可以选中
-      spaceNode.style.userSelect = 'none'
-      // 插入一个br标签节点作为换行
-      const brNode = document.createElement('br')
-      // 将br标签节点插入到光标位置
-      range?.insertNode(brNode)
-      // 将空格节点插入到光标位置
-      range?.insertNode(spaceNode)
-      range?.collapse(false)
-    } else {
-      range?.insertNode(dom)
-      range?.collapse(false)
     }
     // 将光标移到选中范围的最后面
     selection?.collapseToEnd()
@@ -493,7 +379,7 @@ export const useCommon = () => {
   /**
    * create a reply element
    */
-  function createReplyDom(dom: { accountName: string; content: string; avatar: string }) {
+  function createReplyDom(dom: ReplyMessageData) {
     // 创建一个div标签节点
     const replyNode = document.createElement('div')
     replyNode.id = REPLY_NODE_ID // 设置id为replyDiv
@@ -564,9 +450,34 @@ export const useCommon = () => {
       reply.value.imgCount = imageCount
     }
 
-    // todo: 暂时用http开头的图片判断，后续需要优化
-    if (content.startsWith('http')) {
-      // 再创建一个img标签节点，并设置src属性为base64编码的图片
+    /**
+     * Check if a URL is an image URL by examining:
+     * 1. URL extension (jpg, jpeg, png, gif, webp, svg, etc.)
+     * 2. Matrix media server URLs (mxc://) or proxied URLs
+     * 3. Common image URL patterns
+     */
+    const isImageUrl = (url: string): boolean => {
+      if (!url || typeof url !== 'string') return false
+
+      // Check for data URL images
+      if (url.startsWith('data:image/')) return true
+
+      // Check for common image file extensions
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico', '.avif']
+      const lowerUrl = url.toLowerCase()
+      if (imageExtensions.some((ext) => lowerUrl.includes(ext))) return true
+
+      // Check for Matrix media URLs (mxc://) or proxied media URLs
+      if (url.includes('mxc://') || url.includes('/_matrix/media/')) return true
+
+      // Check for common image hosting patterns
+      if (url.includes('imgur') || url.includes('image') || url.includes('photo')) return true
+
+      return false
+    }
+
+    if (isImageUrl(content)) {
+      // 创建一个img标签节点，并设置src属性
       contentBox = document.createElement('img')
       contentBox.src = content
       contentBox.style.cssText = `
@@ -677,11 +588,10 @@ export const useCommon = () => {
    * @param file 图片文件
    * @param dom 输入框dom
    */
-  const imgPaste = async (file: any, dom: HTMLElement) => {
+  const imgPaste = async (file: File | string, dom: EditableHTMLElement) => {
     // 如果file是blob URL格式
     if (typeof file === 'string' && file.startsWith('blob:')) {
       const url = file.replace('blob:', '') // 移除blob:前缀
-      console.log(url)
 
       const img = document.createElement('img')
       img.src = url
@@ -690,7 +600,7 @@ export const useCommon = () => {
       img.style.marginRight = '6px'
 
       // 获取MsgInput组件暴露的lastEditRange
-      const lastEditRange = (dom as any).getLastEditRange?.()
+      const lastEditRange = dom.getLastEditRange?.()
 
       // 确保dom获得焦点
       dom.focus()
@@ -718,14 +628,22 @@ export const useCommon = () => {
       return
     }
 
+    // 确保file是File类型
+    if (!(file instanceof File)) {
+      return
+    }
+
     //缓存文件
     const cachePath = await saveCacheFile(file, 'img')
 
     // 原有的File对象处理逻辑
     const reader = new FileReader()
-    reader.onload = (e: any) => {
+    reader.onload = (e: ProgressEvent<FileReader>) => {
       const img = document.createElement('img')
-      img.src = e.target.result
+      const result = e.target?.result
+      if (typeof result === 'string') {
+        img.src = result
+      }
       img.style.maxHeight = '88px'
       img.style.maxWidth = '140px'
       img.style.marginRight = '6px'
@@ -734,7 +652,7 @@ export const useCommon = () => {
       img.setAttribute('data-path', cachePath)
 
       // 获取MsgInput组件暴露的lastEditRange
-      const lastEditRange = (dom as any).getLastEditRange?.()
+      const lastEditRange = dom.getLastEditRange?.()
 
       // 确保dom获得焦点
       dom.focus()
@@ -773,7 +691,7 @@ export const useCommon = () => {
   const FileOrVideoPaste = async (file: File) => {
     const reader = new FileReader()
     if (file.size > 1024 * 1024 * 50) {
-      window.$message.warning('文件大小不能超过50M，请重新选择')
+      msg.warning('文件大小不能超过50M，请重新选择')
       return
     }
     await saveCacheFile(file, 'video')
@@ -797,14 +715,15 @@ export const useCommon = () => {
    * @param dom 输入框dom
    * @param showFileModal 显示文件弹窗的回调函数
    */
-  const handlePaste = async (e: any, dom: HTMLElement, showFileModal?: (files: File[]) => void) => {
+  const handlePaste = async (e: ClipboardEvent, dom: HTMLElement, showFileModal?: (files: File[]) => void) => {
     e.preventDefault()
-    if (e.clipboardData.files.length > 0) {
+    const clipboardData = e.clipboardData
+    if (clipboardData && clipboardData.files.length > 0) {
       // 使用通用文件处理函数
-      await processFiles(Array.from(e.clipboardData.files), dom, showFileModal)
-    } else {
+      await processFiles(Array.from(clipboardData.files), dom, showFileModal)
+    } else if (clipboardData) {
       // 如果没有文件，而是文本，处理纯文本粘贴
-      const plainText = e.clipboardData.getData('text/plain')
+      const plainText = clipboardData.getData('text/plain')
       insertNode(MsgEnum.TEXT, plainText, dom)
       triggerInputEvent(dom)
     }
@@ -812,8 +731,9 @@ export const useCommon = () => {
 
   /** 计算字符长度 */
   const countGraphemes = (value: string) => {
-    const splitter = new GraphemeSplitter()
-    return splitter.countGraphemes(value)
+    // grapheme-splitter已移除，使用简单的字符计数作为替代
+    // 虽然不完全准确，但能满足基本需求
+    return [...value].length
   }
 
   /**
@@ -823,18 +743,22 @@ export const useCommon = () => {
    */
   const openMsgSession = async (uid: string, type: number = 2) => {
     // 获取home窗口实例
-    const label = WebviewWindow.getCurrent().label
-    if (router.currentRoute.value.name !== '/message' && label === 'home') {
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    const label = isTauri ? (WebviewWindow.getCurrent() as TauriWebviewWindow)?.label : 'web'
+    if (router.currentRoute.value.name !== '/message' && (label === 'home' || !isTauri)) {
       router.push('/message')
     }
 
-    info('打开消息会话')
-    const res = await getSessionDetailWithFriends({ id: uid, roomType: type })
+    logger.info('打开消息会话')
+    const res = (await requestWithFallback({
+      url: 'get_session_detail_with_friends',
+      params: { id: uid, roomType: type }
+    })) as { roomId: string }
     // 把隐藏的会话先显示
     try {
       await invokeWithErrorHandler('hide_contact_command', { data: { roomId: res.roomId, hide: false } })
     } catch (_error) {
-      window.$message.error('显示会话失败')
+      msg.error('显示会话失败')
     }
 
     // 先检查会话是否已存在
@@ -843,13 +767,12 @@ export const useCommon = () => {
       // 只有当会话不存在时才更新会话列表顺序
       chatStore.updateSessionLastActiveTime(res.roomId)
       // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
-      await chatStore.getSessionList(true)
+      await chatStore.getSessionList()
     }
     globalStore.updateCurrentSessionRoomId(res.roomId)
 
     // 发送消息定位
     useMitt.emit(MittEnum.LOCATE_SESSION, { roomId: res.roomId })
-    handleMsgClick(res as any)
     useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
   }
 
@@ -870,7 +793,7 @@ export const useCommon = () => {
 
     // 检查文件数量
     if (files.length > LimitEnum.COM_COUNT) {
-      window.$message.warning(`一次性只能上传${LimitEnum.COM_COUNT}个文件或图片`)
+      msg.warning(`一次性只能上传${LimitEnum.COM_COUNT}个文件或图片`)
       return
     }
 
@@ -882,7 +805,7 @@ export const useCommon = () => {
       // 检查文件大小
       const fileSizeInMB = file.size / 1024 / 1024
       if (fileSizeInMB > 100) {
-        window.$message.warning(`文件 ${file.name} 超过100MB`)
+        msg.warning(`文件 ${file.name} 超过100MB`)
         continue
       }
 

@@ -1,0 +1,343 @@
+/* ==========================================================================
+   Naive UI 样式覆盖
+   使Naive UI组件与我们的主题系统保持一致
+   ========================================================================== */
+
+/* 按钮样式覆盖 */
+.n-button {
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+
+  &:not(.n-button--disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:not(.n-button--disabled):active {
+    transform: translateY(0);
+  }
+
+  /* 主要按钮 */
+  &--primary-type {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+
+    &:not(.n-button--disabled):hover {
+      background: var(--button-bg-hover);
+      border-color: var(--button-bg-hover);
+    }
+
+    &:not(.n-button--disabled):active {
+      background: var(--button-bg-active);
+      border-color: var(--button-bg-active);
+    }
+  }
+
+  /* 次要按钮 */
+  &--default-type {
+    background: var(--button-bg, #f1f1f1);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+
+    &:not(.n-button--disabled):hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+    }
+  }
+}
+
+/* 输入框样式覆盖 */
+.n-input,
+.n-input-number {
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+
+  &:hover .n-input__border,
+  &:hover .n-input__state-border {
+    border-color: var(--input-border-hover);
+  }
+
+  &--focus .n-input__border,
+  &--focus .n-input__state-border {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+  }
+}
+
+.n-input__input-el {
+  caret-color: var(--caret-color);
+}
+
+/* 选择器样式覆盖 */
+.n-base-selection {
+  border-radius: var(--radius-md);
+
+  &:hover {
+    border-color: var(--input-border-hover);
+  }
+
+  &--focus {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+  }
+}
+
+/* 消息组件样式覆盖 */
+.n-message {
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.n-notification {
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 对话框样式覆盖 */
+.n-modal {
+  .n-modal-box {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+}
+
+.n-dialog {
+  .n-dialog__title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+/* 抽屉样式覆盖 */
+.n-drawer {
+  .n-drawer-content {
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  }
+}
+
+/* 菜单样式覆盖 */
+.n-menu {
+  .n-menu-item {
+    margin: 2px 4px;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &--selected {
+      background: var(--bg-selected);
+      color: var(--primary-color);
+    }
+  }
+}
+
+/* 滑块样式覆盖 */
+.n-slider {
+  .n-slider-handle {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+  }
+
+  .n-slider-rail {
+    .n-slider-fill {
+      background: var(--primary-color);
+    }
+  }
+}
+
+/* 复选框样式覆盖 */
+.n-checkbox {
+  .n-checkbox-box {
+    border-radius: var(--radius-sm);
+    border-width: 2px;
+
+    &:hover {
+      border-color: var(--primary-color);
+    }
+  }
+
+  &--checked .n-checkbox-box {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+}
+
+/* 单选框样式覆盖 */
+.n-radio {
+  .n-radio-dot {
+    background: var(--primary-color);
+  }
+
+  .n-radio-box {
+    &:hover {
+      border-color: var(--primary-color);
+    }
+  }
+
+  &--checked .n-radio-box {
+    border-color: var(--primary-color);
+  }
+}
+
+/* 开关样式覆盖 */
+.n-switch {
+  .n-switch__rail {
+    background: var(--border-color);
+  }
+
+  &--on .n-switch__rail {
+    background: var(--primary-color);
+  }
+
+  .n-switch__button {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* 标签页样式覆盖 */
+.n-tabs {
+  .n-tab-pane {
+    border-radius: var(--radius-md);
+  }
+
+  .n-tabs-tab {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+
+  .n-tabs-tab--active {
+    color: var(--primary-color);
+    font-weight: 500;
+  }
+
+  &.n-tabs--top .n-tabs-bar {
+    bottom: 0;
+  }
+
+  &.n-tabs--card .n-tabs-tab {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+
+    &--active {
+      background: var(--center-bg-color);
+      border-color: var(--border-color);
+      border-bottom: 1px solid var(--center-bg-color);
+    }
+  }
+}
+
+/* 表格样式覆盖 */
+.n-data-table {
+  .n-data-table-th {
+    background: var(--bg-hover);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .n-data-table-tr:hover {
+    background: var(--bg-hover);
+  }
+
+  .n-data-table-td {
+    border-bottom: 1px solid var(--border-light);
+  }
+}
+
+/* 分页样式覆盖 */
+.n-pagination {
+  .n-pagination-item {
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    &--active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #fff;
+    }
+  }
+}
+
+/* 加载条样式覆盖 */
+.n-progress {
+  .n-progress-graph-line-fill {
+    background: var(--primary-color);
+  }
+
+  .n-progress-graph-circle-fill {
+    stroke: var(--primary-color);
+  }
+}
+
+/* 时间选择器样式覆盖 */
+.n-date-picker,
+.n-time-picker {
+  .n-input {
+    &:hover .n-input__border {
+      border-color: var(--input-border-hover);
+    }
+
+    &--focus .n-input__border {
+      border-color: var(--input-border-focus);
+    }
+  }
+}
+
+/* 气泡确认框样式覆盖 */
+.n-popconfirm {
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 工具提示样式覆盖 */
+.n-tooltip {
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 气泡弹出框样式覆盖 */
+.n-popover {
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 暗色模式特殊处理 */
+html[data-theme='dark'] {
+  .n-button {
+    &--default-type {
+      background: var(--button-bg, #3f3f3f);
+      color: var(--text-primary);
+    }
+  }
+
+  .n-modal-mask {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .n-drawer-mask {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .n-message,
+  .n-notification {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid var(--border-color);
+  }
+}

@@ -43,7 +43,6 @@
 
         <n-tabs
           :value="viewMode"
-          :on-update:value="(v: any) => (viewMode = v)"
           class="w-76px h-28px mr-22px flex-shrink-0"
           type="segment"
           animated>
@@ -68,7 +67,8 @@
   </n-modal>
 </template>
 <script setup lang="ts">
-import { usePluginsStore } from '@/stores/plugins.ts'
+import { usePluginsStore } from '@/stores/plugins'
+import { computed } from 'vue'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import Card from './Card.vue'
 import List from './List.vue'
@@ -76,7 +76,7 @@ import { useI18n } from 'vue-i18n'
 
 /** 是否展示插件管理弹窗 */
 const isShow = defineModel() as unknown as boolean
-const { viewMode } = storeToRefs(usePluginsStore())
+const viewMode = computed(() => usePluginsStore().viewMode)
 const { t } = useI18n()
 </script>
 

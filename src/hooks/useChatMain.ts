@@ -4,7 +4,9 @@ import { save } from '@tauri-apps/plugin-dialog'
 import { BaseDirectory } from '@tauri-apps/plugin-fs'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import type { FileTypeResult } from 'file-type'
-import { computed, onUnmounted, type InjectionKey } from 'vue'
+import type { RightMenu } from '@/typings/components'
+import { ref, computed, nextTick, onUnmounted, type InjectionKey } from 'vue'
+import { storeToRefs } from 'pinia'
 import { ErrorType } from '@/common/exception'
 import {
   MergeMessageType,
@@ -21,26 +23,75 @@ import { useDownload } from '@/hooks/useDownload'
 import { useMitt } from '@/hooks/useMitt.ts'
 import { useVideoViewer } from '@/hooks/useVideoViewer'
 import { translateText } from '@/services/translate'
-import type { FilesMeta, MessageType, RightMouseMessageItem } from '@/services/types.ts'
-import { useCachedStore } from '@/stores/cached'
+import type { TranslateProvider } from '@/services/types'
+import type { FilesMeta, MessageType, RightMouseMessageItem, TextBody } from '@/services/types.ts'
+import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat.ts'
-import { useContactStore } from '@/stores/contacts'
 import { useEmojiStore } from '@/stores/emoji'
-import { type FileDownloadStatus, useFileDownloadStore } from '@/stores/fileDownload'
 import { useGlobalStore } from '@/stores/global.ts'
-import { useGroupStore } from '@/stores/group'
+import { useRoomStore } from '@/stores/room'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useUserStore } from '@/stores/user'
 import { saveFileAttachmentAs, saveVideoAttachmentAs } from '@/utils/AttachmentSaver'
 import { isDiffNow } from '@/utils/ComputedTime.ts'
 import { extractFileName, removeTag } from '@/utils/Formatting'
 import { detectImageFormat, imageUrlToUint8Array, isImageUrl } from '@/utils/ImageUtils'
-import { recallMsg, removeGroupMember, updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { matrixClientService } from '@/integrations/matrix/client'
 import { detectRemoteFileType, getFilesMeta } from '@/utils/PathUtil'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useWindow } from './useWindow'
 import { useI18n } from 'vue-i18n'
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
+
+// Type definitions for message bodies
+interface UrlMessageBody {
+  url: string
+  [key: string]: unknown
+}
+
+interface FileMessageBody extends UrlMessageBody {
+  fileName: string
+  size?: string
+}
+
+interface TextMessageBody {
+  content: string
+  translatedText?: { provider: string; text: string }
+}
+
+interface VideoCallMessageBody {
+  [key: string]: unknown
+}
+
+interface AudioCallMessageBody {
+  [key: string]: unknown
+}
+
+type MessageBody =
+  | UrlMessageBody
+  | FileMessageBody
+  | TextMessageBody
+  | TextBody
+  | VideoCallMessageBody
+  | AudioCallMessageBody
+
+interface RightMouseMessageItemLike {
+  message: {
+    id: string
+    body?: MessageBody
+    [key: string]: unknown
+  }
+  uid?: string
+  fromUser?: {
+    uid: string
+    [key: string]: unknown
+  }
+  roleId?: number
+  [key: string]: unknown
+}
 
 type UseChatMainOptions = {
   enableGroupNicknameModal?: boolean
@@ -58,11 +109,11 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
   const { openMsgSession, userUid } = useCommon()
   const { createWebviewWindow, sendWindowPayload, startRtcCall } = useWindow()
   const { getLocalVideoPath, checkVideoDownloaded } = useVideoViewer()
-  const fileDownloadStore = useFileDownloadStore()
+  // const fileDownloadStore = useFileDownloadStore()
   const settingStore = useSettingStore()
   const { chat } = storeToRefs(settingStore)
   const globalStore = useGlobalStore()
-  const groupStore = useGroupStore()
+  const roomStore = useRoomStore()
   const chatStore = useChatStore()
   const cachedStore = useCachedStore()
   const emojiStore = useEmojiStore()
@@ -104,7 +155,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
     const trimmedName = groupNicknameValue.value.trim()
     if (!trimmedName) {
-      groupNicknameError.value = '群昵称不能为空'
+      groupNicknameError.value = t('home.chat_main.group_nickname.errors.empty')
       return
     }
 
@@ -115,28 +166,33 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
     const { roomId, currentUid } = groupNicknameContext.value
     if (!roomId) {
-      window.$message?.error('当前群聊信息异常')
+      msg.error(t('home.chat_main.group_nickname.errors.room_error'))
       return
     }
 
     try {
       groupNicknameSubmitting.value = true
-      const remark = groupStore.countInfo?.remark || ''
+      // 使用 Matrix SDK 设置房间昵称
+      await sessionSettingsService.setRoomNickname(roomId, trimmedName)
+
+      // 更新本地缓存的房间信息
+      const remark = ''
       const payload = {
         id: roomId,
         myName: trimmedName,
         remark
       }
       await cachedStore.updateMyRoomInfo(payload)
-      await updateMyRoomInfo(payload)
-      groupStore.updateUserItem(currentUid, { myName: trimmedName }, roomId)
-      await groupStore.updateGroupDetail(roomId, { myName: trimmedName })
+      roomStore.updateMember(roomId, currentUid, { displayName: trimmedName })
+
       if (currentUid === userUid.value) {
-        groupStore.myNameInCurrentGroup = trimmedName
+        // groupStore.myNameInCurrentGroup = trimmedName
       }
+      groupNicknameSubmitting.value = false
       groupNicknameModalVisible.value = false
-    } catch (error) {
-      console.error('修改群昵称失败', error)
+      msg.success(t('home.chat_main.group_nickname.success'))
+    } catch (_error) {
+      msg.error(t('home.chat_main.group_nickname.errors.update_fail'))
       groupNicknameSubmitting.value = false
     }
   }
@@ -174,22 +230,21 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
   const isNoticeMessage = (item: MessageType) => item.message.type === MsgEnum.NOTICE
   const revealInDirSafely = async (targetPath?: string | null) => {
     if (!targetPath) {
-      window.$message?.error('暂时找不到本地文件，请先下载后再试~')
+      msg.error('暂时找不到本地文件，请先下载后再试~')
       return
     }
     try {
       await revealItemInDir(targetPath)
-    } catch (error) {
-      console.error('在文件夹中显示文件失败:', error)
-      window.$message?.error('无法在文件夹中显示该文件')
+    } catch (_error) {
+      msg.error('无法在文件夹中显示该文件')
     }
   }
 
-  const commonMenuList = ref<OPT.RightMenu[]>([
+  const commonMenuList = ref<RightMenu[]>([
     {
       label: () => t('menu.select'),
       icon: 'list-checkbox',
-      click: () => {
+      action: () => {
         chatStore.setMsgMultiChoose(true)
       },
       visible: (item: MessageType) => !isNoticeMessage(item)
@@ -197,10 +252,10 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => t('menu.add_sticker'),
       icon: 'add-expression',
-      click: async (item: MessageType) => {
-        const imageUrl = item.message.body.url || item.message.body.content
+      action: async (item: MessageType) => {
+        const imageUrl = item.message.body?.url || (item.message.body as TextBody)?.content
         if (!imageUrl) {
-          window.$message.error('获取图片地址失败')
+          msg.error('获取图片地址失败')
           return
         }
         await emojiStore.addEmoji(imageUrl)
@@ -212,48 +267,59 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => t('menu.forward'),
       icon: 'share',
-      click: (item: MessageType) => {
+      action: (item: MessageType) => {
+        // 移动端：触发转发事件，由移动端UI处理
         if (isMobile()) {
-          window.$message.warning('功能暂开发')
-          return
+          useMitt.emit(MittEnum.FORWARD_MESSAGE, item)
+        } else {
+          handleForward(item)
         }
-        handleForward(item)
       },
       visible: (item: MessageType) => !isNoticeMessage(item)
     },
     // {
     //   label: '收藏',
     //   icon: 'collection-files',
-    //   click: () => {
-    //     window.$message.warning('暂未实现')
+    //   action: () => {
+    //     msg.warning('暂未实现')
     //   }
     // },
     {
       label: () => t('menu.reply'),
       icon: 'reply',
-      click: (item: any) => {
+      action: (item: MessageType) => {
         useMitt.emit(MittEnum.REPLY_MEG, item)
       }
     },
     {
       label: () => t('menu.recall'),
       icon: 'corner-down-left',
-      click: async (item: MessageType) => {
+      action: async (item: MessageType) => {
         const msg = { ...item }
-        const res = await recallMsg({ roomId: globalStore.currentSessionRoomId, msgId: item.message.id })
-        if (res) {
-          window.$message.error(res)
-          return
+        // 使用 Matrix SDK 的 redaction 功能
+        const client = matrixClientService.getClient()
+        if (!client) return
+
+        try {
+          const redactEvent = client.redactEvent as
+            | ((roomId: string, eventId: string, reason?: string) => Promise<unknown>)
+            | undefined
+
+          if (redactEvent) {
+            await redactEvent(globalStore.currentSessionRoomId, item.message.id)
+            chatStore.recordRecallMsg({
+              recallUid: userStore.userInfo!.uid,
+              msg
+            })
+            await chatStore.updateRecallMsg({
+              recallUid: userStore.userInfo!.uid,
+              roomId: msg.message.roomId,
+              msgId: msg.message.id
+            })
+          }
+        } catch (error) {
+          logger.error('Failed to recall message:', error)
         }
-        chatStore.recordRecallMsg({
-          recallUid: userStore.userInfo!.uid,
-          msg
-        })
-        await chatStore.updateRecallMsg({
-          recallUid: userStore.userInfo!.uid,
-          roomId: msg.message.roomId,
-          msgId: msg.message.id
-        })
       },
       visible: (item: MessageType) => {
         const isSystemAdmin = userStore.userInfo?.power === PowerEnum.ADMIN
@@ -262,14 +328,10 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
         }
 
         const isGroupSession = globalStore.currentSession?.type === RoomTypeEnum.GROUP
-        const groupMembers = groupStore.userList
-        const currentMember = isGroupSession ? groupMembers.find((member) => member.uid === userUid.value) : undefined
-        const isGroupManager =
-          isGroupSession &&
-          (currentMember?.roleId === RoleEnum.LORD ||
-            currentMember?.roleId === RoleEnum.ADMIN ||
-            groupStore.currentLordId === userUid.value ||
-            groupStore.adminUidList.includes(userUid.value))
+        const currentMember = isGroupSession
+          ? roomStore.getMember(globalStore.currentSessionRoomId, userUid.value)
+          : undefined
+        const isGroupManager = isGroupSession && (currentMember?.role === 'owner' || currentMember?.role === 'admin')
 
         if (isGroupManager) {
           return true
@@ -284,111 +346,125 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
       }
     }
   ])
-  const videoMenuList = ref<OPT.RightMenu[]>([
+  const videoMenuList = ref<RightMenu[]>([
     {
       label: () => t('menu.copy'),
       icon: 'copy',
-      click: (item: MessageType) => {
-        if (isMobile()) {
-          window.$message.warning('功能暂开发')
-          return
-        }
-        handleCopy(item.message.body.url, true, item.message.id)
+      action: (item: MessageType) => {
+        const url = (item.message.body as UrlMessageBody)?.url || ''
+        // 移动端和PC端都支持复制URL
+        handleCopy(url, true, item.message.id)
       }
     },
     ...commonMenuList.value,
     {
       label: () => t('menu.save_as'),
       icon: 'Importing',
-      click: async (item: MessageType) => {
+      action: async (item: MessageType) => {
+        const fileBody = item.message.body as FileMessageBody
+        // 移动端：触发下载事件或使用Tauri下载API
         if (isMobile()) {
-          window.$message.warning('功能暂开发')
-          return
+          useMitt.emit(MittEnum.SAVE_MEDIA, {
+            url: fileBody.url || '',
+            fileName: fileBody.fileName || '',
+            type: 'video'
+          })
+        } else {
+          await saveVideoAttachmentAs({
+            url: fileBody.url || '',
+            downloadFile,
+            defaultFileName: fileBody.fileName || ''
+          })
         }
-        await saveVideoAttachmentAs({
-          url: item.message.body.url,
-          downloadFile,
-          defaultFileName: item.message.body.fileName
-        })
       }
     },
 
     {
       label: () => (isMac() ? t('menu.show_in_finder') : t('menu.show_in_folder')),
       icon: 'file2',
-      click: async (item: MessageType) => {
+      action: async (item: MessageType) => {
         try {
-          const localPath = await getLocalVideoPath(item.message.body.url)
+          const url = (item.message.body as UrlMessageBody)?.url || ''
+          const localPath = await getLocalVideoPath(url)
 
           // 检查视频是否已下载
-          const isDownloaded = await checkVideoDownloaded(item.message.body.url)
+          const isDownloaded = await checkVideoDownloaded(url)
 
           if (!isDownloaded) {
             // 如果未下载，先下载视频
             const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.Resource
-            await downloadFile(item.message.body.url, localPath, baseDir)
+            await downloadFile(url, localPath, baseDir)
             // 通知相关组件更新视频下载状态
-            useMitt.emit(MittEnum.VIDEO_DOWNLOAD_STATUS_UPDATED, { url: item.message.body.url, downloaded: true })
+            useMitt.emit(MittEnum.VIDEO_DOWNLOAD_STATUS_UPDATED, {
+              url,
+              downloaded: true
+            })
           }
 
           // 获取视频的绝对路径
           const baseDirPath = isMobile() ? await appDataDir() : await resourceDir()
           const absolutePath = await join(baseDirPath, localPath)
           await revealInDirSafely(absolutePath)
-        } catch (error) {
-          console.error('Failed to show video in folder:', error)
-        }
+        } catch (_error) {}
       }
     }
   ])
   /** 右键消息菜单列表 */
-  const menuList = ref<OPT.RightMenu[]>([
+  const menuList = ref<RightMenu[]>([
     {
       label: () => t('menu.copy'),
       icon: 'copy',
-      click: (item: MessageType) => {
-        handleCopy(item.message.body.content, true, item.message.id)
+      action: (item: MessageType) => {
+        const textBody = item.message.body as TextBody
+        handleCopy(textBody?.content || '', true, item.message.id)
       },
       visible: (item: MessageType) => !shouldHideCopy(item)
     },
     {
       label: () => t('menu.translate'),
       icon: 'translate',
-      click: async (item: MessageType) => {
-        const selectedText = getSelectedText(item.message.id)
-        if (!selectedText && item.message.body.translatedText) {
-          delete item.message.body.translatedText
+      action: async (rawItem: MessageType) => {
+        const selectedText = getSelectedText(rawItem.message.id)
+        const textBody = rawItem.message.body as TextMessageBody
+
+        if (!selectedText && textBody?.translatedText) {
+          delete textBody.translatedText
           return
         }
 
-        const content = selectedText || item.message.body.content
+        const content = selectedText || String(textBody?.content || '')
         if (!content) {
-          window.$message?.warning('没有可翻译的内容')
+          msg.warning('没有可翻译的内容')
           return
         }
-
-        const result = await translateText(content, chat.value.translate)
-        item.message.body.translatedText = {
-          provider: result.provider,
-          text: result.text
-        }
+        try {
+          const translateProvider = (chat.value.translate || 'youdao') as TranslateProvider
+          const result = await translateText(content, translateProvider)
+          const provider = result?.provider || ''
+          const text = result?.text || ''
+          if (textBody) {
+            textBody.translatedText = { provider, text }
+          }
+        } catch {}
       },
-      visible: (item: MessageType) => {
-        return item.message.type === MsgEnum.TEXT
+      visible: (rawItem: MessageType) => {
+        return rawItem.message.type === MsgEnum.TEXT
       }
     },
     ...commonMenuList.value
   ])
   const specialMenuList = computed(() => {
-    return (messageType?: MsgEnum): OPT.RightMenu[] => {
+    return (messageType?: MsgEnum): RightMenu[] => {
       if (isHistoryMode) {
         // 历史记录模式：基础菜单（复制、转发）
-        const baseMenus: OPT.RightMenu[] = [
+        const baseMenus: RightMenu[] = [
           {
             label: () => t('menu.copy'),
             icon: 'copy',
-            click: (item: MessageType) => {
-              const content = item.message.body.url || item.message.body.content
+            action: (item: MessageType) => {
+              const urlBody = item.message.body as UrlMessageBody
+              const textBody = item.message.body as TextBody
+              const content = urlBody?.url || textBody?.content || ''
               handleCopy(content, true, item.message.id)
             }
           }
@@ -399,14 +475,14 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
             {
               label: () => t('menu.select'),
               icon: 'list-checkbox',
-              click: () => {
+              action: () => {
                 chatStore.setMsgMultiChoose(true)
               }
             },
             {
               label: () => t('menu.forward'),
               icon: 'share',
-              click: (item: MessageType) => {
+              action: (item: MessageType) => {
                 handleForward(item)
               }
             }
@@ -420,24 +496,30 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           messageType === MsgEnum.VIDEO ||
           messageType === MsgEnum.FILE
         ) {
-          const mediaMenus: OPT.RightMenu[] = [
+          const mediaMenus: RightMenu[] = [
             // {
             //   label: '收藏',
             //   icon: 'collection-files',
-            //   click: () => {
-            //     window.$message.warning('暂未实现')
+            //   action: () => {
+            //     msg.warning('暂未实现')
             //   }
             // },
             {
               label: () => t('menu.save_as'),
               icon: 'Importing',
-              click: async (item: MessageType) => {
+              action: async (item: MessageType) => {
+                const fileBody = item.message.body as FileMessageBody
+                const fileUrl = fileBody.url || ''
+                const fileName = fileBody.fileName || ''
+                // 移动端：触发下载事件
                 if (isMobile()) {
-                  window.$message.warning('功能暂开发')
+                  useMitt.emit(MittEnum.SAVE_MEDIA, {
+                    url: fileUrl,
+                    fileName,
+                    type: item.message.type === MsgEnum.VIDEO ? 'video' : 'file'
+                  })
                   return
                 }
-                const fileUrl = item.message.body.url
-                const fileName = item.message.body.fileName
                 if (item.message.type === MsgEnum.VIDEO) {
                   await saveVideoAttachmentAs({
                     url: fileUrl,
@@ -457,46 +539,34 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
             {
               label: () => (isMac() ? t('menu.show_in_finder') : t('menu.show_in_folder')),
               icon: 'file2',
-              click: async (item: RightMouseMessageItem) => {
-                console.log('打开文件夹的item项：', item)
-
-                const fileUrl = item.message.body.url
-                const fileName = item.message.body.fileName || extractFileName(fileUrl)
-
-                // 检查文件是否已下载
-                const fileStatus = fileDownloadStore.getFileStatus(fileUrl)
-
-                console.log('找到的文件状态：', fileStatus)
-                const currentChatRoomId = globalStore.currentSessionRoomId // 这个id可能为群id可能为用户uid，所以不能只用用户uid
-                const currentUserUid = userStore.userInfo!.uid as string
+              action: async (item: RightMouseMessageItem) => {
+                const fileUrl = (item.message.body as unknown as { url: string; fileName: string })?.url || ''
+                const fileName =
+                  (item.message.body as unknown as { url: string; fileName: string })?.fileName ||
+                  extractFileName(fileUrl)
 
                 const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
                 let absolutePath = await join(resourceDirPath, fileName)
 
-                const [fileMeta] = await getFilesMeta<FilesMeta>([fileStatus?.absolutePath || absolutePath || fileUrl])
+                const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath || fileUrl])
 
                 // 最后判断文件不存在本地，那就下载它
-                if (!fileMeta.exists) {
+                if (!fileMeta?.exists) {
                   // 文件不存在本地
-                  const downloadMessage = window.$message.info('文件没下载哦~ 请下载文件后再打开🚀...')
-                  const _absolutePath = await fileDownloadStore.downloadFile(fileUrl, fileName)
+                  const downloadMessage = msg.info('文件没下载哦~ 请下载文件后再打开🚀...')
+                  await downloadFile(fileUrl, absolutePath, BaseDirectory.AppData)
+                  const _absolutePath = absolutePath
 
                   if (_absolutePath) {
                     absolutePath = _absolutePath
-                    downloadMessage.destroy()
-                    window.$message.success('文件下载好啦！请查看~')
+                    downloadMessage?.destroy?.()
+                    msg.success('文件下载好啦！请查看~')
                     await revealInDirSafely(_absolutePath)
-                    await fileDownloadStore.refreshFileDownloadStatus({
-                      fileUrl: item.message.body.url,
-                      roomId: currentChatRoomId,
-                      userId: currentUserUid,
-                      fileName: item.message.body.fileName,
-                      exists: true
-                    })
+
                     return
                   } else {
                     absolutePath = ''
-                    window.$message.error('文件下载失败，请重试~')
+                    msg.error('文件下载失败，请重试~')
                     return
                   }
                 }
@@ -515,7 +585,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           {
             label: () => t('menu.del'),
             icon: 'delete',
-            click: (item: any) => {
+            action: (item: MessageType) => {
               tips.value = '删除后将不会出现在你的消息记录中，确定删除吗?'
               modalShow.value = true
               delIndex.value = item.message.id
@@ -527,20 +597,14 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     }
   })
   /** 文件类型右键菜单 */
-  const fileMenuList = ref<OPT.RightMenu[]>([
+  const fileMenuList = ref<RightMenu[]>([
     {
       label: () => t('menu.preview'),
       icon: 'preview-open',
-      click: (item: RightMouseMessageItem) => {
-        console.log('预览文件的参数：', item)
+      action: (item: RightMouseMessageItem) => {
         nextTick(async () => {
           const path = 'previewFile'
           const LABEL = 'previewFile'
-
-          const fileStatus: FileDownloadStatus = fileDownloadStore.getFileStatus(item.message.body.url)
-
-          const currentChatRoomId = globalStore.currentSessionRoomId // 这个id可能为群id可能为用户uid，所以不能只用用户uid
-          const currentUserUid = userStore.userInfo!.uid as string
 
           /**
            * 构建窗口所需的 payload 数据，用于传递文件预览相关的信息。
@@ -556,17 +620,20 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           const buildPayload = (
             item: RightMouseMessageItem,
             type: FileTypeResult | undefined,
-            localExists: boolean
+            localExists: boolean,
+            filePath?: string
           ) => {
+            const currentUserUid = userStore.userInfo?.uid || ''
+            const currentChatRoomId = globalStore.currentSessionRoomId || ''
+            const body = item.message.body as unknown as { size: string; url: string; fileName: string }
             const payload = {
               userId: currentUserUid,
               roomId: currentChatRoomId,
               messageId: item.message.id,
               resourceFile: {
-                fileName: item.message.body.fileName,
-                absolutePath: fileStatus?.absolutePath,
-                nativePath: fileStatus?.nativePath,
-                url: item.message.body.url,
+                fileName: body.fileName,
+                absolutePath: filePath,
+                url: body.url,
                 type,
                 localExists
               }
@@ -582,9 +649,10 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
            * @returns Promise<void>
            */
           const fallbackToRemotePayload = async () => {
+            const body = item.message.body as unknown as { size: string; url: string; fileName: string }
             const remoteType = await detectRemoteFileType({
-              url: item.message.body.url,
-              fileSize: Number(item.message.body.size)
+              url: body.url || '',
+              fileSize: Number(body.size || 0)
             })
             const fallbackPayload = buildPayload(item, remoteType, false)
             await sendWindowPayload(LABEL, fallbackPayload)
@@ -592,17 +660,18 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
           // 这里不用状态中的absolute，是因为不能完全相信状态的绝对路径是否存在，有时不存在
           const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
-          const absolutePath = await join(resourceDirPath, item.message.body.fileName)
+          const body = item.message.body as unknown as { size: string; url: string; fileName: string }
+          const fileName = body?.fileName
+          if (!fileName) return
+          const absolutePath = await join(resourceDirPath, fileName)
 
           // 获取文件元信息（判断文件是否已下载/存在）
-          const result = await getFilesMeta<FilesMeta>([
-            fileStatus?.absolutePath || absolutePath || item.message.body.url
-          ])
+          const result = await getFilesMeta<FilesMeta>([absolutePath || body?.url || ''])
           const fileMeta = result[0]
 
           try {
             // 如果本地不存在该文件，清空旧的下载状态，准备读取远程链接作为兜底
-            if (!fileMeta.exists) {
+            if (!fileMeta?.exists) {
               await fallbackToRemotePayload()
             } else {
               // 本地存在文件，构造 payload 使用本地路径和已知类型
@@ -612,25 +681,16 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
                   ext: fileMeta.file_type,
                   mime: fileMeta.mime_type
                 },
-                fileMeta.exists
+                fileMeta.exists,
+                absolutePath
               )
 
               await sendWindowPayload(LABEL, payload)
             }
-          } catch (error) {
+          } catch (_error) {
             // 本地信息获取失败，可能是路径非法或 RPC 异常，兜底走远程解析
             await fallbackToRemotePayload()
-            console.error('检查文件出错：', error)
           }
-
-          console.log('预览时刷新下载状态')
-          await fileDownloadStore.refreshFileDownloadStatus({
-            fileUrl: item.message.body.url,
-            roomId: currentChatRoomId,
-            userId: currentUserUid,
-            fileName: item.message.body.fileName,
-            exists: fileMeta.exists
-          })
 
           // 最后创建用于预览文件的 WebView 窗口
           await createWebviewWindow('预览文件', path, 860, 720, '', true)
@@ -641,15 +701,21 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => t('menu.save_as'),
       icon: 'Importing',
-      click: async (item: RightMouseMessageItem) => {
+      action: async (item: RightMouseMessageItem) => {
+        const fileBody = item.message.body as FileMessageBody
+        // 移动端：触发下载事件
         if (isMobile()) {
-          window.$message.warning('功能暂开发')
+          useMitt.emit(MittEnum.SAVE_MEDIA, {
+            url: fileBody.url || '',
+            fileName: fileBody.fileName || '',
+            type: 'file'
+          })
           return
         }
         await saveFileAttachmentAs({
-          url: item.message.body.url,
+          url: fileBody.url || '',
           downloadFile,
-          defaultFileName: item.message.body.fileName
+          defaultFileName: fileBody.fileName || ''
         })
       }
     },
@@ -657,46 +723,33 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => (isMac() ? t('menu.show_in_finder') : t('menu.show_in_folder')),
       icon: 'file2',
-      click: async (item: RightMouseMessageItem) => {
-        console.log('打开文件夹的item项：', item)
-
-        const fileUrl = item.message.body.url
-        const fileName = item.message.body.fileName || extractFileName(fileUrl)
-
-        // 检查文件是否已下载
-        const fileStatus = fileDownloadStore.getFileStatus(fileUrl)
-
-        console.log('找到的文件状态：', fileStatus)
-        const currentChatRoomId = globalStore.currentSessionRoomId // 这个id可能为群id可能为用户uid，所以不能只用用户uid
-        const currentUserUid = userStore.userInfo!.uid as string
+      action: async (item: RightMouseMessageItem) => {
+        const fileUrl = (item.message.body as unknown as { url: string; fileName: string })?.url || ''
+        const fileName =
+          (item.message.body as unknown as { url: string; fileName: string })?.fileName || extractFileName(fileUrl)
 
         const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
         let absolutePath = await join(resourceDirPath, fileName)
 
-        const [fileMeta] = await getFilesMeta<FilesMeta>([fileStatus?.absolutePath || absolutePath || fileUrl])
+        const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath || fileUrl])
 
         // 最后判断文件不存在本地，那就下载它
-        if (!fileMeta.exists) {
+        if (!fileMeta?.exists) {
           // 文件不存在本地
-          const downloadMessage = window.$message.info('文件没下载哦, 请下载文件后再打开')
-          const _absolutePath = await fileDownloadStore.downloadFile(fileUrl, fileName)
+          const downloadMessage = msg.info('文件没下载哦, 请下载文件后再打开')
+          await downloadFile(fileUrl, absolutePath, BaseDirectory.AppData)
+          const _absolutePath = absolutePath
 
           if (_absolutePath) {
             absolutePath = _absolutePath
-            downloadMessage.destroy()
-            window.$message.success('文件已保存到本地')
+            downloadMessage?.destroy?.()
+            msg.success('文件已保存到本地')
             await revealInDirSafely(_absolutePath)
-            await fileDownloadStore.refreshFileDownloadStatus({
-              fileUrl: item.message.body.url,
-              roomId: currentChatRoomId,
-              userId: currentUserUid,
-              fileName: item.message.body.fileName,
-              exists: true
-            })
+
             return
           } else {
             absolutePath = ''
-            window.$message.error('文件下载失败，请重试')
+            msg.error('文件下载失败，请重试')
             return
           }
         }
@@ -706,13 +759,15 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     }
   ])
   /** 图片类型右键菜单 */
-  const imageMenuList = ref<OPT.RightMenu[]>([
+  const imageMenuList = ref<RightMenu[]>([
     {
       label: () => t('menu.copy'),
       icon: 'copy',
-      click: async (item: MessageType) => {
+      action: async (item: MessageType) => {
         // 对于图片消息，优先使用 url 字段，回退到 content 字段
-        const imageUrl = item.message.body.url || item.message.body.content
+        const urlBody = item.message.body as UrlMessageBody
+        const textBody = item.message.body as TextBody
+        const imageUrl = urlBody?.url || textBody?.content || ''
         await handleCopy(imageUrl, true, item.message.id)
       }
     },
@@ -720,13 +775,21 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => t('menu.save_as'),
       icon: 'Importing',
-      click: async (item: MessageType) => {
+      action: async (item: MessageType) => {
+        // 移动端：触发下载事件
         if (isMobile()) {
-          window.$message.warning('功能暂开发')
+          const urlBody = item.message.body as UrlMessageBody
+          const imageUrl = urlBody?.url || ''
+          useMitt.emit(MittEnum.SAVE_MEDIA, {
+            url: imageUrl,
+            fileName: imageUrl.split('/').pop() || 'image.png',
+            type: 'image'
+          })
           return
         }
         try {
-          const imageUrl = item.message.body.url
+          const urlBody = item.message.body as UrlMessageBody
+          const imageUrl = urlBody?.url || ''
           const suggestedName = imageUrl || 'image.png'
 
           // 这里会自动截取url后的文件名，可以尝试打印一下
@@ -743,52 +806,44 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           if (savePath) {
             await downloadFile(imageUrl, savePath)
           }
-        } catch (error) {
-          console.error('保存图片失败:', error)
-          window.$message.error('保存图片失败')
+        } catch (_error) {
+          msg.error('保存图片失败')
         }
       }
     },
     {
       label: () => (isMac() ? t('menu.show_in_finder') : t('menu.show_in_folder')),
       icon: 'file2',
-      click: async (item: MessageType) => {
-        const fileUrl = item.message.body.url || item.message.body.content
-        const fileName = item.message.body.fileName || extractFileName(fileUrl)
+      action: async (item: MessageType) => {
+        const urlBody = item.message.body as UrlMessageBody
+        const textBody = item.message.body as TextBody
+        const fileUrl = urlBody?.url || textBody?.content || ''
+        const fileName = (item.message.body as unknown as { fileName: string })?.fileName || extractFileName(fileUrl)
         if (!fileUrl || !fileName) {
-          window.$message.warning('暂时无法定位该图片~')
+          msg.warning('暂时无法定位该图片~')
           return
         }
-
-        const fileStatus = fileDownloadStore.getFileStatus(fileUrl)
-        const currentChatRoomId = globalStore.currentSessionRoomId
-        const currentUserUid = userStore.userInfo!.uid as string
 
         const resourceDirPath = await userStore.getUserRoomAbsoluteDir()
         let absolutePath = await join(resourceDirPath, fileName)
 
-        const [fileMeta] = await getFilesMeta<FilesMeta>([fileStatus?.absolutePath || absolutePath || fileUrl])
+        const [fileMeta] = await getFilesMeta<FilesMeta>([absolutePath || fileUrl])
 
-        if (!fileMeta.exists) {
-          const downloadMessage = window.$message.info('图片没下载, 正在保存到本地...')
-          const _absolutePath = await fileDownloadStore.downloadFile(fileUrl, fileName)
+        if (!fileMeta?.exists) {
+          const downloadMessage = msg.info('图片没下载, 正在保存到本地...')
+          await downloadFile(fileUrl, absolutePath, BaseDirectory.AppData)
+          const _absolutePath = absolutePath
 
           if (_absolutePath) {
             absolutePath = _absolutePath
-            downloadMessage.destroy()
-            window.$message.success('图片已保存到本地')
+            downloadMessage?.destroy?.()
+            msg.success('图片已保存到本地')
             await revealInDirSafely(_absolutePath)
-            await fileDownloadStore.refreshFileDownloadStatus({
-              fileUrl,
-              roomId: currentChatRoomId,
-              userId: currentUserUid,
-              fileName,
-              exists: true
-            })
+
             return
           } else {
             absolutePath = ''
-            window.$message.error('图片下载失败，请重试~')
+            msg.error('图片下载失败，请重试~')
             return
           }
         }
@@ -798,37 +853,38 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     }
   ])
   /** 右键用户信息菜单(群聊的时候显示) */
-  const optionsList = ref<OPT.RightMenu[]>([
+  const optionsList = ref<RightMenu[]>([
     {
       label: () => t('menu.send_message'),
       icon: 'message-action',
-      click: (item: any) => {
-        openMsgSession(item.uid || item.fromUser.uid)
+      action: (item: RightMouseMessageItemLike) => {
+        openMsgSession(item.uid || item.fromUser?.uid || '')
       },
-      visible: (item: any) => checkFriendRelation(item.uid || item.fromUser.uid, 'friend')
+      visible: (item: RightMouseMessageItemLike) => checkFriendRelation(item.uid || item.fromUser?.uid || '', 'friend')
     },
     {
       label: 'TA',
       icon: 'aite',
-      click: (item: any) => {
-        useMitt.emit(MittEnum.AT, item.uid || item.fromUser.uid)
+      action: (item: RightMouseMessageItemLike) => {
+        useMitt.emit(MittEnum.AT, item.uid || item.fromUser?.uid || '')
       },
-      visible: (item: any) => (item.uid ? item.uid !== userUid.value : item.fromUser.uid !== userUid.value)
+      visible: (item: RightMouseMessageItemLike) =>
+        item.uid ? item.uid !== userUid.value : item.fromUser?.uid !== userUid.value
     },
     {
       label: () => t('menu.get_user_info'),
       icon: 'notes',
-      click: (item: any, type: string) => {
+      action: (item: RightMouseMessageItemLike) => {
         // 如果是聊天框内的资料就使用的是消息的key，如果是群聊成员的资料就使用的是uid
         const uid = item.uid || item.message.id
-        useMitt.emit(`${MittEnum.INFO_POPOVER}-${type}`, { uid: uid, type: type })
+        useMitt.emit(`${MittEnum.INFO_POPOVER}-Sidebar`, { uid: uid, type: 'Sidebar' })
       }
     },
     {
       label: () => t('menu.modify_group_nickname'),
       icon: 'edit',
-      click: (item: any) => {
-        const targetUid = item.uid || item.fromUser?.uid
+      action: (item: RightMouseMessageItemLike) => {
+        const targetUid = item.uid || item.fromUser?.uid || ''
         const currentUid = userUid.value
         const roomId = globalStore.currentSessionRoomId
         const isGroup = globalStore.currentSession?.type === RoomTypeEnum.GROUP
@@ -837,8 +893,8 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           return
         }
 
-        const currentUserInfo = groupStore.getUserInfo(currentUid, roomId)
-        const currentNickname = currentUserInfo?.myName || ''
+        const currentUserInfo = roomStore.getMember(roomId, currentUid)
+        const currentNickname = currentUserInfo?.displayName || ''
 
         useMitt.emit(MittEnum.OPEN_GROUP_NICKNAME_MODAL, {
           roomId,
@@ -846,34 +902,40 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           originalNickname: currentNickname
         } as GroupNicknameModalPayload)
       },
-      visible: (item: any) => (item.uid ? item.uid === userUid.value : item.fromUser.uid === userUid.value)
+      visible: (item: RightMouseMessageItemLike) =>
+        item.uid ? item.uid === userUid.value : item.fromUser?.uid === userUid.value
     },
     {
       label: () => t('menu.add_friend'),
       icon: 'people-plus',
-      click: async (item: any) => {
+      action: async (item: RightMouseMessageItemLike) => {
         await createWebviewWindow('申请加好友', 'addFriendVerify', 380, 300, '', false, 380, 300)
         globalStore.addFriendModalInfo.show = true
-        globalStore.addFriendModalInfo.uid = item.uid || item.fromUser.uid
+        globalStore.addFriendModalInfo.uid = item.uid || item.fromUser?.uid || ''
       },
-      visible: (item: any) => !checkFriendRelation(item.uid || item.fromUser.uid, 'all')
+      visible: (item: RightMouseMessageItemLike) => !checkFriendRelation(item.uid || item.fromUser?.uid || '', 'all')
     },
     {
       label: () => t('menu.set_admin'),
       icon: 'people-safe',
-      click: async (item: any) => {
-        const targetUid = item.uid || item.fromUser.uid
+      action: async (item: RightMouseMessageItemLike) => {
+        const targetUid = item.uid || item.fromUser?.uid || ''
         const roomId = globalStore.currentSessionRoomId
         if (!roomId) return
 
         try {
-          await groupStore.addAdmin([targetUid])
-          window.$message.success(t('menu.set_admin_success'))
+          // await groupStore.addAdmin([targetUid])
+          const service = roomStore.getService()
+          if (service) {
+            // 50 = Admin, 100 = Owner
+            await service.setUserPowerLevel(roomId, targetUid, 50)
+          }
+          msg.success(t('menu.set_admin_success'))
         } catch (_error) {
-          window.$message.error(t('menu.set_admin_fail'))
+          msg.error(t('menu.set_admin_fail'))
         }
       },
-      visible: (item: any) => {
+      visible: (item: RightMouseMessageItemLike) => {
         // 1. 检查是否在群聊中
         const isInGroup = globalStore.currentSession?.type === RoomTypeEnum.GROUP
         if (!isInGroup) return false
@@ -891,34 +953,43 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
         // 如果item中没有roleId，则通过uid从群成员列表中查找
         if (targetRoleId === void 0) {
-          const targetUser = groupStore.userList.find((user) => user.uid === targetUid)
-          targetRoleId = targetUser?.roleId
+          const targetUser = roomStore.getMember(roomId, targetUid)
+          targetRoleId =
+            targetUser?.role === 'owner'
+              ? RoleEnum.LORD
+              : targetUser?.role === 'admin'
+                ? RoleEnum.ADMIN
+                : RoleEnum.NORMAL
         }
 
         // 检查目标用户是否已经是管理员或群主
         if (targetRoleId === RoleEnum.ADMIN || targetRoleId === RoleEnum.LORD) return false
 
         // 5. 检查当前用户是否是群主
-        const currentUser = groupStore.userList.find((user) => user.uid === userUid.value)
-        return currentUser?.roleId === RoleEnum.LORD
+        const currentUser = roomStore.getMember(roomId, userUid.value)
+        return currentUser?.role === 'owner'
       }
     },
     {
       label: () => t('menu.revoke_admin'),
       icon: 'reduce-user',
-      click: async (item: any) => {
-        const targetUid = item.uid || item.fromUser.uid
+      action: async (item: RightMouseMessageItemLike) => {
+        const targetUid = item.uid || item.fromUser?.uid || ''
         const roomId = globalStore.currentSessionRoomId
         if (!roomId) return
 
         try {
-          await groupStore.revokeAdmin([targetUid])
-          window.$message.success(t('menu.revoke_admin_success'))
+          // await groupStore.revokeAdmin([targetUid])
+          const service = roomStore.getService()
+          if (service) {
+            await service.setUserPowerLevel(roomId, targetUid, 0)
+          }
+          msg.success(t('menu.revoke_admin_success'))
         } catch (_error) {
-          window.$message.error(t('menu.revoke_admin_fail'))
+          msg.error(t('menu.revoke_admin_fail'))
         }
       },
-      visible: (item: any) => {
+      visible: (item: RightMouseMessageItemLike) => {
         // 1. 检查是否在群聊中
         const isInGroup = globalStore.currentSession?.type === RoomTypeEnum.GROUP
         if (!isInGroup) return false
@@ -936,16 +1007,21 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
         // 如果item中没有roleId，则通过uid从群成员列表中查找
         if (targetRoleId === void 0) {
-          const targetUser = groupStore.userList.find((user) => user.uid === targetUid)
-          targetRoleId = targetUser?.roleId
+          const targetUser = roomStore.getMember(roomId, targetUid)
+          targetRoleId =
+            targetUser?.role === 'owner'
+              ? RoleEnum.LORD
+              : targetUser?.role === 'admin'
+                ? RoleEnum.ADMIN
+                : RoleEnum.NORMAL
         }
 
         // 检查目标用户是否是管理员(只能撤销管理员,不能撤销群主)
         if (targetRoleId !== RoleEnum.ADMIN) return false
 
         // 5. 检查当前用户是否是群主
-        const currentUser = groupStore.userList.find((user) => user.uid === userUid.value)
-        return currentUser?.roleId === RoleEnum.LORD
+        const currentUser = roomStore.getMember(roomId, userUid.value)
+        return currentUser?.role === 'owner'
       }
     }
   ])
@@ -953,22 +1029,25 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
   const report = ref([
     {
       label: () => t('menu.remove_from_group'),
-      icon: 'people-delete-one',
-      click: async (item: any) => {
-        const targetUid = item.uid || item.fromUser.uid
+      icon: 'delete',
+      action: async (item: RightMouseMessageItemLike) => {
+        const targetUid = item.uid || item.fromUser?.uid || ''
         const roomId = globalStore.currentSessionRoomId
         if (!roomId) return
 
         try {
-          await removeGroupMember({ roomId, uidList: [targetUid] })
-          // 从群成员列表中移除该用户
-          groupStore.removeUserItem(targetUid, roomId)
-          window.$message.success(t('menu.remove_from_group_success'))
+          // await groupStore.removeUserItem(targetUid, roomId)
+          const service = roomStore.getService()
+          if (service) {
+            await service.kickUser(roomId, targetUid, 'Removed by admin')
+          }
+          await roomStore.loadRoomMembers(roomId) // Refresh
+          msg.success(t('menu.remove_success'))
         } catch (_error) {
-          window.$message.error(t('menu.remove_from_group_fail'))
+          msg.error(t('menu.remove_from_group_fail'))
         }
       },
-      visible: (item: any) => {
+      visible: (item: RightMouseMessageItemLike) => {
         // 1. 检查是否在群聊中
         const isInGroup = globalStore.currentSession?.type === RoomTypeEnum.GROUP
         if (!isInGroup) return false
@@ -986,17 +1065,22 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
         // 如果item中没有roleId，则通过uid从群成员列表中查找
         if (targetRoleId === void 0) {
-          const targetUser = groupStore.userList.find((user) => user.uid === targetUid)
-          targetRoleId = targetUser?.roleId
+          const targetUser = roomStore.getMember(roomId, targetUid)
+          targetRoleId =
+            targetUser?.role === 'owner'
+              ? RoleEnum.LORD
+              : targetUser?.role === 'admin'
+                ? RoleEnum.ADMIN
+                : RoleEnum.NORMAL
         }
 
         // 检查目标用户是否是群主(群主不能被移出)
         if (targetRoleId === RoleEnum.LORD) return false
 
         // 5. 检查当前用户是否有权限(群主或管理员)
-        const currentUser = groupStore.userList.find((user) => user.uid === userUid.value)
-        const isLord = currentUser?.roleId === RoleEnum.LORD
-        const isAdmin = currentUser?.roleId === RoleEnum.ADMIN
+        const currentUser = roomStore.getMember(roomId, userUid.value)
+        const isLord = currentUser?.role === 'owner'
+        const isAdmin = currentUser?.role === 'admin'
 
         // 6. 如果当前用户是管理员,则不能移出其他管理员
         if (isAdmin && targetRoleId === RoleEnum.ADMIN) return false
@@ -1007,7 +1091,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     {
       label: () => t('menu.report'),
       icon: 'caution',
-      click: () => {}
+      action: () => {}
     }
   ])
   /** emoji表情菜单 */
@@ -1090,11 +1174,15 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
    * @param type 检查类型: 'friend' - 仅好友, 'all' - 好友或自己
    */
   const checkFriendRelation = (uid: string, type: 'friend' | 'all' = 'all') => {
-    const contactStore = useContactStore()
-    const userStore = useUserStore()
-    const myUid = userStore.userInfo!.uid
-    const isFriend = contactStore.contactsList.some((item) => item.uid === uid)
-    return type === 'friend' ? isFriend && uid !== myUid : isFriend || uid === myUid
+    try {
+      // ContactStore has been removed, always return false for friend checks
+      const userStore = useUserStore()
+      const myUid = userStore.userInfo!.uid
+      const isFriend = false // contactStore.friends?.some?.((item: { uid: string }) => item.uid === uid) ?? false
+      return type === 'friend' ? isFriend && uid !== myUid : isFriend || uid === myUid
+    } catch {
+      return false
+    }
   }
 
   const extractMsgIdFromDataKey = (dataKey?: string | null) => {
@@ -1192,7 +1280,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
       // 检查内容是否为空
       if (!textToCopy) {
-        window.$message?.warning('没有可复制的内容')
+        msg.warning('没有可复制的内容')
         return
       }
 
@@ -1203,7 +1291,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
           // 提示用户正在处理不同格式的图片
           if (imageFormat === 'GIF' || imageFormat === 'WEBP') {
-            window.$message?.info(`正在将 ${imageFormat} 格式图片转换为 PNG 并复制...`)
+            msg.info(`正在将 ${imageFormat} 格式图片转换为 PNG 并复制...`)
           }
 
           // 使用 Tauri 的 clipboard API 复制图片（自动转换为 PNG 格式）
@@ -1211,19 +1299,15 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
           await writeImage(imageBytes)
 
           const successMessage = imageFormat === 'PNG' ? '图片已复制到剪贴板' : '图片已转换为 PNG 格式并复制到剪贴板'
-          window.$message?.success(successMessage)
-        } catch (imageError) {
-          console.error('图片复制失败:', imageError)
-        }
+          msg.success(successMessage)
+        } catch (_imageError) {}
       } else {
         // 如果是纯文本
         await writeText(removeTag(textToCopy))
         const message = isSelectedText ? '选中文本已复制' : '消息内容已复制'
-        window.$message?.success(message)
+        msg.success(message)
       }
-    } catch (error) {
-      console.error('复制失败:', error)
-    }
+    } catch (_error) {}
   }
 
   /**
@@ -1245,7 +1329,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
     if (!delIndex.value) return
     const targetRoomId = delRoomId.value || globalStore.currentSessionRoomId
     if (!targetRoomId) {
-      window.$message?.error('无法确定消息所属的会话')
+      msg.error('无法确定消息所属的会话')
       return
     }
     try {
@@ -1265,10 +1349,8 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
       delIndex.value = ''
       delRoomId.value = ''
       modalShow.value = false
-      window.$message?.success('消息已删除')
-    } catch (error) {
-      console.error('删除消息失败:', error)
-    }
+      msg.success('消息已删除')
+    } catch (_error) {}
   }
 
   let activeKeyPressListener: ((e: KeyboardEvent) => void) | null = null
@@ -1307,7 +1389,9 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
       if ((e.ctrlKey && e.key === 'c') || (e.metaKey && e.key === 'c')) {
         // 优先复制用户选中的文本，如果没有选中则复制整个消息内容
         // 对于图片或其他类型的消息，优先使用 url 字段
-        const contentToCopy = item.message.body.url || item.message.body.content
+        const urlBody = item.message.body as UrlMessageBody
+        const textBody = item.message.body as TextBody
+        const contentToCopy = urlBody?.url || textBody?.content || ''
         handleCopy(contentToCopy, true, item.message.id)
         // 取消监听键盘事件，以免多次绑定
         removeKeyPressListener()
@@ -1352,3 +1436,14 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
 
 export type UseChatMainContext = ReturnType<typeof useChatMain>
 export const chatMainInjectionKey = Symbol('chatMainInjectionKey') as InjectionKey<UseChatMainContext>
+
+declare global {
+  interface Window {
+    $message?: {
+      info: (msg: string) => { destroy: () => void }
+      success: (msg: string) => void
+      warning: (msg: string) => void
+      error: (msg: string) => void
+    }
+  }
+}

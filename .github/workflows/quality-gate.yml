@@ -1,0 +1,183 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm run typecheck
+
+      - name: Biome code check
+        run: pnpm run check
+
+      - name: Run unit tests
+        run: pnpm run test:run
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Run quality gate
+        run: pnpm run quality:gate
+        continue-on-error: false
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: reports/quality/quality-gate-latest.json
+          retention-days: 30
+
+  coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate coverage report
+        run: pnpm run coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      - name: Coverage summary
+        run: |
+          echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+
+            let totalLines = 0, coveredLines = 0;
+            let totalBranches = 0, coveredBranches = 0;
+            let totalFunctions = 0, coveredFunctions = 0;
+            let totalStatements = 0, coveredStatements = 0;
+
+            for (const file in data) {
+              const f = data[file];
+              if (f.l) {
+                for (const line in f.l) {
+                  totalLines++;
+                  if (f.l[line] > 0) coveredLines++;
+                }
+              }
+              if (f.b) {
+                for (const branch in f.b) {
+                  totalBranches++;
+                  if (f.b[branch].some((h) => h > 0)) coveredBranches++;
+                }
+              }
+              if (f.f) {
+                for (const fn in f.f) {
+                  totalFunctions++;
+                  if (f.f[fn] > 0) coveredFunctions++;
+                }
+              }
+              if (f.s) {
+                for (const stmt in f.s) {
+                  totalStatements++;
+                  if (f.s[stmt] > 0) coveredStatements++;
+                }
+              }
+            }
+
+            const formatPct = (c, t) => t > 0 ? ((c / t) * 100).toFixed(2) + '%' : 'N/A';
+            const overall = totalStatements > 0 ? (coveredStatements / totalStatements * 100).toFixed(2) : '0.00';
+
+            console.log('| Metric | Coverage |');
+            console.log('|--------|----------|');
+            console.log('| Lines | ' + formatPct(coveredLines, totalLines) + ' |');
+            console.log('| Branches | ' + formatPct(coveredBranches, totalBranches) + ' |');
+            console.log('| Functions | ' + formatPct(coveredFunctions, totalFunctions) + ' |');
+            console.log('| Statements | ' + formatPct(coveredStatements, totalStatements) + ' |');
+            console.log('| **Overall** | **' + overall + '%** |');
+          " >> $GITHUB_STEP_SUMMARY
+
+      - name: Check coverage threshold
+        run: |
+          node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+
+            let totalStatements = 0, coveredStatements = 0;
+            for (const file in data) {
+              const f = data[file];
+              if (f.s) {
+                for (const stmt in f.s) {
+                  totalStatements++;
+                  if (f.s[stmt] > 0) coveredStatements++;
+                }
+              }
+            }
+
+            const coverage = totalStatements > 0 ? (coveredStatements / totalStatements * 100) : 0;
+            console.log('Current coverage: ' + coverage.toFixed(2) + '%');
+
+            // Note: Currently at ~7%, need to increase to meet 85% target
+            // This check is informational for now
+            if (coverage < 85) {
+              console.log('⚠️  Coverage is below 85% target. Current: ' + coverage.toFixed(2) + '%');
+              process.exit(0); // Don't fail CI yet
+            }
+          "

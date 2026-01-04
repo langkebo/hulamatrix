@@ -1,5 +1,17 @@
+import { computed, ref, nextTick, onBeforeUnmount, type ComputedRef } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { useDebounceFn } from '@vueuse/core'
+import { logger } from '@/utils/logger'
+
+// Type-safe helper for setting the non-standard zoom property (IE/Edge)
+const setZoomProperty = (style: CSSStyleDeclaration, value: string | number) => {
+  ;(style as { zoom?: string | number }).zoom = value
+}
+
+const getZoomProperty = (style: CSSStyleDeclaration): string | number | undefined => {
+  return (style as { zoom?: string | number }).zoom
+}
+
 export type FixedScaleMode = 'zoom' | 'transform'
 
 export type UseFixedScaleOptions = {
@@ -85,7 +97,10 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
   } | null>(null)
 
   // 保存进入前的样式，便于恢复
-  const originalStyles: Partial<CSSStyleDeclaration> = {}
+  // Original styles tracking (including non-standard zoom property)
+  // Use Omit to avoid conflicts with potential zoom property in CSSStyleDeclaration
+  type OriginalStyles = Partial<Omit<CSSStyleDeclaration, 'zoom'>> & { zoom?: string | number }
+  const originalStyles: OriginalStyles = {}
 
   // 事件监听器管理 - 使用 Map 来跟踪监听器
   const eventListeners = new Map<string, () => void>()
@@ -123,7 +138,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
         )
       }
     } catch (error) {
-      console.warn('Failed to get Windows scale info:', error)
+      logger.warn('Failed to get Windows scale info:', error)
     }
   }
 
@@ -166,7 +181,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
   const applyZoom = (scale: number) => {
     if (!targetElement.value) return
     const el = targetElement.value
-    ;(el.style as any).zoom = String(scale)
+    setZoomProperty(el.style, String(scale))
     el.style.transformOrigin = ''
     el.style.transform = ''
     el.style.width = ''
@@ -182,7 +197,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
     el.style.width = `${100 / scale}%`
     el.style.height = `${100 / scale}%`
     // 清理 zoom 以避免叠加
-    ;(el.style as any).zoom = ''
+    setZoomProperty(el.style, '')
   }
 
   const apply = () => {
@@ -303,7 +318,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
           })
         }
       } catch (error) {
-        console.log(`Failed to create media query for ${dpr}dppx:`, error)
+        logger.debug(`Failed to create media query for ${dpr}dppx:`, error)
       }
     })
   }
@@ -320,7 +335,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
           cleanup()
         }
       } catch (error) {
-        console.log(`Error removing listener ${key}:`, error)
+        logger.debug(`Error removing listener ${key}:`, error)
       }
     })
 
@@ -331,7 +346,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
   const saveOriginal = () => {
     if (!targetElement.value) return
     const el = targetElement.value
-    originalStyles.zoom = (el.style as any).zoom
+    originalStyles.zoom = getZoomProperty(el.style)
     originalStyles.transform = el.style.transform
     originalStyles.transformOrigin = el.style.transformOrigin
     originalStyles.width = el.style.width
@@ -347,7 +362,7 @@ export const useFixedScale = (options: UseFixedScaleOptions = {}): FixedScaleCon
     document.documentElement.style.removeProperty('--device-pixel-ratio')
 
     // 恢复原始样式
-    if (originalStyles.zoom !== undefined) (el.style as any).zoom = originalStyles.zoom
+    if (originalStyles.zoom !== undefined) setZoomProperty(el.style, originalStyles.zoom)
     if (originalStyles.transform !== undefined) el.style.transform = originalStyles.transform
     if (originalStyles.transformOrigin !== undefined) el.style.transformOrigin = originalStyles.transformOrigin
     if (originalStyles.width !== undefined) el.style.width = originalStyles.width

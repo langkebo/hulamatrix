@@ -4,7 +4,6 @@
     data-tauri-drag-region
     class="login-box overflow-y-hidden rounded-8px select-none absolute top-0 left-0 w-full h-full z-9999 transition-all duration-300 ease-in-out">
     <ActionBar class="absolute top-0 right-0 z-99999" :current-label="appWindow.label" :shrink="false" />
-
     <Transition name="slide-fade" appear>
       <!--  壁纸界面  -->
       <div v-if="!isUnlockPage" @click.stop="isUnlockPage = true" class="size-full rounded-8px">
@@ -16,7 +15,6 @@
               <p>{{ currentWeekday }}</p>
             </n-flex>
           </n-flex>
-
           <n-flex vertical justify="center" align="center" :size="20" class="tips">
             <svg><use href="#search"></use></svg>
             <p class="text-(16px [--chat-text-color]) text-center leading-24px">
@@ -25,7 +23,6 @@
           </n-flex>
         </n-flex>
       </div>
-
       <!-- 解锁界面  -->
       <n-flex
         v-else
@@ -42,7 +39,6 @@
             :size="120"
             :src="AvatarUtils.getAvatarUrl(userStore.userInfo!.avatar!)" />
           <p class="text-(24px [--chat-text-color]) font-500">{{ userStore.userInfo!.name }}</p>
-
           <!-- 密码输入框 -->
           <n-config-provider :theme="lightTheme">
             <n-input
@@ -69,7 +65,7 @@
                   <template #trigger>
                     <svg
                       @click.stop="unlock"
-                      class="size-16px color-#e3e3e3 mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:bg-#13987fe6">
+                      class="size-16px color-#e3e3e3 mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:opacity-80">
                       <use href="#arrow-right"></use>
                     </svg>
                   </template>
@@ -78,13 +74,11 @@
               </template>
             </n-input>
           </n-config-provider>
-
           <!-- 登录时显示的文字 -->
           <n-flex vertical align="center" justify="center" :size="30" v-if="isLogining && !isWrongPassword">
             <img class="size-42px" src="@/assets/img/loading-one.svg" alt="" />
             <p class="text-(20px [--chat-text-color])">{{ t('message.lock_screen.unlocking') }}</p>
           </n-flex>
-
           <!-- 密码不正常时显示 -->
           <n-flex v-if="isWrongPassword" vertical justify="center" align="center" :size="30">
             <p class="text-(18px [--chat-text-color])">{{ t('message.lock_screen.wrong_password') }}</p>
@@ -95,7 +89,6 @@
             </p>
           </n-flex>
         </n-flex>
-
         <n-flex
           v-if="!isLogining && !isWrongPassword"
           justify="space-around"
@@ -112,21 +105,30 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { onKeyStroke } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { type InputInst, lightTheme } from 'naive-ui'
-import { useLogin } from '@/hooks/useLogin.ts'
-import { useSettingStore } from '@/stores/setting.ts'
-import { useUserStore } from '@/stores/user.ts'
+import { useLogin } from '@/hooks/useLogin'
+import { useSettingStore } from '@/stores/setting'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { getWeekday } from '@/utils/ComputedTime'
+import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
-const appWindow = WebviewWindow.getCurrent()
+// App window interface (Tauri WebviewWindow or web fallback)
+interface AppWindow {
+  label: string
+  [key: string]: unknown
+}
+
+const appWindow: AppWindow = isTauri ? (WebviewWindow.getCurrent() as unknown as AppWindow) : { label: 'web' }
 const settingStore = useSettingStore()
 const userStore = useUserStore()
-const { lockScreen } = storeToRefs(settingStore)
+const lockScreen = computed(() => settingStore.lockScreen)
 const { logout } = useLogin()
 const { t } = useI18n()
 /** 解锁密码 */
@@ -145,14 +147,13 @@ const currentMonthAndDate = ref(dayjs().format('MM/DD'))
 /** 当前星期 */
 const currentWeekday = ref(getWeekday(new Date().toLocaleString()))
 /** 计算当前时间的定时器 */
-let intervalId: NodeJS.Timeout | null = null
+let intervalId: number | null = null
 /** 密码输入框实例 */
 const inputInstRef = ref<InputInst | null>(null)
 /** 白名单窗口（锁屏时不隐藏的窗口） */
 const whitelistWindows = ['home', 'tray', 'capture', 'checkupdate', 'notify']
 /** 被隐藏的窗口列表 */
 const hiddenWindows = ref<string[]>([])
-
 watch(isUnlockPage, (val) => {
   if (val) {
     /** 延迟 300ms 后自动获取焦点，不然会触发一次回车事件 */
@@ -161,7 +162,6 @@ watch(isUnlockPage, (val) => {
     }, 300)
   }
 })
-
 watch(isWrongPassword, (val) => {
   if (val) {
     onKeyStroke('Enter', (e) => {
@@ -170,11 +170,10 @@ watch(isWrongPassword, (val) => {
     })
   }
 })
-
 /** 解锁 */
 const unlock = () => {
   if (password.value === '') {
-    window.$message.error(t('message.lock_screen.toast_empty_password'))
+    msg.error(t('message.lock_screen.toast_empty_password'))
   } else {
     isLogining.value = true
     if (password.value === lockScreen.value.password) {
@@ -189,7 +188,6 @@ const unlock = () => {
     }
   }
 }
-
 /** 重置登录状态 */
 const init = () => {
   if (isWrongPassword.value) {
@@ -201,22 +199,21 @@ const init = () => {
     password.value = ''
   }
 }
-
 /** 隐藏其他窗口 */
 const hideOtherWindows = async () => {
+  if (!isTauri) return
   const allWindows = await WebviewWindow.getAll()
   const windowsToHide = allWindows.filter(
     (window) => !whitelistWindows.includes(window.label) && window.label !== 'lockScreen'
   )
-
   for (const window of windowsToHide) {
     await window.hide()
     hiddenWindows.value.push(window.label)
   }
 }
-
 /** 显示之前隐藏的窗口 */
 const showHiddenWindows = async () => {
+  if (!isTauri) return
   for (const windowLabel of hiddenWindows.value) {
     const window = await WebviewWindow.getByLabel(windowLabel)
     if (window) {
@@ -225,7 +222,6 @@ const showHiddenWindows = async () => {
   }
   hiddenWindows.value = []
 }
-
 // 监听锁屏状态变化
 watchEffect(() => {
   if (!lockScreen.value.enable) {
@@ -233,25 +229,21 @@ watchEffect(() => {
     showHiddenWindows()
   }
 })
-
 onMounted(() => {
-  intervalId = setInterval(() => {
+  intervalId = window.setInterval(() => {
     currentTime.value = dayjs().format('HH:mm')
     currentMonthAndDate.value = dayjs().format('MM/DD')
     currentWeekday.value = getWeekday(new Date().toLocaleString())
-  }, 1000)
-
+  }, 1000) as unknown as number
   if (!isUnlockPage.value) {
     onKeyStroke('Enter', (e) => {
       e.preventDefault()
       isUnlockPage.value = true
     })
   }
-
   // 锁屏时隐藏其他窗口，解锁时显示
   hideOtherWindows()
 })
-
 onUnmounted(() => {
   if (intervalId) {
     clearInterval(intervalId)
@@ -260,21 +252,18 @@ onUnmounted(() => {
 </script>
 <style scoped lang="scss">
 @use '@/styles/scss/global/login-bg';
-
 .options {
   @apply w-320px;
   p {
     @apply cursor-pointer select-none;
   }
 }
-
 .tips {
   @apply cursor-pointer w-240px p-12px rounded-8px transition-all duration-300 ease-in-out;
   svg {
     @apply size-24px color-#f1f1f1 p-4px bg-#80808080 rounded-8px;
   }
 }
-
 :deep(.hover-box),
 :deep(.action-close) {
   svg {
@@ -289,7 +278,6 @@ onUnmounted(() => {
 :deep(.n-input .n-input__input-el, .n-input .n-input__textarea-el) {
   color: #fff;
 }
-
 /*
   进入和离开动画可以使用不同
   持续时间和速度曲线。
@@ -297,11 +285,9 @@ onUnmounted(() => {
 .slide-fade-enter-active {
   transition: all 0.2s ease-in-out;
 }
-
 .slide-fade-leave-active {
   transition: all 0.6s cubic-bezier(1, 0.5, 0.8, 1);
 }
-
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   transform: translateY(20px);

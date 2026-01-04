@@ -1,3 +1,4 @@
+import { ref, readonly } from 'vue'
 import { FOOTER_HEIGHT } from '@/common/constants'
 
 /**

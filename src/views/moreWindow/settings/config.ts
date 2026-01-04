@@ -3,10 +3,17 @@ import { MacOsKeyEnum, WinKeyEnum } from '@/enums'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 
+type SettingSide = {
+  url: string
+  label: string
+  icon: string
+  versionStatus?: string
+}
+
 const useSideOptions = () => {
   const { t } = useI18n()
 
-  return computed<OPT.L.SettingSide[]>(() => [
+  return computed<SettingSide[]>(() => [
     {
       url: '/general',
       label: t('setting.general.title'),
@@ -37,6 +44,11 @@ const useSideOptions = () => {
       label: t('setting.theme.title'),
       icon: 'platte',
       versionStatus: 'setting.common.tag_new'
+    },
+    {
+      url: '/e2ee',
+      label: t('setting.e2ee.title'),
+      icon: 'lock'
     }
   ])
 }

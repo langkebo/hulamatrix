@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-1 flex-col">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
+    <img :src="bgImage" class="w-100% absolute top-0 -z-1" alt="hula" />
     <AutoFixHeightPage :show-footer="false">
       <template #header>
         <HeaderBar
@@ -17,7 +17,7 @@
           <div class="w-full h-full box-border flex flex-col">
             <n-flex vertical justify="center" :size="20" class="p-[55px_20px] bg-white m-20px rounded-15px">
               <n-flex align="center" justify="center" :size="20">
-                <n-avatar round size="large" :src="userInfo.avatar" />
+                <n-avatar round size="large" :src="userInfo.avatar ?? ''" />
 
                 <n-flex vertical :size="10">
                   <p class="text-[--text-color]">{{ userInfo.name }}</p>
@@ -39,7 +39,7 @@
                 type="textarea"
                 placeholder="输入验证消息" />
 
-              <n-button class="mt-120px" color="#13987f" @click="addFriend">申请加入</n-button>
+              <n-button class="mt-120px" :color="'#13987f'" @click="addFriend">申请加入</n-button>
             </n-flex>
           </div>
         </div>
@@ -49,12 +49,16 @@
 </template>
 
 <script setup lang="ts">
-import { useCommon } from '@/hooks/useCommon.ts'
+import { ref, watch, onMounted } from 'vue'
+import { useCommon } from '@/hooks/useCommon'
 import router from '@/router'
-import { useGlobalStore } from '@/stores/global.ts'
-import { useUserStore } from '@/stores/user.ts'
-import { applyGroup } from '@/utils/ImRequestUtils'
+import { useGlobalStore } from '@/stores/global'
+import { useUserStore } from '@/stores/user'
+import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { logger } from '@/utils/logger'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 
+import { msg } from '@/utils/SafeUI'
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 const { countGraphemes } = useCommon()
@@ -70,19 +74,27 @@ watch(
 )
 
 const addFriend = async () => {
-  await applyGroup({
-    msg: requestMsg.value,
-    account: String(globalStore.addGroupModalInfo.account),
-    type: 2
-  })
-  window.$message.success('已发送群聊申请')
-  setTimeout(() => {
-    router.push('/mobile/message')
-  }, 2000)
+  try {
+    const roomId = globalStore.addGroupModalInfo.roomId
+    if (!roomId) {
+      msg.error?.('群聊信息不存在')
+      return
+    }
+
+    // 使用 Matrix SDK 加入房间
+    // 如果房间需要邀请，Matrix 会自动向管理员发送申请
+    await matrixRoomManager.joinRoom(roomId)
+    msg.success?.('已发送群聊申请')
+    setTimeout(() => {
+      router.push('/mobile/message')
+    }, 2000)
+  } catch (error) {
+    logger.error('申请加入群聊失败:', error)
+    msg.error?.('申请失败，请重试')
+  }
 }
 
 onMounted(async () => {
-  console.log(userInfo.value)
   requestMsg.value = `我是${userStore.userInfo!.name}`
 })
 </script>

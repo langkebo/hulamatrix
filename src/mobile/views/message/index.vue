@@ -1,18 +1,13 @@
 <template>
-  <div class="flex flex-col h-full">
-    <img src="@/assets/mobile/chat-home/background.webp" class="w-100% fixed top-0" alt="hula" />
+  <div class="flex flex-col h-full mobile-page-bg">
+    <img :src="bgImage" class="w-100% fixed top-0" alt="hula" />
 
-    <!-- 页面蒙板 -->
+    <!-- 页面蒙板 (用于添加按钮下拉菜单) -->
     <div
       v-if="showMask"
       @touchend="maskHandler.close"
       @mouseup="maskHandler.close"
-      :class="[
-        longPressState.longPressActive
-          ? ''
-          : 'bg-black/20 backdrop-blur-sm transition-all duration-3000 ease-in-out opacity-100'
-      ]"
-      class="fixed inset-0 z-[999]"></div>
+      class="fixed inset-0 z-[999] bg-black/20 backdrop-blur-sm transition-all duration-3000 ease-in-out opacity-100"></div>
 
     <NavBar>
       <template #left>
@@ -71,7 +66,8 @@
           autoCapitalize="off"
           placeholder="搜索"
           @focus="lockScroll"
-          @blur="unlockScroll">
+          @blur="unlockScroll"
+          @input="handleSearchInput">
           <template #prefix>
             <svg class="w-12px h-12px">
               <use href="#search"></use>
@@ -79,189 +75,63 @@
           </template>
         </n-input>
       </div>
+      <div class="mt-8px flex items-center gap-10px">
+        <n-button size="small" secondary @click="joinPublicRoom">进入公共大厅</n-button>
+      </div>
       <div class="border-b-1 border-solid color-gray-200 px-18px mt-5px"></div>
     </div>
 
-    <van-pull-refresh
-      class="flex-1"
-      :pull-distance="100"
-      :disabled="!isEnablePullRefresh"
-      v-model="loading"
-      @refresh="onRefresh">
-      <div class="flex flex-col h-full">
-        <div class="flex-1 overflow-y-auto overflow-x-hidden min-h-0" @scroll="onScroll" ref="scrollContainer">
-          <van-swipe-cell
-            @open="handleSwipeOpen"
-            @close="handleSwipeClose"
-            v-for="(item, idx) in sessionList"
-            v-on-long-press="[(e: PointerEvent) => handleLongPress(e, item), longPressOption]"
-            :key="`${item.id}-${idx}`"
-            class="text-black"
-            :class="item.top ? 'w-full bg-#64A29C18' : ''">
-            <!-- 长按项 -->
-            <div @click.stop="intoRoom(item)" class="grid grid-cols-[2.2rem_1fr_4rem] items-start px-4 py-3 gap-1">
-              <div class="flex-shrink-0">
-                <n-badge
-                  :offset="[-6, 6]"
-                  :color="item.muteNotification === NotificationTypeEnum.NOT_DISTURB ? 'grey' : '#d5304f'"
-                  :value="item.unreadCount"
-                  :max="99">
-                  <n-avatar :size="52" :src="AvatarUtils.getAvatarUrl(item.avatar)" fallback-src="/logo.png" round />
-                </n-badge>
-              </div>
-              <!-- 中间：两行内容 -->
-              <div class="truncate pl-7 flex pt-5px gap-10px leading-tight flex-col">
-                <div class="text-16px font-bold flex-1 truncate text-#333 truncate">{{ item.name }}</div>
-                <div class="text-13px text-#555 truncate">
-                  {{ item.text }}
-                </div>
-              </div>
+    <!-- 统一的会话列表组件 (移动端) -->
+    <div class="flex-1 relative">
+      <ChatList
+        :sessions="sessionList"
+        :current-room-id="globalStore.currentSessionRoomId"
+        :show-search="false"
+        :loading="loading"
+        @click="intoRoom" />
+    </div>
 
-              <!-- 时间：靠顶 -->
-              <div class="text-12px pt-9px text-right flex flex-col gap-1 items-end justify-center">
-                <div class="flex items-center gap-1">
-                  <span v-if="item.hotFlag === IsAllUserEnum.Yes">
-                    <svg class="size-22px select-none outline-none cursor-pointer color-#13987f">
-                      <use href="#auth"></use>
-                    </svg>
-                  </span>
-                  <span class="text-#555">
-                    {{ formatTimestamp(item?.activeTime) }}
-                  </span>
-                </div>
-                <div v-if="item.muteNotification === NotificationTypeEnum.NOT_DISTURB">
-                  <svg class="size-14px z-100 color-#909090">
-                    <use href="#close-remind"></use>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <template #right>
-              <div class="flex w-auto flex-wrap h-full">
-                <div
-                  class="h-full text-14px w-80px bg-#13987f text-white flex items-center justify-center"
-                  @click="handleToggleTop(item)">
-                  {{ item.top ? '取消置顶' : '置顶' }}
-                </div>
-                <div
-                  :class="(item?.unreadCount ?? 0) > 0 ? 'bg-#909090' : 'bg-#fbb160'"
-                  class="h-full text-14px w-80px text-white flex items-center justify-center"
-                  @click="handleToggleReadStatus((item?.unreadCount ?? 0) > 0, item)">
-                  {{ (item?.unreadCount ?? 0) > 0 ? '标记为已读' : '标记为未读' }}
-                </div>
-                <div
-                  class="h-full text-14px w-80px bg-#d5304f text-white flex items-center justify-center"
-                  @click="handleDelete(item)">
-                  删除
-                </div>
-              </div>
-            </template>
-          </van-swipe-cell>
-        </div>
-      </div>
-    </van-pull-refresh>
-
-    <teleport to="body">
-      <div
-        v-if="longPressState.showLongPressMenu"
-        :style="{ top: longPressState.longPressMenuTop + 'px' }"
-        class="fixed gap-10px z-999 left-1/2 transform -translate-x-1/2">
-        <div class="flex justify-between p-18px text-16px gap-22px rounded-16px bg-#4e4e4e whitespace-nowrap">
-          <div class="text-white" @click="handleDelete(currentLongPressItem)">删除</div>
-          <div class="text-white" @click="handleToggleTop(currentLongPressItem)">
-            {{ currentLongPressItem?.top ? '取消置顶' : '置顶' }}
-          </div>
-          <div class="text-white" @click="handleToggleReadStatus((currentLongPressItem?.unreadCount ?? 0) > 0)">
-            {{ (currentLongPressItem?.unreadCount ?? 0) > 0 ? '已读' : '未读' }}
-          </div>
-        </div>
-        <div class="flex w-full justify-center h-15px">
-          <svg width="34" height="13" viewBox="0 0 35 13">
-            <path d="M0 0 L35 0 L17.5 13 Z" fill="#4e4e4e" />
-          </svg>
-        </div>
-      </div>
-    </teleport>
+    <IncomingCallSheet />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useDebounceFn, useThrottleFn } from '@vueuse/core'
+import { logger } from '@/utils/logger'
+import { computed, onMounted, ref, h } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '#/layout/navBar/index.vue'
+import ChatList from '@/components/common/ChatList.vue'
 import addFriendIcon from '@/assets/mobile/chat-home/add-friend.webp'
 import groupChatIcon from '@/assets/mobile/chat-home/group-chat.webp'
+import bgImage from '@/assets/mobile/chat-home/background.webp'
 import { RoomTypeEnum, NotificationTypeEnum } from '@/enums'
-import { useMessage } from '@/hooks/useMessage.ts'
+import {} from '@/hooks/useMessage'
 import { useReplaceMsg } from '@/hooks/useReplaceMsg'
-import { IsAllUserEnum, type SessionItem } from '@/services/types.ts'
-import rustWebSocketClient from '@/services/webSocketRust'
-import { useChatStore } from '@/stores/chat.ts'
+import { IsAllUserEnum, type SessionItem, type UserItem } from '@/services/types'
+// WebSocket 已废弃，使用 Matrix SDK
+import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { useUserStore } from '@/stores/user.ts'
+import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { vOnLongPress } from '@vueuse/components'
-import { markMsgRead, setSessionTop } from '@/utils/ImRequestUtils'
-import { useContactStore } from '@/stores/contacts'
+import { formatTimestamp } from '@/utils/ComputedTime'
+import { useFriendsStore } from '@/stores/friends'
+import IncomingCallSheet from '@/mobile/components/IncomingCallSheet.vue'
+import { matrixClientService } from '@/integrations/matrix/client'
+import type { Room } from 'matrix-js-sdk'
+import { PUBLIC_ROOM_ALIASES, PUBLIC_ROOM_ALIAS } from '@/config/matrix-config'
+import { useMatrixAuth } from '@/hooks/useMatrixAuth'
+import { msg } from '@/utils/SafeUI'
 
 const loading = ref(false)
-const count = ref(0)
-const currentLongPressItem = ref<SessionItem | null>(null)
 const groupStore = useGroupStore()
 const chatStore = useChatStore()
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
-const contactStore = useContactStore()
-
-// 加载更多ui事件处理（开始）
-
-const isEnablePullRefresh = ref(true) // 是否启用下拉刷新，现在设置为滚动到顶才启用
-const scrollContainer = ref(null) // 消息滚动容器
-
-let scrollTop = 0 // 记住当前滑动到哪了
-
-const enablePullRefresh = useDebounceFn((top: number) => {
-  isEnablePullRefresh.value = top === 0
-}, 100)
-
-const disablePullRefresh = useThrottleFn(() => {
-  isEnablePullRefresh.value = false
-}, 80)
-
-const onScroll = (e: any) => {
-  scrollTop = e.target.scrollTop
-  if (scrollTop < 200) {
-    enablePullRefresh(scrollTop)
-  } else {
-    disablePullRefresh()
-  }
-}
-
-// 加载更多ui事件处理（结束）
-
-const longPressState = ref({
-  showLongPressMenu: false,
-  longPressMenuTop: 0,
-  longPressActive: false,
-  // 禁用所有事件
-  enable: () => {
-    // 设置长按激活状态
-    longPressState.value.longPressActive = true
-    disablePullRefresh()
-  },
-
-  disable: () => {
-    longPressState.value.showLongPressMenu = false
-    longPressState.value.longPressMenuTop = 0
-    longPressState.value.longPressActive = false
-    isEnablePullRefresh.value = true
-    enablePullRefresh(scrollTop)
-  }
-})
+const friendsStore = useFriendsStore()
 
 const allUserMap = computed(() => {
-  const map = new Map<string, any>() // User 是你定义的用户类型
+  const map = new Map<string, UserItem>()
   groupStore.allUserInfo.forEach((user) => {
     map.set(user.uid, user)
   })
@@ -328,101 +198,9 @@ const sessionList = computed(() => {
   )
 })
 
-// 删除会话
-const handleDelete = async (item: SessionItem | null) => {
-  if (!item) return
-
-  try {
-    await handleMsgDelete(item.roomId)
-  } catch (error) {
-    console.error('删除会话失败:', error)
-  } finally {
-    maskHandler.close()
-  }
-}
-
-// 置顶/取消置顶
-const handleToggleTop = async (item: SessionItem | null) => {
-  if (!item) return
-
-  try {
-    const newTopState = !item.top
-
-    await setSessionTop({
-      roomId: item.roomId,
-      top: newTopState
-    })
-
-    // 更新本地会话状态
-    chatStore.updateSession(item.roomId, { top: newTopState })
-  } catch (error) {
-    console.error('置顶操作失败:', error)
-  } finally {
-    maskHandler.close()
-  }
-}
-
-// 切换已读/未读状态
-const handleToggleReadStatus = async (markAsRead: boolean, sessionItem?: SessionItem) => {
-  const targetItem = sessionItem || currentLongPressItem.value
-  if (!targetItem) return
-
-  const item = targetItem
-  const previousUnreadCount = item.unreadCount
-
-  try {
-    const unreadCount = markAsRead ? 0 : 1
-    const successMsg = markAsRead ? '已标记为已读' : '已标记为未读'
-
-    // 更新未读计数（乐观更新，失败时回滚）
-    chatStore.updateSession(item.roomId, {
-      unreadCount
-    })
-    globalStore.updateGlobalUnreadCount()
-
-    if (markAsRead) {
-      await markMsgRead(item.roomId)
-    }
-
-    window.$message.success(successMsg)
-  } catch (error) {
-    // 回滚未读计数
-    chatStore.updateSession(item.roomId, {
-      unreadCount: previousUnreadCount
-    })
-    globalStore.updateGlobalUnreadCount()
-
-    const errorMsg = markAsRead ? '标记已读失败' : '标记未读失败'
-    window.$message.error(errorMsg)
-    console.error(errorMsg, error)
-  } finally {
-    maskHandler.close()
-  }
-}
-
-const onRefresh = () => {
-  // 如果没到0.5秒就延迟0.5秒，如果接口执行时间超过0.5秒那就以getSessionList时间为准
-  loading.value = true
-  count.value++
-
-  const apiPromise = chatStore.getSessionList(true)
-  const delayPromise = new Promise((resolve) => setTimeout(resolve, 500))
-
-  Promise.all([apiPromise, delayPromise])
-    .then(([res]) => {
-      // 接口和延时都完成后执行
-      loading.value = false
-      console.log('刷新完成', res)
-    })
-    .catch((error) => {
-      loading.value = false
-      console.log('刷新会话列表失败：', error)
-    })
-}
-
 onMounted(async () => {
-  await contactStore.getContactList(true)
-  await rustWebSocketClient.setupBusinessMessageListeners()
+  await friendsStore.refreshAll()
+  // WebSocket 已废弃，使用 Matrix SDK 同步消息
 })
 
 /**
@@ -444,6 +222,14 @@ const renderImgIcon = (src: string) => {
  */
 const uiViewsData = ref({
   addOptions: [
+    {
+      label: '私密聊天',
+      key: '/mobile/private-chat',
+      icon: () =>
+        h('svg', { class: 'size-22px', style: 'display:block; width: 26px; height: 26px; vertical-align: middle;' }, [
+          h('use', { href: '#lock' })
+        ])
+    },
     {
       label: '发起群聊',
       key: '/mobile/mobileFriends/startGroupChat',
@@ -501,8 +287,6 @@ const maskHandler = {
     }
 
     setTimeout(closeModal, 60)
-
-    longPressState.value.disable()
   }
 }
 
@@ -516,7 +300,7 @@ const addIconHandler = {
    * 选项选择时关闭蒙板
    */
   select: (item: string) => {
-    console.log('选择的项：', item)
+    logger.debug('选择的项：:', { data: item, component: 'index' })
     router.push(item)
     maskHandler.close()
   },
@@ -537,28 +321,22 @@ const addIconHandler = {
 }
 
 const router = useRouter()
-const { handleMsgClick, handleMsgDelete } = useMessage()
-
-// 阻止消息的点击事件，为false时不阻止
-let preventClick = false
-
-const handleSwipeOpen = () => {
-  preventClick = true
+const handleMsgClick = (item: SessionItem) => {
+  globalStore.updateCurrentSessionRoomId(item.roomId)
+}
+const handleMsgDelete = async (roomId: string) => {
+  // 删除会话，同时清除聊天记录，并调用Matrix leave接口
+  await chatStore.removeSession(roomId, { clearMessages: true, leaveRoom: true })
 }
 
-const handleSwipeClose = () => {
-  preventClick = false
+// Handle search input from the search box
+const handleSearchInput = (value: string) => {
+  // Search is now handled internally by ChatList component
+  logger.debug('[MobileMessageList] Search input:', { value })
 }
 
-const intoRoom = (item: any) => {
-  if (longPressState.value.longPressActive) {
-    return
-  }
-
-  if (preventClick) {
-    return
-  }
-
+const intoRoom = (item: SessionItem) => {
+  // ChatList handles long-press internally, so we don't need to check longPressState here
   handleMsgClick(item)
   const foundedUser = allUserMap.value.get(item.detailId)
 
@@ -585,7 +363,7 @@ const toSimpleBio = () => {
 
 // 锁滚动（和蒙板一样）
 const lockScroll = () => {
-  console.log('锁定触发')
+  logger.debug('锁定触发:', { component: 'index' })
   const scrollEl = document.querySelector('.flex-1.overflow-auto') as HTMLElement
   if (scrollEl) {
     scrollEl.style.overflow = 'hidden'
@@ -593,64 +371,64 @@ const lockScroll = () => {
 }
 
 const unlockScroll = () => {
-  console.log('锁定解除')
+  logger.debug('锁定解除:', { component: 'index' })
   const scrollEl = document.querySelector('.flex-1.overflow-auto') as HTMLElement
   if (scrollEl) {
     scrollEl.style.overflow = 'auto'
   }
 }
 
-// 长按事件处理（开始）
-const longPressOption = ref({
-  delay: 200,
-  modifiers: {
-    prevent: true,
-    stop: true
-  },
-  reset: true,
-  windowResize: true,
-  windowScroll: true,
-  immediate: true,
-  updateTiming: 'sync'
-})
-
-const handleLongPress = (e: PointerEvent, item: SessionItem) => {
-  const latestItem = chatStore.sessionList.find((session) => session.roomId === item.roomId)
-  if (!latestItem) return
-
-  currentLongPressItem.value = latestItem
-
-  e.stopPropagation()
-
-  maskHandler.open()
-
-  longPressState.value.enable()
-
-  // 设置长按菜单top值
-  const setLongPressMenuTop = () => {
-    const target = e.target as HTMLElement
-
-    if (!target) {
+const joinPublicRoom = async () => {
+  try {
+    let client = matrixClientService.getClient()
+    if (!client) {
+      const { store } = useMatrixAuth()
+      if (!store.getHomeserverBaseUrl()) store.setDefaultBaseUrlFromEnv()
+      const base = store.getHomeserverBaseUrl() || ''
+      await matrixClientService.initialize({ baseUrl: base, accessToken: store.accessToken, userId: store.userId })
+      await matrixClientService.startClient({ initialSyncLimit: 5, pollTimeout: 15000 })
+      client = matrixClientService.getClient()
+    }
+    if (!client) {
+      msg.error?.('Matrix client initialization failed')
       return
     }
-
-    const currentTarget = target.closest('.grid') // 向上找父级，找到grid就停止
-
-    if (!currentTarget) {
-      return
+    const aliases = PUBLIC_ROOM_ALIASES.length ? PUBLIC_ROOM_ALIASES : [PUBLIC_ROOM_ALIAS]
+    for (const a of aliases) {
+      try {
+        const joinRoomMethod = client.joinRoom as ((roomId: string) => Promise<unknown>) | undefined
+        if (joinRoomMethod) await joinRoomMethod(a)
+        break
+      } catch {}
     }
-
-    const rect = currentTarget.getBoundingClientRect()
-
-    longPressState.value.longPressMenuTop = rect.top - rect.height / 3
+    const getRoomsMethod = client.getRooms as (() => Room[]) | undefined
+    const rooms = getRoomsMethod ? getRoomsMethod() : []
+    const target =
+      rooms.find((r: Room) => {
+        const alias = r?.getCanonicalAlias?.()
+        return alias ? aliases.includes(alias) : false
+      }) ||
+      rooms.find((r: Room) => {
+        // Use getMyMembership instead of getMembership for matrix-sdk
+        // Type-safe approach using unknown as intermediate
+        const roomUnknown = r as unknown as Record<string, unknown>
+        const getMyMembership = roomUnknown.getMyMembership as (() => string) | undefined
+        const membership = typeof getMyMembership === 'function' ? getMyMembership() : undefined
+        return membership === 'join'
+      }) ||
+      rooms[0]
+    if (target?.roomId) {
+      await chatStore.getSessionList()
+      globalStore.updateCurrentSessionRoomId(target.roomId)
+      router.push({ name: 'mobileChatMain' })
+    } else {
+      msg.warning('未找到公共房间')
+    }
+  } catch (e) {
+    logger.warn('加入公共房间失败:', e)
+    msg.error?.('加入公共房间失败')
   }
-
-  setLongPressMenuTop()
-
-  longPressState.value.showLongPressMenu = true // 显示长按菜单
 }
-
-// 长按事件处理（结束）
 </script>
 
 <style scoped lang="scss">

@@ -6,6 +6,7 @@
     "includes": [
       "**/*.{js,jsx,ts,tsx,vue,json}",
       "!.*",
+      "!package.optimized.json",
       "!public/*",
       "!coverage",
       "!src/typings/*.d.ts",
@@ -13,7 +14,8 @@
       "!node_modules/*",
       "!tauri-plugin-hula/*",
       "!dist/*",
-      "!src-tauri/gen/schemas"
+      "!src-tauri/gen/schemas",
+      "!test-results"
     ]
   },
   "formatter": {
@@ -50,7 +52,7 @@
         "noUnusedImports": "warn"
       },
       "style": {
-        "useNodejsImportProtocol": "off",
+        "useNodejsImportProtocol": "warn",
         "noNonNullAssertion": "off",
         "useNamingConvention": "off",
         "useTemplate": "off",
@@ -111,6 +113,16 @@
       },
       "formatter": {
         "enabled": true
+      }
+    },
+    {
+      "includes": ["src/typings/**/*.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noBannedTypes": "off"
+          }
+        }
       }
     }
   ]

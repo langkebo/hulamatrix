@@ -1,478 +1,346 @@
 <template>
-  <div class="flex flex-1 flex-col relative bg-cover bg-center">
-    <MobileLayout>
-      <HeaderBar
-        :isOfficial="false"
-        :hidden-right="true"
-        :enable-default-background="false"
-        :enable-shadow="false"
-        room-name="添加好友/群" />
-
-      <div class="flex flex-col gap-1 overflow-auto h-full">
-        <!-- 主要内容 -->
-        <n-flex vertical :size="14">
-          <!-- 搜索框 -->
-          <div class="px-16px">
-            <n-input
-              v-model:value="searchValue"
-              type="text"
-              size="small"
-              style="border-radius: 8px; border: 1px solid #ccc"
-              :placeholder="searchPlaceholder[searchType]"
-              :maxlength="20"
-              round
-              spellCheck="false"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              clearable
-              @keydown.enter="handleSearch"
-              @clear="handleClear">
-              <template #prefix>
-                <n-icon>
-                  <svg class="icon" aria-hidden="true">
-                    <use href="#search" />
-                  </svg>
-                </n-icon>
-              </template>
-            </n-input>
-          </div>
-
-          <!-- 搜索类型切换 -->
-          <n-tabs v-model:value="searchType" animated size="small" @update:value="handleTypeChange">
-            <n-tab-pane v-for="tab in tabs" :key="tab.name" :name="tab.name" :tab="tab.label">
-              <template>
-                <span>{{ tab.label }}</span>
-              </template>
-
-              <!-- 初始加载状态 -->
-              <template v-if="initialLoading">
-                <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
-              </template>
-
-              <!-- 搜索结果 -->
-              <template v-else-if="searchResults.length">
-                <FloatBlockList
-                  :data-source="searchResults"
-                  item-key="id"
-                  :item-height="64"
-                  max-height="calc(100vh / var(--page-scale, 1) - 128px)"
-                  style-id="search-hover-classes">
-                  <template #item="{ item }">
-                    <div class="p-[0_20px] box-border">
-                      <n-flex align="center" :size="12" class="p-[8px_0] rounded-lg">
-                        <n-avatar
-                          :size="48"
-                          :src="AvatarUtils.getAvatarUrl(item.avatar)"
-                          :color="themes.content === ThemeEnum.DARK ? '' : '#fff'"
-                          :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
-                          round />
-                        <n-flex vertical justify="center" :size="10" class="flex-1">
-                          <n-space align="center" :size="10">
-                            <span class="text-(14px [--text-color])">{{ item.name }}</span>
-                            <template v-for="account in item.itemIds" :key="account">
-                              <img class="size-20px" :src="cachedStore.badgeById(account)?.img" alt="" />
-                            </template>
-                          </n-space>
-                          <n-flex align="center" :size="10">
-                            <span class="text-(12px [--chat-text-color])">{{ `账号：${item.account}` }}</span>
-                            <n-tooltip trigger="hover">
-                              <template #trigger>
-                                <svg
-                                  class="size-12px hover:color-#909090 hover:transition-colors"
-                                  @click="handleCopy(item.account)">
-                                  <use href="#copy"></use>
-                                </svg>
-                              </template>
-                              <span>复制账号</span>
-                            </n-tooltip>
-                          </n-flex>
-                        </n-flex>
-
-                        <!-- 三种状态的按钮 -->
-                        <n-button
-                          secondary
-                          :type="getButtonType(item.uid, item.roomId)"
-                          size="small"
-                          class="action-button"
-                          @click="handleButtonClick(item)">
-                          {{ getButtonText(item.uid, item.roomId) }}
-                        </n-button>
-                      </n-flex>
-                    </div>
-                  </template>
-                </FloatBlockList>
-              </template>
-
-              <!-- 搜索中状态 -->
-              <template v-else-if="loading">
-                <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
-              </template>
-
-              <!-- 搜索无结果状态 -->
-              <template v-else-if="hasSearched">
-                <n-empty
-                  class="flex-center"
-                  style="height: calc(100vh / var(--page-scale, 1) - 200px)"
-                  description="未找到相关结果" />
-              </template>
-
-              <!-- 默认空状态 -->
-              <template v-else>
-                <n-empty
-                  style="height: calc(100vh / var(--page-scale, 1) - 200px)"
-                  class="flex-center"
-                  description="输入关键词搜索">
-                  <template #icon>
-                    <n-icon>
-                      <svg>
-                        <use href="#explosion"></use>
-                      </svg>
-                    </n-icon>
-                  </template>
-                </n-empty>
-              </template>
-            </n-tab-pane>
-          </n-tabs>
-        </n-flex>
-      </div>
-    </MobileLayout>
+  <div class="p-16px">
+    <n-space align="center" :size="8" class="mb-10px">
+      <n-button tertiary :type="type === 'user' ? 'primary' : 'default'" @click="setType('user')">找好友</n-button>
+      <n-button tertiary :type="type === 'matrix' ? 'primary' : 'default'" @click="setType('matrix')">
+        企业目录
+      </n-button>
+    </n-space>
+    <n-space v-if="type === 'user'" align="center" :size="8" class="mb-10px">
+      <div class="sort-label">排序：</div>
+      <n-radio-group v-model:value="sortMode" size="small">
+        <n-radio-button value="recent">按最近互动</n-radio-button>
+        <n-radio-button value="name">按昵称</n-radio-button>
+      </n-radio-group>
+      <div class="sort-label ml-8px">标签：</div>
+      <n-select v-model:value="selectedTag" :options="tagOptions" clearable size="small" style="min-width: 140px" />
+    </n-space>
+    <n-space align="center" :size="8" class="mb-10px">
+      <n-input
+        v-model:value="keyword"
+        size="medium"
+        :placeholder="type === 'user' ? '输入昵称搜索好友' : '输入用户名或邮箱搜索'"
+        clearable />
+      <n-button type="primary" @click="handleSearch">搜索</n-button>
+    </n-space>
+    <n-space align="center" :size="8" class="mb-12px">
+      <n-input v-model:value="mxid" size="medium" placeholder="输入完整 MXID 如 @user:matrix.example.com" clearable />
+      <n-button tertiary type="primary" @click="startDmByMxid">直接发起私聊</n-button>
+    </n-space>
+    <n-spin v-if="loading" size="small">搜索中…</n-spin>
+    <n-empty v-else-if="items.length === 0" description="暂无结果" />
+    <template v-else>
+      <template v-if="type === 'user'">
+        <div v-if="onlineItems.length" class="section-title">在线</div>
+        <n-list v-if="onlineItems.length">
+          <n-list-item v-for="item in onlineItems" :key="'on-' + item.uid">
+            <n-space align="center" :size="12" class="w-full">
+              <n-avatar :src="item.avatar || '/logoD.png'" :fallback-src="'/logoD.png'" round :size="36" />
+              <div class="flex-1">
+                <div class="name">
+                  {{ item.name || item.uid }}
+                  <span class="status">
+                    <span class="status-dot online"></span>
+                    在线
+                  </span>
+                </div>
+                <div class="account">账号：{{ item.account || item.uid }}</div>
+              </div>
+              <n-button tertiary type="primary" size="small" @click="addFriend(item)">添加</n-button>
+            </n-space>
+          </n-list-item>
+        </n-list>
+        <div v-if="offlineItems.length" class="section-title mt-12px">离线</div>
+        <n-list v-if="offlineItems.length">
+          <n-list-item v-for="item in offlineItems" :key="'off-' + item.uid">
+            <n-space align="center" :size="12" class="w-full">
+              <n-avatar :src="item.avatar || '/logoD.png'" :fallback-src="'/logoD.png'" round :size="36" />
+              <div class="flex-1">
+                <div class="name">
+                  {{ item.name || item.uid }}
+                  <span class="status">
+                    <span class="status-dot offline"></span>
+                    离线
+                  </span>
+                </div>
+                <div class="account">账号：{{ item.account || item.uid }}</div>
+              </div>
+              <n-button tertiary type="primary" size="small" @click="addFriend(item)">添加</n-button>
+            </n-space>
+          </n-list-item>
+        </n-list>
+      </template>
+      <template v-else>
+        <n-list>
+          <n-list-item v-for="item in items" :key="item.uid">
+            <n-space align="center" :size="12" class="w-full">
+              <n-avatar :src="item.avatar || '/logoD.png'" :fallback-src="'/logoD.png'" round :size="36" />
+              <div class="flex-1">
+                <div class="name">{{ item.name || item.uid }}</div>
+                <div class="account">账号：{{ item.account || item.uid }}</div>
+              </div>
+              <n-button v-if="type === 'matrix'" tertiary type="primary" size="small" @click="startMatrixDm(item)">
+                开始聊天
+              </n-button>
+              <n-button v-else tertiary type="primary" size="small" @click="addFriend(item)">添加</n-button>
+            </n-space>
+          </n-list-item>
+        </n-list>
+      </template>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { emitTo } from '@tauri-apps/api/event'
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { ref, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import FloatBlockList from '@/components/common/FloatBlockList.vue'
-import { ThemeEnum } from '@/enums'
-import { RoomTypeEnum } from '@/enums/index.ts'
-import type { FriendItem, GroupDetailReq } from '@/services/types'
-import { useCachedStore } from '@/stores/cached'
-import { useContactStore } from '@/stores/contacts'
-import { useGlobalStore } from '@/stores/global'
-import { useGroupStore } from '@/stores/group'
-import { useSettingStore } from '@/stores/setting'
-import { useUserStore } from '@/stores/user'
-import { AvatarUtils } from '@/utils/AvatarUtils'
-import { searchFriend, searchGroup } from '@/utils/ImRequestUtils'
-import { isMobile } from '@/utils/PlatformConstants'
 import router from '@/router'
+import { sendFriendRequest, listFriendsWithPresenceAndActivity } from '@/integrations/matrix/friendsManager'
+import { getAllTags, addTag, getUserTags } from '@/integrations/matrix/friendsTags'
+import { useMatrixAuthStore } from '@/stores/matrixAuth'
+import { useGlobalStore } from '@/stores/global'
+import { searchDirectory, getOrCreateDirectRoom, updateDirectMapping } from '@/integrations/matrix/contacts'
+import { matrixClientService } from '@/integrations/matrix/client'
+import { useMatrixAuth } from '@/hooks/useMatrixAuth'
+import { msg } from '@/utils/SafeUI'
 
-const contactStore = useContactStore()
-const userStore = useUserStore()
+// Type definitions
+interface FriendPresenceRow {
+  userId: string
+  display_name?: string
+  avatar_url?: string
+  presence?: string
+  activeTime?: number
+}
+
+interface DirectoryUserRow {
+  user_id?: string
+  userId?: string
+  display_name?: string
+  displayName?: string
+  avatar_url?: string
+  last_active_ts?: number
+}
+
+interface SearchItem {
+  uid: string
+  name: string
+  avatar: string
+  account: string
+  presence?: string
+  activeTime?: number
+  lastActiveTs?: number
+  tags?: string[]
+}
+
 const globalStore = useGlobalStore()
-const settingStore = useSettingStore()
-const cachedStore = useCachedStore()
-const { themes } = storeToRefs(settingStore)
-// 定义标签页
-const tabs = ref([
-  { name: 'recommend', label: '推荐' },
-  { name: 'user', label: '找好友' },
-  { name: 'group', label: '找群聊' }
-])
-// 搜索类型
-const searchType = ref<'recommend' | 'user' | 'group'>('recommend')
-// 搜索类型对应的placeholder映射
-const searchPlaceholder = {
-  recommend: '输入推荐关键词',
-  user: '输入昵称搜索好友',
-  group: '输入群号搜索群聊'
-}
-// 搜索值
-const searchValue = ref('')
-// 搜索结果
-const searchResults = ref<any[]>([])
-// 是否已经搜索过
-const hasSearched = ref(false)
-// 加载状态
+const type = ref<'user' | 'matrix'>('user')
+const keyword = ref('')
+const items = ref<SearchItem[]>([])
 const loading = ref(false)
-// 初始加载状态
-const initialLoading = ref(true)
+const mxid = ref('')
+const sortMode = ref<'recent' | 'name'>('recent')
+const selectedTag = ref<string | null>(null)
+const tagOptions = computed(() => getAllTags().map((t) => ({ label: t, value: t })))
 
-// 从缓存存储中获取用户数据
-const getCachedUsers = () => {
-  // 从缓存中获取所有用户
-  const users = groupStore.allUserInfo
-  console.log(users)
-
-  // 筛选出需要显示的用户（ID在20016-20030之间的用户）
-  return sortSearchResults(
-    users
-      .filter((user) => {
-        const uid = user.uid as string
-        return uid >= '20016' && uid <= '20030'
-      })
-      .map((user) => ({
-        uid: user.uid,
-        account: user.account,
-        name: user.name,
-        avatar: user.avatar,
-        itemIds: user.itemIds || null
-      })),
-    'recommend'
-  )
+const setType = (t: 'user' | 'matrix') => {
+  type.value = t
+  items.value = []
 }
 
-// 清空搜索结果
-const clearSearchResults = () => {
-  searchResults.value = []
-  hasSearched.value = false
-  searchValue.value = ''
-}
-
-// 处理复制账号
-const handleCopy = (account: string) => {
-  navigator.clipboard.writeText(account)
-  window.$message.success(`复制成功 ${account}`)
-}
-
-// 处理清空按钮点击
-const handleClear = () => {
-  clearSearchResults()
-
-  // 如果是推荐标签，重新加载推荐用户
-  if (searchType.value === 'recommend') {
-    searchResults.value = getCachedUsers()
-  }
-}
-
-// 处理搜索
-const handleSearch = useDebounceFn(async () => {
-  if (!searchValue.value.trim()) {
-    // 如果搜索框为空且是推荐标签，显示所有推荐用户
-    if (searchType.value === 'recommend') {
-      searchResults.value = getCachedUsers()
-    }
+const doSearch = async () => {
+  const key = keyword.value.trim()
+  if (!key || key.length < 2) {
+    items.value = []
     return
   }
-
   loading.value = true
-  hasSearched.value = true
-
   try {
-    if (searchType.value === 'group') {
-      // 调用群聊搜索接口
-      const res = await searchGroup({ account: searchValue.value })
-      searchResults.value = res.map((group: any) => ({
-        account: group.account,
-        name: group.name,
-        avatar: group.avatar,
-        deleteStatus: group.deleteStatus,
-        extJson: group.extJson,
-        roomId: group.roomId
+    if (type.value === 'user') {
+      const rows: FriendPresenceRow[] = await listFriendsWithPresenceAndActivity().catch(() => [])
+      items.value = rows.map((u: FriendPresenceRow) => ({
+        uid: u.userId,
+        name: u.display_name || u.userId,
+        avatar: u.avatar_url || '',
+        account: u.userId,
+        presence: u.presence || 'offline',
+        activeTime: u.activeTime || 0,
+        tags: getUserTags(u.userId)
       }))
-    } else if (searchType.value === 'user') {
-      // 调用好友搜索接口
-      const res = await searchFriend({ key: searchValue.value })
-      searchResults.value = res.map((user: any) => ({
-        uid: user.uid,
-        name: user.name,
-        avatar: user.avatar,
-        account: user.account
-      }))
+      if (selectedTag.value)
+        items.value = items.value.filter((i) => (i.tags || []).includes(selectedTag.value as string))
     } else {
-      // 推荐标签搜索结果
-      const cachedUsers = getCachedUsers()
-      searchResults.value = cachedUsers.filter(
-        (user) =>
-          user?.name?.includes(searchValue.value) || (user.uid && user.uid.toString().includes(searchValue.value))
-      )
+      const client = matrixClientService.getClient()
+      if (!client) {
+        msg.warning('Matrix 未登录，无法搜索目录')
+        items.value = []
+      } else {
+        const rows: DirectoryUserRow[] = await searchDirectory(key)
+        items.value = rows.map((u: DirectoryUserRow) => ({
+          uid: u.user_id || u.userId || '',
+          name: u.display_name || u.displayName || u.user_id || '',
+          avatar: u.avatar_url || '',
+          account: u.user_id || '',
+          lastActiveTs: u.last_active_ts || 0
+        }))
+      }
     }
-    // 通用排序函数
-    searchResults.value = sortSearchResults(searchResults.value, searchType.value)
-  } catch (error) {
-    window.$message.error('搜索失败')
-    searchResults.value = []
+  } catch (e: unknown) {
+    const m = e instanceof Error ? e.message : String(e)
+    msg.error(`搜索失败：${m}`)
+    items.value = []
   } finally {
     loading.value = false
   }
-}, 300)
-
-// 处理选项卡切换
-const handleTypeChange = () => {
-  clearSearchResults()
-
-  if (searchType.value === 'recommend') {
-    searchResults.value = getCachedUsers()
-  }
-}
-const groupStore = useGroupStore()
-// 判断是否已加入群聊
-const isInGroup = (roomId: string) => {
-  return groupStore.groupDetails.some((group: GroupDetailReq) => group.roomId === roomId)
 }
 
-// 通用排序函数
-const sortSearchResults = (items: any[], type: 'user' | 'group' | 'recommend') => {
-  if (type === 'group') {
-    // 群聊排序逻辑：已加入的群聊排在前面
-    return items.sort((a, b) => {
-      const aInGroup = isInGroup(a.roomId)
-      const bInGroup = isInGroup(b.roomId)
-      if (aInGroup && !bInGroup) return -1
-      if (!aInGroup && bInGroup) return 1
-      return 0
-    })
-  } else {
-    // 用户排序逻辑：自己排在最前面，好友排在第二位
-    return items.sort((a, b) => {
-      // 处理uid可能是string或number的情况
-      const aUid = String(a.uid)
-      const bUid = String(b.uid)
+const handleSearch = useDebounceFn(doSearch, 300)
 
-      // 自己排在最前面
-      if (isCurrentUser(aUid)) return -1
-      if (isCurrentUser(bUid)) return 1
-
-      // 好友排在第二位
-      const aIsFriend = isFriend(aUid)
-      const bIsFriend = isFriend(bUid)
-      if (aIsFriend && !bIsFriend) return -1
-      if (!aIsFriend && bIsFriend) return 1
-
-      return 0
-    })
-  }
-}
-
-// 判断是否已经是好友
-const isFriend = (uid: string) => {
-  return contactStore.contactsList.some((contact: FriendItem) => contact.uid === uid)
-}
-
-// 判断是否是当前登录用户
-const isCurrentUser = (uid: string) => {
-  return userStore.userInfo!.uid === uid
-}
-
-// 获取按钮文本
-const getButtonText = (uid: string, roomId: string) => {
-  // 群聊逻辑
-  if (searchType.value === 'group') {
-    return isInGroup(roomId) ? '发消息' : '添加'
-  }
-  // 用户逻辑
-  if (isCurrentUser(uid)) return '编辑资料'
-  if (isFriend(uid)) return '发消息'
-  return '添加'
-}
-
-// 获取按钮类型
-const getButtonType = (uid: string, roomId: string) => {
-  // 群聊逻辑
-  if (searchType.value === 'group') {
-    return isInGroup(roomId) ? 'info' : 'primary'
-  }
-  // 用户逻辑
-  if (isCurrentUser(uid)) return 'default'
-  if (isFriend(uid)) return 'info'
-  return 'primary'
-}
-
-// 处理按钮点击
-const handleButtonClick = (item: any) => {
-  if (searchType.value === 'group') {
-    if (isInGroup(item.roomId)) {
-      handleSendGroupMessage(item)
-    } else {
-      handleAddFriend(item)
-    }
-    return
-  }
-
-  // 用户逻辑保持不变
-  if (isCurrentUser(item.uid)) {
-    handleEditProfile()
-  } else if (isFriend(item.uid)) {
-    handleSendMessage(item)
-  } else {
-    handleAddFriend(item)
-  }
-}
-
-// 处理添加好友或群聊
-const handleAddFriend = async (item: any) => {
-  if (searchType.value === 'user' || searchType.value === 'recommend') {
-    globalStore.addFriendModalInfo.uid = item.uid
-
-    router.push('/mobile/mobileFriends/confirmAddFriend')
-  } else {
-    globalStore.addGroupModalInfo.account = item.account
-    globalStore.addGroupModalInfo.name = item.name
-    globalStore.addGroupModalInfo.avatar = item.avatar
-
-    router.push('/mobile/mobileFriends/confirmAddGroup')
-  }
-}
-
-// 处理编辑个人资料
-const handleEditProfile = async () => {
-  // 获取主窗口
-  if (!isMobile()) {
-    const homeWindow = await WebviewWindow.getByLabel('home')
-    // 激活主窗口
-    await homeWindow?.setFocus()
-  }
-  // 打开个人资料编辑窗口
-  emitTo('home', 'open_edit_info')
-}
-
-// 处理发送消息
-const handleSendMessage = async (item: any) => {
-  emitTo('home', 'search_to_msg', { uid: item.uid, roomType: RoomTypeEnum.SINGLE })
-}
-
-// 处理发送群消息
-const handleSendGroupMessage = async (item: any) => {
-  emitTo('home', 'search_to_msg', {
-    uid: item.roomId,
-    roomType: RoomTypeEnum.GROUP
-  })
-}
-
-onMounted(async () => {
-  // await getCurrentWebviewWindow().show()
-
+const addFriend = async (item: SearchItem) => {
+  const uid = item.account || item.uid
   try {
-    // 初始化联系人列表
-    await contactStore.getContactList(true)
-
-    // 从缓存中获取推荐用户
-    const cachedUsers = getCachedUsers()
-
-    // 默认展示推荐用户
-    if (searchType.value === 'recommend') {
-      searchResults.value = cachedUsers
-    }
-  } finally {
-    initialLoading.value = false
+    await sendFriendRequest(uid)
+    msg.success('好友请求已发送')
+    if (selectedTag.value) addTag(uid, selectedTag.value as string)
+  } catch (e: unknown) {
+    const m = e instanceof Error ? e.message : String(e)
+    msg.error(`发送请求失败：${m}`)
   }
-})
+}
+
+const startMatrixDm = async (item: SearchItem) => {
+  try {
+    const auth = useMatrixAuthStore()
+    const domain = (() => {
+      try {
+        return new URL(auth.getHomeserverBaseUrl() || '').host
+      } catch {
+        return (auth.getHomeserverBaseUrl() || '').replace(/^https?:\/\//, '')
+      }
+    })()
+    const target = item.account || `@${item.uid}:${domain}`
+    const roomId = await getOrCreateDirectRoom(target)
+    if (!roomId) {
+      msg.error('无法创建会话')
+      return
+    }
+    try {
+      await updateDirectMapping(target, roomId)
+    } catch {}
+    globalStore.updateCurrentSessionRoomId(roomId)
+    router.push('/mobile/chatRoom/chatMain')
+  } catch (e: unknown) {
+    const m = e instanceof Error ? e.message : String(e)
+    msg.error(`创建会话失败：${m}`)
+  }
+}
+
+const formatMxid = (raw: string) => {
+  const s = raw.trim()
+  if (!s) return ''
+  if (s.startsWith('@') && s.includes(':')) return s
+  const { store } = useMatrixAuth()
+  if (!store.getHomeserverBaseUrl()) store.setDefaultBaseUrlFromEnv()
+  let host = ''
+  try {
+    const parsed = new URL(store.getHomeserverBaseUrl() || '').host
+    host = parsed || host
+  } catch {}
+  const core = s.replace(/^@/, '')
+  return `@${core.includes(':') ? core.split(':')[0] : core}:${host}`
+}
+
+const ensureMatrixReady = async () => {
+  let client = matrixClientService.getClient()
+  const { store } = useMatrixAuth()
+  if (!client) {
+    if (!store.getHomeserverBaseUrl()) store.setDefaultBaseUrlFromEnv()
+    const base = store.getHomeserverBaseUrl() || ''
+    await matrixClientService.initialize({ baseUrl: base, accessToken: store.accessToken, userId: store.userId })
+    await matrixClientService.startClient({ initialSyncLimit: 5, pollTimeout: 15000 })
+    client = matrixClientService.getClient()
+  }
+  return client
+}
+
+const startDmByMxid = async () => {
+  try {
+    const target = formatMxid(mxid.value)
+    if (!target || !target.startsWith('@') || !target.includes(':')) {
+      msg.warning('请输入完整的 MXID，如 @user:domain')
+      return
+    }
+    await ensureMatrixReady()
+    const roomId = await getOrCreateDirectRoom(target)
+    if (!roomId) {
+      msg.error('无法创建会话')
+      return
+    }
+    try {
+      await updateDirectMapping(target, roomId)
+    } catch {}
+    globalStore.updateCurrentSessionRoomId(roomId)
+    router.push('/mobile/chatRoom/chatMain')
+  } catch (e: unknown) {
+    const m = e instanceof Error ? e.message : String(e)
+    msg.error(`创建会话失败：${m}`)
+  }
+}
+
+const normalizeName = (s: string) => (s || '').toLocaleLowerCase()
+const recentValue = (i: { activeTime?: number; lastActiveTs?: number }) => Number(i.activeTime || i.lastActiveTs || 0)
+const sortByMode = (arr: SearchItem[]) => {
+  const a = [...arr]
+  if (sortMode.value === 'name') {
+    a.sort((x, y) => normalizeName(x.name || x.uid || '').localeCompare(normalizeName(y.name || y.uid || '')))
+  } else {
+    a.sort(
+      (x, y) =>
+        recentValue(y) - recentValue(x) ||
+        normalizeName(x.name || x.uid || '').localeCompare(normalizeName(y.name || y.uid || ''))
+    )
+  }
+  return a
+}
+const onlineItems = computed(() => sortByMode(items.value.filter((i) => (i.presence || 'offline') === 'online')))
+const offlineItems = computed(() => sortByMode(items.value.filter((i) => (i.presence || 'offline') !== 'online')))
 </script>
 
-<style scoped lang="scss">
-.action-button {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.9;
+<style scoped>
+.name {
+  font-size: 14px;
+  color: var(--text-color);
 }
-
-.action-button:hover {
-  opacity: 1;
-  transform: scale(1.06);
-  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.25);
+.account {
+  font-size: 12px;
+  color: var(--chat-text-color);
 }
-
-.action-button:active {
-  transform: scale(0.98);
+.section-title {
+  font-size: 13px;
+  color: var(--text-color);
+  font-weight: 600;
+  margin: 6px 0;
 }
-
-/* 移除标签内容的内边距 */
-:deep(.n-tab-pane) {
-  padding: 0 !important;
+.status {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--chat-text-color);
 }
-
-:deep(.n-tabs .n-tabs-nav-scroll-wrapper) {
-  padding: 0 20px 10px !important;
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.status-dot.online {
+  background: #18a058;
+}
+.status-dot.offline {
+  background: #c0c4cc;
+}
+.sort-label {
+  font-size: 12px;
+  color: var(--chat-text-color);
 }
 </style>

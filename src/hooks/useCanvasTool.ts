@@ -1,4 +1,36 @@
-export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screenConfig: any) {
+import { logger } from '@/utils/logger'
+
+import { ref, computed, onUnmounted, type Ref } from 'vue'
+
+/** Canvas 绘图上下文类型（包含 2D 绘图方法） */
+export interface CanvasRenderingContext2DExtended extends CanvasRenderingContext2D {
+  strokeStyle: string | CanvasGradient | CanvasPattern
+  lineWidth: number
+  fillStyle: string | CanvasGradient | CanvasPattern
+}
+
+/** 屏幕配置类型 */
+export interface ScreenConfig {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
+}
+
+/** Canvas 工具参数类型 */
+export interface CanvasToolParams {
+  drawCanvas: Ref<HTMLCanvasElement | null | undefined>
+  drawCtx: Ref<CanvasRenderingContext2DExtended | null | undefined>
+  imgCtx: Ref<CanvasRenderingContext2DExtended | null | undefined>
+  screenConfig: Ref<ScreenConfig>
+}
+
+export function useCanvasTool(
+  drawCanvas: Ref<HTMLCanvasElement | null | undefined>,
+  drawCtx: Ref<CanvasRenderingContext2DExtended | null | undefined>,
+  imgCtx: Ref<CanvasRenderingContext2DExtended | null | undefined>,
+  screenConfig: Ref<ScreenConfig>
+) {
   const drawConfig = ref({
     startX: 0,
     startY: 0,
@@ -21,7 +53,10 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
   const canUndo = computed(() => drawConfig.value.actions.length > 0)
 
   const draw = (type: string) => {
-    const { clientWidth: containerWidth, clientHeight: containerHeight } = drawCanvas.value
+    const canvas = drawCanvas.value
+    if (!canvas) return
+
+    const { clientWidth: containerWidth, clientHeight: containerHeight } = canvas
     drawConfig.value.scaleX = (screen.width * window.devicePixelRatio) / containerWidth
     drawConfig.value.scaleY = (screen.height * window.devicePixelRatio) / containerHeight
     currentTool.value = type
@@ -83,10 +118,14 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
 
     // 清除非马赛克的情况下重新绘制
     if (currentTool.value !== 'mosaic') {
-      drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-      drawConfig.value.actions.forEach((action) => {
-        drawCtx.value.putImageData(action, 0, 0)
-      })
+      const ctx = drawCtx.value
+      const canvas = drawCanvas.value
+      if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        drawConfig.value.actions.forEach((action: unknown) => {
+          ctx.putImageData(action as ImageData, 0, 0)
+        })
+      }
     }
 
     const x = Math.min(drawConfig.value.startX, drawConfig.value.endX)
@@ -138,18 +177,33 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
       return
     }
 
-    drawCtx.value.drawImage(drawCanvas.value!, 0, 0, drawCanvas.value.width, drawCanvas.value.height)
-
-    saveAction()
+    const ctx = drawCtx.value
+    const canvas = drawCanvas.value
+    if (ctx && canvas) {
+      ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height)
+      saveAction()
+    }
   }
 
-  const drawRectangle = (context: any, x: any, y: any, width: any, height: any) => {
+  const drawRectangle = (
+    context: CanvasRenderingContext2DExtended,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) => {
     context.strokeStyle = drawConfig.value.color
     context.lineWidth = drawConfig.value.lineWidth
     context.strokeRect(x, y, width, height)
   }
 
-  const drawCircle = (context: any, startX: any, startY: any, endX: any, endY: any) => {
+  const drawCircle = (
+    context: CanvasRenderingContext2DExtended,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ) => {
     // 限制圆形的绘制范围在框选矩形区域内
     const limitedEndX = Math.min(Math.max(endX, screenConfig.value.startX), screenConfig.value.endX)
     const limitedEndY = Math.min(Math.max(endY, screenConfig.value.startY), screenConfig.value.endY)
@@ -174,7 +228,13 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
     context.stroke()
   }
 
-  const drawArrow = (context: any, fromX: any, fromY: any, toX: any, toY: any) => {
+  const drawArrow = (
+    context: CanvasRenderingContext2DExtended,
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number
+  ) => {
     const headLength = 15 // 箭头的长度
     const angle = Math.atan2(toY - fromY, toX - fromX) // 算出箭头的角度
 
@@ -200,12 +260,12 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
   }
 
   // 设置马赛克画笔大小
-  const drawMosaicBrushSize = (size: any) => {
+  const drawMosaicBrushSize = (size: number) => {
     drawConfig.value.brushSize = size
   }
 
   // 实时马赛克涂抹
-  const drawMosaic = (context: any, x: any, y: any, size: any) => {
+  const drawMosaic = (context: CanvasRenderingContext2DExtended, x: number, y: number, size: number) => {
     // 确保马赛克绘制区域不会超出选区边界（考虑边框和画笔半径）
     const borderWidth = 2
     const halfSize = size / 2
@@ -224,13 +284,16 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
     const drawHeight = Math.max(0, maxDrawY - drawY)
 
     if (drawWidth > 0 && drawHeight > 0) {
-      const imageData = imgCtx.value.getImageData(drawX, drawY, drawWidth, drawHeight)
-      const blurredData = blurImageData(imageData, Math.min(drawWidth, drawHeight))
-      context.putImageData(blurredData, drawX, drawY)
+      const imgCtxValue = imgCtx.value
+      if (imgCtxValue) {
+        const imageData = imgCtxValue.getImageData(drawX, drawY, drawWidth, drawHeight)
+        const blurredData = blurImageData(imageData, Math.min(drawWidth, drawHeight))
+        context.putImageData(blurredData, drawX, drawY)
+      }
     }
   }
 
-  const blurImageData = (imageData: ImageData, size: any): ImageData => {
+  const blurImageData = (imageData: ImageData, size: number): ImageData => {
     const data = imageData.data
     const width = imageData.width
     const height = imageData.height
@@ -255,10 +318,10 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
 
             if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
               const newIndex = (newY * width + newX) * 4
-              r += tempData[newIndex]
-              g += tempData[newIndex + 1]
-              b += tempData[newIndex + 2]
-              a += tempData[newIndex + 3]
+              r += tempData[newIndex]!
+              g += tempData[newIndex + 1]!
+              b += tempData[newIndex + 2]!
+              a += tempData[newIndex + 3]!
               count++
             }
           }
@@ -275,18 +338,29 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
   }
 
   const saveAction = () => {
-    const imageData = drawCtx.value.getImageData(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-    drawConfig.value.actions.push(imageData as never)
-    drawConfig.value.undoStack = [] // 清空撤销堆栈
+    const ctx = drawCtx.value
+    const canvas = drawCanvas.value
+    if (ctx && canvas) {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      drawConfig.value.actions.push(imageData as never)
+      drawConfig.value.undoStack = [] // 清空撤销堆栈
+    }
   }
 
   const undo = () => {
     closeListen()
     if (drawConfig.value.actions.length > 0) {
       drawConfig.value.undoStack.push(drawConfig.value.actions.pop() as never)
-      drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-      if (drawConfig.value.actions.length > 0) {
-        drawCtx.value.putImageData(drawConfig.value.actions[drawConfig.value.actions.length - 1], 0, 0)
+      const ctx = drawCtx.value
+      const canvas = drawCanvas.value
+      if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        if (drawConfig.value.actions.length > 0) {
+          const lastAction = drawConfig.value.actions[drawConfig.value.actions.length - 1]
+          if (lastAction) {
+            ctx.putImageData(lastAction as ImageData, 0, 0)
+          }
+        }
       }
     }
   }
@@ -295,8 +369,13 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
     closeListen()
     if (drawConfig.value.undoStack.length > 0) {
       const imageData = drawConfig.value.undoStack.pop()
-      drawConfig.value.actions.push(imageData as never)
-      drawCtx.value.putImageData(imageData, 0, 0)
+      if (imageData) {
+        drawConfig.value.actions.push(imageData as never)
+        const ctx = drawCtx.value
+        if (ctx) {
+          ctx.putImageData(imageData as ImageData, 0, 0)
+        }
+      }
     }
   }
 
@@ -316,7 +395,7 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
     drawConfig.value.undoStack = []
     drawConfig.value.isDrawing = false
     currentTool.value = ''
-    console.log('绘图状态已重置，历史记录已清除')
+    logger.debug('绘图状态已重置，历史记录已清除', undefined, 'useCanvasTool')
   }
 
   // 停止当前绘图操作
@@ -324,13 +403,13 @@ export function useCanvasTool(drawCanvas: any, drawCtx: any, imgCtx: any, screen
     drawConfig.value.isDrawing = false
     currentTool.value = ''
     closeListen()
-    console.log('绘图操作已停止')
+    logger.debug('绘图操作已停止', undefined, 'useCanvasTool')
   }
 
   // 清除事件监听
   const clearEvents = () => {
     closeListen()
-    console.log('绘图事件监听已清除')
+    logger.debug('绘图事件监听已清除', undefined, 'useCanvasTool')
   }
 
   const startListen = () => {

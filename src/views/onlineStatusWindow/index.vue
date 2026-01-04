@@ -48,18 +48,21 @@
   </main>
 </template>
 <script setup lang="ts">
+import { onMounted, ref, watchEffect, computed } from 'vue'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { msg } from '@/utils/SafeUI'
 import type { UserState } from '@/services/types'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
-import { useOnlineStatus } from '@/hooks/useOnlineStatus.ts'
-import { changeUserState } from '@/utils/ImRequestUtils'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { sessionSettingsService } from '@/services/sessionSettingsService'
+import { logger } from '@/utils/logger'
 
 const userStatusStore = useUserStatusStore()
 const userStore = useUserStore()
-const { stateList, stateId } = storeToRefs(userStatusStore)
+const stateList = computed(() => userStatusStore.stateList)
+// 使用 userStatusStore.stateId 直接进行赋值，无需声明本地变量
 const { currentState, statusIcon, statusTitle, statusBgColor, hasCustomState } = useOnlineStatus()
 const { t } = useI18n()
 const resetState = computed<UserState>(() => ({
@@ -88,20 +91,28 @@ watchEffect(() => {
  */
 const handleActive = async (item: UserState) => {
   try {
-    await changeUserState({ id: item.id })
+    // 使用 Matrix SDK 设置用户状态（存储在全局 account data）
+    await sessionSettingsService.setUserState(item.id)
 
-    stateId.value = item.id
-    userStore.userInfo!.userStateId = item.id
+    // 更新本地状态
+    userStatusStore.setStateId(item.id)
+    if (userStore.userInfo) {
+      const userInfoWithState = userStore.userInfo as typeof userStore.userInfo & { userStateId?: string }
+      userInfoWithState.userStateId = item.id.toString()
+    }
 
-    window.$message?.success(t('auth.onlineStatus.messages.success'))
+    msg.success(t('auth.onlineStatus.messages.success'))
   } catch (error) {
-    console.error('更新状态失败:', error)
-    window.$message?.error(t('auth.onlineStatus.messages.error'))
+    logger.error('更新状态失败:', error)
+    msg.error(t('auth.onlineStatus.messages.error'))
   }
 }
 
 onMounted(async () => {
-  await getCurrentWebviewWindow().show()
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  if (isTauri) {
+    await getCurrentWebviewWindow().show()
+  }
   if (!currentState.value) return
   const matched = stateList.value.find((item: { title: string }) => item.title === currentState.value?.title)
   currentState.value.id = matched?.id || '1'

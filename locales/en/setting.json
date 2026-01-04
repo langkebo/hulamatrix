@@ -1,4 +1,20 @@
 {
+  "panel": {
+    "title": "Settings",
+    "subtitle": "Settings",
+    "menu": {
+      "profile": "Account",
+      "sessions": "Sessions",
+      "notification": "Notifications",
+      "encryption": "Encryption",
+      "appearance": "Appearance",
+      "privacy": "Privacy & Security",
+      "biometric": "Biometric",
+      "keyboard": "Keyboard Shortcuts",
+      "audio": "Voice & Audio",
+      "labs": "Labs"
+    }
+  },
   "common": {
     "provider_label": "Provider",
     "provider_name": "HuLa",
@@ -146,5 +162,91 @@
       "simple": "Minimal grace"
     }
   },
-  "unknow": "Unknow"
+  "unknow": "Unknow",
+  "e2ee": {
+    "title": "End-to-End Encryption",
+    "status": {
+      "enabled": "End-to-end encryption is enabled",
+      "disabled": "End-to-end encryption is not fully set up",
+      "enabled_desc": "Your messages are protected with end-to-end encryption",
+      "disabled_desc": "It's recommended to complete E2EE setup to protect your message privacy"
+    },
+    "cross_signing": {
+      "title": "Cross-Signing",
+      "status": "Cross-signing status",
+      "ready": "Set up, can verify other devices",
+      "not_ready": "Not set up, recommended to verify devices",
+      "setup_button": "Setup Cross-Signing",
+      "master_key": "Master Key",
+      "user_signing_key": "User Signing Key",
+      "self_signing_key": "Device Signing Key",
+      "set": "Set",
+      "not_set": "Not set"
+    },
+    "key_backup": {
+      "title": "Key Backup",
+      "storage": "Secret Storage",
+      "storage_ready": "Set up, can backup keys",
+      "storage_not_ready": "Not set up, recommended to create backup",
+      "manage_button": "Manage Backup",
+      "create_button": "Create Backup",
+      "existing_backups": "Existing Backups",
+      "backups_count": "{count} backups available",
+      "view_button": "View"
+    },
+    "devices": {
+      "title": "Device Verification",
+      "refresh_button": "Refresh",
+      "no_devices": "No other devices",
+      "unknown_device": "Unknown Device",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "last_seen": "Just now",
+      "minutes_ago": "{minutes} minutes ago",
+      "hours_ago": "{hours} hours ago",
+      "days_ago": "{days} days ago",
+      "verify": "Verify",
+      "block": "Block",
+      "unblock": "Unblock",
+      "block_confirm_title": "Confirm Block",
+      "block_confirm_content": "Are you sure you want to block device {deviceName}?",
+      "unblock_confirm_title": "Unblock Device",
+      "unblock_confirm_content": "Are you sure you want to unblock device {deviceName}?",
+      "blocked": "Device blocked",
+      "unblocked": "Device unblocked"
+    },
+    "security": {
+      "title": "Security Settings",
+      "auto_verify": "Auto-verify Devices",
+      "auto_verify_desc": "Automatically verify devices from the same account",
+      "block_unverified": "Encryption Blocklist",
+      "block_unverified_desc": "Block encrypted messages from unverified devices",
+      "show_indicator": "Show Encryption Indicator",
+      "show_indicator_desc": "Show encryption status in messages"
+    },
+    "backups": {
+      "title": "Key Backup List",
+      "no_backups": "No backups",
+      "method_backup": "{method} backup",
+      "valid": "Valid",
+      "expired": "Expired",
+      "restore_button": "Restore",
+      "delete_button": "Delete",
+      "restore_confirm_title": "Restore Backup",
+      "restore_confirm_content": "Are you sure you want to restore keys from {method}?",
+      "delete_confirm_title": "Confirm Delete",
+      "delete_confirm_content": "Are you sure you want to delete this backup?",
+      "restore_success": "Keys restored successfully",
+      "restore_failed": "Failed to restore keys",
+      "delete_success": "Backup deleted",
+      "delete_failed": "Failed to delete backup"
+    },
+    "setup": {
+      "success": "Cross-signing setup successful",
+      "failed": "Cross-signing setup failed",
+      "device_refreshed": "Device list refreshed",
+      "verification_success": "Device verified successfully",
+      "backup_completed": "Backup completed"
+    }
+  }
 }

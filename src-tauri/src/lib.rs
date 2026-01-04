@@ -30,23 +30,15 @@ pub mod command;
 pub mod common;
 pub mod configuration;
 pub mod error;
-mod im_request_client;
 pub mod pojo;
-pub mod repository;
-pub mod timeout_config;
+pub mod state;
 pub mod utils;
 mod vo;
-pub mod websocket;
 #[cfg(target_os = "ios")]
 mod webview_helper;
 
 use crate::command::app_state_command::is_app_state_ready;
-use crate::command::request_command::{im_request_command, login_command};
-use crate::command::room_member_command::{
-    cursor_page_room_members, get_room_members, page_room, update_my_room_info,
-};
 use crate::command::setting_command::{get_settings, update_settings};
-use crate::command::user_command::remove_tokens;
 use crate::configuration::{Settings, get_configuration};
 use crate::error::CommonError;
 use sea_orm::DatabaseConnection;
@@ -62,9 +54,7 @@ use mobiles::splash;
 
 #[derive(Debug)]
 pub struct AppData {
-    db_conn: Arc<DatabaseConnection>,
     user_info: Arc<Mutex<UserInfo>>,
-    pub rc: Arc<Mutex<im_request_client::ImRequestClient>>,
     pub config: Arc<Mutex<Settings>>,
     frontend_task: Mutex<bool>,
     backend_task: Mutex<bool>,
@@ -72,16 +62,10 @@ pub struct AppData {
 
 pub(crate) static APP_STATE_READY: AtomicBool = AtomicBool::new(false);
 
-use crate::command::chat_history_command::query_chat_history;
-use crate::command::contact_command::{hide_contact_command, list_contacts_command};
-use crate::command::file_manager_command::{
-    debug_message_stats, get_navigation_items, query_files,
+use crate::command::media::{
+    clear_media_cache, delete_cached_media, download_media, get_media_cache_stats, preload_media,
 };
-use crate::command::message_command::{
-    delete_message, delete_room_messages, page_msg, save_msg, send_msg, sync_messages,
-    update_message_recall_status,
-};
-use crate::command::message_mark_command::save_message_mark;
+use crate::state::AppState;
 
 #[cfg(desktop)]
 use tauri::Listener;
@@ -120,12 +104,10 @@ fn setup_desktop() -> Result<(), CommonError> {
         })
         .invoke_handler(get_invoke_handlers())
         .build(tauri::generate_context!())
-        .map_err(|e| {
-            CommonError::RequestError(format!("Failed to build tauri application: {}", e))
-        })?
+        .map_err(|e| CommonError::RequestError(format!("Failed to build tauri application: {e}")))?
         .run(|app_handle, event| {
             #[cfg(target_os = "macos")]
-            app_event::handle_app_event(&app_handle, event);
+            app_event::handle_app_event(app_handle, event);
             #[cfg(not(target_os = "macos"))]
             {
                 let _ = (app_handle, event);
@@ -141,7 +123,6 @@ async fn initialize_app_data(
     (
         Arc<DatabaseConnection>,
         Arc<Mutex<UserInfo>>,
-        Arc<Mutex<im_request_client::ImRequestClient>>,
         Arc<Mutex<Settings>>,
     ),
     CommonError,
@@ -152,7 +133,7 @@ async fn initialize_app_data(
     // 加载配置
     let configuration =
         Arc::new(Mutex::new(get_configuration(&app_handle).map_err(|e| {
-            anyhow::anyhow!("Failed to load configuration: {}", e)
+            anyhow::anyhow!("Failed to load configuration: {e}")
         })?));
 
     // 初始化数据库连接
@@ -167,18 +148,13 @@ async fn initialize_app_data(
 
     // 数据库迁移
     match Migrator::up(db.as_ref(), None).await {
-        Ok(_) => {
+        Ok(()) => {
             info!("Database migration completed");
         }
         Err(e) => {
-            eprintln!("Warning: Database migration failed: {}", e);
+            eprintln!("Warning: Database migration failed: {e}");
         }
     }
-
-    let rc: im_request_client::ImRequestClient = im_request_client::ImRequestClient::new(
-        configuration.lock().await.backend.base_url.clone(),
-    )
-    .unwrap();
 
     // 创建用户信息
     let user_info = UserInfo {
@@ -188,7 +164,7 @@ async fn initialize_app_data(
     };
     let user_info = Arc::new(Mutex::new(user_info));
 
-    Ok((db, user_info, Arc::new(Mutex::new(rc)), configuration))
+    Ok((db, user_info, configuration))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -202,7 +178,7 @@ pub struct UserInfo {
 pub async fn build_request_client() -> Result<reqwest::Client, CommonError> {
     let client = reqwest::Client::builder()
         .build()
-        .map_err(|e| anyhow::anyhow!("Reqwest client error: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Reqwest client error: {e}"))?;
     Ok(client)
 }
 
@@ -261,7 +237,7 @@ pub async fn handle_logout_windows(app_handle: &tauri::AppHandle) {
         // tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
 
         match window.destroy() {
-            Ok(_) => {
+            Ok(()) => {
                 tracing::info!("[LOGOUT] Successfully closed window: {}", label);
             }
             Err(error) => {
@@ -337,24 +313,29 @@ fn setup_mobile() {
 // 公共的 setup 函数
 fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let scope = app_handle.fs_scope();
-    scope.allow_directory("configuration", false).unwrap();
+    if let Err(e) = scope.allow_directory("configuration", false) {
+        eprintln!("Warning: Failed to allow configuration directory access: {e}");
+        // Continue anyway - this might not be critical
+    }
 
     #[cfg(desktop)]
     setup_logout_listener(app_handle.clone());
 
     // 异步初始化应用数据，避免阻塞主线程
     match tauri::async_runtime::block_on(initialize_app_data(app_handle.clone())) {
-        Ok((db, user_info, rc, settings)) => {
+        Ok((_db, user_info, settings)) => {
             // 使用 manage 方法在运行时添加状态
             app_handle.manage(AppData {
-                db_conn: db.clone(),
                 user_info: user_info.clone(),
-                rc: rc,
                 config: settings,
                 frontend_task: Mutex::new(false),
                 // 后端任务默认完成
                 backend_task: Mutex::new(true),
             });
+
+            // 添加应用状态
+            app_handle.manage(AppState::new());
+
             APP_STATE_READY.store(true, Ordering::SeqCst);
             if let Err(e) = app_handle.emit("app-state-ready", ()) {
                 tracing::warn!("Failed to emit app-state-ready event: {}", e);
@@ -362,7 +343,7 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
         }
         Err(e) => {
             tracing::error!("Failed to initialize application data: {}", e);
-            return Err(format!("Failed to initialize app data: {}", e).into());
+            return Err(format!("Failed to initialize app data: {e}").into());
         }
     }
 
@@ -374,26 +355,21 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 // 公共的命令处理器函数
 fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static
 {
-    use crate::command::ai_command::ai_message_send_stream;
-    use crate::command::markdown_command::{get_readme_html, parse_markdown};
+    use crate::command::error_log_command::{clear_error_log, read_error_log, save_error_log};
     #[cfg(mobile)]
     use crate::command::set_complete;
-    use crate::command::user_command::{
-        get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
-    };
     #[cfg(desktop)]
     use crate::desktops::common_cmd::set_badge_count;
     #[cfg(target_os = "ios")]
     use crate::mobiles::keyboard::set_webview_keyboard_adjustment;
     #[cfg(mobile)]
     use crate::mobiles::splash::hide_splash_screen;
-    use crate::websocket::commands::{
-        ws_disconnect, ws_force_reconnect, ws_get_app_background_state, ws_get_health,
-        ws_get_state, ws_init_connection, ws_is_connected, ws_send_message,
-        ws_set_app_background_state, ws_update_config,
-    };
 
     tauri::generate_handler![
+        // 错误日志相关命令
+        save_error_log,
+        clear_error_log,
+        read_error_log,
         // 桌面端特定命令
         #[cfg(desktop)]
         default_window_icon,
@@ -426,52 +402,15 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         set_badge_count,
         #[cfg(target_os = "windows")]
         get_windows_scale_info,
-        // 通用命令（桌面端和移动端都支持）
-        save_user_info,
-        get_user_tokens,
-        update_token,
-        remove_tokens,
-        update_user_last_opt_time,
-        page_room,
-        get_room_members,
-        update_my_room_info,
-        cursor_page_room_members,
-        list_contacts_command,
-        hide_contact_command,
-        page_msg,
-        sync_messages,
-        send_msg,
-        save_msg,
-        delete_message,
-        delete_room_messages,
-        update_message_recall_status,
-        save_message_mark,
-        // 聊天历史相关命令
-        query_chat_history,
-        // 文件管理相关命令
-        query_files,
-        get_navigation_items,
-        debug_message_stats,
-        // WebSocket 相关命令
-        ws_init_connection,
-        ws_disconnect,
-        ws_send_message,
-        ws_get_state,
-        ws_get_health,
-        ws_force_reconnect,
-        ws_update_config,
-        ws_is_connected,
-        ws_set_app_background_state,
-        ws_get_app_background_state,
-        login_command,
-        im_request_command,
+        // 设置相关命令
         get_settings,
         update_settings,
-        // AI 相关命令
-        ai_message_send_stream,
-        // Markdown 相关命令
-        parse_markdown,
-        get_readme_html,
+        // 媒体相关命令
+        download_media,
+        delete_cached_media,
+        clear_media_cache,
+        get_media_cache_stats,
+        preload_media,
         #[cfg(mobile)]
         set_complete,
         #[cfg(mobile)]

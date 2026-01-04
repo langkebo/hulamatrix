@@ -1,3 +1,4 @@
+import { reactive, computed, readonly } from 'vue'
 import { defineStore } from 'pinia'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
@@ -5,6 +6,7 @@ import { readDir } from '@tauri-apps/plugin-fs'
 import { StoresEnum } from '@/enums'
 import { isMobile } from '@/utils/PlatformConstants'
 import { useUserStore } from './user'
+import { logger } from '@/utils/logger'
 
 /**
  * 文件信息接口
@@ -130,7 +132,7 @@ export const useFileStore = defineStore(
     const scanLocalFiles = async (roomId: string) => {
       // 仅移动端支持扫描本地文件
       if (!isMobile()) {
-        console.warn('scanLocalFiles 仅在移动端可用')
+        logger.warn('scanLocalFiles 仅在移动端可用')
         return 0
       }
 
@@ -193,7 +195,7 @@ export const useFileStore = defineStore(
 
         return addedCount
       } catch (error) {
-        console.error('扫描本地文件失败:', error)
+        logger.error('扫描本地文件失败:', error)
         return 0
       }
     }
@@ -220,5 +222,5 @@ export const useFileStore = defineStore(
       enable: true,
       initialize: true
     }
-  }
+  } as { share: { enable: boolean; initialize: boolean } }
 )

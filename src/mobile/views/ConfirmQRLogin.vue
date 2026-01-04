@@ -44,6 +44,8 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import dayjs from 'dayjs'
 import router from '@/router'
 import { confirmQRCodeAPI } from '@/utils/ImRequestUtils'
@@ -72,12 +74,12 @@ const handleConfirmLogin = async () => {
 
     router.push('/mobile/message')
   } catch (error) {
-    console.error('确认登录出错：', error)
+    logger.error('确认登录出错：', error)
   }
 }
 
 onMounted(() => {
-  // console.log('确认登录页的props属性：', props)
+  // logger.debug('确认登录页的props属性：', props, undefined, 'ConfirmQRLogin')
 
   // 计算剩余秒数
   if (props.expireTime) {

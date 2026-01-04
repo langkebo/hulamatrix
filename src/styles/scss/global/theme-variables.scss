@@ -1,0 +1,252 @@
+/* ==========================================================================
+   HuLa 统一主题变量定义
+   适用于 PC 端 (Naive UI) 和移动端 (Vant + Naive UI)
+   ========================================================================== */
+
+:root {
+  /* ==================== 主色调 ==================== */
+  /* 主色 - 青绿色系 */
+  --hula-primary: #64a29c;
+  --hula-primary-light: #82b2ac;
+  --hula-primary-lighter: #b8d4d1;
+  --hula-primary-dark: #4d8b85;
+  --hula-primary-darker: #386e6a;
+  --hula-primary-rgb: 100, 162, 156;
+
+  /* 强调色 - 用于主要按钮、链接等 */
+  --hula-accent: #13987f;
+  --hula-accent-hover: #0f7d69;
+  --hula-accent-active: #0c6354;
+  --hula-accent-light: #1ec29f;
+  --hula-accent-lighter: #4dd6b5;
+  --hula-accent-rgb: 19, 152, 127;
+
+  /* ==================== 功能色 ==================== */
+  /* 成功色 - 使用 HuLa 强调色 */
+  --hula-success: #13987f;
+  --hula-success-light: #4dd6b5;
+  --hula-success-dark: #0c6354;
+  --hula-success-rgb: 19, 152, 127;
+
+  /* 警告色 */
+  --hula-warning: #ff976a;
+  --hula-warning-light: #ffb88a;
+  --hula-warning-dark: #e67d4d;
+  --hula-warning-rgb: 255, 151, 106;
+
+  /* 错误色 */
+  --hula-error: #ee0a24;
+  --hula-error-light: #f54a5f;
+  --hula-error-dark: #c40c1d;
+  --hula-error-rgb: 238, 10, 36;
+
+  /* 信息色 */
+  --hula-info: #1989fa;
+  --hula-info-light: #6cbfff;
+  --hula-info-dark: #0e6eb3;
+  --hula-info-rgb: 25, 137, 250;
+
+  /* ==================== 中性色 ==================== */
+  /* 基础色 */
+  --hula-white: #ffffff;
+  --hula-white-rgb: 255, 255, 255;
+  --hula-black: #000000;
+  --hula-black-rgb: 0, 0, 0;
+
+  /* 灰色系 */
+  --hula-gray-50: #f9f9f9;
+  --hula-gray-100: #f5f5f5;
+  --hula-gray-200: #e0e0e0;
+  --hula-gray-300: #dfdfdf;
+  --hula-gray-400: #ebebeb;
+  --hula-gray-500: #909090;
+  --hula-gray-600: #707070;
+  --hula-gray-700: #e3e3e3;
+  --hula-gray-800: #2a2a2a;
+  --hula-gray-900: #1a1a1a;
+
+  /* 文字颜色 */
+  --hula-text-primary: #18212c;
+  --hula-text-regular: #576b95;
+  --hula-text-secondary: #9fa1a9;
+  --hula-text-placeholder: #c8c9cc;
+  --hula-text-disabled: #dcdde0;
+
+  /* 背景颜色 */
+  --hula-bg-page: #f7f8fa;
+  --hula-bg-component: #ffffff;
+  --hula-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* 边框颜色 */
+  --hula-border-light: #ebedf0;
+  --hula-border-base: #dcdee0;
+  --hula-border-dark: #c8c9cc;
+
+  /* ==================== 渐变色 ==================== */
+  /* 主背景渐变 */
+  --hula-gradient-bg: radial-gradient(
+    circle at top left,
+    rgba(255, 209, 255, 0.3) 20%,
+    rgba(130, 193, 187, 0.3) 100%
+  );
+
+  /* 强调色渐变 */
+  --hula-gradient-accent: linear-gradient(135deg, #13987f 0%, #1ec29f 100%);
+  --hula-gradient-primary: linear-gradient(135deg, #64a29c 0%, #82b2ac 100%);
+
+  /* ==================== 阴影 ==================== */
+  --hula-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --hula-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --hula-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --hula-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  /* ==================== 圆角 ==================== */
+  --hula-radius-sm: 4px;
+  --hula-radius-md: 8px;
+  --hula-radius-lg: 12px;
+  --hula-radius-xl: 16px;
+  --hula-radius-round: 9999px;
+
+  /* ==================== 间距 ==================== */
+  --hula-spacing-xs: 4px;
+  --hula-spacing-sm: 8px;
+  --hula-spacing-md: 16px;
+  --hula-spacing-lg: 24px;
+  --hula-spacing-xl: 32px;
+  --hula-spacing-xxl: 48px;
+
+  /* ==================== 动画 ==================== */
+  --hula-transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --hula-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==================== Z-index ==================== */
+  --hula-z-dropdown: 1000;
+  --hula-z-sticky: 1020;
+  --hula-z-fixed: 1030;
+  --hula-z-modal-backdrop: 1040;
+  --hula-z-modal: 1050;
+  --hula-z-popover: 1060;
+  --hula-z-tooltip: 1070;
+}
+
+/* ==================== 深色模式 ==================== */
+html[data-theme='dark'] {
+  /* ==================== 主色调（深色模式调整）==================== */
+  --hula-primary: #82b2ac;
+  --hula-primary-light: #9dc4be;
+  --hula-primary-lighter: #c8e3df;
+  --hula-primary-dark: #64a29c;
+  --hula-primary-darker: #4d8b85;
+
+  /* 强调色（深色模式提亮） */
+  --hula-accent: #1ec29f;
+  --hula-accent-hover: #4dd6b5;
+  --hula-accent-active: #13987f;
+  --hula-accent-light: #6ed6c5;
+  --hula-accent-lighter: #9ce8dc;
+
+  /* ==================== 功能色（深色模式）==================== */
+  --hula-success: #1ec29f;
+  --hula-success-light: #6ed6c5;
+  --hula-success-dark: #13987f;
+
+  --hula-warning: #ffb88a;
+  --hula-warning-light: #ffd4b8;
+  --hula-warning-dark: #ff976a;
+
+  --hula-error: #f54a5f;
+  --hula-error-light: #f87a8b;
+  --hula-error-dark: #ee0a24;
+
+  --hula-info: #6cbfff;
+  --hula-info-light: #9cd4ff;
+  --hula-info-dark: #1989fa;
+
+  /* ==================== 中性色（深色模式）==================== */
+  /* 文字颜色（深色模式反转） */
+  --hula-text-primary: #ffffff;
+  --hula-text-regular: rgba(255, 255, 255, 0.75);
+  --hula-text-secondary: rgba(255, 255, 255, 0.55);
+  --hula-text-placeholder: rgba(255, 255, 255, 0.35);
+  --hula-text-disabled: rgba(255, 255, 255, 0.25);
+
+  /* 背景颜色（深色模式） */
+  --hula-bg-page: #1a1a1a;
+  --hula-bg-component: #242424;
+  --hula-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* 边框颜色（深色模式） */
+  --hula-border-light: #3a3a3a;
+  --hula-border-base: #4a4a4a;
+  --hula-border-dark: #5a5a5a;
+
+  /* ==================== 渐变色（深色模式）==================== */
+  --hula-gradient-bg: radial-gradient(
+    circle at top left,
+    rgba(26, 178, 146, 0.15) 0%,
+    rgba(62, 101, 100, 0.15) 150%
+  );
+
+  /* ==================== 阴影（深色模式）==================== */
+  --hula-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --hula-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --hula-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --hula-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== 全局应用 ==================== */
+/* 应用到所有元素，确保主题变量可用 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  /* 应用 HuLa 渐变背景 */
+  background: var(--hula-gradient-bg) !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  min-height: 100vh;
+
+  /* 应用文字颜色 */
+  color: var(--hula-text-primary);
+
+  /* 应用过渡 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ==================== 滚动条样式 ==================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--hula-bg-page);
+  border-radius: var(--hula-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hula-primary);
+  border-radius: var(--hula-radius-sm);
+
+  &:hover {
+    background: var(--hula-primary-dark);
+  }
+}
+
+/* 深色模式滚动条 */
+html[data-theme='dark'] ::-webkit-scrollbar {
+  &-track {
+    background: var(--hula-bg-component);
+  }
+
+  &-thumb {
+    background: var(--hula-primary-light);
+
+    &:hover {
+      background: var(--hula-primary);
+    }
+  }
+}

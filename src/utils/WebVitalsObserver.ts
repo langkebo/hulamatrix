@@ -1,8 +1,15 @@
-import type { Metric } from 'web-vitals'
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals'
+import { logger } from '@/utils/logger'
+
+interface PaintMetric {
+  id: string
+  name: 'first-paint' | 'first-contentful-paint'
+  startTime: number
+  value: number
+  entries: PerformanceEntry[]
+}
 
 type WebVitalMetric =
-  | (Metric & { type: 'web-vital' })
+  | PaintMetric
   | {
       type: 'longtask'
       name: string
@@ -14,50 +21,47 @@ type WebVitalMetric =
 type Reporter = (metric: WebVitalMetric) => void
 
 const defaultReporter: Reporter = (metric) => {
-  const label = metric.type === 'web-vital' ? metric.name : 'longtask'
-  console.info('[performance]', label, metric)
+  const label = 'name' in metric ? metric.name : 'longtask'
+  logger.info('[performance]', { label, metric })
 }
 
-let hasStarted = false
-
-export const startWebVitalObserver = (reporter: Reporter = defaultReporter) => {
-  if (hasStarted || typeof window === 'undefined') return
-  hasStarted = true
-
-  const report = (metric: Metric) => {
-    reporter({
-      ...metric,
-      type: 'web-vital'
-    })
-  }
-
-  onCLS(report, { reportAllChanges: true })
-  onFCP(report)
-  onINP(report, { reportAllChanges: true })
-  onLCP(report, { reportAllChanges: true })
-  onTTFB(report)
-
-  if (
-    'PerformanceObserver' in window &&
-    Array.isArray((PerformanceObserver as any).supportedEntryTypes) &&
-    (PerformanceObserver as any).supportedEntryTypes.includes('longtask')
-  ) {
-    const observer = new PerformanceObserver((entryList) => {
-      for (const entry of entryList.getEntries()) {
-        reporter({
-          type: 'longtask',
-          name: entry.name || 'longtask',
-          startTime: entry.startTime,
-          duration: entry.duration,
-          attribution: (entry as any).attribution
-        })
+export const startWebVitalObserver = (_reporter: Reporter = defaultReporter) => {
+  try {
+    if (!('PerformanceObserver' in window)) {
+      logger.warn('[performance] PerformanceObserver not supported')
+      return
+    }
+    const paintObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'paint') {
+          const metric: PaintMetric = {
+            id: `${entry.name}_${entry.startTime.toFixed(1)}`,
+            name: entry.name as 'first-paint' | 'first-contentful-paint',
+            startTime: entry.startTime,
+            value: entry.startTime,
+            entries: [entry]
+          }
+          _reporter(metric)
+        }
       }
     })
-
+    paintObserver.observe({ entryTypes: ['paint'] })
     try {
-      observer.observe({ type: 'longtask', buffered: true })
-    } catch (error) {
-      console.warn('[performance] longtask observer failed:', error)
-    }
+      const longTaskObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.entryType === 'longtask') {
+            _reporter({
+              type: 'longtask',
+              name: 'longtask',
+              startTime: entry.startTime,
+              duration: entry.duration
+            })
+          }
+        }
+      })
+      longTaskObserver.observe({ entryTypes: ['longtask'] })
+    } catch {}
+  } catch (e) {
+    logger.warn('[performance] observer init failed', e instanceof Error ? e : new Error(String(e)))
   }
 }

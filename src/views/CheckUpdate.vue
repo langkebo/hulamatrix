@@ -21,7 +21,7 @@
               <use href="#RightArrow"></use>
             </svg>
 
-            <p class="relative text-(20px #13987f) font-500">{{ newVersion }}</p>
+            <p class="relative text-(20px) text-brand font-500">{{ newVersion }}</p>
 
             <span class="absolute top--10px right--44px p-[4px_8px] bg-#f6dfe3ff rounded-6px text-(12px #ce304f)">
               {{ t('message.check_update.new_tag') }}
@@ -31,12 +31,12 @@
         <n-flex align="center" size="medium">
           <div v-if="newVersionTime">
             <span class="text-(12px #909090)">{{ t('message.check_update.new_release_date') }}</span>
-            <span class="text-(12px #13987f)">{{ handRelativeTime(newVersionTime) }}</span>
+            <span class="text-(12px) text-brand">{{ handRelativeTime(newVersionTime) }}</span>
           </div>
 
           <div v-else>
             <span class="text-(12px #909090)">{{ t('message.check_update.release_date') }}</span>
-            <span class="text-(12px #13987f)">{{ handRelativeTime(versionTime) }}</span>
+            <span class="text-(12px) text-brand">{{ handRelativeTime(versionTime) }}</span>
           </div>
         </n-flex>
       </n-flex>
@@ -44,11 +44,11 @@
         <p class="text-(14px #909090)">{{ t('message.check_update.log_title') }}</p>
         <n-button text @click="toggleLogVisible">
           <n-flex align="center">
-            <span class="text-(12px #13987f)">
+            <span class="text-(12px) text-brand">
               {{ logVisible ? t('message.check_update.collapse') : t('message.check_update.expand') }}
             </span>
             <svg
-              class="w-16px h-16px select-none color-#13987f ml-2px transition-transform duration-300"
+              class="w-16px h-16px select-none text-brand ml-2px transition-transform duration-300"
               :class="{ 'rotate-180': !logVisible }">
               <use href="#ArrowDown"></use>
             </svg>
@@ -110,12 +110,16 @@ import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { currentMonitor, PhysicalPosition } from '@tauri-apps/api/window'
 import { confirm } from '@tauri-apps/plugin-dialog'
 import { check } from '@tauri-apps/plugin-updater'
-import { useWindow } from '@/hooks/useWindow.ts'
-import { useSettingStore } from '@/stores/setting.ts'
+import { useWindow } from '@/hooks/useWindow'
+import { useSettingStore } from '@/stores/setting'
 import { handRelativeTime } from '@/utils/ComputedTime'
 import { isMac } from '@/utils/PlatformConstants'
-import { invokeSilently } from '@/utils/TauriInvokeHandler.ts'
+import { invokeSilently } from '@/utils/TauriInvokeHandler'
+
+import { msg } from '@/utils/SafeUI'
+import { ref, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 const settingStore = useSettingStore()
 const { t } = useI18n()
@@ -153,43 +157,47 @@ const mapCommitType = (commitMessage: string) => {
       return commitTypeMap[type]
     }
   }
+  return 'gear' // 默认返回gear图标
 }
 
 /* 记录检测更新的版本 */
 //let lastVersion: string | null = null
 
-const getCommitLog = async (url: string, isNew = false) => {
-  fetch(url).then((res) => {
+const getCommitLog = async (url: string, isNew = false): Promise<void> => {
+  try {
+    const res = await fetch(url)
     if (!res.ok) {
       commitLog.value = [{ message: t('message.check_update.fetch_log_failed'), icon: 'cloudError' }]
       loading.value = false
       return
     }
-    res.json().then(async (data) => {
-      isNew ? (newVersionTime.value = data.created_at) : (versionTime.value = data.created_at)
-      await nextTick(() => {
-        // 使用正则表达式提取 * 号后面的内容
-        const regex = /\* (.+)/g
-        let match
-        const logs = []
-        while ((match = regex.exec(data.body)) !== null) {
-          logs.push(match[1])
+    const data = await res.json()
+    isNew ? (newVersionTime.value = data.created_at) : (versionTime.value = data.created_at)
+    await nextTick(() => {
+      // 使用正则表达式提取 * 号后面的内容
+      const regex = /\* (.+)/g
+      let match
+      const logs: string[] = []
+      while ((match = regex.exec(data.body)) !== null) {
+        if (match && match[1]) logs.push(match[1])
+      }
+      const processedLogs = logs.map((commit) => {
+        // 获取最后一个 : 号的位置
+        const lastColonIndex = commit.lastIndexOf(':')
+        // 截取最后一个 : 号后的内容
+        const message = lastColonIndex !== -1 ? commit.substring(lastColonIndex + 1).trim() : commit
+        return {
+          message: message,
+          icon: mapCommitType(commit) || 'alien-monster'
         }
-        const processedLogs = logs.map((commit) => {
-          // 获取最后一个 : 号的位置
-          const lastColonIndex = commit.lastIndexOf(':')
-          // 截取最后一个 : 号后的内容
-          const message = lastColonIndex !== -1 ? commit.substring(lastColonIndex + 1).trim() : commit
-          return {
-            message: message,
-            icon: mapCommitType(commit) || 'alien-monster'
-          }
-        })
-        isNew ? (newCommitLog.value = processedLogs) : (commitLog.value = processedLogs)
-        loading.value = false
       })
+      isNew ? (newCommitLog.value = processedLogs) : (commitLog.value = processedLogs)
+      loading.value = false
     })
-  })
+  } catch (error) {
+    commitLog.value = [{ message: t('message.check_update.fetch_log_failed'), icon: 'cloudError' }]
+    loading.value = false
+  }
 }
 
 const doUpdate = async () => {
@@ -222,12 +230,15 @@ const checkUpdate = async () => {
       }
       newVersion.value = e.version
       // 检查版本之间不同的提交信息和提交日期
-      const url = `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${newVersion.value}?access_token=${import.meta.env.VITE_GITEE_TOKEN}`
+      const token = import.meta.env.VITE_GITEE_TOKEN
+      const url = token
+        ? `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${newVersion.value}?access_token=${token}`
+        : `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${newVersion.value}`
       await getCommitLog(url, true)
       text.value = t('message.check_update.update_now')
     })
     .catch(() => {
-      window.$message.error(t('message.check_update.update_error'))
+      msg.error(t('message.check_update.update_error'))
     })
 }
 
@@ -261,7 +272,7 @@ const moveWindowToBottomRight = async () => {
     // 移动窗口到计算的位置
     await checkUpdateWindow.setPosition(new PhysicalPosition(x, y))
   } catch (error) {
-    console.error('移动窗口失败:', error)
+    logger.error('移动窗口失败:', toError(error))
   }
 }
 
@@ -297,14 +308,17 @@ const init = async () => {
     try {
       await invokeSilently('hide_title_bar_buttons', { windowLabel: 'checkupdate' })
     } catch (error) {
-      console.error('隐藏标题栏按钮失败:', error)
+      logger.error('隐藏标题栏按钮失败:', toError(error))
     }
   }
 }
 
 onMounted(async () => {
   await init()
-  const url = `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${currentVersion.value}?access_token=${import.meta.env.VITE_GITEE_TOKEN}`
+  const token = import.meta.env.VITE_GITEE_TOKEN
+  const url = token
+    ? `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${currentVersion.value}?access_token=${token}`
+    : `https://gitee.com/api/v5/repos/HuLaSpark/HuLa/releases/tags/v${currentVersion.value}`
   await getCommitLog(url)
   await checkUpdate()
 })

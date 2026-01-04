@@ -1,17 +1,20 @@
-import { storeToRefs } from 'pinia'
+import type { MenuItem, PluginItem } from '@/types'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MittEnum, ModalEnum, PluginEnum } from '@/enums'
-import { useLogin } from '@/hooks/useLogin.ts'
-import { useMitt } from '@/hooks/useMitt.ts'
-import { useWindow } from '@/hooks/useWindow.ts'
-import { useSettingStore } from '@/stores/setting'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { useLogin } from '@/hooks/useLogin'
+import { useMitt } from '@/hooks/useMitt'
+
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger'
+import { leftHook } from './hook'
 
 /**
  * 这里的顶部的操作栏使用pinia写入了localstorage中
  */
+
 /** 下半部分操作栏配置 */
-const baseItemsBottom: Array<Omit<OPT.L.Common, 'title' | 'shortTitle'>> = [
+const baseItemsBottom: PluginItem[] = [
   {
     url: 'fileManager',
     icon: 'file',
@@ -41,37 +44,27 @@ const baseItemsBottom: Array<Omit<OPT.L.Common, 'title' | 'shortTitle'>> = [
 const useItemsBottom = () =>
   (() => {
     const { t } = useI18n()
-    return computed<OPT.L.Common[]>(() => [
+    return computed<PluginItem[]>(() => [
       {
-        ...baseItemsBottom[0],
+        ...baseItemsBottom[0]!,
         title: t('home.action.file_manager'),
         shortTitle: t('home.action.file_manager_short_title')
       },
       {
-        ...baseItemsBottom[1],
+        ...baseItemsBottom[1]!,
         title: t('home.action.favorite'),
         shortTitle: t('home.action.favorite_short_title')
       }
     ])
   })()
+
 /** 设置列表菜单项 */
 const useMoreList = () => {
   const { t } = useI18n()
-  const { createWebviewWindow } = useWindow()
-  const settingStore = useSettingStore()
-  const { login } = storeToRefs(settingStore)
   const { logout, resetLoginState } = useLogin()
+  const { pageJumps } = leftHook()
 
-  return computed<OPT.L.MoreList[]>(() => [
-    {
-      label: t('menu.check_update'),
-      icon: 'arrow-circle-up',
-      click: () => {
-        useMitt.emit(MittEnum.LEFT_MODAL_SHOW, {
-          type: ModalEnum.CHECK_UPDATE
-        })
-      }
-    },
+  return computed<MenuItem[]>(() => [
     {
       label: t('menu.lock_screen'),
       icon: 'lock',
@@ -84,15 +77,17 @@ const useMoreList = () => {
     {
       label: t('menu.settings'),
       icon: 'settings',
-      click: async () => {
-        await createWebviewWindow('设置', 'settings', 840, 840)
+      click: () => {
+        // ✅ 使用路由导航而不是创建新窗口
+        pageJumps('settings')
       }
     },
     {
       label: t('menu.about'),
       icon: 'info',
-      click: async () => {
-        await createWebviewWindow('关于', 'about', 360, 480)
+      click: () => {
+        // ✅ 使用路由导航而不是创建新窗口
+        pageJumps('about')
       }
     },
     {
@@ -100,12 +95,11 @@ const useMoreList = () => {
       icon: 'power',
       click: async () => {
         try {
-          await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
           await resetLoginState()
           await logout()
         } catch (error) {
-          console.error('退出登录失败:', error)
-          window.$message.error('退出登录失败，请重试')
+          logger.error('退出登录失败:', error)
+          msg.error('退出登录失败，请重试')
         }
       }
     }
@@ -113,11 +107,11 @@ const useMoreList = () => {
 }
 
 /** 插件列表 */
-const basePluginsList: Array<Omit<STO.Plugins<PluginEnum>, 'title' | 'shortTitle'>> = [
+const basePluginsList: PluginItem[] = [
   {
-    url: 'dynamic',
-    icon: 'fire',
-    iconAction: 'fire-action',
+    url: 'rooms/manage',
+    icon: 'rectangle-small',
+    iconAction: 'rectangle-small',
     state: PluginEnum.BUILTIN,
     isAdd: true,
     dot: false,
@@ -126,107 +120,18 @@ const basePluginsList: Array<Omit<STO.Plugins<PluginEnum>, 'title' | 'shortTitle
       width: 600,
       height: 800
     },
-    window: {
-      resizable: false
-    },
-    miniShow: false
-  },
-  {
-    icon: 'robot',
-    iconAction: 'GPT',
-    url: 'robot',
-    state: PluginEnum.BUILTIN,
-    isAdd: true,
-    dot: false,
-    progress: 0,
-    size: {
-      minWidth: 1240,
-      width: 1380,
-      height: 800
-    },
-    window: {
-      resizable: true
-    },
+    window: undefined,
     miniShow: false
   }
-  // {
-  //   icon: 'Music',
-  //   url: 'music',
-  //   title: 'HuLa云音乐',
-  //   shortTitle: '云音乐',
-  //   tip: 'HuLa云音乐开发中，敬请期待',
-  //   state: PluginEnum.NOT_INSTALLED,
-  //   version: 'v1.0.0-Alpha',
-  //   isAdd: false,
-  //   dot: true,
-  //   progress: 0,
-  //   size: {
-  //     minWidth: 780,
-  //     width: 980,
-  //     height: 800
-  //   },
-  //   window: {
-  //     resizable: true
-  //   },
-  //   miniShow: false
-  // },
-  // {
-  //   icon: 'UimSlack',
-  //   url: 'collaboration',
-  //   title: 'HuLa协作',
-  //   shortTitle: '协作',
-  //   tip: 'HuLa协作开发中，敬请期待',
-  //   state: PluginEnum.NOT_INSTALLED,
-  //   version: 'v1.0.0-Alpha',
-  //   isAdd: false,
-  //   dot: true,
-  //   progress: 0,
-  //   size: {
-  //     minWidth: 780,
-  //     width: 980,
-  //     height: 800
-  //   },
-  //   window: {
-  //     resizable: true
-  //   },
-  //   miniShow: false
-  // },
-  // {
-  //   icon: 'vigo',
-  //   url: 'collaboration',
-  //   title: 'HuLa短视频',
-  //   shortTitle: '短视频',
-  //   tip: 'HuLa短视频开发中，敬请期待',
-  //   state: PluginEnum.NOT_INSTALLED,
-  //   version: 'v1.0.0-Alpha',
-  //   isAdd: false,
-  //   dot: true,
-  //   progress: 0,
-  //   size: {
-  //     minWidth: 780,
-  //     width: 980,
-  //     height: 800
-  //   },
-  //   window: {
-  //     resizable: true
-  //   },
-  //   miniShow: false
-  // }
 ]
 
 const usePluginsList = () =>
   (() => {
-    const { t } = useI18n()
-    return computed<STO.Plugins<PluginEnum>[]>(() => [
+    return computed<PluginItem[]>(() => [
       {
-        ...basePluginsList[0],
-        title: t('home.plugins.dynamic'),
-        shortTitle: t('home.plugins.dynamic_short_title')
-      },
-      {
-        ...basePluginsList[1],
-        title: t('home.plugins.chatbot'),
-        shortTitle: t('home.plugins.chatbot_short_title')
+        ...basePluginsList[0]!,
+        title: '房间',
+        shortTitle: '房间'
       }
     ])
   })()

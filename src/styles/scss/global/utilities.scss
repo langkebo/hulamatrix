@@ -1,0 +1,686 @@
+/* ==========================================================================
+   全局通用工具类 - HuLa 主题
+   提供常用的品牌色和功能色 CSS 类，减少重复代码
+   ========================================================================== */
+
+/* ==================== 品牌色文字 ==================== */
+.text-brand {
+  color: #13987f !important;
+}
+
+.text-brand-hover {
+  color: #13987f;
+  transition: color 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #0f7d69;
+  }
+
+  &:active {
+    color: #0c6354;
+  }
+}
+
+.text-primary {
+  color: #64a29c !important;
+}
+
+/* ==================== 品牌色背景 ==================== */
+.bg-brand {
+  background: #13987f !important;
+}
+
+.bg-brand-light {
+  background: #b8d4d1 !important;
+}
+
+.bg-primary {
+  background: #64a29c !important;
+}
+
+.bg-primary-light {
+  background: #82b2ac !important;
+}
+
+/* ==================== 功能色文字 ==================== */
+.text-success {
+  color: #13987f !important;
+}
+
+.text-warning {
+  color: #ff976a !important;
+}
+
+.text-error {
+  color: #ee0a24 !important;
+}
+
+.text-info {
+  color: #1989fa !important;
+}
+
+/* ==================== 功能色背景 ==================== */
+.bg-success {
+  background: #13987f !important;
+  color: #fff !important;
+}
+
+.bg-warning {
+  background: #ff976a !important;
+  color: #fff !important;
+}
+
+.bg-error {
+  background: #ee0a24 !important;
+  color: #fff !important;
+}
+
+.bg-info {
+  background: #1989fa !important;
+  color: #fff !important;
+}
+
+/* ==================== 文字颜色变体 ==================== */
+.text-primary-color {
+  color: #18212c !important;
+}
+
+.text-regular {
+  color: #576b95 !important;
+}
+
+.text-secondary {
+  color: #9fa1a9 !important;
+}
+
+.text-placeholder {
+  color: #c8c9cc !important;
+}
+
+/* ==================== 背景颜色变体 ==================== */
+.bg-page {
+  background: var(--hula-bg-page, #f7f8fa) !important;
+}
+
+.bg-component {
+  background: var(--hula-bg-component, #ffffff) !important;
+}
+
+/* ==================== 品牌色按钮 ==================== */
+.btn-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #13987f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+
+  &:hover {
+    background: #0f7d69;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(19, 152, 127, 0.3);
+  }
+
+  &:active {
+    background: #0c6354;
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.btn-brand-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #13987f;
+  border: 1px solid #13987f;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+
+  &:hover {
+    background: #13987f;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(19, 152, 127, 0.3);
+  }
+
+  &:active {
+    background: #0f7d69;
+    border-color: #0f7d69;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.btn-brand-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #13987f;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+
+  &:hover {
+    background: #13987f;
+    color: #fff;
+  }
+
+  &:active {
+    background: #0f7d69;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ==================== 品牌色边框 ==================== */
+.border-brand {
+  border-color: #13987f !important;
+}
+
+.border-brand-focus {
+  border-color: #13987f;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:focus {
+    border-color: #0f7d69;
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+    outline: none;
+  }
+}
+
+.border-primary {
+  border-color: #64a29c !important;
+}
+
+/* ==================== 光标样式 ==================== */
+.cursor-pointer-brand {
+  cursor: pointer;
+  color: #13987f;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #0f7d69;
+  }
+}
+
+/* ==================== 选中状态 ==================== */
+.selected-brand {
+  color: #13987f !important;
+  border-color: #13987f !important;
+}
+
+.active-brand {
+  color: #13987f !important;
+  background: rgba(19, 152, 127, 0.1) !important;
+}
+
+/* ==================== 链接样式 ==================== */
+a.link-brand,
+.link-brand {
+  color: #13987f;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #0f7d69;
+  }
+
+  &:active {
+    color: #0c6354;
+  }
+}
+
+/* ==================== 图标样式 ==================== */
+.icon-brand {
+  color: #13987f;
+}
+
+.icon-brand-hover {
+  color: #13987f;
+  transition: color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #0f7d69;
+    transform: scale(1.1);
+  }
+}
+
+/* ==================== 徽章样式 ==================== */
+.badge-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #13987f;
+  color: #fff;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-success {
+  @extend .badge-brand;
+  background: #13987f;
+}
+
+.badge-warning {
+  @extend .badge-brand;
+  background: #ff976a;
+}
+
+.badge-error {
+  @extend .badge-brand;
+  background: #ee0a24;
+}
+
+/* ==================== 标签样式 ==================== */
+.tag-brand {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(19, 152, 127, 0.1);
+  color: #13987f;
+  border: 1px solid #13987f;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ==================== 分割线 ==================== */
+.divider-brand {
+  border-color: #13987f !important;
+}
+
+/* ==================== 阴影效果 ==================== */
+.shadow-brand {
+  box-shadow: 0 4px 12px rgba(19, 152, 127, 0.2);
+}
+
+.shadow-brand-lg {
+  box-shadow: 0 8px 24px rgba(19, 152, 127, 0.3);
+}
+
+/* ==================== 渐变背景 ==================== */
+.gradient-brand {
+  background: linear-gradient(135deg, #13987f 0%, #64a29c 100%);
+}
+
+.gradient-brand-vertical {
+  background: linear-gradient(180deg, #13987f 0%, #64a29c 100%);
+}
+
+/* ==================== 输入框焦点样式 ==================== */
+.input-brand-focus {
+  border: 1px solid #ebedf0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: #13987f;
+    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+    outline: none;
+  }
+}
+
+/* ==================== 进度条样式 ==================== */
+.progress-brand {
+  background: #f7f8fa;
+  border-radius: 9999px;
+  overflow: hidden;
+
+  &-bar {
+    background: #13987f;
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+}
+
+/* ==================== 开关样式 ==================== */
+.switch-brand {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  background: #dcdee0;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &.active {
+    background: #13987f;
+
+    &::after {
+      transform: translateX(20px);
+    }
+  }
+}
+
+/* ==================== 复选框/单选框样式 ==================== */
+.checkbox-brand,
+.radio-brand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  &-indicator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #dcdee0;
+    border-radius: 4px;
+    background: #fff;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      display: none;
+      width: 10px;
+      height: 10px;
+      background: #13987f;
+      border-radius: 2px;
+    }
+  }
+
+  input:checked ~ &-indicator {
+    border-color: #13987f;
+
+    &::after {
+      display: block;
+    }
+  }
+}
+
+.radio-brand-indicator {
+  border-radius: 50%;
+
+  &::after {
+    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* ==================== 深色模式适配 ==================== */
+html[data-theme='dark'] {
+  .text-primary-color {
+    color: var(--hula-text-primary, #ffffff) !important;
+  }
+
+  .bg-component {
+    background: var(--hula-bg-component, #242424) !important;
+  }
+
+  .btn-brand-ghost:hover {
+    background: rgba(19, 152, 127, 0.15);
+  }
+
+  .active-brand {
+    background: rgba(19, 152, 127, 0.2) !important;
+  }
+}
+
+/* ==================== 响应式工具 ==================== */
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .btn-brand {
+    min-height: 44px; /* 移动端最小触摸目标 */
+    padding: 12px 20px;
+  }
+
+  .badge-brand {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ==================== 工具类组合 ==================== */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.full-height {
+  height: 100%;
+}
+
+/* ==================== 中性色文字 ==================== */
+.text-white {
+  color: var(--hula-white, #ffffff) !important;
+}
+
+.text-black {
+  color: var(--hula-black, #000000) !important;
+}
+
+.text-gray-50 {
+  color: var(--hula-gray-50, #f9f9f9) !important;
+}
+
+.text-gray-100 {
+  color: var(--hula-gray-100, #f5f5f5) !important;
+}
+
+.text-gray-200 {
+  color: var(--hula-gray-200, #e0e0e0) !important;
+}
+
+.text-gray-500 {
+  color: var(--hula-gray-500, #909090) !important;
+}
+
+.text-gray-600 {
+  color: var(--hula-gray-600, #707070) !important;
+}
+
+.text-gray-800 {
+  color: var(--hula-gray-800, #2a2a2a) !important;
+}
+
+.text-gray-900 {
+  color: var(--hula-gray-900, #1a1a1a) !important;
+}
+
+/* ==================== 中性色背景 ==================== */
+.bg-white {
+  background-color: var(--hula-white, #ffffff) !important;
+}
+
+.bg-black {
+  background-color: var(--hula-black, #000000) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--hula-gray-50, #f9f9f9) !important;
+}
+
+.bg-gray-100 {
+  background-color: var(--hula-gray-100, #f5f5f5) !important;
+}
+
+.bg-gray-200 {
+  background-color: var(--hula-gray-200, #e0e0e0) !important;
+}
+
+.bg-gray-500 {
+  background-color: var(--hula-gray-500, #909090) !important;
+}
+
+.bg-gray-800 {
+  background-color: var(--hula-gray-800, #2a2a2a) !important;
+}
+
+.bg-gray-900 {
+  background-color: var(--hula-gray-900, #1a1a1a) !important;
+}
+
+/* ==================== 中性色边框 ==================== */
+.border-white {
+  border-color: var(--hula-white, #ffffff) !important;
+}
+
+.border-black {
+  border-color: var(--hula-black, #000000) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--hula-gray-200, #e0e0e0) !important;
+}
+
+.border-gray-500 {
+  border-color: var(--hula-gray-500, #909090) !important;
+}
+
+.border-gray-800 {
+  border-color: var(--hula-gray-800, #2a2a2a) !important;
+}
+
+/* ==================== 功能色边框 ==================== */
+.border-success {
+  border-color: var(--hula-success, #13987f) !important;
+}
+
+.border-warning {
+  border-color: var(--hula-warning, #ff976a) !important;
+}
+
+.border-error {
+  border-color: var(--hula-error, #ee0a24) !important;
+}
+
+.border-info {
+  border-color: var(--hula-info, #1989fa) !important;
+}
+
+/* ==================== rgba 颜色支持 ==================== */
+.bg-brand-rgba {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 1) !important;
+}
+
+.bg-brand-rgba-10 {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.1) !important;
+}
+
+.bg-brand-rgba-20 {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.2) !important;
+}
+
+.bg-brand-rgba-30 {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.3) !important;
+}
+
+.bg-brand-rgba-40 {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.4) !important;
+}
+
+.bg-brand-rgba-50 {
+  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.5) !important;
+}
+
+.bg-white-rgba-50 {
+  background-color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.5) !important;
+}
+
+.bg-black-rgba-30 {
+  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.3) !important;
+}
+
+.bg-black-rgba-50 {
+  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.5) !important;
+}
+
+.bg-black-rgba-70 {
+  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.7) !important;
+}
+
+/* ==================== 文字透明度 ==================== */
+.text-white-50 {
+  color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.5) !important;
+}
+
+.text-white-70 {
+  color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.7) !important;
+}
+
+.text-black-30 {
+  color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.3) !important;
+}
+
+.text-black-50 {
+  color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.5) !important;
+}
+

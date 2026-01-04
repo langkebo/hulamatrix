@@ -1,0 +1,106 @@
+{
+  "dashboard": {
+    "title": "管理员仪表板"
+  },
+  "stats": {
+    "total_users": "总用户数",
+    "active_users": "活跃用户",
+    "total_rooms": "总房间数",
+    "media_storage": "媒体存储"
+  },
+  "quick_actions": "快捷操作",
+  "recent_activity": "最近活动",
+  "refresh": "刷新",
+  "refreshing": "刷新中...",
+  "refreshed": "已刷新",
+  "manage_users": "用户管理",
+  "manage_rooms": "房间管理",
+  "manage_media": "媒体管理",
+  "users": {
+    "title": "用户管理",
+    "search_placeholder": "搜索用户...",
+    "create_button": "创建用户",
+    "no_users": "未找到用户",
+    "edit_title": "编辑用户: {userId}",
+    "create_title": "创建新用户",
+    "table": {
+      "avatar": "头像",
+      "user_id": "用户 ID",
+      "display_name": "显示名称",
+      "admin": "管理员",
+      "status": "状态",
+      "created": "创建时间",
+      "actions": "操作"
+    },
+    "status": {
+      "active": "正常",
+      "deactivated": "已停用"
+    },
+    "actions": {
+      "edit": "编辑",
+      "make_admin": "设为管理员",
+      "revoke_admin": "撤销管理员",
+      "activate": "启用",
+      "deactivate": "停用",
+      "delete": "删除"
+    },
+    "confirm_revoke_admin": "撤销管理员权限？",
+    "confirm_revoke_admin_content": "确定要撤销 {userId} 的管理员权限吗？",
+    "confirm_make_admin": "授予管理员权限？",
+    "confirm_make_admin_content": "确定要授予 {userId} 管理员权限吗？",
+    "confirm_activate": "启用账户？",
+    "confirm_activate_content": "确定要启用 {userId} 吗？",
+    "confirm_deactivate": "停用账户？",
+    "confirm_deactivate_content": "确定要停用 {userId} 吗？",
+    "confirm_delete": "删除用户？",
+    "confirm_delete_content": "确定要删除用户 {userId} 吗？此操作无法撤销。",
+    "admin_revoked": "管理员权限已撤销",
+    "admin_granted": "管理员权限已授予",
+    "activated": "账户已启用",
+    "deactivated": "账户已停用",
+    "deleted": "用户已删除",
+    "form": {
+      "display_name": "显示名称",
+      "display_name_placeholder": "请输入显示名称",
+      "display_name_required": "显示名称为必填项",
+      "password": "密码",
+      "password_placeholder": "请输入密码",
+      "password_required": "密码为必填项",
+      "admin": "管理员",
+      "deactivated": "停用"
+    },
+    "update_not_implemented": "用户更新功能未实现",
+    "create_not_implemented": "用户创建功能未实现"
+  },
+  "rooms": {
+    "title": "房间管理",
+    "search_placeholder": "搜索房间...",
+    "no_rooms": "未找到房间",
+    "table": {
+      "avatar": "",
+      "room_id": "房间 ID",
+      "name": "名称",
+      "topic": "主题",
+      "members": "成员数",
+      "actions": "操作"
+    },
+    "confirm_delete": "删除房间？",
+    "confirm_delete_content": "确定要删除房间 {name} ({roomId}) 吗？",
+    "deleted": "房间已删除"
+  },
+  "error": {
+    "load_stats_failed": "加载统计数据失败",
+    "load_users_failed": "加载用户失败",
+    "load_rooms_failed": "加载房间失败",
+    "toggle_admin_failed": "切换管理员状态失败",
+    "toggle_status_failed": "切换账户状态失败",
+    "delete_user_failed": "删除用户失败",
+    "delete_room_failed": "删除房间失败",
+    "submit_user_failed": "提交用户数据失败"
+  },
+  "time": {
+    "just_now": "刚刚",
+    "minutes_ago": "{minutes}分钟前",
+    "hours_ago": "{hours}小时前"
+  }
+}

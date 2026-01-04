@@ -1,6 +1,6 @@
-import { formatBytes } from '@/utils/Formatting.ts'
+import { formatBytes } from '@/utils/Formatting'
 
-/**
+import { msg } from '@/utils/SafeUI' /**
  * 创建一个带有SVG图标的img标签
  * @param {File} file 文件对象
  */
@@ -35,7 +35,7 @@ export const createFileOrVideoDom = (file: File) => {
     const extension = file.name.split('.').pop()?.toLowerCase() || 'file'
     // 加载SVG文件并绘制到canvas,根据文件类型，设置SVG图标
     loadSVG(`/file/${extension}.svg`)
-      .then((svgImage: any) => {
+      .then((svgImage: HTMLImageElement) => {
         // 圆角矩形的背景和边框，您可以根据需要调整样式
         ctx.fillStyle = '#fdfdfd' // 背景颜色
         ctx.strokeStyle = '#ccc' // 边框颜色
@@ -145,7 +145,7 @@ export const createFileOrVideoDom = (file: File) => {
             video.onerror = reject
           } catch (error) {
             reject(error)
-            window.$message.error('视频处理失败: ' + error)
+            msg.error('视频处理失败: ' + String(error))
           }
         } else {
           // 创建Image DOM元素并指定src为canvas的data url
@@ -180,7 +180,7 @@ export const createFileOrVideoDom = (file: File) => {
       })
       .catch((error) => {
         reject(error)
-        window.$message.error('暂不支持此类型文件')
+        msg.error('暂不支持此类型文件')
       })
   })
 }
@@ -192,7 +192,7 @@ export const createFileOrVideoDom = (file: File) => {
  * loadSVG('public/file/file.svg').then((svgImage) => {}
  * 使用时，将SVG文件放在public/file文件夹下，并且使用文件类型做svg名
  */
-const loadSVG = (path: string) => {
+const loadSVG = (path: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)

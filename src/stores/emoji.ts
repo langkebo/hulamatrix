@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { StoresEnum } from '@/enums'
 import type { EmojiItem } from '@/services/types'
 import { useUserStore } from '@/stores/user'
-import * as imRequestUtils from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { msg } from '@/utils/SafeUI'
 
 export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
   const isLoading = ref(false) // 是否正在加载
@@ -14,9 +16,12 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
    */
   const getEmojiList = async () => {
     isLoading.value = true
-    const res = await imRequestUtils.getEmoji().catch(() => {
+    const res = (await requestWithFallback({
+      url: 'get_emoji'
+    }).catch(() => {
       isLoading.value = false
-    })
+      return undefined
+    })) as { expressionUrl: string; id: string }[] | undefined
     if (!res) return
     emojiList.value = res
   }
@@ -27,11 +32,13 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
   const addEmoji = async (emojiUrl: string) => {
     const { uid } = userStore.userInfo!
     if (!uid || !emojiUrl) return
-    imRequestUtils.addEmoji({ expressionUrl: emojiUrl }).then((res) => {
-      if (res) {
-        window.$message.success('添加表情成功')
-      }
+    const res = await requestWithFallback({
+      url: 'add_emoji',
+      body: { expressionUrl: emojiUrl }
     })
+    if (res) {
+      msg.success('添加表情成功')
+    }
     await getEmojiList()
   }
 
@@ -40,7 +47,10 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
    */
   const deleteEmoji = async (id: string) => {
     if (!id) return
-    await imRequestUtils.deleteEmoji({ id })
+    await requestWithFallback({
+      url: 'delete_emoji',
+      body: { id }
+    })
     await getEmojiList()
   }
 

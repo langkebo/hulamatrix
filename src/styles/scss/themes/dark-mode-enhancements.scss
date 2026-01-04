@@ -1,0 +1,567 @@
+/* ==========================================================================
+   暗色模式增强样式
+   ========================================================================== */
+
+// 基础变量定义
+[data-theme-content="dark"] {
+  // 背景色
+  --bg-color: #1a1a1a;
+  --bg-color-secondary: #242424;
+  --bg-color-tertiary: #2e2e2e;
+  --bg-color-elevated: #2a2a2a;
+  --bg-color-surface: #333333;
+  --bg-color-overlay: rgba(0, 0, 0, 0.8);
+
+  // 文本色
+  --text-color: #ffffff;
+  --text-color-secondary: #b3b3b3;
+  --text-color-tertiary: #808080;
+  --text-color-disabled: #4d4d4d;
+  --text-color-inverse: #000000;
+
+  // 边框色
+  --border-color: #404040;
+  --border-color-light: #333333;
+  --border-color-dark: #4d4d4d;
+
+  // 输入框
+  --input-bg: #2e2e2e;
+  --input-border: #404040;
+  --input-border-hover: #4d4d4d;
+  --input-border-focus: var(--primary-color);
+  --input-placeholder: #666666;
+
+  // 阴影
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+
+  // 滚动条
+  --scrollbar-bg: transparent;
+  --scrollbar-color: #666666;
+
+  // 选择文本
+  --selection-bg: rgba(255, 255, 255, 0.2);
+  --selection-text: #ffffff;
+
+  // 焦点环
+  --focus-ring-color: rgba(255, 255, 255, 0.3);
+
+  // 状态色
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --danger-bg: rgba(220, 38, 38, 0.1);
+  --info-bg: rgba(59, 130, 246, 0.1);
+
+  // 悬停状态
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --hover-border: rgba(255, 255, 255, 0.1);
+  --active-bg: rgba(255, 255, 255, 0.1);
+
+  // 侧边栏
+  --sidebar-bg: #242424;
+  --sidebar-border-color: #404040;
+  --sidebar-text-color: #ffffff;
+  --sidebar-text-color-secondary: #b3b3b3;
+  --sidebar-text-color-hover: #ffffff;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-footer-bg: #1a1a1a;
+
+  // 聊天
+  --chat-input-bg: #2e2e2e;
+  --chat-input-inner-bg: #333333;
+  --chat-bubble-bg: #2e2e2e;
+  --chat-bubble-bg-dark: #333333;
+  --chat-text-color: #ffffff;
+  --chat-text-color-dark: #ffffff;
+
+  // 消息气泡
+  --message-bubble-bg: #333333;
+  --message-text-color: #ffffff;
+  --message-border-color: #404040;
+  --message-selected-bg: rgba(19, 152, 127, 0.1);
+  --reply-bg: rgba(255, 255, 255, 0.05);
+  --reply-hover-bg: rgba(255, 255, 255, 0.08);
+
+  // 弹出层
+  --popover-bg: #333333;
+  --tooltip-bg: rgba(0, 0, 0, 0.9);
+  --tooltip-text: #ffffff;
+
+  // 按钮增强
+  --button-bg-dark: #404040;
+  --button-border-dark: #4d4d4d;
+  --button-text-dark: #ffffff;
+  --button-bg-hover-dark: #4d4d4d;
+
+  // 增强的对比度和可读性
+  --enhanced-border-color: #4a4a4a;
+  --enhanced-text-color: #f0f0f0;
+  --enhanced-bg-hover: rgba(255, 255, 255, 0.08);
+}
+
+// 全局增强样式
+[data-theme-content="dark"] {
+  // 改善文本可读性
+  body {
+    color: var(--text-color);
+    background: var(--bg-color);
+  }
+
+  // 链接样式
+  a {
+    color: var(--primary-color-light);
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+
+  // 代码块
+  code {
+    background: var(--bg-color-elevated);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  pre {
+    background: var(--bg-color-elevated);
+    border: 1px solid var(--border-color);
+
+    code {
+      background: transparent;
+      border: none;
+    }
+  }
+
+  // 表格
+  table {
+    border-color: var(--border-color);
+
+    th,
+    td {
+      border-color: var(--border-color);
+    }
+
+    th {
+      background: var(--bg-color-secondary);
+    }
+
+    tr:hover {
+      background: var(--hover-bg);
+    }
+  }
+
+  // 分割线
+  hr {
+    border-color: var(--border-color);
+  }
+
+  // 引用块
+  blockquote {
+    border-color: var(--border-color);
+    background: var(--bg-color-secondary);
+    color: var(--text-color-secondary);
+  }
+
+  // 改善滚动条样式
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    border-radius: 4px;
+
+    &:hover {
+      background: #808080;
+    }
+
+    &:active {
+      background: #999999;
+    }
+  }
+
+  // 选择文本样式
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-text);
+  }
+
+  ::-moz-selection {
+    background: var(--selection-bg);
+    color: var(--selection-text);
+  }
+
+  // 焦点样式
+  :focus {
+    outline-color: var(--focus-ring-color);
+  }
+
+  // 禁用状态
+  [disabled] {
+    opacity: 0.6;
+    color: var(--text-color-disabled);
+  }
+}
+
+// 组件增强
+[data-theme-content="dark"] {
+  // 卡片
+  .card {
+    background: var(--bg-color-elevated);
+    border-color: var(--enhanced-border-color);
+    box-shadow: var(--shadow-md);
+  }
+
+  // 输入框增强
+  input,
+  textarea,
+  select {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+
+    &::placeholder {
+      color: var(--input-placeholder);
+    }
+
+    &:focus {
+      border-color: var(--input-border-focus);
+      box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+    }
+  }
+
+  // 按钮增强
+  .btn {
+    &-outline {
+      border-color: var(--button-border-dark);
+      color: var(--button-text-dark);
+
+      &:hover {
+        background: var(--button-bg-hover-dark);
+        border-color: var(--primary-color);
+      }
+    }
+
+    &-ghost {
+      color: var(--button-text-dark);
+
+      &:hover {
+        background: var(--button-bg-hover-dark);
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  // 模态框
+  .modal {
+    background: var(--bg-color-elevated);
+    box-shadow: var(--shadow-xl);
+
+    &-overlay {
+      background: var(--bg-color-overlay);
+    }
+  }
+
+  // 下拉菜单
+  .dropdown {
+    background: var(--popover-bg);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-lg);
+
+    &-item {
+      color: var(--text-color);
+
+      &:hover {
+        background: var(--hover-bg);
+      }
+    }
+  }
+
+  // 工具提示
+  .tooltip {
+    background: var(--tooltip-bg);
+    color: var(--tooltip-text);
+  }
+
+  // 进度条
+  .progress {
+    background: var(--bg-color-secondary);
+
+    &-bar {
+      background: var(--primary-color);
+    }
+  }
+
+  // 标签
+  .tag {
+    background: var(--bg-color-secondary);
+    border-color: var(--border-color);
+    color: var(--text-color-secondary);
+
+    &--primary {
+      background: var(--primary-bg);
+      color: var(--primary-color);
+    }
+
+    &--success {
+      background: var(--success-bg);
+      color: var(--success-color);
+    }
+
+    &--warning {
+      background: var(--warning-bg);
+      color: var(--warning-color);
+    }
+
+    &--danger {
+      background: var(--danger-bg);
+      color: var(--danger-color);
+    }
+  }
+
+  // 徽章
+  .badge {
+    background: var(--danger-color);
+    color: #ffffff;
+  }
+
+  // 分页
+  .pagination {
+    .page-item {
+      color: var(--text-color);
+      border-color: var(--border-color);
+
+      &:hover {
+        background: var(--hover-bg);
+        border-color: var(--primary-color);
+      }
+
+      &.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #ffffff;
+      }
+    }
+  }
+
+  // 面包屑
+  .breadcrumb {
+    .breadcrumb-item {
+      color: var(--text-color-secondary);
+
+      &:hover {
+        color: var(--primary-color);
+      }
+
+      &.active {
+        color: var(--text-color);
+      }
+    }
+  }
+
+  // 步骤条
+  .steps {
+    .step {
+      .step-icon {
+        background: var(--bg-color-secondary);
+        border-color: var(--border-color);
+        color: var(--text-color-secondary);
+
+        &.active {
+          background: var(--primary-color);
+          border-color: var(--primary-color);
+          color: #ffffff;
+        }
+
+        &.completed {
+          background: var(--success-color);
+          border-color: var(--success-color);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  // 时间轴
+  .timeline {
+    .timeline-item {
+      &::before {
+        background: var(--border-color);
+      }
+
+      .timeline-dot {
+        background: var(--bg-color-elevated);
+        border-color: var(--primary-color);
+      }
+
+      .timeline-content {
+        background: var(--bg-color-elevated);
+        border-color: var(--border-color);
+      }
+    }
+  }
+
+  // 评分
+  .rating {
+    .star {
+      color: var(--border-color);
+
+      &.active {
+        color: var(--warning-color);
+      }
+    }
+  }
+
+  // 开关
+  .switch {
+    background: var(--bg-color-secondary);
+    border-color: var(--border-color);
+
+    &.checked {
+      background: var(--primary-color);
+    }
+
+    .switch-handle {
+      background: #ffffff;
+    }
+  }
+
+  // 滑块
+  .slider {
+    .slider-track {
+      background: var(--bg-color-secondary);
+    }
+
+    .slider-bar {
+      background: var(--primary-color);
+    }
+
+    .slider-thumb {
+      background: #ffffff;
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  // 颜色选择器
+  .color-picker {
+    .color-panel {
+      background: var(--popover-bg);
+      border-color: var(--border-color);
+    }
+  }
+
+  // 日期选择器
+  .date-picker {
+    .date-panel {
+      background: var(--popover-bg);
+      border-color: var(--border-color);
+    }
+
+    .date-cell {
+      color: var(--text-color);
+
+      &:hover {
+        background: var(--hover-bg);
+      }
+
+      &.selected {
+        background: var(--primary-color);
+        color: #ffffff;
+      }
+    }
+  }
+
+  // 树形控件
+  .tree {
+    .tree-node {
+      color: var(--text-color);
+
+      &:hover {
+        background: var(--hover-bg);
+      }
+
+      &.selected {
+        background: var(--primary-bg);
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  // 菜单
+  .menu {
+    .menu-item {
+      color: var(--text-color);
+
+      &:hover {
+        background: var(--hover-bg);
+      }
+
+      &.active {
+        background: var(--primary-bg);
+        color: var(--primary-color);
+      }
+
+      &.disabled {
+        color: var(--text-color-disabled);
+      }
+    }
+  }
+
+  // 标签页
+  .tabs {
+    .tab-header {
+      border-color: var(--border-color);
+    }
+
+    .tab-item {
+      color: var(--text-color-secondary);
+
+      &:hover {
+        color: var(--text-color);
+      }
+
+      &.active {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+    }
+
+    .tab-content {
+      background: var(--bg-color-elevated);
+      border-color: var(--border-color);
+    }
+  }
+}
+
+// 动画增强
+[data-theme-content="dark"] {
+  // 减少动画强度，提高可访问性
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  // 改善动画性能
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}

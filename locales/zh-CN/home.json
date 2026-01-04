@@ -148,7 +148,8 @@
       "screen_share": "屏幕共享",
       "remote_assist": "远程协助",
       "invite_to_group": "邀请进群",
-      "start_group_chat": "发起群聊"
+      "start_group_chat": "发起群聊",
+      "private_chat": "私密聊天"
     },
     "sidebar": {
       "single": {
@@ -267,7 +268,8 @@
       "add_friend": "加好友"
     },
     "notification": {
-      "copy_success": "复制成功 {account}"
+      "copy_success": "复制成功 {account}",
+      "copy_fail": "复制失败，请重试"
     },
     "modal": {
       "add_friend": "申请加好友"
@@ -374,11 +376,17 @@
     "cancel": "取消",
     "group_nickname": {
       "title": "修改群昵称",
-      "placeholder": "请输入群昵称"
+      "placeholder": "请输入群昵称",
+      "errors": {
+        "empty": "群昵称不能为空",
+        "room_error": "当前群聊信息异常",
+        "update_fail": "修改群昵称失败，请重试"
+      }
     },
     "toast": {
       "searching": "正在查找消息...",
-      "not_found": "加载历史消息失败，请稍后重试"
+      "not_found": "加载历史消息失败，请稍后重试",
+      "reply_original_not_found": "无法找到原始消息，可能已被删除或太久远"
     }
   },
   "friends_list": {

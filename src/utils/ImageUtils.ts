@@ -30,7 +30,7 @@ type GetImageInfoOptions = {
 export const detectImageFormat = (imageUrl: string): string => {
   if (imageUrl.startsWith('data:image/')) {
     const formatMatch = imageUrl.match(/data:image\/([^;]+)/)
-    return formatMatch ? formatMatch[1].toUpperCase() : 'UNKNOWN'
+    return formatMatch?.[1]?.toUpperCase() ?? 'UNKNOWN'
   } else {
     const extension = imageUrl.split('.').pop()?.toLowerCase()
     switch (extension) {
@@ -333,7 +333,10 @@ export const isImageUrl = (url: string): boolean => {
  * 简化版本，专门用于处理 Tauri 剪贴板读取的图片数据
  * @param clipboardImage Tauri 剪贴板图片对象
  */
-export const processClipboardImage = async (clipboardImage: any): Promise<File> => {
+export const processClipboardImage = async (clipboardImage: {
+  size(): Promise<{ width: number; height: number }>
+  rgba(): Promise<Uint8Array>
+}): Promise<File> => {
   // 获取图片的宽度和高度
   const { width, height } = await clipboardImage.size()
 

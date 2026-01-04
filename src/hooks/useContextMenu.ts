@@ -1,3 +1,4 @@
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 
 /**
@@ -78,9 +79,10 @@ export const useContextMenu = (ContextMenuRef: Ref, isNull?: Ref<boolean>) => {
     window.addEventListener('wheel', preventDefault, { passive: false }) // 禁止使用滚轮滚动页面
   }
 
-  const closeMenu = (event: any) => {
+  const closeMenu = (event: Event) => {
     /** 需要判断点击如果不是.context-menu类的元素的时候，menu才会关闭 */
-    if (!event.target.matches('.context-menu, .context-menu *')) {
+    const target = event.target as Element
+    if (!target.matches('.context-menu, .context-menu *')) {
       handleVirtualListScroll(false)
       showMenu.value = false
       enableTextSelection() // 恢复文本选择功能
@@ -91,7 +93,7 @@ export const useContextMenu = (ContextMenuRef: Ref, isNull?: Ref<boolean>) => {
   // 监听showMenu状态变化
   watch(
     () => showMenu.value,
-    (newValue) => {
+    (newValue: boolean) => {
       if (!newValue) {
         // 当菜单关闭时，恢复文本选择功能
         enableTextSelection()

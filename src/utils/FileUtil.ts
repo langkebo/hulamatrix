@@ -3,7 +3,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { copyFile, readFile } from '@tauri-apps/plugin-fs'
 import type { FilesMeta } from '@/services/types'
 import { extractFileName } from '@/utils/Formatting'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from '@/stores/user'
 import { getFilesMeta } from './PathUtil'
 
 class FileUtil {
@@ -78,7 +78,7 @@ class FileUtil {
         const fileType = fileMeta?.mime_type || fileMeta?.file_type
 
         // 最后手动传入blob中，因为blob无法自动判断文件类型
-        return new File([blob], fileName, { type: fileType })
+        return new File([blob], fileName, { type: fileType || '' })
       })
     )
   }

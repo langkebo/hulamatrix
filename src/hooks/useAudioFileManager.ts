@@ -1,9 +1,13 @@
 import { join } from '@tauri-apps/api/path'
 import { BaseDirectory, create, exists, mkdir, readFile } from '@tauri-apps/plugin-fs'
 import type { Ref } from 'vue'
+import { ref } from 'vue'
 import type { FilesMeta } from '@/services/types'
 import { getFilesMeta, getImageCache } from '@/utils/PathUtil'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
+import { useCacheStore } from '@/stores/core/useCacheStore'
+import { enforceCap } from '@/utils/CacheManager'
+import { logger } from '@/utils/logger'
 
 /**
  * 单个文件元数据接口
@@ -139,7 +143,20 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
     await file.write(new Uint8Array(arrayBuffer))
     await file.close()
 
+    // 触发缓存清理：音频缓存总量上限
+    await enforceAudioCacheCap(cachePath, baseDir)
+
     return arrayBuffer
+  }
+
+  const cache = useCacheStore()
+  const enforceAudioCacheCap = async (cachePath: string, baseDir: BaseDirectory) => {
+    // Use legacy cache store methods
+    const cleaned = await enforceCap(cachePath, baseDir, 150 * 1024 * 1024) // 150MB audio cap
+    if (cleaned > 0) {
+      // Update through the store's update method
+      cache.updateConfig({}) // Trigger save if needed
+    }
   }
 
   /**
@@ -149,6 +166,20 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
    */
   const existsAudioFile = async (url: string): Promise<AudioExistsResult> => {
     const [fileMeta] = await getFilesMeta<FilesMeta>([url])
+    if (!fileMeta) {
+      return {
+        exists: false,
+        fullPath: '',
+        fileMeta: {
+          name: '',
+          path: '',
+          file_type: '',
+          mime_type: '',
+          exists: false
+        }
+      }
+    }
+
     const audioFolder = 'audio'
     const cachePath = getImageCache(audioFolder, userId)
     const fullPath = await join(cachePath, fileMeta.name)
@@ -159,7 +190,7 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
     return {
       exists: fileExists,
       fullPath: fullPath,
-      fileMeta: fileMeta // 这里fileMeta是从解构出来的，类型是正确的
+      fileMeta: fileMeta
     }
   }
 
@@ -180,7 +211,7 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
       // 检查音频格式支持(mac)
       const support = checkAudioSupport(mimeType)
       if (!support && isMacOS) {
-        console.warn(`Mac系统可能不支持此音频格式: ${mimeType}`)
+        logger.warn(`Mac系统可能不支持此音频格式: ${mimeType}`)
         // 降级到远程URL
         return originalUrl
       } else {
@@ -189,8 +220,12 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
         if (fileData.fileBuffer instanceof ArrayBuffer) {
           arrayBuffer = fileData.fileBuffer
         } else {
-          arrayBuffer = new ArrayBuffer((fileData.fileBuffer as any).byteLength)
-          new Uint8Array(arrayBuffer).set(new Uint8Array(fileData.fileBuffer as any))
+          // Handle typed arrays (Uint8Array, etc.)
+          const typedArray = fileData.fileBuffer as ArrayBufferView
+          arrayBuffer = new ArrayBuffer(typedArray.byteLength)
+          new Uint8Array(arrayBuffer).set(
+            new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength)
+          )
         }
         return URL.createObjectURL(new Blob([new Uint8Array(arrayBuffer)], { type: mimeType }))
       }
@@ -224,6 +259,10 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
       // 从url中提取文件基本信息
       const [fileMeta] = await getFilesMeta<FilesMeta>([url])
 
+      if (!fileMeta) {
+        throw new Error('Failed to get file metadata')
+      }
+
       // 尝试获取本地音频文件
       const localAudioFile = await getLocalAudioFile(fileMeta.name)
 
@@ -241,7 +280,7 @@ export const useAudioFileManager = (userId: string): AudioFileManagerReturn => {
         return arrayBuffer
       }
     } catch (error) {
-      console.error('加载音频波形失败:', error)
+      logger.error('加载音频波形失败:', error)
       isFileReady.value = false
       throw error
     }

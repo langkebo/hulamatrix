@@ -1,5 +1,9 @@
+import { ref, nextTick } from 'vue'
 import { UploadSceneEnum } from '@/enums'
+
+import { msg } from '@/utils/SafeUI'
 import { UploadProviderEnum, useUpload } from './useUpload'
+import { logger } from '@/utils/logger'
 
 export interface AvatarUploadOptions {
   // 上传成功后的回调函数，参数为下载URL
@@ -40,7 +44,7 @@ export const useAvatarUpload = (options: AvatarUploadOptions = {}) => {
         })
       }
       img.onerror = () => {
-        window.$message.error('图片加载失败')
+        msg.error('图片加载失败')
         URL.revokeObjectURL(url)
       }
       img.src = url
@@ -60,7 +64,7 @@ export const useAvatarUpload = (options: AvatarUploadOptions = {}) => {
 
       // 检查裁剪后的文件大小
       if (file.size > sizeLimit * 1024) {
-        window.$message.error(`图片大小不能超过${sizeLimit}KB，当前图片裁剪后大小为${Math.round(file.size / 1024)}KB`)
+        msg.error(`图片大小不能超过${sizeLimit}KB，当前图片裁剪后大小为${Math.round(file.size / 1024)}KB`)
         // 结束加载状态
         cropperRef.value?.finishLoading()
         return
@@ -69,24 +73,24 @@ export const useAvatarUpload = (options: AvatarUploadOptions = {}) => {
       // 先设置图片URL，等待图片加载完成后再显示裁剪窗口
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
-        window.$message.error('只支持 JPG、PNG、WebP 格式的图片')
+        msg.error('只支持 JPG、PNG、WebP 格式的图片')
         // 结束加载状态
         cropperRef.value?.finishLoading()
         return
       }
 
-      // 使用useUpload中的七牛云上传功能
+      // 使用useUpload中的上传功能
       const { uploadFile, fileInfo } = useUpload()
 
-      // 执行上传，使用七牛云上传方式
-      await uploadFile(file, {
-        provider: UploadProviderEnum.QINIU,
+      // 执行上传，使用 Matrix 媒体服务器
+      const result = (await uploadFile(file, {
+        provider: UploadProviderEnum.MATRIX,
         enableDeduplication: true,
         scene: scene
-      })
+      })) as { mxcUrl?: string; downloadUrl?: string } | undefined
 
-      // 获取下载URL
-      const downloadUrl = fileInfo.value?.downloadUrl || ''
+      // 获取下载URL (优先使用 mxcUrl，其次使用 downloadUrl)
+      const downloadUrl = result?.mxcUrl || result?.downloadUrl || fileInfo.value?.downloadUrl || ''
 
       // 调用成功回调
       if (onSuccess) {
@@ -107,8 +111,8 @@ export const useAvatarUpload = (options: AvatarUploadOptions = {}) => {
       // 关闭裁剪窗口
       showCropper.value = false
     } catch (error) {
-      console.error('上传头像失败:', error)
-      window.$message.error('上传头像失败')
+      logger.error('上传头像失败:', error)
+      msg.error('上传头像失败')
       // 发生错误时也需要结束加载状态
       cropperRef.value?.finishLoading()
     }

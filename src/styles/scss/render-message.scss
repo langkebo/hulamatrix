@@ -1,6 +1,6 @@
 /** 气泡样式 */
 @mixin bubble {
-  @apply w-fit min-h-1em p-[8px_12px] line-height-22px bg-[--bg-bubble] rounded-[2px_18px_18px] custom-shadow;
+  @apply w-fit min-h-1em p-[var(--sz-chat-bubble-pad-y)_var(--sz-chat-bubble-pad-x)] line-height-[var(--sz-chat-bubble-line-h)] bg-[--bg-bubble] rounded-[2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] custom-shadow;
   max-width: var(--bubble-max-width, 32vw); /** 默认为群聊宽度 */
   white-space: pre-wrap; /** 保留空白符号并正常换行，支持特殊字符 */
   word-break: break-word; /** 优先在单词边界换行，必要时在单词内换行 */
@@ -19,9 +19,9 @@
 }
 @mixin float($position: top) {
   @if $position == bottom {
-    @apply fixed z-10 w-fit select-none text-#13987f cursor-pointer;
+    @apply fixed z-10 w-fit select-none text-brand cursor-pointer;
   } @else {
-    @apply fixed z-10 top-80px w-fit select-none text-#13987f cursor-pointer;
+    @apply fixed z-10 top-80px w-fit select-none text-brand cursor-pointer;
   }
 }
 .bubble {
@@ -29,7 +29,7 @@
 }
 .bubble-oneself {
   @include bubble;
-  @apply rounded-[18px_2px_18px_18px] color-#fff;
+  @apply rounded-[var(--sz-chat-bubble-radius)_2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] color-#fff;
   background-color: var(--bg-active-msg);
 }
 
@@ -98,12 +98,14 @@
   }
   /** 回复图片的计数器样式 */
   .reply-img-sub {
-    @apply absolute bottom-8px right-6px color-#13987f bg-[--bg-reply-img-count] p-[2px_4px] rounded-6px text-10px;
+    @apply absolute bottom-8px right-6px text-brand bg-[--bg-reply-img-count] p-[2px_4px] rounded-6px text-10px;
   }
 }
 /** emoji回复气泡的样式 */
 .emoji-reply-bubble {
-  @apply relative flex-y-center gap-4px rounded-50px p-[4px_8px] cursor-pointer select-none bg-#13987F66 text-14px w-fit border-(1px solid #13987F) custom-shadow;
+  @apply relative flex-y-center gap-4px rounded-50px p-[4px_8px] cursor-pointer select-none text-14px w-fit custom-shadow;
+  background-color: rgba(19, 152, 127, 0.4);
+  border: 1px solid #13987f;
 }
 
 /** 当前用户标记消息的样式 */
@@ -128,10 +130,10 @@
 /** 翻译气泡的样式 */
 .translated-text {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: var(--sz-chat-bubble-pad-y) var(--sz-chat-bubble-pad-x);
+  border-radius: var(--sz-chat-bubble-radius);
   background-color: var(--bg-translate-bubble);
-  line-height: 22px;
+  line-height: var(--sz-chat-bubble-line-h);
   margin-top: 6px;
   max-width: var(--bubble-max-width);
   width: fit-content;

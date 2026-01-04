@@ -23,6 +23,10 @@ pub struct Model {
     /// 消息发送状态: pending, success, fail
     pub send_status: String,
     pub time_block: Option<i64>,
+    pub event_id: Option<String>,
+    pub mxc_url: Option<String>,
+    pub sender: Option<String>,
+    pub origin_server_ts: Option<i64>,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

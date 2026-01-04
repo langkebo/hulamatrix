@@ -34,7 +34,7 @@ abstract class AbstractTriggerStrategy implements TriggerStrategy {
   extractKeyword(text: string, cursorPosition: number): string | null {
     const searchStr = text.slice(0, cursorPosition)
     const matches = this.pattern.exec(searchStr)
-    return matches && matches.length > 1 ? matches[1] : null
+    return matches !== null && matches.length > 1 ? (matches[1] ?? null) : null
   }
 
   abstract handleTrigger(context: TriggerContext): Promise<void>
@@ -83,32 +83,23 @@ class UnifiedTriggerStrategy extends AbstractTriggerStrategy {
 }
 
 /** 触发策略映射实例 */
-let triggerStrategyMap: Record<TriggerEnum, TriggerStrategy> | null = null
+let triggerStrategyMap: Record<string, TriggerStrategy> | null = null
 
 /** 创建触发策略映射工厂函数 */
 export const createTriggerStrategyMap = (
   personList: Ref<unknown[]>,
-  aiModelList: Ref<unknown[]>,
   topicList: Ref<unknown[]>,
   ait: Ref<boolean>,
   aitKey: Ref<string>,
-  aiDialogVisible: Ref<boolean>,
-  aiKeyword: Ref<string>,
   topicDialogVisible: Ref<boolean>,
   topicKeyword: Ref<string>
-): Record<TriggerEnum, TriggerStrategy> => {
+): Record<string, TriggerStrategy> => {
   triggerStrategyMap = {
     [TriggerEnum.MENTION]: new UnifiedTriggerStrategy(TriggerEnum.MENTION, {
       list: personList,
       isVisible: ait,
       keyword: aitKey,
       optionsClass: '.ait-options'
-    }),
-    [TriggerEnum.AI]: new UnifiedTriggerStrategy(TriggerEnum.AI, {
-      list: aiModelList,
-      isVisible: aiDialogVisible,
-      keyword: aiKeyword,
-      optionsClass: '.AI-options'
     }),
     [TriggerEnum.TOPIC]: new UnifiedTriggerStrategy(TriggerEnum.TOPIC, {
       list: topicList,

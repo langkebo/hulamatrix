@@ -14,10 +14,10 @@ import type {
   RoomTypeEnum,
   SessionOperateEnum,
   SexEnum
-} from '@/enums'
+} from '../enums'
 
 /**响应请求体*/
-export type ServiceResponse = {
+export type ServiceResponse<T = unknown> = {
   /** 成功标识true or false */
   success: boolean
   /** 状态码 */
@@ -25,7 +25,7 @@ export type ServiceResponse = {
   /** 错误消息 */
   msg: string
   /** 数据 */
-  data: any
+  data: T
   /** 版本号 */
   version: string
 }
@@ -35,6 +35,14 @@ export type PageInfo<T> = {
   size: number
   current: number
   records: T[]
+}
+
+/** 分页消息响应 */
+export type PageMessagesResponse = {
+  list: MsgType[]
+  cursor: string
+  hasMore?: boolean
+  isLast?: boolean
 }
 
 /* ======================================================== */
@@ -102,6 +110,7 @@ export type CacheBadgeReq = {
   itemId: string
 }
 
+// ===== 群相关类型（保持兼容性） =====
 export type GroupDetailReq = {
   /** 群头像 */
   avatar: string
@@ -137,18 +146,129 @@ export type GroupListReq = {
   remark?: string
 }
 
-export type CacheBadgeItem = {
-  /** 是否需要更新数据源。 */
-  needRefresh?: boolean
-  /** 最后更新时间 更新超过 10 分钟异步去更新。 */
-  lastModifyTime: number
-  /** 徽章说明 */
-  describe: string
-  /** 徽章图标 */
-  img: string
-  /** 徽章 ID */
-  itemId: string
+// ===== 房间相关类型（Matrix SDK 映射） =====
+export interface RoomDetail {
+  /** 房间ID */
+  roomId: string
+  /** 房间名称 */
+  name: string
+  /** 房间主题 */
+  topic?: string
+  /** 房间头像 */
+  avatar?: string
+  /** 是否加密 */
+  isEncrypted: boolean
+  /** 加入规则 */
+  joinRule: 'public' | 'invite' | 'knock'
+  /** 访客访问权限 */
+  guestAccess: 'can_join' | 'forbidden'
+  /** 历史记录可见性 */
+  historyVisibility: 'world_readable' | 'shared' | 'invited' | 'joined'
+  /** 成员总数 */
+  memberCount: number
+  /** 在线成员数 */
+  onlineCount: number
+  /** 我的权限等级 */
+  myPowerLevel: number
+  /** 创建者ID */
+  creatorId?: string
+  /** 创建时间 */
+  createdAt: number
+  /** 房间别名 */
+  alias?: string
+  /** 我的昵称 */
+  myDisplayName?: string
 }
+
+export interface RoomMember {
+  /** 用户ID */
+  userId: string
+  /** 显示名称 */
+  displayName: string
+  /** 头像URL */
+  avatarUrl?: string
+  /** 权限等级 */
+  powerLevel: number
+  /** 成员状态 */
+  membership: 'join' | 'invite' | 'leave' | 'ban'
+  /** 加入时间 */
+  joinedAt?: number
+  /** 最后活跃时间 */
+  lastActive?: number
+  /** 角色 */
+  role?: 'owner' | 'admin' | 'moderator' | 'member'
+  /** 在线状态 */
+  onlineStatus?: OnlineEnum
+}
+
+export interface CreateRoomOptions {
+  /** 房间名称 */
+  name: string
+  /** 房间主题 */
+  topic?: string
+  /** 是否私有 */
+  isPrivate?: boolean
+  /** 房间别名 */
+  alias?: string
+  /** 邀请的用户列表 */
+  invite?: string[]
+  /** 管理员列表 */
+  admins?: string[]
+  /** 头像URL */
+  avatar?: string
+  /** 是否加密 */
+  encryption?: boolean
+  /** 预设类型 */
+  preset?: 'private_chat' | 'public_chat' | 'trusted_private_chat'
+}
+
+export interface RoomPowerLevels {
+  /** 用户权限级别 */
+  users: Record<string, number>
+  /** 默认用户权限 */
+  users_default: number
+  /** 事件权限 */
+  events: Record<string, number>
+  /** 默认事件权限 */
+  events_default: number
+  /** 默认状态事件权限 */
+  state_default: number
+  /** 踢人权限 */
+  ban: number
+  /** 移除权限 */
+  kick: number
+  /** 红撤权限 */
+  redact: number
+  /** 邀请权限 */
+  invite: number
+}
+
+// ===== 搜索相关 =====
+export type SearchRoom = {
+  /** 房间ID */
+  roomId: string
+  /** 房间名称 */
+  name: string
+  /** 房间头像 */
+  avatar: string
+  /** 主题 */
+  topic?: string
+  /** 成员数 */
+  numJoinedMembers: number
+  /** 是否可加入 */
+  worldReadable: boolean
+  /** 房间别名 */
+  roomAlias?: string
+}
+
+// ===== 权限级别常量 =====
+export const ROOM_POWER_LEVELS = {
+  OWNER: 100, // 房主
+  ADMIN: 50, // 管理员
+  MODERATOR: 10, // 协管员
+  MEMBER: 0, // 普通成员
+  DEFAULT: 50 // 默认邀请用户权限
+} as const
 
 export type CacheUserReq = {
   /** 最后更新时间 更新超过 10 分钟异步去更新。 */
@@ -162,10 +282,6 @@ export type CacheUserItem = {
   needRefresh?: boolean
   /** 最后更新时间 更新超过 10 分钟异步去更新。 */
   lastModifyTime: number
-  /** 获得的徽章 */
-  itemIds: string[]
-  /** 佩戴的徽章 */
-  wearingItemId: string
   /** 归属地 */
   locPlace: string
   /** 头像 */
@@ -207,6 +323,11 @@ export type UserItem = {
   itemIds?: string[]
   /** 用户状态 */
   userStateId?: string
+  /** 徽章信息 */
+  badge?: {
+    img: string
+    describe: string
+  }
 }
 
 export type GroupStatisticType = {
@@ -259,9 +380,11 @@ export type UserInfoType = {
   power?: number
   /** 手机号 */
   phone?: string
-  /** 佩戴的徽章 */
+  // DEPRECATED: Badge system is custom backend feature, not supported by Matrix
+  // These fields are kept for backward compatibility but will always be undefined
+  /** @deprecated Badge system not supported by Matrix */
   wearingItemId?: string
-  /** 徽章集合 */
+  /** @deprecated Badge system not supported by Matrix */
   itemIds?: string[]
   /** 用户状态id */
   userStateId: string
@@ -271,19 +394,6 @@ export type UserInfoType = {
   client: string
   /** 个人简介 */
   resume: string
-}
-
-export type BadgeType = {
-  // 徽章描述
-  describe: string
-  // 徽章id
-  id: string
-  // 徽章图标
-  img: string
-  // 是否拥有 0否 1是
-  obtain: IsYesEnum
-  // 是否佩戴 0否 1是
-  wearing: IsYesEnum
 }
 
 export type MarkItemType = {
@@ -306,6 +416,9 @@ export type RevokedMsgType = {
   roomId?: string
   /** 撤回人ID */
   recallUid?: string
+  messageId?: string
+  operatorUid?: string
+  recallTime?: number
 }
 
 export type EmojiItem = {
@@ -429,6 +542,13 @@ export type TextBody = {
       image: string
     }
   >
+  /** 线程信息 */
+  threadInfo?: {
+    rootEventId: string
+    threadId: string
+    isRoot: boolean
+    participant: string
+  }
 }
 /** 公告消息体 */
 export type AnnouncementBody = TextBody & {
@@ -460,9 +580,59 @@ export type LocationBody = {
 }
 
 /**
+ * 消息体扩展属性
+ * 运行时动态添加的可选属性
+ */
+export interface MessageBodyExtensions {
+  /** 翻译文本 */
+  translatedText?: { text: string; provider: string }
+  /** 回复事件ID */
+  replyEventId?: string
+  /** 本地路径 */
+  localPath?: string
+  /** 文本内容 */
+  text?: string
+  /** 文件名 */
+  fileName?: string
+  /** 文件大小 */
+  fileSize?: number
+  /** 持续时间 */
+  duration?: number
+  /** URL */
+  url?: string
+  /** 缩略图URL */
+  thumbnailUrl?: string
+  /** 回复信息 */
+  reply?: ReplyType
+  /** 反应 */
+  reactions?: Record<string, string[]> | Record<string, { count: number; users: string[] }>
+  /** 描述 */
+  description?: string
+  /** 内容 */
+  content?: string | unknown[]
+  /** 地理信息 */
+  geoUri?: string
+  /** 经纬度 */
+  latitude?: number
+  longitude?: number
+  /** @用户列表 */
+  atUidList?: string[] | null
+}
+
+/**
  * 消息内容
  */
-export type MessageBody = TextBody | ImageBody | VoiceBody | VideoBody | FileBody | EmojiBody | LocationBody | any
+export type MessageBody =
+  | (TextBody & Partial<MessageBodyExtensions>)
+  | (ImageBody & Partial<MessageBodyExtensions>)
+  | (VoiceBody & Partial<MessageBodyExtensions>)
+  | (VideoBody & Partial<MessageBodyExtensions>)
+  | (FileBody & Partial<MessageBodyExtensions>)
+  | (EmojiBody & Partial<MessageBodyExtensions>)
+  | (LocationBody & Partial<MessageBodyExtensions>)
+  | (AnnouncementBody & Partial<MessageBodyExtensions>)
+  | (MergeBody & Partial<MessageBodyExtensions>)
+  | (Record<string, unknown> & Partial<MessageBodyExtensions>)
 export type MsgType = {
   /** 消息ID */
   id: string
@@ -478,14 +648,31 @@ export type MsgType = {
   messageMarks: MessageMarkType
   /** 消息发送状态 */
   status: MessageStatusEnum
+  /** Matrix compatibility properties - optional */
+  encrypted?: boolean
+  /** Matrix compatibility properties - optional */
+  fromUser?: { uid: string }
+  /** Matrix compatibility properties - optional */
+  message?: {
+    id: string
+    roomId: string
+    sendTime: number
+    type: MsgEnum
+    body: MessageBody
+    status: MessageStatusEnum
+    [key: string]: unknown
+  }
+  /** Matrix compatibility properties - optional */
+  isReply?: boolean
 }
 
 export type ReplyType = {
   id: string
   username: string
+  uid?: string
   type: MsgEnum
   /** 根据不同类型回复的消息展示也不同-`过渡版` */
-  body: any
+  body: MessageBody | Record<string, unknown>
   /**
    * 是否可消息跳转
    * @enum {number}  `0`否 `1`是
@@ -493,6 +680,8 @@ export type ReplyType = {
   canCallback: number
   /** 跳转间隔的消息条数  */
   gapCount: number
+  /** 图片数量（用于图片类型回复） */
+  imgCount?: number
 }
 
 /**
@@ -509,8 +698,8 @@ export type MessageReq = {
     content?: string
     /** 回复的消息id */
     replyMsgId?: number
-    /** 任意 */
-    [key: string]: any
+    /** 其他字段 */
+    [key: string]: unknown
   }
 }
 
@@ -677,15 +866,6 @@ export type MsgReadUnReadCountType = {
 /** 支持的翻译服务提供商类型  */
 export type TranslateProvider = 'youdao' | 'tencent'
 
-/** AI模型 */
-export type AIModel = {
-  uid: string
-  type: 'Ollama' | 'OpenAI'
-  name: string
-  value: string
-  avatar: string
-}
-
 /** 修改用户基础信息的类型 */
 export type ModifyUserInfoType = {
   name: string
@@ -818,7 +998,7 @@ export type RightMouseMessageItem = {
       fileName: string
       replyMsgId: string | null
       atUidList: string[] | null
-      reply: any | null // 可进一步细化
+      reply: ReplyType | Record<string, unknown> | null // 可进一步细化
     }
     messageMarks: {
       [key: string]: {
@@ -855,3 +1035,20 @@ export enum FeedPermission {
   PART_VISIBLE = 'partVisible', // 部分可见
   NOT_ANYONE = 'notAnyone' // 不给谁看
 }
+
+// Re-export Matrix types for convenience
+export type { MatrixCredentials } from '../types/matrix'
+
+// Re-export enums for convenience
+export {
+  MsgEnum,
+  MessageStatusEnum,
+  ActEnum,
+  IsYesEnum,
+  MarkEnum,
+  NotificationTypeEnum,
+  OnlineEnum,
+  RoomTypeEnum,
+  SessionOperateEnum,
+  SexEnum
+} from '../enums'

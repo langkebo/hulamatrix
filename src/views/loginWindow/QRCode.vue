@@ -1,18 +1,28 @@
 <template>
-  <n-config-provider :theme="naiveTheme" data-tauri-drag-region class="login-box size-full rounded-8px select-none">
+  <n-config-provider :theme="naiveTheme" class="login-box size-full rounded-8px select-none">
     <!--顶部操作栏-->
-    <ActionBar :max-w="false" :shrink="false" proxy data-tauri-drag-region />
+    <ActionBar :max-w="false" :shrink="false" proxy />
 
-    <n-flex justify="center" class="mt-15px" data-tauri-drag-region>
-      <img src="/hula.png" class="w-140px h-60px drop-shadow-xl" alt="" data-tauri-drag-region />
+    <n-flex justify="center" class="mt-15px">
+      <picture>
+        <source
+          srcset="/hula.png 1x, /hula.png 2x"
+          type="image/png"
+          sizes="(max-width:640px) 120px, (max-width:1024px) 140px, 160px" />
+        <img
+          src="/hula.png"
+          srcset="/hula.png 1x, /hula.png 2x"
+          class="w-120px md:w-140px h-auto drop-shadow-xl"
+          alt="" />
+      </picture>
     </n-flex>
 
     <!-- 二维码 -->
-    <n-flex justify="center" class="mt-25px" data-tauri-drag-region>
+    <n-flex justify="center" class="mt-25px">
       <n-skeleton v-if="loading" style="border-radius: 12px" :width="204" :height="204" :sharp="false" size="medium" />
-      <div v-else class="relative">
+      <div v-else class="relative w-full max-w-360px">
         <n-qr-code
-          :size="180"
+          :size="qrVisualSize"
           class="rounded-12px"
           :class="{ blur: scanStatus.show || refreshing }"
           :value="qrCodeValue"
@@ -56,13 +66,13 @@
     </n-flex>
 
     <!-- 底部操作栏 -->
-    <n-flex justify="center" class="text-14px mt-48px" data-tauri-drag-region>
-      <div class="color-#13987f cursor-pointer" @click="router.push('/login')">
+    <n-flex justify="center" class="text-14px mt-48px">
+      <div class="text-brand cursor-pointer" @click="router.push('/login')">
         {{ t('login.qr.actions.account_login') }}
       </div>
       <div class="w-1px h-14px bg-#ccc dark:bg-#707070"></div>
       <div
-        class="color-#13987f cursor-pointer"
+        class="text-brand cursor-pointer"
         @click="createWebviewWindow(t('login.qr.actions.register_title'), 'register', 600, 600)">
         {{ t('login.qr.actions.register') }}
       </div>
@@ -70,25 +80,23 @@
   </n-config-provider>
 </template>
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { darkTheme, lightTheme } from 'naive-ui'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
-import { useWindow } from '@/hooks/useWindow.ts'
+import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
 import { getEnhancedFingerprint } from '@/services/fingerprint'
 import { loginCommand } from '@/services/tauriCommand'
 import { TauriCommand } from '@/enums'
-import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting'
-import { checkQRStatus, generateQRCode } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { logger, toError } from '@/utils/logger'
 
-const globalStore = useGlobalStore()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const naiveTheme = computed(() => (themes.value.content === 'dark' ? darkTheme : lightTheme))
 const { createWebviewWindow } = useWindow()
-const { isTrayMenuShow } = storeToRefs(globalStore)
 const { t } = useI18n()
 type LoadTextKey = 'loading' | 'refreshing' | 'scan_hint' | 'login' | 'retry' | 'auth_pending'
 type ScanStatusTextKey = 'success' | 'error' | 'auth' | 'expired' | 'fetch_failed' | 'generate_fail' | 'general_error'
@@ -103,7 +111,11 @@ const qrCodeBgColor = ref('#FFFFFF')
 const qrCodeType = ref('canvas' as const)
 const qrCodeIcon = ref('/logo.png')
 const qrErrorCorrectionLevel = ref('H' as const)
-const pollInterval = ref<NodeJS.Timeout | null>(null)
+const pollInterval = ref<number | null>(null)
+const qrVisualSize = computed(() => {
+  const w = typeof window !== 'undefined' ? window.innerWidth : 360
+  return Math.min(180, Math.max(140, Math.floor(w * 0.45)))
+})
 const pollingRequesting = ref(false)
 const confirmedHandled = ref(false)
 
@@ -152,7 +164,32 @@ const clearPolling = () => {
   }
 }
 
-const handleConfirmed = async (res: any) => {
+interface ConfirmedResponse {
+  data: {
+    uid: string | number
+    token: string
+    refreshToken?: string
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+interface QrStatusResponse {
+  status: 'PENDING' | 'SCANNED' | 'CONFIRMED' | 'EXPIRED'
+  data?: {
+    uid: string | number
+    token: string
+    refreshToken?: string
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+const handleConfirmed = async (res: QrStatusResponse) => {
+  if (!res.data) {
+    handleError('fetch_failed')
+    return
+  }
   if (confirmedHandled.value) {
     return
   }
@@ -161,13 +198,13 @@ const handleConfirmed = async (res: any) => {
   try {
     await invoke(TauriCommand.UPDATE_TOKEN, {
       req: {
-        uid: res.data.uid,
+        uid: String(res.data.uid),
         token: res.data.token,
         refreshToken: res.data.refreshToken || ''
       }
     })
 
-    await loginCommand({ uid: res.data.uid }, true).then(() => {
+    await loginCommand({ uid: String(res.data.uid) }, true).then(() => {
       scanStatus.value = {
         status: 'success',
         icon: 'success',
@@ -177,7 +214,7 @@ const handleConfirmed = async (res: any) => {
       loadTextKey.value = 'login'
     })
   } catch (error) {
-    console.error('获取用户详情失败:', error)
+    logger.error('获取用户详情失败:', toError(error))
     confirmedHandled.value = false
     handleError('fetch_failed')
   }
@@ -187,18 +224,21 @@ const startPolling = () => {
   if (pollInterval.value) {
     clearInterval(pollInterval.value)
   }
-  pollInterval.value = setInterval(async () => {
+  pollInterval.value = window.setInterval(async () => {
     if (pollingRequesting.value || confirmedHandled.value) {
       return
     }
     pollingRequesting.value = true
     try {
-      const res: any = await checkQRStatus({
-        qrId: qrCodeResp.value.qrId,
-        clientId: localStorage.getItem('clientId') as string,
-        deviceHash: qrCodeResp.value.deviceHash,
-        deviceType: 'PC'
-      })
+      const res = (await requestWithFallback({
+        url: 'check_qr_status',
+        body: {
+          qrId: qrCodeResp.value.qrId,
+          clientId: localStorage.getItem('clientId') as string,
+          deviceHash: qrCodeResp.value.deviceHash,
+          deviceType: 'PC'
+        }
+      })) as QrStatusResponse
       switch (res.status) {
         case 'PENDING':
           // 等待中
@@ -232,7 +272,9 @@ const startPolling = () => {
 /** 处理二维码显示和刷新 */
 const handleQRCodeLogin = async () => {
   try {
-    qrCodeResp.value = await generateQRCode()
+    qrCodeResp.value = await requestWithFallback({
+      url: 'generate_qr_code'
+    })
     qrCodeValue.value = JSON.stringify({ type: 'login', qrId: qrCodeResp.value.qrId })
     loadTextKey.value = 'scan_hint'
     loading.value = false
@@ -282,9 +324,15 @@ const handleAuth = () => {
 }
 
 onMounted(async () => {
-  isTrayMenuShow.value = false
+  // 保持托盘菜单状态由全局控制，不在此强制修改
   // 存储此次登陆设备指纹
-  const clientId = await getEnhancedFingerprint()
+  let clientId = ''
+  try {
+    clientId = await getEnhancedFingerprint()
+  } catch (error) {
+    logger.warn('[QRCode] 获取指纹失败，使用随机ID:', error)
+    clientId = `fallback-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
   localStorage.setItem('clientId', clientId)
 
   handleQRCodeLogin()

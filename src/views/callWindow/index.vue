@@ -25,7 +25,7 @@
         {{ remoteUserInfo?.name || t('message.call_window.unknown_user') }}
       </div>
       <div class="text-12px text-gray-500 dark:text-gray-400 flex items-center">
-        <div class="w-6px h-6px rounded-full bg-#13987f mr-6px animate-pulse"></div>
+        <div class="w-6px h-6px rounded-full bg-brand mr-6px animate-pulse"></div>
         {{ t('message.call_window.incoming') }} ·
         {{
           callType === CallTypeEnum.VIDEO ? t('message.call_window.video_call') : t('message.call_window.voice_call')
@@ -46,7 +46,7 @@
       <!-- 接听按钮 -->
       <div
         @click="acceptCall"
-        class="size-40px rounded-full bg-#13987f hover:bg-#13987f flex-center cursor-pointer shadow-lg">
+        class="size-40px rounded-full bg-brand hover:bg-brand flex-center cursor-pointer shadow-lg">
         <svg class="color-#fff size-20px">
           <use href="#phone-telephone-entity"></use>
         </svg>
@@ -150,6 +150,16 @@
               </div>
             </div>
 
+            <div class="flex-center">
+              <div
+                @click="showDeviceDrawer = true"
+                class="size-44px rounded-full flex-center cursor-pointer bg-gray-600 hover:bg-gray-500">
+                <svg class="size-16px color-#fff">
+                  <use href="#settings"></use>
+                </svg>
+              </div>
+            </div>
+
             <!-- 扬声器按钮 -->
             <div class="flex-center">
               <div
@@ -181,6 +191,17 @@
                 :class="isVideoEnabled ? 'bg-gray-600 hover:bg-gray-500' : 'bg-#d5304f60 hover:bg-#d5304f80'">
                 <svg class="size-16px color-#fff">
                   <use :href="isVideoEnabled ? '#video-one' : '#monitor-off'"></use>
+                </svg>
+              </div>
+            </div>
+
+            <!-- 设备选择（移动端） -->
+            <div class="flex-center">
+              <div
+                @click="showDeviceDrawer = true"
+                class="size-44px rounded-full flex-center cursor-pointer bg-gray-600 hover:bg-gray-500">
+                <svg class="size-16px color-#fff">
+                  <use href="#settings"></use>
                 </svg>
               </div>
             </div>
@@ -277,6 +298,18 @@
           </div>
         </div>
 
+        <!-- 设置按钮（桌面端） -->
+        <div class="flex-col-x-center gap-8px w-80px">
+          <div
+            @click="showDeviceDrawer = true"
+            class="size-44px rounded-full flex-center cursor-pointer bg-gray-600 hover:bg-gray-500">
+            <svg class="size-16px color-#fff">
+              <use href="#settings"></use>
+            </svg>
+          </div>
+          <div class="text-12px text-gray-400 text-center">设备选择</div>
+        </div>
+
         <!-- 挂断按钮 -->
         <div class="flex-col-x-center gap-8px w-80px">
           <div
@@ -337,15 +370,101 @@
             </svg>
           </div>
         </div>
+
+        <!-- 设置按钮（桌面端语音） -->
+        <div v-if="!isMobileDevice" class="flex-center gap-12px mt-16px">
+          <n-button size="small" tertiary @click="showDeviceDrawer = true">设备选择</n-button>
+          <template v-if="canSetSinkId">
+            <n-select size="small" :options="outputOptions" @update:value="onSwitchOutput" placeholder="选择输出设备" />
+          </template>
+          <template v-else>
+            <n-button size="small" tertiary @click="toggleAudioOutput">切换输出设备</n-button>
+          </template>
+        </div>
       </div>
     </div>
   </div>
 
   <audio ref="remoteAudioRef" autoplay playsinline style="display: none"></audio>
+
+  <n-drawer v-model:show="showDeviceDrawer" placement="bottom" :height="280" to="body">
+    <n-drawer-content title="设备选择">
+      <n-space vertical :size="12">
+        <n-space align="center" :size="8">
+          <span class="text-12px">麦克风</span>
+          <n-select
+            data-test-id="audio-select"
+            size="small"
+            v-model:value="selectedAudioId"
+            :options="audioOptions"
+            style="flex: 1" />
+        </n-space>
+        <n-space align="center" :size="8">
+          <span class="text-12px">摄像头</span>
+          <n-select
+            data-test-id="video-select"
+            size="small"
+            v-model:value="selectedVideoId"
+            :options="videoOptions"
+            style="flex: 1" />
+        </n-space>
+        <n-alert type="info" :show-icon="true">浏览器端输出设备选择受限，点击下方按钮将提示并记录切换意图</n-alert>
+        <n-space>
+          <n-button size="small" type="primary" data-test-id="perm-check" @click="onPermissionCheck">权限检测</n-button>
+          <n-button size="small" @click="onEnumerate">刷新设备</n-button>
+          <template v-if="canSetSinkId && !shouldDisableOutput">
+            <n-select
+              data-test-id="output-select"
+              size="small"
+              :options="outputOptions"
+              @update:value="onSwitchOutput"
+              placeholder="选择输出设备" />
+          </template>
+          <template v-else>
+            <n-button size="small" tertiary data-test-id="output-switch" @click="toggleAudioOutput">
+              切换输出设备
+            </n-button>
+          </template>
+        </n-space>
+        <n-alert v-if="shouldDisableOutput" type="warning" :show-icon="true">
+          根据最近失败率已临时禁用输出设备选择，您仍可使用系统默认输出
+        </n-alert>
+      </n-space>
+    </n-drawer-content>
+  </n-drawer>
+  <!-- 设备选择抽屉（移动端） -->
+  <n-drawer v-model:show="showDeviceDrawer" placement="bottom" :height="260" to="body">
+    <n-drawer-content title="设备选择">
+      <n-space vertical :size="12">
+        <n-space align="center" :size="8">
+          <span class="text-12px">麦克风</span>
+          <n-select
+            data-test-id="audio-select"
+            size="small"
+            v-model:value="selectedAudioId"
+            :options="audioOptions"
+            style="flex: 1" />
+        </n-space>
+        <n-space align="center" :size="8">
+          <span class="text-12px">摄像头</span>
+          <n-select
+            data-test-id="video-select"
+            size="small"
+            v-model:value="selectedVideoId"
+            :options="videoOptions"
+            style="flex: 1" />
+        </n-space>
+        <n-space>
+          <n-button size="small" type="primary" data-test-id="perm-check" @click="onPermissionCheck">权限检测</n-button>
+          <n-button size="small" @click="onEnumerate">刷新设备</n-button>
+        </n-space>
+      </n-space>
+    </n-drawer-content>
+  </n-drawer>
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
+import { onMounted, ref, useTemplateRef, watch, nextTick, computed } from 'vue'
 import { LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { primaryMonitor } from '@tauri-apps/api/window'
@@ -362,10 +481,16 @@ import router from '@/router'
 import { useGroupStore } from '@/stores/group'
 import { CallResponseStatus } from '../../services/wsType'
 import { useI18n } from 'vue-i18n'
+import { useRtcStore } from '@/stores/rtc'
+import { useMetricsStore } from '@/stores/metrics'
+
+import { msg } from '@/utils/SafeUI'
+import { NDrawer, NDrawerContent, NSelect, NSpace, NButton } from 'naive-ui'
+import { logger, toError } from '@/utils/logger'
 
 const { t } = useI18n()
 const settingStore = useSettingStore()
-const { themes } = storeToRefs(settingStore)
+const themes = computed(() => settingStore.themes)
 const route = useRoute()
 
 const resolveCallType = (value?: string | null): CallTypeEnum => {
@@ -417,6 +542,60 @@ const actionBarRef = useTemplateRef<typeof ActionBar>('actionBarRef')
 const isLocalVideoMain = ref(true)
 // 通话接听状态
 const isCallAccepted = ref(!isReceiver)
+
+// 设备选择与权限提示（移动端）
+const showDeviceDrawer = ref(false)
+const rtcStore = useRtcStore()
+const metrics = useMetricsStore()
+const audioOptions = computed(() =>
+  rtcStore.audioDevices.map((d) => ({ label: d.label || d.deviceId, value: d.deviceId }))
+)
+const videoOptions = computed(() =>
+  rtcStore.videoDevices.map((d) => ({ label: d.label || d.deviceId, value: d.deviceId }))
+)
+const selectedAudioId = computed({
+  get: () => rtcStore.selectedAudioId,
+  set: (v) => rtcStore.setAudioDevice(String(v || ''))
+})
+const selectedVideoId = computed({
+  get: () => rtcStore.selectedVideoId,
+  set: (v) => rtcStore.setVideoDevice(String(v || ''))
+})
+const onPermissionCheck = async () => {
+  await rtcStore.requestPermissions()
+  await rtcStore.enumerateDevices()
+}
+const onEnumerate = async () => {
+  await rtcStore.enumerateDevices()
+}
+const canSetSinkId = computed(() => {
+  const audio = remoteAudioRef.value as HTMLAudioElement | undefined
+  return typeof audio?.setSinkId === 'function'
+})
+const outputOptions = computed(() =>
+  rtcStore.audioDevices.map((d) => ({ label: d.label || d.deviceId, value: d.deviceId }))
+)
+const selectedOutputId = ref<string | null>(null)
+const shouldDisableOutput = computed(() => metrics.shouldDisable('output-select', { clicks: 20, failRate: 60 }))
+const onSwitchOutput = async (id: string) => {
+  selectedOutputId.value = id
+  metrics.record('output-select-click', { id })
+  try {
+    // 仅支持设置音频输出的元素（Chrome 支持 setSinkId）
+    const sink = remoteAudioRef.value as HTMLAudioElement | undefined
+    if (sink?.setSinkId) {
+      await sink.setSinkId(id)
+      msg.success?.('已切换输出设备')
+      metrics.record('output-select-success', { id })
+    } else {
+      msg.warning?.('当前浏览器不支持输出设备切换')
+      metrics.record('output-select-unsupported', {})
+    }
+  } catch (e) {
+    msg.error?.('切换输出设备失败')
+    metrics.record('output-select-failed', { id, error: String(e) })
+  }
+}
 
 const createSize = (width: number, height: number) => {
   const size = isWindows() ? new LogicalSize(width, height) : new PhysicalSize(width, height)
@@ -600,7 +779,6 @@ const updateRemoteVideoAudio = () => {
 const toggleSpeaker = () => {
   isSpeakerOn.value = !isSpeakerOn.value
   updateRemoteVideoAudio()
-  console.log('切换扬声器状态:', isSpeakerOn.value, '远程视频静音:', !isSpeakerOn.value)
 
   if (connectionStatus.value === RTCCallStatus.CALLING && !isSpeakerOn.value) {
     pauseBell()
@@ -620,7 +798,7 @@ const toggleVideo = async () => {
     // 重新分配视频流
     await assignVideoStreams()
   } catch (error) {
-    console.error('切换视频失败:', error)
+    logger.error('切换视频失败:', toError(error))
   }
 }
 
@@ -658,10 +836,10 @@ const acceptCall = async () => {
     try {
       await currentWindow.setFocus()
     } catch (error) {
-      console.warn('Failed to set window focus after accepting call:', error)
+      logger.warn('Failed to set window focus after accepting call:', error)
     }
   } catch (error) {
-    console.error('Failed to resize window after accepting call:', error)
+    logger.error('Failed to resize window after accepting call:', toError(error))
   }
 }
 
@@ -700,6 +878,12 @@ onMounted(async () => {
       await nextTick()
       await acceptCall()
     }
+    try {
+      await rtcStore.enumerateDevices()
+    } catch {}
+    try {
+      metrics.load()
+    } catch {}
     return
   }
 
@@ -714,7 +898,7 @@ onMounted(async () => {
         unlistenCloseRequested()
       }
     } catch (error) {
-      console.error('发送挂断消息失败:', error)
+      logger.error('发送挂断消息失败:', toError(error))
     }
   })
 
@@ -780,8 +964,14 @@ onMounted(async () => {
 })
 
 defineExpose({
-  hangUp
+  hangUp,
+  openDeviceDrawer: () => {
+    showDeviceDrawer.value = true
+  }
 })
+
+// 浏览器端输出设备切换占位函数
+const toggleAudioOutput = () => {}
 </script>
 
 <style scoped>

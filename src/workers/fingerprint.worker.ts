@@ -1,3 +1,4 @@
+import { logger, toError } from '@/utils/logger'
 /// <reference lib="webworker" />
 
 // 检测浏览器特征
@@ -8,7 +9,7 @@ const detectBrowserFeatures = async (): Promise<Record<string, boolean>> => {
     webgl: async () => {
       try {
         const canvas = new OffscreenCanvas(1, 1)
-        return !!(canvas as any).getContext('webgl')
+        return !!canvas.getContext('webgl')
       } catch {
         return false
       }
@@ -16,14 +17,15 @@ const detectBrowserFeatures = async (): Promise<Record<string, boolean>> => {
     canvas: async () => {
       try {
         const canvas = new OffscreenCanvas(1, 1)
-        return !!(canvas as any).getContext('2d')
+        return !!canvas.getContext('2d')
       } catch {
         return false
       }
     },
     audio: async () => {
       try {
-        return !!(self.AudioContext || (self as any).webkitAudioContext)
+        const workerSelf = self as typeof self & { webkitAudioContext?: typeof AudioContext }
+        return !!(workerSelf.AudioContext || workerSelf.webkitAudioContext)
       } catch {
         return false
       }
@@ -49,7 +51,10 @@ const detectBrowserFeatures = async (): Promise<Record<string, boolean>> => {
 }
 
 // 生成设备指纹
-const generateFingerprint = async (data: { deviceInfo: any; browserFingerprint: string }): Promise<string> => {
+const generateFingerprint = async (data: {
+  deviceInfo: Record<string, unknown>
+  browserFingerprint: string
+}): Promise<string> => {
   try {
     const totalStart = performance.now()
 
@@ -57,7 +62,6 @@ const generateFingerprint = async (data: { deviceInfo: any; browserFingerprint: 
     const featureStart = performance.now()
     const browserFeatures = await detectBrowserFeatures()
     const featureTime = performance.now() - featureStart
-    console.log(`Worker: 特征检测耗时: ${featureTime.toFixed(2)}ms`)
 
     // 3. 组合所有特征
     const hashStart = performance.now()
@@ -75,14 +79,13 @@ const generateFingerprint = async (data: { deviceInfo: any; browserFingerprint: 
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
     const hashTime = performance.now() - hashStart
-    console.log(`Worker: SHA-256计算耗时: ${hashTime.toFixed(2)}ms`)
 
     const totalTime = performance.now() - totalStart
-    console.log(`Worker: 指纹生成总耗时: ${totalTime.toFixed(2)}ms`)
+    logger.debug('Worker: 指纹生成耗时', { featureTime, hashTime, totalTime })
 
     return fingerprint
   } catch (error) {
-    console.error('Worker: ❌ 生成设备指纹失败:', error)
+    logger.error('Worker: ❌ 生成设备指纹失败:', toError(error))
     return ''
   }
 }

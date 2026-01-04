@@ -27,10 +27,19 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 
+// 虚拟列表项类型
+interface VirtualListItem {
+  message?: {
+    id: string | number
+  }
+  [key: string]: unknown
+}
+
 const props = defineProps<{
-  items: any[]
+  items: VirtualListItem[]
   estimatedItemHeight?: number
   buffer?: number
   isLoadingMore?: boolean
@@ -215,7 +224,9 @@ const totalHeight = computed(() => {
 
   // 回退到原始计算方法
   return props.items.reduce((total, item) => {
-    return total + (heights.value.get(item.message?.id?.toString()) || ESTIMATED_ITEM_HEIGHT)
+    const id = item.message?.id?.toString()
+    const key = id ?? `${item}`
+    return total + (heights.value.get(key) || ESTIMATED_ITEM_HEIGHT)
   }, 0)
 })
 
@@ -225,7 +236,9 @@ const updateAccumulatedHeights = () => {
   let totalHeight = 0
 
   props.items.forEach((item) => {
-    totalHeight += heights.value.get(item.message?.id?.toString()) || ESTIMATED_ITEM_HEIGHT
+    const id = item.message?.id?.toString()
+    const key = id ?? `${item}`
+    totalHeight += heights.value.get(key) || ESTIMATED_ITEM_HEIGHT
     accumulatedHeights.value.push(totalHeight)
   })
 }
@@ -233,7 +246,7 @@ const updateAccumulatedHeights = () => {
 // 监听列表数据变化
 watch(
   () => props.items,
-  (newItems, oldItems) => {
+  (newItems: VirtualListItem[], oldItems: VirtualListItem[]) => {
     // 如果列表完全重置，清空高度缓存
     if (newItems.length === 0 || oldItems.length === 0) {
       heights.value.clear()
@@ -256,9 +269,13 @@ watch(
 // 监听可见数据变化，更新可见项目ID集合
 watch(
   () => visibleData.value,
-  (newVisibleData) => {
+  (newVisibleData: VirtualListItem[]) => {
     // 更新当前可见项目的ID集合
-    const currentVisibleIds = new Set(newVisibleData.map((item) => item.message?.id?.toString()).filter(Boolean))
+    const currentVisibleIds = new Set(
+      newVisibleData
+        .map((item: VirtualListItem) => item.message?.id?.toString())
+        .filter((id): id is string => id !== undefined)
+    )
     previousVisibleIds.value = currentVisibleIds
   },
   { deep: false }
@@ -268,7 +285,7 @@ watch(
 watch(
   () => totalHeight.value,
   (newHeight) => {
-    updatePhantomHeight(newHeight)
+    updatePhantomHeight(newHeight ?? 0)
   },
   { immediate: true }
 )
@@ -279,7 +296,9 @@ const cleanupInvisibleDOMNodes = () => {
   if (!containerRef.value) return
 
   // 获取当前可见项目的ID集合
-  const currentVisibleIds = new Set(visibleData.value.map((item) => item.message?.id?.toString()).filter(Boolean))
+  const currentVisibleIds = new Set(
+    visibleData.value.map((item) => item.message?.id?.toString()).filter((id): id is string => id !== undefined)
+  )
 
   // 找出不再可见的项目ID
   const invisibleIds = Array.from(previousVisibleIds.value).filter((id) => !currentVisibleIds.has(id))
@@ -306,11 +325,11 @@ const cleanupInvisibleDOMNodes = () => {
   }
 
   // 如果移除了节点，触发垃圾回收
-  if (removedCount > 0 && window.gc) {
-    try {
-      window.gc()
-    } catch (e) {
-      // 忽略错误，gc可能不可用
+  if (removedCount > 0) {
+    if (typeof window.gc === 'function') {
+      try {
+        window.gc()
+      } catch {}
     }
   }
 }
@@ -372,7 +391,8 @@ const getStartIndex = (scrollTop: number) => {
 
   while (left <= right) {
     const mid = Math.floor((left + right) / 2)
-    if (accumulatedHeights.value[mid] < target) {
+    const midHeight = accumulatedHeights.value[mid]
+    if (midHeight !== undefined && midHeight < target) {
       left = mid + 1
     } else {
       right = mid - 1
@@ -383,7 +403,7 @@ const getStartIndex = (scrollTop: number) => {
 }
 
 // 计算指定索引的偏移量 - 使用累积高度缓存优化
-const getOffsetForIndex = (index: number) => {
+const getOffsetForIndex = (index: number): number => {
   // 如果需要重新计算累积高度，则更新缓存
   if (needsHeightRecalculation) {
     updateAccumulatedHeights()
@@ -392,13 +412,14 @@ const getOffsetForIndex = (index: number) => {
 
   // 如果索引在缓存范围内，直接使用缓存值
   if (index > 0 && index < accumulatedHeights.value.length) {
-    return accumulatedHeights.value[index - 1]
+    return accumulatedHeights.value[index - 1] || 0
   }
 
   // 回退到原始计算方法
   let total = 0
   for (let i = 0; i < index; i++) {
-    const itemHeight = heights.value.get(props.items[i].message?.id?.toString()) || ESTIMATED_ITEM_HEIGHT
+    const itemId = props.items[i]?.message?.id?.toString()
+    const itemHeight = (itemId ? heights.value.get(itemId) : undefined) || ESTIMATED_ITEM_HEIGHT
     total += itemHeight
   }
   return total
@@ -418,7 +439,8 @@ const updateVisibleRange = () => {
 
   // 累加高度直到超过可视区域加上预渲染区域
   while (total < clientHeight + OVERSCAN_SIZE * 2 && end < props.items.length) {
-    const itemHeight = heights.value.get(props.items[end].message?.id?.toString()) || ESTIMATED_ITEM_HEIGHT
+    const itemId = props.items[end]?.message?.id?.toString()
+    const itemHeight = (itemId ? heights.value.get(itemId) : undefined) || ESTIMATED_ITEM_HEIGHT
     total += itemHeight
     end++
   }
@@ -512,7 +534,7 @@ onMounted(() => {
 
   // 初始化DOM样式
   nextTick(() => {
-    updatePhantomHeight(totalHeight.value)
+    updatePhantomHeight(totalHeight.value ?? 0)
     updateContentOffset(offset)
   })
 
@@ -629,7 +651,7 @@ defineExpose<VirtualListExpose>({
         }
         const offset = getOffsetForIndex(options.index)
         containerRef.value.scrollTo({
-          top: offset,
+          top: offset || 0,
           behavior: options.behavior || 'auto'
         })
       }

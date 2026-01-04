@@ -1,0 +1,88 @@
+/* ==========================================================================
+   蓝色主题 - 蓝色调渐变背景
+   ========================================================================== */
+
+:root {
+  --blue-primary: #3b82f6;
+  --blue-primary-hover: rgba(59, 130, 246, 0.8);
+  --blue-primary-active: rgba(59, 130, 246, 0.4);
+}
+
+/* 亮色模式 */
+:root[data-theme-style="blue"] {
+  /* 覆盖主色调 */
+  --primary-color: var(--blue-primary);
+  --primary-hover: var(--blue-primary-hover);
+  --primary-active: var(--blue-primary-active);
+
+  /* 左侧栏样式 */
+  --left-bg-color: #eff6ff;
+  --left-active-bg-color: rgba(59, 130, 246, 0.1);
+  --left-text-color: var(--text-primary);
+  --left-icon-color: var(--icon-color);
+  --left-active-hover: var(--blue-primary);
+  --left-bg-hover: rgba(59, 130, 246, 0.05);
+  --left-active-icon-color: var(--blue-primary);
+  --left-win-icon-color: rgba(59, 130, 246, 0.4);
+
+  /* 选中状态 */
+  --border-active-color: var(--blue-primary);
+
+  /* 右侧区域渐变背景 */
+  --right-theme-bg: radial-gradient(
+    circle at top right,
+    rgba(147, 197, 253, 0.4) 20%,
+    rgba(96, 165, 250, 0.3) 100%
+  );
+
+  /* 聊天框样式 */
+  --chat-reply-color: #eff6ff;
+  --chat-reply-active: rgba(59, 130, 246, 0.1);
+  --chat-footer-border: rgba(59, 130, 246, 0.1);
+
+  /* 消息列表 */
+  --msg-list-active: var(--blue-primary);
+
+  /* 群公告 */
+  --group-notice-bg: #f8fafc;
+
+  /* 列表hover */
+  --list-hover: rgba(59, 130, 246, 0.05);
+
+  /* 图标hover */
+  --icon-hover-bg: rgba(59, 130, 246, 0.05);
+}
+
+/* 暗色模式 */
+html[data-theme='dark'][data-theme-style="blue"] {
+  /* 左侧栏样式 */
+  --left-bg-color: rgba(20, 30, 60, 1);
+  --left-active-bg-color: rgba(59, 130, 246, 0.15);
+  --left-text-color: var(--text-primary);
+  --left-icon-color: var(--icon-color);
+  --left-active-hover: var(--blue-primary-hover);
+  --left-bg-hover: rgba(59, 130, 246, 0.08);
+  --left-active-icon-color: var(--blue-primary-hover);
+  --left-win-icon-color: rgba(59, 130, 246, 0.6);
+
+  /* 右侧区域渐变背景 */
+  --right-theme-bg: radial-gradient(
+    circle at top right,
+    rgba(59, 130, 246, 0.15) 20%,
+    rgba(59, 130, 246, 0.03) 100%
+  );
+
+  /* 聊天框样式 */
+  --chat-reply-color: #1e293b;
+  --chat-reply-active: rgba(59, 130, 246, 0.15);
+  --chat-footer-border: rgba(59, 130, 246, 0.15);
+
+  /* 群公告 */
+  --group-notice-bg: rgba(30, 41, 59, 0.9);
+
+  /* 列表hover */
+  --list-hover: rgba(59, 130, 246, 0.08);
+
+  /* 图标hover */
+  --icon-hover-bg: rgba(59, 130, 246, 0.08);
+}

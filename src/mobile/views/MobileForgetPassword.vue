@@ -10,7 +10,7 @@
     <n-config-provider :theme="lightTheme" class="bg-#fff rounded-8px select-none cursor-default">
       <n-flex vertical class="w-full size-full">
         <!-- 步骤条 -->
-        <n-steps size="small" class="w-full px-40px mt-20px" :current="currentStep" :status="stepStatus">
+        <n-steps size="small" class="w-full px-40px mt-20px" :current="currentStep" :status="stepStatus || 'process'">
           <n-step title="验证邮箱" description="" />
           <n-step title="设置新密码" description="" />
           <n-step title="完成" description="" />
@@ -47,7 +47,7 @@
                   autoCapitalize="off"
                   maxlength="6" />
                 <n-button
-                  color="#13987f"
+                  :color="'#13987f'"
                   ghost
                   :disabled="sendBtnDisabled"
                   :loading="sendingEmailCode"
@@ -148,7 +148,7 @@
         <!-- 第三步：完成 -->
         <div v-if="currentStep === 3" class="w-full max-w-300px mx-auto mt-100px text-center">
           <!-- <n-icon size="64" class="text-#13987f">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" />
           </svg>
         </n-icon> -->
@@ -163,13 +163,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { lightTheme } from 'naive-ui'
 import Validation from '@/components/common/Validation.vue'
-import { forgetPassword, getCaptcha, sendCaptcha } from '@/utils/ImRequestUtils'
+import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import router from '@/router'
 
-// 导入Web Worker
+import { msg } from '@/utils/SafeUI'
+import { logger } from '@/utils/logger' // 导入Web Worker
 const timerWorker = new Worker(new URL('../../workers/timer.worker.ts', import.meta.url))
 
 // 步骤状态
@@ -238,7 +240,7 @@ const passwordRules = {
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     {
-      validator: (_: any, value: string) => {
+      validator: (_: unknown, value: string) => {
         return value === passwordForm.value.password
       },
       message: '两次输入的密码不一致',
@@ -263,7 +265,7 @@ const getCaptchaImage = async () => {
   // 检查是否可以获取新的验证码
   if (captchaInCooldown.value) {
     // 显示剩余冷却时间
-    window.$message.warning(`请求过于频繁，${captchaCooldownRemaining.value}秒后再试`)
+    msg.warning(`请求过于频繁，${captchaCooldownRemaining.value}秒后再试`)
     return
   }
 
@@ -272,9 +274,11 @@ const getCaptchaImage = async () => {
     lastCaptchaTime.value = Date.now()
     captchaInCooldown.value = true
 
-    const result = await getCaptcha()
-    captchaImage.value = result.img
-    formData.value.uuid = result.uuid
+    const result = (await requestWithFallback({
+      url: 'get_captcha'
+    })) as { img?: string; uuid?: string }
+    captchaImage.value = result.img || ''
+    formData.value.uuid = result.uuid || ''
 
     // 获取成功后，启动冷却计时器
     timerWorker.postMessage({
@@ -283,7 +287,7 @@ const getCaptchaImage = async () => {
       duration: captchaInterval // 使用设定的冷却时间
     })
   } catch (error) {
-    console.error('获取验证码失败', error)
+    logger.error('获取验证码失败', error)
     // 获取失败时解除冷却状态，允许重试
     captchaInCooldown.value = false
   }
@@ -293,12 +297,12 @@ const getCaptchaImage = async () => {
 const sendEmailCode = async () => {
   // 邮箱校验
   if (!formData.value.email) {
-    window.$message.warning('请先输入邮箱')
+    msg.warning('请先输入邮箱')
     return
   }
 
   if (!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(formData.value.email)) {
-    window.$message.warning('请输入正确的邮箱格式')
+    msg.warning('请输入正确的邮箱格式')
     return
   }
 
@@ -306,14 +310,17 @@ const sendEmailCode = async () => {
   sendingEmailCode.value = true
 
   try {
-    await sendCaptcha({
-      email: formData.value.email,
-      uuid: formData.value.uuid,
-      operationType: 'forgot',
-      templateCode: 'PASSWORD_EDIT'
+    await requestWithFallback({
+      url: 'send_captcha',
+      body: {
+        email: formData.value.email,
+        uuid: formData.value.uuid,
+        operationType: 'forgot',
+        templateCode: 'PASSWORD_EDIT'
+      }
     })
 
-    window.$message.success('验证码已发送至您的邮箱')
+    msg.success('验证码已发送至您的邮箱')
 
     // 接口成功返回后才开始倒计时 - 使用 Web Worker
     sendBtnDisabled.value = true
@@ -327,7 +334,7 @@ const sendEmailCode = async () => {
       duration: 60 * 1000 // 60秒，单位毫秒
     })
   } catch (error) {
-    console.error('发送验证码失败', error)
+    logger.error('发送验证码失败', error)
     // 验证码可能错误，刷新图片验证码
     getCaptchaImage()
   } finally {
@@ -341,7 +348,10 @@ const verifyEmail = async () => {
   if (!formRef.value) return
 
   try {
-    await (formRef.value as any).validate()
+    const form = formRef.value as { validate?: () => Promise<void> }
+    if (form.validate) {
+      await form.validate()
+    }
     verifyLoading.value = true
 
     // 这里只是验证表单，实际上不需要调用后端接口，直接进入下一步
@@ -350,7 +360,7 @@ const verifyEmail = async () => {
       verifyLoading.value = false
     }, 500)
   } catch (error) {
-    console.error('表单验证失败', error)
+    logger.error('表单验证失败', error)
   }
 }
 
@@ -364,17 +374,23 @@ const submitNewPassword = async () => {
   if (!passwordFormRef.value) return
 
   try {
-    await (passwordFormRef.value as any).validate()
+    const form = passwordFormRef.value as { validate?: () => Promise<void> }
+    if (form.validate) {
+      await form.validate()
+    }
     submitLoading.value = true
 
     // 调用忘记密码接口
-    await forgetPassword({
-      email: formData.value.email,
-      code: formData.value.emailCode,
-      uuid: formData.value.uuid,
-      password: passwordForm.value.password,
-      confirmPassword: passwordForm.value.confirmPassword,
-      key: 'PASSWORD_EDIT'
+    await requestWithFallback({
+      url: 'forget_password',
+      body: {
+        email: formData.value.email,
+        code: formData.value.emailCode,
+        uuid: formData.value.uuid,
+        password: passwordForm.value.password,
+        confirmPassword: passwordForm.value.confirmPassword,
+        key: 'PASSWORD_EDIT'
+      }
     })
 
     currentStep.value = 3
@@ -385,7 +401,7 @@ const submitNewPassword = async () => {
       router.push('/mobile/login')
     }, 2000)
   } catch (error) {
-    console.error('重置密码失败', error)
+    logger.error('重置密码失败', error)
     submitLoading.value = false
   }
 }
@@ -421,7 +437,7 @@ timerWorker.onmessage = (e) => {
 
 // Worker 错误处理
 timerWorker.onerror = (error) => {
-  console.error('[Timer Worker Error]', error)
+  logger.error('[Timer Worker Error]', error)
   // 发生错误时恢复按钮状态
   sendBtnDisabled.value = false
   emailCodeBtnText.value = '重新获取'

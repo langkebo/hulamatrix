@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 /**
  * 坐标转换工具类
  * 用于在不同坐标系之间进行转换
@@ -214,7 +215,7 @@ export const transformCoordinate = (
     case 'BD09_TO_GCJ02':
       return bd09ToGcj02(lat, lng)
     default:
-      console.warn(`不支持的坐标转换: ${fromType} -> ${toType}`)
+      logger.warn(`不支持的坐标转换: ${fromType} -> ${toType}`)
       return { lat, lng }
   }
 }

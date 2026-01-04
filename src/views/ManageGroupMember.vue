@@ -51,13 +51,13 @@
                     <n-avatar
                       round
                       :size="44"
-                      :src="AvatarUtils.getAvatarUrl(groupStore.getUserInfo(item.uid)?.avatar!)"
+                      :src="AvatarUtils.getAvatarUrl(item.avatar)"
                       fallback-src="/logo.png"
                       style="border: 1px solid var(--avatar-border-color)" />
                     <!-- 文字信息 -->
                     <div class="flex flex-col leading-tight truncate">
                       <span class="text-14px font-medium truncate">
-                        {{ groupStore.getUserInfo(item.uid)?.name }}
+                        {{ item.name }}
                       </span>
                       <div class="text-12px text-gray-500 flex items-center gap-4px truncate">
                         <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? '#1ab292' : '#909090'" dot />
@@ -129,7 +129,7 @@
               class="w-full flex items-center px-12px"
               :class="[
                 'cursor-pointer select-none transition-colors duration-150',
-                selectedList.includes(item.uid) ? 'bg-#13987f18' : ''
+                selectedList.includes(item.uid) ? 'bg-[rgba(19,152,127,0.1)]' : ''
               ]">
               <template #default>
                 <div class="flex items-center gap-10px px-8px py-10px">
@@ -137,13 +137,13 @@
                   <n-avatar
                     round
                     :size="40"
-                    :src="AvatarUtils.getAvatarUrl(groupStore.getUserInfo(item.uid)?.avatar!)"
+                    :src="AvatarUtils.getAvatarUrl(item.avatar)"
                     fallback-src="/logo.png"
                     style="border: 1px solid var(--avatar-border-color)" />
                   <!-- 文字信息 -->
                   <div class="flex flex-col leading-tight truncate">
                     <span class="text-13px font-medium truncate text-[--text-color]">
-                      {{ groupStore.getUserInfo(item.uid)?.name }}
+                      {{ item.name }}
                     </span>
                     <div class="text-11px text-[--chat-text-color] flex items-center gap-4px truncate">
                       <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? '#1ab292' : '#909090'" dot />
@@ -196,15 +196,20 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useDialog } from 'naive-ui'
 import MobileLayout from '#/components/MobileLayout.vue'
-import HeaderBar from '#/components/chat-room/HeaderBar.vue'
+import HeaderBar from '#/components/chat/HeaderBar.vue'
 import { type } from '@tauri-apps/plugin-os'
-import { OnlineEnum, RoleEnum } from '@/enums'
-import { useGroupStore } from '@/stores/group'
+import { OnlineEnum } from '@/enums'
+import { useRoomStore } from '@/stores/room'
 import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import router from '@/router'
+
+import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 defineOptions({
   name: 'ManageGroupMember'
@@ -214,7 +219,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const groupStore = useGroupStore()
+const roomStore = useRoomStore()
 const globalStore = useGlobalStore()
 const dialog = useDialog()
 const { t } = useI18n()
@@ -233,10 +238,19 @@ const isMobileView = computed(() => {
 
 // 获取非管理员的普通成员列表
 const normalMembers = computed(() => {
-  return groupStore.memberList.filter((item) => {
-    // 只显示普通成员（不是群主，不是管理员）
-    return item.roleId === RoleEnum.NORMAL
-  })
+  return (roomStore.currentMembers || [])
+    .filter((item) => {
+      // 只显示普通成员（不是群主，不是管理员）
+      // role 在 RoomStore 中已经计算为 'owner' | 'admin' | 'moderator' | 'member'
+      return item.role === 'member'
+    })
+    .map((m) => ({
+      uid: m.userId,
+      name: m.displayName,
+      account: m.userId,
+      avatar: m.avatarUrl || '',
+      activeStatus: OnlineEnum.OFFLINE // 暂不支持在线状态
+    }))
 })
 
 // 搜索过滤
@@ -247,9 +261,7 @@ const filteredMembers = computed(() => {
 
   const searchKeyword = keyword.value.toLowerCase()
   return normalMembers.value.filter((item) => {
-    const userInfo = groupStore.getUserInfo(item.uid)
-    if (!userInfo) return false
-    return userInfo.name.toLowerCase().includes(searchKeyword) || userInfo.account.toLowerCase().includes(searchKeyword)
+    return item.name.toLowerCase().includes(searchKeyword) || item.account.toLowerCase().includes(searchKeyword)
   })
 })
 
@@ -266,12 +278,12 @@ const handleClose = () => {
 
 const validateRemoval = () => {
   if (globalStore.currentSessionRoomId === '1') {
-    window.$message.warning(t('home.manage_group_member.channel_not_allowed'))
+    msg.warning(t('home.manage_group_member.channel_not_allowed'))
     return false
   }
 
   if (selectedList.value.length === 0) {
-    window.$message.warning(t('home.manage_group_member.select_member_warning'))
+    msg.warning(t('home.manage_group_member.select_member_warning'))
     return false
   }
 
@@ -291,15 +303,22 @@ const handleRemove = async () => {
 
   isLoading.value = true
   try {
-    await groupStore.removeGroupMembers(members, globalStore.currentSessionRoomId)
+    const service = roomStore.getService()
+    if (!service) throw new Error('Service not initialized')
 
-    window.$message.success(t('home.manage_group_member.remove_success', { count }))
+    // 批量踢出
+    const kickPromises = members.map((uid) =>
+      service.kickUser(globalStore.currentSessionRoomId, uid, 'Removed by admin')
+    )
+    await Promise.all(kickPromises)
+
+    msg.success(t('home.manage_group_member.remove_success', { count }))
     selectedList.value = []
     handleClose()
     return true
   } catch (error) {
-    console.error('踢出失败:', error)
-    window.$message.error(t('home.manage_group_member.remove_failed'))
+    logger.error('踢出失败:', toError(error))
+    msg.error(t('home.manage_group_member.remove_failed'))
     return false
   } finally {
     isLoading.value = false
@@ -331,7 +350,7 @@ const calculateScrollHeight = () => {
 onMounted(async () => {
   // 如果是频道（roomId === '1'），直接返回上一页
   if (globalStore.currentSessionRoomId === '1') {
-    window.$message.warning(t('home.manage_group_member.channel_manage_unsupported'))
+    msg.warning(t('home.manage_group_member.channel_manage_unsupported'))
     handleClose()
     return
   }
@@ -339,10 +358,10 @@ onMounted(async () => {
   try {
     // 加载当前群的成员列表
     if (globalStore.currentSessionRoomId) {
-      await groupStore.getGroupUserList(globalStore.currentSessionRoomId)
+      await roomStore.initRoom(globalStore.currentSessionRoomId)
     }
   } catch (error) {
-    console.error('加载成员列表失败:', error)
+    logger.error('加载成员列表失败:', toError(error))
   }
 
   if (isMobileView.value) {

@@ -1,9 +1,8 @@
 import { getVersion } from '@tauri-apps/api/app'
 import { check } from '@tauri-apps/plugin-updater'
-import { useSettingStore } from '@/stores/setting.ts'
-import { MittEnum } from '../enums'
-import { useMitt } from './useMitt'
+import { useSettingStore } from '@/stores/setting'
 import { isMobile } from '@/utils/PlatformConstants'
+import { logger } from '@/utils/logger'
 
 /**
  * 检查更新
@@ -15,13 +14,15 @@ export const useCheckUpdate = () => {
   // 在未登录情况下缩短检查周期
   const CHECK_UPDATE_LOGIN_TIME = 5 * 60 * 1000
   const isProduction = import.meta.env.PROD && !isMobile()
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
   /**
    * 检查更新
    * @param closeWin 需要关闭的窗口
    * @param initialCheck 是否是初始检查，默认为false。初始检查时只显示强制更新提示，不显示普通更新提示
    */
-  const checkUpdate = async (closeWin: string, initialCheck: boolean = false) => {
+  const checkUpdate = async (_closeWin: string, initialCheck: boolean = false) => {
+    if (!isTauri) return
     await check()
       .then(async (e) => {
         if (!e?.available) {
@@ -34,25 +35,28 @@ export const useCheckUpdate = () => {
           newVersion.indexOf('.') + 1,
           newVersion.lastIndexOf('.') === -1 ? newVersion.length : newVersion.lastIndexOf('.')
         )
-        const currenVersion = await getVersion()
-        const currentMajorVersion = currenVersion.substring(0, currenVersion.indexOf('.'))
-        const currentMiddleVersion = currenVersion.substring(
-          currenVersion.indexOf('.') + 1,
-          currenVersion.lastIndexOf('.') === -1 ? currenVersion.length : currenVersion.lastIndexOf('.')
+        const currentVersion = await getVersion()
+        const currentMajorVersion = currentVersion.substring(0, currentVersion.indexOf('.'))
+        const currentMiddleVersion = currentVersion.substring(
+          currentVersion.indexOf('.') + 1,
+          currentVersion.lastIndexOf('.') === -1 ? currentVersion.length : currentVersion.lastIndexOf('.')
         )
         const requireForceUpdate =
           isProduction &&
           (newMajorVersion > currentMajorVersion ||
             (newMajorVersion === currentMajorVersion && newMiddleVersion > currentMiddleVersion))
         if (requireForceUpdate) {
-          useMitt.emit(MittEnum.DO_UPDATE, { close: closeWin })
-        } else if (newVersion !== currenVersion && settingStore.update.dismiss !== newVersion && !initialCheck) {
-          // 只在非初始检查时显示普通更新提示
-          useMitt.emit(MittEnum.CHECK_UPDATE)
+          // Auto-update feature removed - DO_UPDATE event disabled
+          // useMitt.emit(MittEnum.DO_UPDATE, { close: closeWin })
+          logger.info('Update available but auto-update is disabled:', newVersion)
+        } else if (newVersion !== currentVersion && settingStore.update?.dismiss !== newVersion && !initialCheck) {
+          // Auto-update feature removed - CHECK_UPDATE event disabled
+          // useMitt.emit(MittEnum.CHECK_UPDATE)
+          logger.info('Update available but auto-update is disabled:', newVersion)
         }
       })
-      .catch((e) => {
-        console.log(e)
+      .catch((error) => {
+        logger.error('Check update failed', error, 'useCheckUpdate')
       })
   }
 
