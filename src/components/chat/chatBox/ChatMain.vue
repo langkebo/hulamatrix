@@ -219,6 +219,7 @@ import { isMac, isMobile, isWindows } from '@/utils/PlatformConstants'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
 import FileUploadProgress from '@/components/chat/FileUploadProgress.vue'
+import RenderMessage from '@/components/chat/message-renderer/index.vue'
 
 // Tauri WebviewWindow 扩展接口
 interface WebviewWindowWithListen {

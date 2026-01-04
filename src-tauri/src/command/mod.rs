@@ -3,6 +3,7 @@ use tauri::{AppHandle, State};
 use crate::AppData;
 
 pub mod app_state_command;
+pub mod error_log_command;
 pub mod media;
 pub mod setting_command;
 

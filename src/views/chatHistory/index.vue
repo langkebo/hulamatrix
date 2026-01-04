@@ -156,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 import { logger, toError } from '@/utils/logger'
 import { computed, watch, ref, onMounted } from 'vue'
 import { NVirtualList } from 'naive-ui'
+import RenderMessage from '@/components/chat/message-renderer/index.vue'
 
 type ChatHistoryResponse = {
   messages: MessageType[]

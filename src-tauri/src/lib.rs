@@ -355,6 +355,7 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 // 公共的命令处理器函数
 fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static
 {
+    use crate::command::error_log_command::{clear_error_log, read_error_log, save_error_log};
     #[cfg(mobile)]
     use crate::command::set_complete;
     #[cfg(desktop)]
@@ -365,6 +366,10 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
     use crate::mobiles::splash::hide_splash_screen;
 
     tauri::generate_handler![
+        // 错误日志相关命令
+        save_error_log,
+        clear_error_log,
+        read_error_log,
         // 桌面端特定命令
         #[cfg(desktop)]
         default_window_icon,

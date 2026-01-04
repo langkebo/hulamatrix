@@ -192,6 +192,7 @@
 </template>
 <script setup lang="ts">
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { emit as tauriEmit } from '@tauri-apps/api/event'
 import { onKeyStroke } from '@vueuse/core'
 import { darkTheme, lightTheme, type VirtualListInst } from 'naive-ui'
 import { computed, nextTick, onMounted, onUnmounted, readonly, ref, useTemplateRef, watch } from 'vue'
@@ -619,8 +620,6 @@ onMounted(async () => {
   })
   // 暂时关闭独立窗口聊天功能（网页环境不触发 Tauri emit）
   if (isTauri) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { emit: tauriEmit } = require('@tauri-apps/api/event')
     try {
       await tauriEmit('aloneWin')
     } catch {}

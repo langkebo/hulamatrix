@@ -72,6 +72,11 @@ interface WindowWithCleanup extends Window {
 
 initializePlatform()
 startWebVitalObserver()
+
+// 初始化错误捕获工具（在所有其他代码之前）
+import { errorLogger } from '@/utils/errorLogger'
+logger.info('✅ 错误捕获工具已启动 - 日志将保存到 docs/error_log.md')
+
 // WebSocket 已废弃，使用 Matrix SDK
 // import('@/services/webSocketRust')
 
@@ -418,6 +423,9 @@ app.config.errorHandler = (err, instance, info) => {
 
   // Log detailed error information
   logger.error('[VueErrorHandler] Error caught:', errorDetails)
+
+  // 使用错误捕获工具记录
+  errorLogger.logError(`[Vue] ${errorDetails.componentName}: ${errorDetails.errorMessage} - ${info}`, err)
 
   // Log the raw error object for debugging
   console.error('[VueErrorHandler] Raw error:', err)

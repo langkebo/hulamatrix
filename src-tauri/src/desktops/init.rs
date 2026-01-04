@@ -42,8 +42,9 @@ impl<R: Runtime> CustomInit for tauri::Builder<R> {
             .plugin(tauri_plugin_updater::Builder::new().build());
 
         // 启用开发工具插件 - 允许 F12 和右键打开控制台
-        #[cfg(debug_assertions)]
-        let builder = builder.plugin(tauri_plugin_devtools::init());
+        // 暂时禁用：devtools 插件导致应用崩溃，已通过 errorLogger 实现错误捕获
+        // #[cfg(debug_assertions)]
+        // let builder = builder.plugin(tauri_plugin_devtools::init());
 
         builder
     }
