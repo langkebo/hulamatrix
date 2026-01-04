@@ -187,6 +187,20 @@ const consistencyReport = ref<
 >([])
 
 const checkAllConsistency = async () => {
+  // 检查 Matrix 是否启用
+  if (import.meta.env.VITE_MATRIX_ENABLED !== 'on') {
+    console.warn('[Appearance] Matrix 功能未启用，跳过一致性检查')
+    consistencyReport.value = []
+    return
+  }
+
+  // 检查客户端是否已初始化
+  if (!matrixClientService.isClientInitialized()) {
+    console.warn('[Appearance] Matrix 客户端未初始化，跳过一致性检查')
+    consistencyReport.value = []
+    return
+  }
+
   checking.value = true
   try {
     const report = []
@@ -242,6 +256,9 @@ const checkAllConsistency = async () => {
     })
 
     consistencyReport.value = report
+  } catch (error) {
+    console.error('[Appearance] 一致性检查失败:', error)
+    consistencyReport.value = []
   } finally {
     checking.value = false
   }
