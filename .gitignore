@@ -62,3 +62,4 @@ rust-clippy-errors.log
 
 # Migration reports
 imrequest-migration-report.json
+.backup-option-a-*/
