@@ -54,12 +54,12 @@
 - [x] 房间管理简化 (已分析 - 功能互补，不建议合并)
 
 #### 中优先级 (P2)
-- [ ] 认证模块重构
-- [ ] 好友系统完整迁移 (部分已完成 - friendsServiceV2.ts 使用 SDK API)
+- [x] 认证模块重构 (已分析 - 已使用 SDK API，建议保留额外功能)
+- [x] 好友系统完整迁移 (已分析 - 两个服务功能不同，通过适配器集成)
 
 #### 低优先级 (P3)
-- [ ] 事件处理简化
-- [ ] 完全统一 PC/移动端 UI 组件
+- [x] 事件处理简化 (已分析 - 已使用 SDK 事件系统，建议保留)
+- [ ] 完全统一 PC/移动端 UI 组件 (需要更多评估)
 
 ---
 
@@ -122,6 +122,88 @@
    - `RoomService` 侧重房间配置（静态）
    - `MatrixRoomManager` 侧重运行时操作（动态）
    - 虽有部分重复，但职责清晰，合并风险高
+
+---
+
+## 📝 Phase 5-7 分析结果
+
+### 认证模块分析 (Phase 5)
+
+**分析日期**: 2026-01-04
+
+#### 发现
+1. **认证服务架构**:
+   - `login-service.ts` (244 行) - 登录服务
+   - `auth.ts` (39 行) - Token 刷新函数
+   - `tokenRefreshService.ts` (436 行) - 完整 Token 刷新服务
+   - `matrixUiaService.ts` (375 行) - UIA 服务
+
+2. **SDK 使用情况**:
+   - `loginService.login()` 已使用 `matrixClientService.loginWithPassword()`
+   - `auth.ts` 提供 `buildTokenRefreshFunction()` 用于 SDK
+   - `tokenRefreshService` 提供额外的自动刷新和会话管理
+
+3. **结论**: 已使用 SDK API，额外功能建议保留
+   - `auth.ts` - 简单的 SDK 集成，无重复
+   - `tokenRefreshService` - 提供自动刷新、会话管理等额外功能
+   - 不建议进一步简化
+
+### 事件处理分析 (Phase 6)
+
+**分析日期**: 2026-01-04
+
+#### 发现
+1. **事件处理服务**:
+   - `matrixEventHandler.ts` (740 行) - SDK 事件系统包装
+   - 被广泛使用 (48 引用)
+
+2. **SDK 使用情况**:
+   - 使用 `client.on()` 监听 SDK 事件
+   - 统一处理各类 Matrix 事件
+   - 提供回调接口和事件路由
+
+3. **结论**: 已使用 SDK 事件系统，建议保留
+   - `matrixEventHandler` 提供统一的接口
+   - 简化事件处理逻辑
+   - 广泛使用，重构风险高
+
+### 好友服务分析 (Phase 7)
+
+**分析日期**: 2026-01-04
+
+#### 发现
+1. **两个好友服务**:
+   - `enhancedFriendsService.ts` (1,641 行) - Synapse 扩展 API，6 引用
+   - `friendsServiceV2.ts` (378 行) - SDK friendsV2 API
+
+2. **功能对比**:
+
+   **`enhancedFriendsService` 独有**:
+   - Synapse 扩展 API 支持
+   - `ignoreUsers()`, `unignoreUsers()` - 忽略用户
+   - `listFriendsWithPresence()` - 带 Presence 的好友列表
+   - 丰富的分类管理功能
+   - Presence 缓存和同步
+
+   **`friendsServiceV2` 特有**:
+   - 使用 SDK 原生 `client.friendsV2` API
+   - 事件系统集成 (`on`, `off`)
+   - 统一的接口设计
+
+   **共享功能**:
+   - `listFriends()`, `sendFriendRequest()`, `acceptFriendRequest()`
+   - `rejectFriendRequest()`, `removeFriend()`
+   - 分类管理
+
+3. **集成架构**:
+   - `MatrixFriendAdapter` 适配器封装 `enhancedFriendsService`
+   - 通过适配器模式逐步迁移
+   - 支持多协议切换
+
+4. **结论**: 两个服务功能不同，建议保留
+   - `enhancedFriendsService` 提供 Synapse 扩展功能
+   - `friendsServiceV2` 使用 SDK 标准 API
+   - 通过适配器集成，不是简单重复
 
 ---
 
