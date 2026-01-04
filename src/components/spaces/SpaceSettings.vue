@@ -256,6 +256,7 @@ import {
 import { matrixClientService } from '@/integrations/matrix/client'
 import { Hash, Upload, Download, AlertTriangle } from '@vicons/tabler'
 import { matrixSpacesService, type SpaceInfo } from '@/services/matrixSpacesService'
+import { createRoomService } from '@/services/roomService'
 import { useSpacesStore } from '@/stores/spaces'
 import { logger } from '@/utils/logger'
 import { msg } from '@/utils/SafeUI'
@@ -265,6 +266,14 @@ const router = useRouter()
 const message = useMessage()
 const dialog = useDialog()
 const spacesStore = useSpacesStore()
+
+// Get room service instance (lazy initialization)
+const getRoomService = (): ReturnType<typeof createRoomService> | null => {
+  const client = matrixClientService.getClient()
+  if (!client) return null
+  // Use unknown intermediate type assertion as suggested by TypeScript
+  return createRoomService(client as unknown as Parameters<typeof createRoomService>[0])
+}
 
 // State
 const loading = ref(true)
@@ -442,13 +451,45 @@ const handleTopicChange = async () => {
 }
 
 const handleNotificationChange = async (value: boolean) => {
-  // TODO: Implement notification settings update
-  logger.info('[SpaceSettings] Notification setting changed:', value)
+  if (!spaceInfo.value?.roomId) return
+
+  try {
+    // Save notification settings to local storage
+    const notificationKey = `space_notifications_${spaceInfo.value.roomId}`
+    const settings = {
+      enabled: value,
+      keywords: notificationSettings.value.keywords
+    }
+    localStorage.setItem(notificationKey, JSON.stringify(settings))
+
+    logger.info('[SpaceSettings] Notification setting updated:', { roomId: spaceInfo.value.roomId, enabled: value })
+    msg.success(value ? '已启用消息通知' : '已关闭消息通知')
+  } catch (err) {
+    logger.error('[SpaceSettings] Failed to update notification settings:', err)
+    msg.error('更新通知设置失败')
+  }
 }
 
 const handleKeywordsChange = async (value: string[]) => {
+  if (!spaceInfo.value?.roomId) return
+
   notificationSettings.value.keywords = value
-  // TODO: Save keywords
+
+  try {
+    // Save keywords to local storage along with notification settings
+    const notificationKey = `space_notifications_${spaceInfo.value.roomId}`
+    const settings = {
+      enabled: notificationSettings.value.enabled,
+      keywords: value
+    }
+    localStorage.setItem(notificationKey, JSON.stringify(settings))
+
+    logger.info('[SpaceSettings] Keywords updated:', { roomId: spaceInfo.value.roomId, keywords: value })
+    msg.success('关键词已保存')
+  } catch (err) {
+    logger.error('[SpaceSettings] Failed to save keywords:', err)
+    msg.error('保存关键词失败')
+  }
 }
 
 const handleAliasUpdate = async () => {
@@ -470,10 +511,39 @@ const handleAliasUpdate = async () => {
 }
 
 const handleVisibilityChange = async () => {
-  if (!spaceId.value) return
+  if (!spaceInfo.value?.roomId) return
 
   try {
-    // TODO: Implement visibility change
+    const roomId = spaceInfo.value.roomId
+    const visibility = newVisibility.value
+
+    // Map visibility to Matrix join rules
+    // 'public' -> public, 'private' -> invite, 'restricted' -> knock
+    const joinRuleMap: Record<string, 'public' | 'invite' | 'knock'> = {
+      public: 'public',
+      private: 'invite',
+      restricted: 'knock'
+    }
+
+    const joinRule = joinRuleMap[visibility] || 'invite'
+
+    // Update join rule using roomService
+    const roomSvc = getRoomService()
+    if (!roomSvc) {
+      throw new Error('Matrix client not available')
+    }
+    await roomSvc.setJoinRule(roomId, joinRule)
+
+    // Update directory visibility
+    const dirVisibility: 'public' | 'private' = visibility === 'public' ? 'public' : 'private'
+    await roomSvc.setDirectoryVisibility(roomId, dirVisibility)
+
+    // Update local state
+    if (spaceInfo.value) {
+      spaceInfo.value.joinRule = joinRule as 'public' | 'invite' | 'knock' | 'restricted'
+    }
+
+    logger.info('[SpaceSettings] Visibility changed:', { roomId, visibility, joinRule })
     msg.success('可见性已更新')
     showVisibilityDialog.value = false
   } catch (err) {

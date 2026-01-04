@@ -149,6 +149,9 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import { enhancedMessageService } from '@/services/enhancedMessageService'
+import { matrixClientService } from '@/integrations/matrix/client'
+import { MsgEnum } from '@/enums'
 
 import { msg } from '@/utils/SafeUI'
 import { ref, computed, watch } from 'vue'
@@ -345,18 +348,95 @@ const sendMsg = async () => {
     return
   }
 
-  // Message forwarding not yet implemented for Matrix SDK
-  msg.warning?.(t('message.multi_choose.not_implemented'))
+  const messagesToForward = selectedMsgs.value
+  if (messagesToForward.length === 0) {
+    msg.warning?.(t('message.multi_choose.select_message_prompt'))
+    return
+  }
 
-  // TODO: Implement Matrix message forwarding using m.reference relation type
-  // - For single mode: Send each message content to target rooms
-  // - For merge mode: Create a single message referencing all original messages
+  try {
+    if (mergeMessageType === MergeMessageType.SINGLE) {
+      // Single mode: forward each message separately
+      for (const roomId of selectedRoomIds) {
+        for (const msgItem of messagesToForward) {
+          const messageBody = msgItem.message.body as MessageBody
+          const msgType = msgItem.message.type
 
-  // Close the modal and reset selection
-  showModal.value = false
-  chatStore.clearMsgCheck()
-  chatStore.setMsgMultiChoose(false)
-  chatStore.resetSessionSelection()
+          // Construct message content based on type
+          const sendMessageParams = {
+            type: msgType,
+            body: messageBody || {}
+          }
+
+          // Send using enhanced message service
+          await enhancedMessageService.sendMessage(roomId, sendMessageParams)
+
+          logger.info('[ChatMsgMultiChoose] Forwarded message:', {
+            fromRoom: chatStore.currentSessionRoomId,
+            toRoom: roomId,
+            msgId: msgItem.message.id,
+            msgType
+          })
+        }
+      }
+
+      msg.success?.(`已转发 ${messagesToForward.length} 条消息到 ${selectedRoomIds.length} 个会话`)
+    } else {
+      // Merge mode: create a single message with m.reference relation
+      for (const roomId of selectedRoomIds) {
+        // Create a text message with references to all original messages
+        const content = getMessagePreview(messagesToForward[0])
+        const references = messagesToForward.map((msg) => ({
+          event_id: msg.message.id,
+          room_id: chatStore.currentSessionRoomId,
+          type: 'm.reference'
+        }))
+
+        // Construct message with m.relates_to for Matrix
+        const messageBody: MessageBody = {
+          content: `[转发] ${content}`,
+          format: 'org.matrix.custom.html',
+          formatted_body: `[转发] ${content}`,
+          'm.relates_to':
+            references.length > 0
+              ? {
+                  event_id: references[0].event_id,
+                  rel_type: 'm.reference'
+                }
+              : undefined
+        }
+
+        // If multiple messages, include additional references
+        if (references.length > 1) {
+          messageBody['m.references'] = references.slice(1)
+        }
+
+        const sendMessageParams = {
+          type: MsgEnum.TEXT,
+          body: messageBody
+        }
+
+        await enhancedMessageService.sendMessage(roomId, sendMessageParams)
+
+        logger.info('[ChatMsgMultiChoose] Forwarded messages (merge mode):', {
+          toRoom: roomId,
+          count: messagesToForward.length,
+          references
+        })
+      }
+
+      msg.success?.(`已合并转发 ${messagesToForward.length} 条消息到 ${selectedRoomIds.length} 个会话`)
+    }
+
+    // Close the modal and reset selection
+    showModal.value = false
+    chatStore.clearMsgCheck()
+    chatStore.setMsgMultiChoose(false)
+    chatStore.resetSessionSelection()
+  } catch (error) {
+    logger.error('[ChatMsgMultiChoose] Failed to forward messages:', error)
+    msg.error?.('转发失败，请重试')
+  }
 }
 
 useMitt.on(MittEnum.MSG_MULTI_CHOOSE, (payload?: { action?: string; mergeType?: MergeMessageType }) => {
