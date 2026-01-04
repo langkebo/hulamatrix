@@ -218,22 +218,22 @@ await matrixRoomManager.setRoomAvatar('!roomId:server.com', 'mxc://server.com/im
 
 搜索服务。
 
-**文件：** `src/services/matrixSearchService.ts`
+**文件：** `src/integrations/matrix/search.ts`
+
+> ⚠️ **迁移提示**: `matrixSearchService.ts` 已被删除，请使用新的统一搜索服务。
 
 ```typescript
-import { matrixSearchService } from '@/services/matrixSearchService'
+// 新的统一搜索服务
+import { searchRoomsLegacy, searchPublicRooms, searchUserDirectory } from '@/integrations/matrix/search'
 
-// 搜索房间消息
-const results = await matrixSearchService.searchRoomMessages(
-  '!roomId:server.com',
-  'search text'
-)
+// 搜索已加入的房间
+const rooms = await searchRoomsLegacy('search text', 20)
 
-// 全局搜索
-const globalResults = await matrixSearchService.searchGlobal('search text')
+// 搜索公开房间
+const publicRooms = await searchPublicRooms('search text', 50, 'matrix.org')
 
-// 搜索用户
-const users = await matrixSearchService.searchUsers('username')
+// 搜索用户目录
+const users = await searchUserDirectory('username', matrixClient)
 ```
 
 ## 消息服务

@@ -36,6 +36,19 @@
 
 **总计**: 净减少 **~1,659 行代码** (81% 减少)
 
+### Phase 8 完成状态
+
+1. **文档清理** ✅
+   - 更新 `docs/SERVICE_LAYER_API.md` 中的过时引用
+   - 添加 Phase 8 分析结果
+
+2. **服务分析** ✅
+   - `roomSearchService.ts` - 适配器专用，保留
+   - `spaceSearchService.ts` - 移动端专用高级搜索，保留
+
+3. **类型验证** ✅
+   - 所有类型检查通过 (0 错误)
+
 #### 第二阶段 (Phase 3) - 进行中
 
 4. **搜索功能增强** ✅
@@ -60,6 +73,38 @@
 #### 低优先级 (P3)
 - [x] 事件处理简化 (已分析 - 已使用 SDK 事件系统，建议保留)
 - [ ] 完全统一 PC/移动端 UI 组件 (需要更多评估)
+
+### Phase 8: 文档清理和验证 - 2026-01-04
+
+#### 发现
+1. **过时文档引用**:
+   - `docs/SERVICE_LAYER_API.md` 包含对已删除 `matrixSearchService` 的引用
+   - 已更新为指向新的统一搜索服务
+
+2. **roomSearchService.ts 分析** (512 行):
+   - 被 3 个文件使用:
+     * `src/adapters/group-to-room-adapter.ts` (适配器专用)
+     * `src/composables/useGroupSearch.ts` (群搜索)
+     * `src/tests/room-search.test.ts` (测试)
+   - 提供高级搜索功能:
+     * 房间类型过滤
+     * 成员数量范围
+     * 标签过滤
+     * 搜索高亮
+   - **结论**: 适配器专用服务，提供独特功能，**建议保留**
+
+3. **spaceSearchService.ts 分析** (452 行):
+   - 仅被 1 个文件使用: `src/mobile/components/spaces/MobileSpaceList.vue`
+   - 提供高级 Space 搜索功能:
+     * Levenshtein 距离模糊匹配算法
+     * 相关性评分系统
+     * 搜索缓存和历史
+   - **结论**: 专门为移动端优化的搜索服务，**建议保留**
+
+#### 结论
+- 所有主要优化已完成
+- 剩余服务都有独特功能，不建议删除
+- 下一步: 运行类型检查和提交更改
 
 ---
 
