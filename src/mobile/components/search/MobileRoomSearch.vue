@@ -12,8 +12,7 @@
         size="large"
         @input="handleSearchInput"
         @focus="handleFocus"
-        @blur="handleBlur"
-      >
+        @blur="handleBlur">
         <template #prefix>
           <n-icon :size="20">
             <Search />
@@ -42,9 +41,7 @@
     <div v-if="!searchQuery && !isFocused && recentSearches.length > 0" class="search-suggestions">
       <div class="suggestions-header">
         <span class="suggestions-title">最近搜索</span>
-        <n-button text type="error" size="small" @click="clearRecentSearches">
-          清空
-        </n-button>
+        <n-button text type="error" size="small" @click="clearRecentSearches">清空</n-button>
       </div>
 
       <div class="suggestions-list">
@@ -52,8 +49,7 @@
           v-for="item in recentSearches"
           :key="item.query"
           class="suggestion-item"
-          @click="applySuggestion(item.query)"
-        >
+          @click="applySuggestion(item.query)">
           <n-icon :size="16"><Clock /></n-icon>
           <span>{{ item.query }}</span>
           <n-button text size="small" @click.stop="removeSuggestion(item.query)">
@@ -90,12 +86,7 @@
             <span>房间 ({{ roomResults.length }})</span>
           </div>
 
-          <div
-            v-for="room in roomResults"
-            :key="room.roomId"
-            class="room-item"
-            @click="openRoom(room.roomId)"
-          >
+          <div v-for="room in roomResults" :key="room.roomId" class="room-item" @click="openRoom(room.roomId)">
             <n-avatar :src="room.avatar" :size="48" round>
               <template #fallback>
                 <span>{{ room.name?.[0] || '?' }}</span>
@@ -126,12 +117,7 @@
             <span>消息 ({{ messageResults.length }})</span>
           </div>
 
-          <div
-            v-for="msg in messageResults"
-            :key="msg.eventId"
-            class="message-item"
-            @click="openMessage(msg)"
-          >
+          <div v-for="msg in messageResults" :key="msg.eventId" class="message-item" @click="openMessage(msg)">
             <div class="message-room">
               {{ msg.roomName }}
             </div>
@@ -149,12 +135,7 @@
             <span>用户 ({{ userResults.length }})</span>
           </div>
 
-          <div
-            v-for="user in userResults"
-            :key="user.userId"
-            class="user-item"
-            @click="openUserChat(user.userId)"
-          >
+          <div v-for="user in userResults" :key="user.userId" class="user-item" @click="openUserChat(user.userId)">
             <n-avatar :src="user.avatar" :size="40" round>
               <template #fallback>
                 <span>{{ user.displayName?.[0] || user.userId[1] }}</span>
@@ -167,9 +148,7 @@
             </div>
 
             <div class="user-action">
-              <n-button type="primary" size="small" round>
-                发消息
-              </n-button>
+              <n-button type="primary" size="small" round>发消息</n-button>
             </div>
           </div>
         </div>
@@ -177,9 +156,7 @@
 
       <!-- Load More -->
       <div v-if="hasMore" class="load-more">
-        <n-button text block :loading="loadingMore" @click="loadMore">
-          加载更多
-        </n-button>
+        <n-button text block :loading="loadingMore" @click="loadMore">加载更多</n-button>
       </div>
     </div>
 
@@ -196,8 +173,7 @@
         borderRadius: '16px 16px 0 0'
       }"
       preset="card"
-      title="搜索筛选"
-    >
+      title="搜索筛选">
       <div class="filter-content">
         <!-- Search Scope -->
         <div class="filter-group">
@@ -239,12 +215,8 @@
 
       <template #footer>
         <n-space vertical style="width: 100%">
-          <n-button type="primary" block @click="applyFilters">
-            应用筛选
-          </n-button>
-          <n-button block @click="resetFilters">
-            重置
-          </n-button>
+          <n-button type="primary" block @click="applyFilters">应用筛选</n-button>
+          <n-button block @click="resetFilters">重置</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -270,7 +242,7 @@ import {
 } from 'naive-ui'
 import { Search, X, Filter, Clock, Lock, ChevronRight } from '@vicons/tabler'
 import { matrixClientService } from '@/integrations/matrix/client'
-import { matrixSearchService } from '@/services/matrixSearchService'
+import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
 import { useHaptic } from '@/composables/useMobileGestures'

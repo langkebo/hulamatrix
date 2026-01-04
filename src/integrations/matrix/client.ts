@@ -1,4 +1,4 @@
-import { createClient, AutoDiscovery, type IndexedDBStore } from 'matrix-js-sdk'
+import { createClient, AutoDiscovery, type IndexedDBStore, type UploadOpts, type UploadResponse } from 'matrix-js-sdk'
 import { safeAutoDiscovery, pollWellKnownUpdates } from './discovery'
 import { invoke } from '@tauri-apps/api/core'
 import { TauriCommand } from '@/enums'
@@ -13,6 +13,11 @@ export type MatrixCredentials = {
   userId?: string
   deviceId?: string
   homeserver?: string
+}
+
+// Simplified type for HTTP API's uploadContent method
+export interface MatrixHttpClientLike {
+  uploadContent(file: File | Blob, opts?: UploadOpts): Promise<UploadResponse>
 }
 
 // Type definitions for Matrix SDK and related interfaces
@@ -163,10 +168,8 @@ export interface MatrixClientLike {
     allowRedirects?: boolean,
     useAuthentication?: boolean
   ): string | null
-  // HTTP API property for direct SDK access
-  http?: {
-    uploadContent(file: File | Blob, opts?: { name?: string; type?: string }): Promise<{ content_uri: string }>
-  }
+  // HTTP API property for direct SDK access - simplified type
+  http?: MatrixHttpClientLike
   [key: string]: unknown
 }
 

@@ -8,17 +8,12 @@
         clearable
         @keyup.enter="performSearch"
         @focus="showSuggestions = true"
-        @blur="hideSuggestions"
-      >
+        @blur="hideSuggestions">
         <template #prefix>
           <n-icon :component="Search" />
         </template>
         <template #suffix>
-          <n-button
-            text
-            size="small"
-            @click="toggleAdvancedSearch"
-          >
+          <n-button text size="small" @click="toggleAdvancedSearch">
             <n-icon :component="Settings" />
           </n-button>
         </template>
@@ -30,8 +25,7 @@
           v-for="suggestion in suggestions"
           :key="suggestion"
           class="suggestion-item"
-          @click="selectSuggestion(suggestion)"
-        >
+          @click="selectSuggestion(suggestion)">
           <n-icon :component="Clock" size="14" />
           <span>{{ suggestion }}</span>
         </div>
@@ -46,8 +40,7 @@
             <n-select
               v-bind="searchOptions.scope !== undefined ? { value: searchOptions.scope } : {}"
               :options="searchScopeOptions"
-              style="width: 120px"
-            />
+              style="width: 120px" />
           </n-form-item>
 
           <n-form-item label="消息类型">
@@ -56,8 +49,7 @@
               :options="messageTypeOptions"
               multiple
               style="width: 150px"
-              placeholder="全部类型"
-            />
+              placeholder="全部类型" />
           </n-form-item>
 
           <n-form-item label="日期范围">
@@ -65,8 +57,7 @@
               v-bind="searchOptions.dateRange !== undefined ? { value: searchOptions.dateRange } : {}"
               type="daterange"
               clearable
-              style="width: 200px"
-            />
+              style="width: 200px" />
           </n-form-item>
 
           <n-form-item label="发送者">
@@ -76,14 +67,11 @@
               multiple
               filterable
               placeholder="选择发送者"
-              style="width: 150px"
-            />
+              style="width: 150px" />
           </n-form-item>
 
           <n-form-item>
-            <n-button type="primary" @click="performSearch">
-              搜索
-            </n-button>
+            <n-button type="primary" @click="performSearch">搜索</n-button>
           </n-form-item>
         </n-form>
       </div>
@@ -122,16 +110,18 @@
             v-for="result in messageResults.results"
             :key="result.eventId"
             class="message-result-item"
-            @click="openMessage(result as SearchResult)"
-          >
+            @click="openMessage(result as SearchResult)">
             <!-- Message Header -->
             <div class="message-header">
               <n-avatar
-                v-bind="(result as SearchResult).senderAvatar !== undefined ? { src: (result as SearchResult).senderAvatar } : {}"
+                v-bind="
+                  (result as SearchResult).senderAvatar !== undefined
+                    ? { src: (result as SearchResult).senderAvatar }
+                    : {}
+                "
                 :fallback-src="'/default-avatar.png'"
                 round
-                size="small"
-              >
+                size="small">
                 {{ getSenderInitials(result as SearchResult) }}
               </n-avatar>
               <div class="message-meta">
@@ -143,7 +133,9 @@
 
             <!-- Message Content -->
             <div class="message-content">
-              <div v-if="(result as SearchResult).formattedContent" v-html="sanitizeContent((result as SearchResult).formattedContent)" />
+              <div
+                v-if="(result as SearchResult).formattedContent"
+                v-html="sanitizeContent((result as SearchResult).formattedContent)" />
               <div v-else class="content-text">
                 {{ getMessagePreview(result as SearchResult) }}
               </div>
@@ -155,16 +147,14 @@
                 <div
                   v-for="ctx in (result as SearchResult).context!.before"
                   :key="getContextEventId(ctx)"
-                  class="context-message before"
-                >
+                  class="context-message before">
                   {{ getContextEventBody(ctx) }}
                 </div>
                 <div class="context-message current">↑ 匹配的消息</div>
                 <div
                   v-for="ctx in (result as SearchResult).context!.after"
                   :key="getContextEventId(ctx)"
-                  class="context-message after"
-                >
+                  class="context-message after">
                   {{ getContextEventBody(ctx) }}
                 </div>
               </div>
@@ -173,9 +163,7 @@
 
           <!-- Load More -->
           <div v-if="messageResults.hasMore" class="load-more">
-            <n-button @click="loadMoreMessages">
-              加载更多
-            </n-button>
+            <n-button @click="loadMoreMessages">加载更多</n-button>
           </div>
         </div>
       </div>
@@ -187,18 +175,12 @@
         </div>
 
         <div v-else class="room-list">
-          <div
-            v-for="room in roomResults"
-            :key="room.roomId"
-            class="room-result-item"
-            @click="joinRoom(room)"
-          >
+          <div v-for="room in roomResults" :key="room.roomId" class="room-result-item" @click="joinRoom(room)">
             <n-avatar
               v-bind="room.avatar !== undefined ? { src: room.avatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              size="medium"
-            >
+              size="medium">
               <n-icon :component="Users" />
             </n-avatar>
             <div class="room-info">
@@ -222,28 +204,19 @@
         </div>
 
         <div v-else class="user-list">
-          <div
-            v-for="user in userResults"
-            :key="user.userId"
-            class="user-result-item"
-            @click="openUserProfile(user)"
-          >
+          <div v-for="user in userResults" :key="user.userId" class="user-result-item" @click="openUserProfile(user)">
             <n-avatar
               v-bind="user.avatar !== undefined ? { src: user.avatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              size="medium"
-            >
+              size="medium">
               {{ getUserInitials(user) }}
             </n-avatar>
             <div class="user-info">
               <h3 class="user-name">{{ user.displayName || user.userId }}</h3>
               <p class="user-id">{{ user.userId }}</p>
               <div class="user-meta">
-                <n-tag
-                  size="small"
-                  :type="user.presence === 'online' ? 'success' : 'default'"
-                >
+                <n-tag size="small" :type="user.presence === 'online' ? 'success' : 'default'">
                   {{ getPresenceText(user.presence) }}
                 </n-tag>
                 <span v-if="user.lastActiveAgo" class="last-active">
@@ -283,8 +256,13 @@ import {
   useMessage
 } from 'naive-ui'
 import { Search, Settings, Clock, Users, MessageCircle } from '@vicons/tabler'
-import { matrixSearchService } from '@/services/matrixSearchService'
-import type { SearchResult, RoomSearchResult, UserSearchResult, SearchOptions } from '@/services/matrixSearchService'
+import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
+import type {
+  LegacySearchResult as SearchResult,
+  LegacyRoomSearchResult as RoomSearchResult,
+  LegacyUserSearchResult as UserSearchResult,
+  LegacySearchOptions as SearchOptions
+} from '@/integrations/matrix/search'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
 
 const emit = defineEmits<{

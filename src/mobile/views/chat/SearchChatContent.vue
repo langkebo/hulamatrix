@@ -177,8 +177,11 @@ import {
   NCollapseItem
 } from 'naive-ui'
 import { Search, X, Photo, Video, File, Music, Link, User, Adjustments, Hash } from '@vicons/tabler'
-import { matrixSearchService } from '@/services/matrixSearchService'
-import type { SearchOptions, SearchResult } from '@/services/matrixSearchService'
+import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
+import type {
+  LegacySearchOptions as SearchOptions,
+  LegacySearchResult as SearchResult
+} from '@/integrations/matrix/search'
 import { msg } from '@/utils/SafeUI'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
 

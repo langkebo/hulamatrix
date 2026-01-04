@@ -831,3 +831,359 @@ export function getSearchStats(results: SearchResult[], searchTime: number) {
     averageTimePerResult: results.length > 0 ? searchTime / results.length : 0
   }
 }
+
+// ============================================================================
+// BACKWARD COMPATIBILITY LAYER - Replaces src/services/matrixSearchService.ts
+// ============================================================================
+
+/**
+ * Simple caching layer for search results
+ */
+interface CachedResult<T> {
+  data: T
+  timestamp: number
+}
+
+class SearchCache {
+  private cache = new Map<string, CachedResult<unknown>>()
+  private readonly DEFAULT_TTL = 5 * 60 * 1000 // 5 minutes
+
+  set<T>(key: string, data: T, ttl: number = this.DEFAULT_TTL): void {
+    this.cache.set(key, { data, timestamp: Date.now() + ttl })
+    this.cleanExpired()
+  }
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key)
+    if (!entry) return null
+
+    if (Date.now() > entry.timestamp) {
+      this.cache.delete(key)
+      return null
+    }
+
+    return entry.data as T
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+
+  private cleanExpired(): void {
+    const now = Date.now()
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.timestamp) {
+        this.cache.delete(key)
+      }
+    }
+  }
+}
+
+const searchCache = new SearchCache()
+
+/**
+ * Generate cache key from search parameters
+ */
+function generateCacheKey(type: string, params: Record<string, unknown>): string {
+  const sortedParams = Object.keys(params)
+    .sort()
+    .reduce(
+      (sorted, key) => {
+        sorted[key] = params[key]
+        return sorted
+      },
+      {} as Record<string, unknown>
+    )
+  return `${type}:${btoa(JSON.stringify(sortedParams))}`
+}
+
+// ============================================================================
+// COMPATIBLE TYPES (matching old matrixSearchService.ts interface)
+// ============================================================================
+
+/**
+ * Legacy SearchOptions interface for backward compatibility
+ */
+export interface LegacySearchOptions {
+  query: string
+  scope?: 'all' | 'rooms' | 'messages'
+  roomIds?: string[]
+  senderIds?: string[]
+  messageTypes?: string[]
+  dateRange?: [number, number] | null
+  limit?: number
+  offset?: number
+  order?: 'recent' | 'relevance'
+  includeContext?: boolean
+  contextSize?: number
+  searchEncrypted?: boolean
+  [key: string]: unknown // Index signature for Record<string, unknown> compatibility
+}
+
+/**
+ * Legacy SearchResult interface for backward compatibility
+ */
+export interface LegacySearchResult {
+  eventId: string
+  roomId: string
+  roomName?: string
+  roomAvatar?: string
+  senderId: string
+  senderName?: string
+  senderAvatar?: string
+  content: unknown
+  formattedContent?: string
+  timestamp: number
+  score: number
+  highlights?: string[]
+  context?: {
+    before: unknown[]
+    after: unknown[]
+  }
+  encrypted: boolean
+}
+
+/**
+ * Legacy RoomSearchResult interface for backward compatibility
+ */
+export interface LegacyRoomSearchResult {
+  roomId: string
+  name?: string
+  topic?: string
+  avatar?: string
+  memberCount?: number
+  score: number
+  matchType: 'name' | 'topic' | 'alias' | 'member'
+  matchingMembers?: string[]
+}
+
+/**
+ * Legacy UserSearchResult interface for backward compatibility
+ */
+export interface LegacyUserSearchResult {
+  userId: string
+  displayName?: string
+  avatar?: string
+  presence?: 'online' | 'offline' | 'unavailable'
+  lastActiveAgo?: number
+  score: number
+  matchType: 'display_name' | 'user_id' | 'email'
+}
+
+/**
+ * Legacy SearchResponse interface for backward compatibility
+ */
+export interface LegacySearchResponse {
+  count: number
+  hasMore: boolean
+  nextBatch?: string
+  results: LegacySearchResult[]
+}
+
+// ============================================================================
+// WRAPPER FUNCTIONS (providing old service interface)
+// ============================================================================
+
+/**
+ * Legacy searchMessages function - provides backward compatibility
+ * Replaces matrixSearchService.searchMessages()
+ */
+export async function searchMessages(options: LegacySearchOptions): Promise<LegacySearchResponse> {
+  const cacheKey = generateCacheKey('messages', options)
+
+  // Check cache first
+  const cached = searchCache.get<LegacySearchResponse>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  // Use the new search implementation
+  const searchOpts: SearchOptions = {
+    searchTerm: options.query,
+    rooms: options.roomIds,
+    senders: options.senderIds,
+    types: options.messageTypes,
+    limit: options.limit || 50,
+    includeContext: options.includeContext,
+    contextBeforeLimit: options.contextSize || 1,
+    contextAfterLimit: options.contextSize || 1,
+    orderBy: SearchOrderBy.Recent // Only 'Recent' is available in Matrix SDK
+  }
+
+  const result = await searchGlobalMessages(options.query, searchOpts)
+
+  // Convert to legacy format
+  const legacyResponse: LegacySearchResponse = {
+    count: result.totalCount,
+    hasMore: result.hasMore,
+    results: result.results.map((r): LegacySearchResult => {
+      const event = r.result
+      return {
+        eventId: event?.event_id || '',
+        roomId: event?.room_id || '',
+        senderId: event?.sender || '',
+        content: event?.content || {},
+        timestamp: typeof event?.origin_server_ts === 'number' ? event.origin_server_ts : 0,
+        score: 1.0,
+        encrypted: false
+      }
+    })
+  }
+
+  if (result.nextBatch !== undefined) {
+    legacyResponse.nextBatch = result.nextBatch
+  }
+
+  // Cache the result
+  searchCache.set(cacheKey, legacyResponse)
+
+  return legacyResponse
+}
+
+/**
+ * Legacy searchRooms function - provides backward compatibility
+ * Replaces matrixSearchService.searchRooms()
+ */
+export async function searchRoomsLegacy(query: string, limit = 20): Promise<LegacyRoomSearchResult[]> {
+  const cacheKey = generateCacheKey('rooms', { query, limit })
+
+  // Check cache first
+  const cached = searchCache.get<LegacyRoomSearchResult[]>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const client = matrixClientService.getClient() as unknown as MatrixClientLike
+  if (!client) return []
+
+  const results: LegacyRoomSearchResult[] = []
+  const lowerQuery = query.toLowerCase()
+
+  try {
+    const rooms = client.getRooms?.() || []
+
+    for (const room of rooms.slice(0, limit)) {
+      const name = room.name || ''
+      const topic = room.topic || ''
+
+      let score = 0
+      if (name.toLowerCase().includes(lowerQuery)) score += 10
+      if (topic.toLowerCase().includes(lowerQuery)) score += 5
+
+      if (score > 0) {
+        const result: LegacyRoomSearchResult = {
+          roomId: room.roomId,
+          name: name || room.roomId,
+          score,
+          matchType: name.toLowerCase().includes(lowerQuery) ? 'name' : 'topic'
+        }
+        if (topic) result.topic = topic
+        if (room.getAvatarUrl) {
+          const avatar = room.getAvatarUrl(client.getHomeserverUrl?.() || '', 64, 64)
+          if (avatar) result.avatar = avatar
+        }
+        results.push(result)
+      }
+    }
+
+    results.sort((a, b) => b.score - a.score)
+
+    // Cache the result
+    searchCache.set(cacheKey, results)
+
+    return results
+  } catch (error) {
+    logger.error('[search] Failed to search rooms:', error)
+    return []
+  }
+}
+
+/**
+ * Legacy searchUsers function - provides backward compatibility
+ * Replaces matrixSearchService.searchUsers()
+ */
+export async function searchUsersLegacy(query: string, limit = 20): Promise<LegacyUserSearchResult[]> {
+  const cacheKey = generateCacheKey('users', { query, limit })
+
+  // Check cache first
+  const cached = searchCache.get<LegacyUserSearchResult[]>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const suggestions = await searchUsers(query, limit)
+
+  const results: LegacyUserSearchResult[] = suggestions.map(
+    (s): LegacyUserSearchResult => ({
+      userId: s.id,
+      displayName: s.title,
+      avatar: s.avatar,
+      presence: 'offline',
+      score: 10,
+      matchType: 'display_name'
+    })
+  )
+
+  // Cache the result
+  searchCache.set(cacheKey, results)
+
+  return results
+}
+
+/**
+ * Legacy searchInRoom function - provides backward compatibility
+ * Replaces matrixSearchService.searchInRoom()
+ */
+export async function searchInRoom(
+  roomId: string,
+  options: Omit<LegacySearchOptions, 'roomIds'>
+): Promise<LegacySearchResponse> {
+  return searchMessages({ ...options, roomIds: [roomId] } as LegacySearchOptions)
+}
+
+/**
+ * Legacy getRecentSearches function - provides backward compatibility
+ * Replaces matrixSearchService.getRecentSearches()
+ */
+export function getRecentSearches(): string[] {
+  const history = getSearchHistory(20)
+  return history.map((h) => h.query)
+}
+
+/**
+ * Legacy saveSearchTerm function - provides backward compatibility
+ * Replaces matrixSearchService.saveSearchTerm()
+ */
+export function saveSearchTerm(term: string): void {
+  addToSearchHistory(term, 0)
+}
+
+/**
+ * Legacy clearSearchHistory function - provides backward compatibility
+ * Replaces matrixSearchService.clearSearchHistory()
+ */
+export function clearSearchHistoryCompat(): void {
+  clearSearchHistory()
+  searchCache.clear()
+}
+
+/**
+ * Legacy getSearchSuggestions function - provides backward compatibility
+ * Replaces matrixSearchService.getSearchSuggestions()
+ */
+export async function getSearchSuggestionsCompat(partial: string, limit = 5): Promise<string[]> {
+  const suggestions = await getSearchSuggestions(partial, limit)
+  return suggestions.map((s) => s.title)
+}
+
+// Export singleton-like object for backward compatibility
+export const matrixSearchServiceCompat = {
+  searchMessages,
+  searchRooms: searchRoomsLegacy,
+  searchUsers: searchUsersLegacy,
+  searchInRoom,
+  getSearchSuggestions: getSearchSuggestionsCompat,
+  saveSearchTerm,
+  getRecentSearches,
+  clearSearchHistory: clearSearchHistoryCompat
+}

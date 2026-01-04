@@ -5,7 +5,7 @@
  * 这个适配器主要用于向后兼容，逐步迁移后使用
  */
 
-import { matrixSearchService } from '@/services/matrixSearchService'
+import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
 import { friendsServiceV2 } from '@/services/friendsServiceV2'
 import { logger } from '@/utils/logger'
 

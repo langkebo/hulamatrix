@@ -3,7 +3,7 @@
  * 处理媒体文件的上传、下载和缓存
  *
  * SDK Integration:
- * - client.uploadContent() - Upload files to Matrix media repository
+ * - client.http.uploadContent() - Upload files to Matrix media repository
  * - client.mxcUrlToHttp() - Convert MXC URLs to HTTP URLs with thumbnail support
  * - Uses Tauri invoke('download_media') for desktop-native download
  */
@@ -12,13 +12,18 @@ import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
 import { invoke } from '@tauri-apps/api/core'
 import { exists, remove } from '@tauri-apps/plugin-fs'
-import type { UploadOpts } from 'matrix-js-sdk'
+import type { UploadOpts, UploadResponse } from 'matrix-js-sdk'
 
 /** Tauri 命令返回类型 - download_media */
 interface TauriDownloadMediaResult {
   localPath: string
   size: number
   mimeType: string
+}
+
+/** Local type for Matrix HTTP client uploadContent method */
+interface MatrixHttpClientLike {
+  uploadContent(file: File | Blob, opts?: UploadOpts): Promise<UploadResponse>
 }
 
 /** Type guard for TauriDownloadMediaResult - simplified version */
@@ -31,6 +36,26 @@ function isTauriDownloadMediaResult(obj: unknown): obj is TauriDownloadMediaResu
     typeof result.size === 'number' &&
     typeof result.mimeType === 'string'
   )
+}
+
+/** Type guard for MatrixHttpClientLike */
+function hasMatrixHttpClient(obj: unknown): obj is { http: MatrixHttpClientLike } {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'http' in obj &&
+    typeof (obj as { http?: unknown }).http === 'object' &&
+    (obj as { http?: unknown }).http !== null &&
+    typeof (obj as { http: MatrixHttpClientLike }).http.uploadContent === 'function'
+  )
+}
+
+/** Helper function to get HTTP client with proper typing */
+function getHttpClient(client: unknown): MatrixHttpClientLike | null {
+  if (hasMatrixHttpClient(client)) {
+    return client.http
+  }
+  return null
 }
 
 export interface MediaUploadOptions {
@@ -136,8 +161,9 @@ export class MediaService {
       throw new Error('Matrix client not initialized')
     }
 
-    // Runtime check for http property
-    if (!client.http || typeof (client.http as any).uploadContent !== 'function') {
+    // Get HTTP client with type-safe check
+    const httpClient = getHttpClient(client)
+    if (!httpClient) {
       throw new Error('Matrix client does not support HTTP upload')
     }
 
@@ -156,7 +182,7 @@ export class MediaService {
         name: filename,
         type: contentType
       }
-      const uploadResult = await (client.http as any).uploadContent(file, uploadOpts)
+      const uploadResult = await httpClient.uploadContent(file, uploadOpts)
 
       const result: MediaUploadResult = {
         contentUri: uploadResult.content_uri,
@@ -172,7 +198,7 @@ export class MediaService {
             name: `thumb_${filename}`,
             type: thumbnail.mimeType
           }
-          const thumbnailUpload = await (client.http as any).uploadContent(thumbnail.blob, thumbnailOpts)
+          const thumbnailUpload = await httpClient.uploadContent(thumbnail.blob, thumbnailOpts)
 
           result.thumbnailInfo = {
             uri: thumbnailUpload.content_uri,
@@ -219,15 +245,15 @@ export class MediaService {
       return null
     }
 
-    // Runtime check for mxcUrlToHttp method
-    if (!client.mxcUrlToHttp || typeof client.mxcUrlToHttp !== 'function') {
+    // Type-safe check for mxcUrlToHttp method
+    if (typeof client.mxcUrlToHttp !== 'function') {
       logger.warn('[MediaService] Client does not support mxcUrlToHttp')
       return null
     }
 
     try {
       // Use SDK's native mxcUrlToHttp method with proper typing
-      const result = client.mxcUrlToHttp(
+      return client.mxcUrlToHttp(
         mxcUri,
         width,
         height,
@@ -236,7 +262,6 @@ export class MediaService {
         allowRedirects,
         false // useAuthentication
       )
-      return result
     } catch (error) {
       logger.error('[MediaService] Failed to generate thumbnail URL:', { mxcUri, error })
       return null
@@ -254,15 +279,15 @@ export class MediaService {
       return null
     }
 
-    // Runtime check for mxcUrlToHttp method
-    if (!client.mxcUrlToHttp || typeof client.mxcUrlToHttp !== 'function') {
+    // Type-safe check for mxcUrlToHttp method
+    if (typeof client.mxcUrlToHttp !== 'function') {
       logger.warn('[MediaService] Client does not support mxcUrlToHttp')
       return null
     }
 
     try {
       // Use SDK's native mxcUrlToHttp method with proper typing
-      const result = client.mxcUrlToHttp(
+      return client.mxcUrlToHttp(
         mxcUri,
         undefined, // width
         undefined, // height
@@ -271,7 +296,6 @@ export class MediaService {
         true, // allowRedirects
         useAuthentication
       )
-      return result
     } catch (error) {
       logger.error('[MediaService] Failed to generate HTTP URL:', { mxcUri, error })
       return null
