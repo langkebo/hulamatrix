@@ -320,6 +320,12 @@
     "roles": {
       "owner": "群主",
       "admin": "管理员"
+    },
+    "sort": {
+      "label": "排序方式",
+      "online_first": "在线优先",
+      "role_first": "角色优先",
+      "alphabetical": "字母排序"
     }
   },
   "about": {

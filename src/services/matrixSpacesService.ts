@@ -1,6 +1,9 @@
 /**
  * Matrix Spaces Service
  * Handles Matrix spaces (communities) management and hierarchy
+ *
+ * Optimized to use SDK's getSpaceHierarchy() and isSpaceRoom() methods
+ * where available, while maintaining custom business logic enhancements.
  */
 
 import { matrixClientService } from '@/integrations/matrix/client'
@@ -686,34 +689,93 @@ export class MatrixSpacesService {
   }
 
   /**
-   * Get space hierarchy
+   * Get space hierarchy (Phase 10 优化 - 使用 SDK 方法)
    */
-  getSpaceHierarchy(
+  async getSpaceHierarchy(
     roomId: string,
-    level = 0
-  ): {
+    options: { from?: string; limit?: number; maxDepth?: number } = {}
+  ): Promise<{
     space: SpaceInfo
-    level: number
-    children: Array<{ space: SpaceInfo; level: number; children: unknown[] } | null>
-  } | null {
-    const space = this.getSpace(roomId)
-    if (!space) {
+    children: Array<{ roomId: string; name?: string; type: string; via: string[] }>
+  } | null> {
+    const client = matrixClientService.getClient()
+    if (!client) {
       return null
     }
 
-    return {
-      space,
-      level,
-      children: space.children
-        .map((child) => this.getSpaceHierarchy(child.roomId, level + 1))
-        .filter((h): h is NonNullable<typeof h> => h !== null)
+    try {
+      // 优先使用 SDK 的 getSpaceHierarchy() 方法 (Phase 10 优化)
+      const sdkClient = client as unknown as Record<string, unknown>
+      if (typeof sdkClient.getSpaceHierarchy === 'function') {
+        const sdkResult = await sdkClient.getSpaceHierarchy(roomId, {
+          from: options.from,
+          limit: options.limit || 100,
+          max_depth: options.maxDepth || 1,
+          suggested_only: false
+        })
+
+        // SDK 返回的是原生格式，需要转换
+        if (sdkResult && Array.isArray(sdkResult.rooms)) {
+          const space = await this.loadSpace(roomId)
+          if (!space) return null
+
+          return {
+            space,
+            children: sdkResult.rooms.map((r: any) => ({
+              roomId: r.room_id,
+              name: r.name,
+              type: r.room_type === 'm.space' ? 'space' : 'room',
+              via: r.via || []
+            }))
+          }
+        }
+      }
+
+      // Fallback: 自定义实现 (原有逻辑)
+      const space = this.getSpace(roomId)
+      if (!space) {
+        return null
+      }
+
+      return {
+        space,
+        children: space.children.map((child) => ({
+          roomId: child.roomId,
+          name: child.name,
+          type: child.type,
+          via: child.via
+        }))
+      }
+    } catch (error) {
+      logger.warn('[MatrixSpacesService] SDK getSpaceHierarchy failed, using fallback:', error)
+
+      // Final fallback: 使用本地缓存数据
+      const space = this.getSpace(roomId)
+      if (!space) return null
+
+      return {
+        space,
+        children: space.children.map((child) => ({
+          roomId: child.roomId,
+          name: child.name,
+          type: child.type,
+          via: child.via
+        }))
+      }
     }
   }
 
   /**
-   * Check if a room is a space
+   * Check if a room is a space (Phase 10 优化 - 使用 SDK 方法)
    */
   private isSpace(room: MatrixRoomLike): boolean {
+    // 优先使用 SDK 的 isSpaceRoom() 方法 (Phase 10 优化)
+    const sdkRoom = room as unknown as Record<string, unknown>
+    if (typeof sdkRoom.isSpaceRoom === 'function') {
+      return sdkRoom.isSpaceRoom() as boolean
+    }
+
+    // Fallback: 自定义实现
     const state = room.currentState
     const map = state?.getStateEvents?.('m.room.create') || {}
     const createEvent: MatrixEventLike | undefined = Array.isArray(map)

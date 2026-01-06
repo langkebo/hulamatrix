@@ -150,6 +150,7 @@ import { NFlex, NButton, NInput, NTag, NModal, NForm, NFormItem, NSpace, useMess
 import { useUserStore } from '@/stores/user'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
+import { useAppStateStore } from '@/stores/appState'
 
 const { t } = useI18n()
 const message = useMessage()
@@ -219,6 +220,13 @@ const handleAddPhone = () => {
  * 使用 Matrix SDK 的密码修改 API
  */
 const handlePasswordChange = async () => {
+  // 检查应用状态
+  const appStateStore = useAppStateStore()
+  if (!appStateStore.isReady) {
+    message.warning('应用正在初始化，请稍后再试')
+    return
+  }
+
   try {
     await passwordFormRef.value?.validate()
     passwordChanging.value = true

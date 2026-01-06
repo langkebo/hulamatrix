@@ -321,6 +321,12 @@
     "roles": {
       "owner": "Owner",
       "admin": "Admin"
+    },
+    "sort": {
+      "label": "Sort by",
+      "online_first": "Online First",
+      "role_first": "Role First",
+      "alphabetical": "Alphabetical"
     }
   },
   "about": {

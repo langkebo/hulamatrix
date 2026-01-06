@@ -1,11 +1,16 @@
 # Matrix JS SDK v39.1.3 集成指南
 
 > HuLaMatrix 项目本地SDK集成文档
+> **最后更新**: 2026-01-06 | **文档版本**: 1.1.0
 
-**版本**: 1.0.0
+**版本**: 1.1.0
 **SDK版本**: 39.1.3
 **后端要求**: Synapse 1.140.0 Enhanced Module v1.0.2+
-**更新日期**: 2026-01-02
+
+> **相关文档**:
+> - [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+> - [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
+> - [前端 PC/移动端要求](./PC_MOBILE_REQUIREMENTS.md) - 前端待实现功能清单
 
 ---
 
@@ -393,13 +398,24 @@ onUnmounted(() => {
 
 ## 相关文档
 
-- [Matrix SDK 官方文档](https://matrix-org.github.io/matrix-js-sdk/)
-- [Synapse Enhanced Module 文档](../../synapse-1.140.0/docs/)
+### 项目文档
+- [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+- [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
+- [前端 PC/移动端要求](./PC_MOBILE_REQUIREMENTS.md) - 前端待实现功能清单
 - [好友系统完整文档](./11-friends-system.md)
 - [私聊系统完整文档](./12-private-chat.md)
+
+### 官方文档
+- [Matrix SDK 官方文档](https://matrix-org.github.io/matrix-js-sdk/)
+- [Synapse Enhanced Module 文档](../../synapse-1.140.0/docs/)
 
 ---
 
 **文档维护**: HuLaSpark 团队
-**最后更新**: 2026-01-02
-**版本**: 1.0.0
+**最后更新**: 2026-01-06
+**版本**: 1.1.0
+
+**更新内容 (v1.1.0)**:
+- ✅ 更新文档日期和版本号
+- ✅ 添加文档交叉引用
+- ✅ 整理相关文档链接

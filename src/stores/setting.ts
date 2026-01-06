@@ -6,6 +6,13 @@ import { STORAGE_KEYS } from '@/constants'
 import { applyThemeTokens, type ThemeMode } from '@/theme/tokens'
 import { matrixClientService } from '@/integrations/matrix/client'
 
+/** 成员排序枚举 */
+export enum MemberSortEnum {
+  ONLINE_FIRST = 'online_first' /** 在线优先 > 角色 > 字母 */,
+  ROLE_FIRST = 'role_first' /** 角色优先 > 在线 > 字母 */,
+  ALPHABETICAL = 'alphabetical' /** 纯字母排序 */
+}
+
 // 获取平台对应的默认快捷键
 const getDefaultShortcuts = () => {
   return {
@@ -38,6 +45,12 @@ interface SettingState {
     messageSound: boolean
     keywords: string[]
     quietHours: { enabled: boolean; start: string; end: string }
+  }
+  /** 布局偏好：PC 端三栏布局设置 */
+  layout?: {
+    centerColumnWidth: number /** 中间列宽度 (px) */
+    memberSortOrder: MemberSortEnum /** 成员排序方式 */
+    memberListCollapsed: boolean /** 成员列表折叠状态 */
   }
   levels?: {
     account?: Record<string, unknown>
@@ -93,6 +106,12 @@ export const useSettingStore = defineStore('setting', {
       messageSound: true,
       keywords: [],
       quietHours: { enabled: false, start: '22:00', end: '08:00' }
+    },
+    /** 布局偏好默认值 */
+    layout: {
+      centerColumnWidth: 360 /** 匹配当前 initWidth 默认值 */,
+      memberSortOrder: MemberSortEnum.ONLINE_FIRST,
+      memberListCollapsed: false
     },
     levels: {
       account: {},
@@ -407,6 +426,42 @@ export const useSettingStore = defineStore('setting', {
       if (this.themes) {
         this.themes.versatile = options.theme
       }
+    },
+    /** 设置中间列宽度并持久化 */
+    setCenterColumnWidth(width: number) {
+      if (!this.layout) {
+        this.layout = {
+          centerColumnWidth: 360,
+          memberSortOrder: MemberSortEnum.ONLINE_FIRST,
+          memberListCollapsed: false
+        }
+      }
+      this.layout.centerColumnWidth = width
+      this.saveToCache()
+    },
+    /** 设置成员排序方式并持久化 */
+    setMemberSortOrder(order: MemberSortEnum) {
+      if (!this.layout) {
+        this.layout = {
+          centerColumnWidth: 360,
+          memberSortOrder: MemberSortEnum.ONLINE_FIRST,
+          memberListCollapsed: false
+        }
+      }
+      this.layout.memberSortOrder = order
+      this.saveToCache()
+    },
+    /** 设置成员列表折叠状态并持久化 */
+    setMemberListCollapsed(collapsed: boolean) {
+      if (!this.layout) {
+        this.layout = {
+          centerColumnWidth: 360,
+          memberSortOrder: MemberSortEnum.ONLINE_FIRST,
+          memberListCollapsed: false
+        }
+      }
+      this.layout.memberListCollapsed = collapsed
+      this.saveToCache()
     }
   }
 })

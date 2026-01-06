@@ -234,6 +234,8 @@ import { usePrivateChatStoreV2 } from '@/stores/privateChatV2'
 import type { PrivateChatSessionItem, PrivateChatMessageItem } from '@/types/matrix-sdk-v2'
 import { useUserStore } from '@/stores/user'
 import { logger } from '@/utils/logger'
+import { checkAppReady, withAppCheck } from '@/utils/appErrorHandler'
+import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
 
 const { t } = useI18n()
 const dialog = useDialog()
@@ -304,51 +306,59 @@ const handleCreateSession = async () => {
     return
   }
 
-  isCreatingSession.value = true
-  try {
-    const newSession = await privateChatStore.createSession({
-      participants: [newChatUserId.value],
-      session_name: undefined,
-      ttl_seconds: undefined
-    })
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      isCreatingSession.value = true
 
-    await privateChatStore.refreshSessions()
-    await handleSelectSession(newSession)
+      const newSession = await privateChatStore.createSession({
+        participants: [newChatUserId.value],
+        session_name: undefined,
+        ttl_seconds: undefined
+      })
 
-    showNewChatDialog.value = false
-    newChatUserId.value = ''
-    message.success(t('privateChat.dialogs.create_success'))
-  } catch (error) {
-    message.error(t('privateChat.dialogs.create_failed'))
-    logger.error('[PrivateChatViewV2] Failed to create session:', error)
-  } finally {
-    isCreatingSession.value = false
-  }
+      await privateChatStore.refreshSessions()
+      await handleSelectSession(newSession)
+
+      showNewChatDialog.value = false
+      newChatUserId.value = ''
+      message.success(t('privateChat.dialogs.create_success'))
+    },
+    {
+      customMessage: t('privateChat.dialogs.create_failed')
+    }
+  )
+
+  isCreatingSession.value = false
 }
 
 const handleSendMessage = async () => {
   const content = inputMessage.value.trim()
   if (!content || !privateChatStore.currentSessionId) return
 
-  isSending.value = true
-  try {
-    const ttl = showMessageTTL.value ? parseInt(selectedTTL.value, 10) : undefined
-    await privateChatStore.sendMessage(content)
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      isSending.value = true
 
-    // 如果设置了 TTL，隐藏 TTL 设置面板
-    if (ttl) {
-      showMessageTTL.value = false
+      const ttl = showMessageTTL.value ? parseInt(selectedTTL.value, 10) : undefined
+      await privateChatStore.sendMessage(content)
+
+      // 如果设置了 TTL，隐藏 TTL 设置面板
+      if (ttl) {
+        showMessageTTL.value = false
+      }
+
+      inputMessage.value = ''
+      await nextTick()
+      scrollToBottom()
+    },
+    {
+      customMessage: t('privateChat.errors.send_failed')
     }
+  )
 
-    inputMessage.value = ''
-    await nextTick()
-    scrollToBottom()
-  } catch (error) {
-    message.error(t('privateChat.errors.send_failed'))
-    logger.error('[PrivateChatViewV2] Failed to send message:', error)
-  } finally {
-    isSending.value = false
-  }
+  isSending.value = false
 }
 
 const handleInputKeyDown = (e: KeyboardEvent) => {
@@ -478,14 +488,25 @@ const getStatusText = (status?: 'sending' | 'sent' | 'delivered' | 'read' | 'fai
 
 // 生命周期
 onMounted(async () => {
-  try {
-    await privateChatStore.initialize()
-    await privateChatStore.refreshSessions()
-    logger.info('[PrivateChatViewV2] Initialized successfully')
-  } catch (error) {
-    logger.error('[PrivateChatViewV2] Initialization failed:', error)
-    message.error('加载私聊会话失败')
+  // 使用统一的应用状态检查
+  if (!checkAppReady()) {
+    return
   }
+
+  // 使用 withAppCheck 包装初始化
+  await withAppCheck(
+    async () => {
+      // 添加性能监控
+      appInitMonitor.markPhase(AppInitPhase.LOAD_STORES)
+
+      await privateChatStore.initialize()
+      await privateChatStore.refreshSessions()
+      logger.info('[PrivateChatViewV2] Initialized successfully')
+    },
+    {
+      customMessage: '加载私聊会话失败'
+    }
+  )
 })
 
 onUnmounted(() => {

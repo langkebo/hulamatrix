@@ -4,8 +4,7 @@
     preset="card"
     :title="t('friends.add_friend_title')"
     :style="{ width: '500px', maxHeight: '80vh' }"
-    :mask-closable="true"
-  >
+    :mask-closable="true">
     <!-- 搜索框 -->
     <n-flex vertical :size="16">
       <n-input
@@ -14,15 +13,14 @@
         size="medium"
         :placeholder="t('friends.dialogs.user_id_placeholder')"
         clearable
-        @keydown.enter="handleSearch"
-      >
+        @keydown.enter="handleSearch">
         <template #prefix>
-          <n-icon><svg class="size-16px"><use href="#search"></use></svg></n-icon>
+          <n-icon>
+            <svg class="size-16px"><use href="#search"></use></svg>
+          </n-icon>
         </template>
         <template #suffix>
-          <n-button size="small" type="primary" :loading="searching" @click="handleSearch">
-            搜索
-          </n-button>
+          <n-button size="small" type="primary" :loading="searching" @click="handleSearch">搜索</n-button>
         </template>
       </n-input>
 
@@ -32,14 +30,13 @@
         <div v-if="searching" class="flex-center py-40px">
           <n-spin size="medium" />
         </div>
-        
+
         <!-- 搜索结果列表 -->
         <n-flex v-else-if="searchResults.length > 0" vertical :size="8">
           <div
             v-for="user in searchResults"
             :key="user.userId"
-            class="search-result-item p-12px rounded-8px hover:bg-[--hover-color] cursor-pointer"
-          >
+            class="search-result-item p-12px rounded-8px hover:bg-[--hover-color] cursor-pointer">
             <n-flex align="center" justify="space-between">
               <n-flex align="center" :size="12">
                 <n-avatar :size="48" :src="user.avatar" round :fallback-src="'/logoD.png'" />
@@ -52,8 +49,7 @@
                 size="small"
                 :type="user.isFriend ? 'info' : 'primary'"
                 :disabled="user.isSelf"
-                @click="handleUserAction(user)"
-              >
+                @click="handleUserAction(user)">
                 {{ user.isSelf ? '自己' : user.isFriend ? '发消息' : '添加' }}
               </n-button>
             </n-flex>
@@ -61,20 +57,14 @@
         </n-flex>
 
         <!-- 无结果 -->
-        <n-empty
-          v-else-if="hasSearched && searchResults.length === 0"
-          description="未找到用户"
-          class="py-40px"
-        />
+        <n-empty v-else-if="hasSearched && searchResults.length === 0" description="未找到用户" class="py-40px" />
 
         <!-- 初始状态 -->
-        <n-empty
-          v-else
-          description="输入用户ID或昵称搜索"
-          class="py-40px"
-        >
+        <n-empty v-else description="输入用户ID或昵称搜索" class="py-40px">
           <template #icon>
-            <n-icon size="48"><svg><use href="#search"></use></svg></n-icon>
+            <n-icon size="48">
+              <svg><use href="#search"></use></svg>
+            </n-icon>
           </template>
         </n-empty>
       </n-scrollbar>
@@ -89,8 +79,7 @@
       :negative-text="t('common.cancel')"
       :loading="sending"
       @positive-click="handleConfirmAdd"
-      @negative-click="showAddConfirm = false"
-    >
+      @negative-click="showAddConfirm = false">
       <n-flex vertical :size="16" class="py-4">
         <n-flex align="center" :size="12">
           <n-avatar :size="56" :src="selectedUser?.avatar" round :fallback-src="'/logoD.png'" />
@@ -106,8 +95,7 @@
             :placeholder="t('friends.verify_message_placeholder')"
             :rows="3"
             :maxlength="200"
-            show-count
-          />
+            show-count />
         </n-form-item>
       </n-flex>
     </n-modal>
@@ -119,13 +107,15 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { searchUsers as synapseSearchUsers, sendRequest } from '@/integrations/synapse/friends'
-import { searchUsers as matrixSearchUsers } from '@/integrations/matrix/search'
+import { searchUsersOptimized } from '@/integrations/matrix/search'
 import { useFriendsStore } from '@/stores/friends'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
 import { mxcUrlToHttp, getProfileInfo } from '@/utils/matrixClientUtils'
+import { checkAppReady, withAppCheck } from '@/utils/appErrorHandler'
+import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -210,83 +200,69 @@ const handleSearch = async () => {
 
   logger.debug('[SearchFriendModal] handleSearch called with:', searchValue.value)
 
+  // 使用统一的应用状态检查
+  if (!checkAppReady()) {
+    hasSearched.value = true
+    return
+  }
+
+  // 检查 Matrix 客户端是否可用
+  const client = matrixClientService.getClient()
+  if (!client) {
+    logger.warn('[SearchFriendModal] Matrix client not available, showing user message')
+    msg.warning('Matrix 客户端未初始化，请先登录')
+    hasSearched.value = true
+    return
+  }
+
   searching.value = true
   hasSearched.value = true
   searchResults.value = []
 
   try {
-    // SDK Integration: Prioritize Matrix SDK's searchUserDirectory (standard API)
-    let found = false
-    try {
-      logger.debug('[SearchFriendModal] Trying Matrix user directory search (SDK preferred)...')
-      const matrixResults = await matrixSearchUsers(searchValue.value, 20)
-      logger.debug('[SearchFriendModal] Matrix search result:', matrixResults)
+    // 使用优化的搜索功能 (优先好友系统 API，降级到 Matrix 标准 API)
+    // 添加性能监控
+    appInitMonitor.markPhase(AppInitPhase.START_MATRIX_SYNC)
 
-      if (matrixResults && matrixResults.length > 0) {
-        searchResults.value = matrixResults.map((user) => {
-          let avatar = ''
-          if (user.avatar) {
-            try {
-              const client = matrixClientService.getClient()
-              if (user.avatar.startsWith('mxc://')) {
-                avatar = mxcUrlToHttp(client, user.avatar, 64, 64, 'crop') || ''
-              } else {
-                avatar = user.avatar
-              }
-            } catch {}
-          }
-          return {
-            userId: user.id,
-            displayName: user.title || user.id.split(':')[0].substring(1),
-            avatar,
-            isFriend: isFriend(user.id),
-            isSelf: isSelf(user.id)
-          }
-        })
-        found = true
-        logger.info('[SearchFriendModal] Matrix search found users:', searchResults.value.length)
-      }
-    } catch (e) {
-      logger.warn('[SearchFriendModal] Matrix search failed', { error: e })
+    logger.info('[SearchFriendModal] Using optimized search (friends API first)')
+    const results = await searchUsersOptimized(searchValue.value, 20)
+    logger.info('[SearchFriendModal] Search returned:', results.length, 'results')
+
+    if (results && results.length > 0) {
+      searchResults.value = results.map((user) => {
+        let avatar = ''
+        if (user.avatar) {
+          try {
+            if (user.avatar.startsWith('mxc://')) {
+              avatar = mxcUrlToHttp(client, user.avatar, 64, 64, 'crop') || ''
+            } else {
+              avatar = user.avatar
+            }
+          } catch {}
+        }
+        return {
+          userId: user.id,
+          displayName: user.title || user.id.split(':')[0].substring(1),
+          avatar,
+          isFriend: isFriend(user.id),
+          isSelf: isSelf(user.id)
+        }
+      })
+      logger.info('[SearchFriendModal] Successfully mapped', searchResults.value.length, 'users')
+    } else {
+      logger.info('[SearchFriendModal] No users found with search term:', searchValue.value)
     }
 
-    // Fallback to Synapse Friends API (custom extension)
-    if (!found) {
-      try {
-        logger.debug('[SearchFriendModal] Trying Synapse search as fallback...')
-        const result = await synapseSearchUsers(searchValue.value)
-        logger.debug('[SearchFriendModal] Synapse search result:', result)
-
-        if (result.status === 'ok' && result.users && result.users.length > 0) {
-          searchResults.value = await Promise.all(
-            result.users.map(async (user: SynapseUserResult) => {
-              const userName = user.user_id.split(':')[0].substring(1)
-              let avatar = ''
-              try {
-                const client = matrixClientService.getClient()
-                const profile = await getProfileInfo(client, user.user_id)
-                if (profile?.avatar_url) {
-                  avatar = mxcUrlToHttp(client, profile.avatar_url, 64, 64, 'crop') || ''
-                }
-              } catch {}
-              return {
-                userId: user.user_id,
-                displayName: user.display_name || userName,
-                avatar,
-                isFriend: isFriend(user.user_id),
-                isSelf: isSelf(user.user_id)
-              }
-            })
-          )
-          logger.info('[SearchFriendModal] Synapse search found users:', searchResults.value.length)
-        }
-      } catch (e) {
-        logger.warn('[SearchFriendModal] Synapse search failed', { error: e })
-      }
+    // 显示结果提示
+    if (searchResults.value.length > 0) {
+      msg.success(`找到 ${searchResults.value.length} 个用户`)
+    } else {
+      msg.info(`未找到用户 "${searchValue.value}"`)
     }
   } catch (error) {
-    logger.error('[SearchFriendModal] Search failed', { error })
-    msg.error('搜索失败')
+    logger.error('[SearchFriendModal] Search failed:', error)
+    // 使用统一错误处理
+    msg.error('搜索失败，请重试')
   } finally {
     searching.value = false
   }
@@ -309,61 +285,67 @@ const handleUserAction = (user: SearchUser) => {
 const handleConfirmAdd = async () => {
   if (!selectedUser.value) return
 
-  sending.value = true
+  // 保存用户ID的引用，避免在异步操作中丢失
+  const targetUserId = selectedUser.value.userId
 
-  // 调试日志
-  logger.debug('[SearchFriendModal] handleConfirmAdd called')
-  logger.debug('[SearchFriendModal] selectedUser:', selectedUser.value)
-  logger.debug('[SearchFriendModal] matrixAuth.userId:', matrixAuth.userId)
-  logger.debug('[SearchFriendModal] verifyMessage:', verifyMessage.value)
+  // 使用 withAppCheck 包装整个操作
+  const result = await withAppCheck(
+    async () => {
+      sending.value = true
 
-  try {
-    const requestPayload = {
-      requester_id: matrixAuth.userId || '',
-      target_id: selectedUser.value.userId,
-      message: verifyMessage.value || undefined
+      // 调试日志
+      logger.debug('[SearchFriendModal] handleConfirmAdd called')
+      logger.debug('[SearchFriendModal] selectedUser:', selectedUser.value)
+      logger.debug('[SearchFriendModal] matrixAuth.userId:', matrixAuth.userId)
+      logger.debug('[SearchFriendModal] verifyMessage:', verifyMessage.value)
+
+      const requestPayload = {
+        requester_id: matrixAuth.userId || '',
+        target_id: targetUserId,
+        message: verifyMessage.value || undefined
+      }
+      logger.debug('[SearchFriendModal] Sending request with payload:', requestPayload)
+
+      await sendRequest(requestPayload)
+
+      msg.success(t('friends.request_sent_success'))
+      showAddConfirm.value = false
+      emit('success')
+
+      // 刷新好友列表
+      await friendsStore.refreshAll()
+
+      // 重新搜索以更新状态
+      if (searchValue.value) {
+        await handleSearch()
+      }
+    },
+    {
+      customMessage: t('friends.request_sent_failed')
     }
-    logger.debug('[SearchFriendModal] Sending request with payload:', requestPayload)
+  )
 
-    await sendRequest(requestPayload)
-
-    msg.success(t('friends.request_sent_success'))
-    showAddConfirm.value = false
-    emit('success')
-
-    // 刷新好友列表
-    await friendsStore.refreshAll()
-
-    // 重新搜索以更新状态
-    if (searchValue.value) {
-      await handleSearch()
-    }
-  } catch (error: unknown) {
-    logger.error('[SearchFriendModal] Failed to send friend request', { error })
-
-    // 尝试通过创建 DM 房间作为 fallback
+  // Fallback: 如果主要方法失败，尝试通过创建 DM 房间
+  if (result === undefined) {
+    sending.value = true
     try {
       logger.debug('[SearchFriendModal] Trying DM room fallback...')
       const { getOrCreateDirectRoom, updateDirectMapping } = await import('@/integrations/matrix/contacts')
-      const roomId = await getOrCreateDirectRoom(selectedUser.value.userId)
+      const roomId = await getOrCreateDirectRoom(targetUserId)
       if (roomId) {
-        await updateDirectMapping(selectedUser.value.userId, roomId)
+        await updateDirectMapping(targetUserId, roomId)
         msg.success(t('friends.request_sent_success'))
         showAddConfirm.value = false
         emit('success')
         await friendsStore.refreshAll()
-        return
       }
     } catch (fallbackError) {
       logger.error('[SearchFriendModal] Fallback also failed', { error: fallbackError })
+      msg.error(t('friends.request_sent_failed'))
+    } finally {
+      sending.value = false
     }
-
-    const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? String(error.message)
-        : t('friends.request_sent_failed')
-    msg.error(errorMessage)
-  } finally {
+  } else {
     sending.value = false
   }
 }
@@ -373,7 +355,7 @@ const handleConfirmAdd = async () => {
 .search-result-item {
   border: 1px solid var(--line-color);
   transition: all 0.2s;
-  
+
   &:hover {
     border-color: var(--primary-color);
   }

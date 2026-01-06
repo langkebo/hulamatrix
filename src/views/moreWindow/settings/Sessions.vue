@@ -32,12 +32,14 @@
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-space>
-          <n-button size="small" type="primary" @click="() => handleVerifyDevice(currentDevice)" :disabled="currentDevice.verified">
+          <n-button
+            size="small"
+            type="primary"
+            @click="() => handleVerifyDevice(currentDevice)"
+            :disabled="currentDevice.verified">
             验证设备
           </n-button>
-          <n-button size="small" type="error" ghost @click="handleSignOut">
-            退出登录
-          </n-button>
+          <n-button size="small" type="error" ghost @click="handleSignOut">退出登录</n-button>
         </n-space>
       </n-flex>
     </n-flex>
@@ -46,20 +48,12 @@
     <n-flex vertical class="text-(14px [--text-color])" :size="16">
       <n-flex align="center" justify="space-between">
         <span class="pl-10px">其他会话</span>
-        <n-select
-          class="w-120px"
-          size="small"
-          v-model:value="deviceFilter"
-          :options="filterOptions" />
+        <n-select class="w-120px" size="small" v-model:value="deviceFilter" :options="filterOptions" />
       </n-flex>
 
       <n-flex class="item" :size="12" vertical>
         <!-- 骨架屏加载状态 -->
-        <SettingsSkeleton
-          v-if="isLoading"
-          :rows="3"
-          variant="card"
-          :loading="isLoading" />
+        <SettingsSkeleton v-if="isLoading" :rows="3" variant="card" :loading="isLoading" />
 
         <!-- 设备列表 -->
         <template v-else-if="filteredDevices.length > 0">
@@ -131,6 +125,7 @@ import { flags } from '@/utils/envFlags'
 import { matrixClientService } from '@/integrations/matrix/client'
 import type { DeviceInfo } from '@/services/e2eeService'
 import { logger } from '@/utils/logger'
+import { useAppStateStore } from '@/stores/appState'
 
 /**
  * 会话设备信息
@@ -261,6 +256,15 @@ async function loadMatrixDevices(): Promise<void> {
 
 // 初始化
 onMounted(async () => {
+  // 检查应用状态
+  const appStateStore = useAppStateStore()
+  if (!appStateStore.isReady) {
+    logger.warn('[Sessions] Application not ready')
+    message.warning('应用正在初始化，请稍后再试')
+    isLoading.value = false
+    return
+  }
+
   isLoading.value = true
   try {
     // 获取当前设备信息
@@ -297,6 +301,13 @@ function getDeviceActions(device: Device): DropdownOption[] {
 }
 
 async function handleDeviceAction(key: string): Promise<void> {
+  // 检查应用状态
+  const appStateStore = useAppStateStore()
+  if (!appStateStore.isReady) {
+    message.warning('应用正在初始化，请稍后再试')
+    return
+  }
+
   // Find the device from the current filtered list
   const device = filteredDevices.value.find((d) => {
     const actions = getDeviceActions(d)

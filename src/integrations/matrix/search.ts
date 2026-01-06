@@ -307,15 +307,48 @@ export async function searchGlobalMessages(searchTerm: string, options: SearchOp
 
 /**
  * 用户目录搜索
+ * 注意: Matrix 标准用户目录 API 在当前服务器上可能返回 404
+ * 建议使用 searchUsersOptimized 进行搜索，它会优先使用好友系统 API
  */
 export async function searchUsers(searchTerm: string, limit: number = 10): Promise<SearchSuggestion[]> {
+  logger.info('[searchUsers] Starting user directory search', { searchTerm, limit })
+
   const client = matrixClientService.getClient() as unknown as MatrixClientLike
-  if (!client) return []
+  if (!client) {
+    logger.warn('[searchUsers] Matrix client not available')
+    logger.warn('[searchUsers] Possible reasons:')
+    logger.warn('[searchUsers] 1. User not logged in yet')
+    logger.warn('[searchUsers] 2. Matrix client initialization failed')
+    logger.warn('[searchUsers] 3. Search triggered before login completed')
+    logger.warn('[searchUsers] Client service initialized:', matrixClientService.isClientInitialized())
+    logger.warn('[searchUsers] Client exists:', !!matrixClientService.getClient())
+    return []
+  }
+
+  logger.info('[searchUsers] Matrix client available, calling searchUserDirectory')
 
   try {
-    const response = await client.searchUserDirectory?.({
+    // 检查 searchUserDirectory 方法是否存在
+    if (typeof client.searchUserDirectory !== 'function') {
+      logger.error('[searchUsers] searchUserDirectory method not available on client')
+      logger.error(
+        '[searchUsers] Client methods:',
+        Object.keys(client).filter((k) => typeof (client as Record<string, unknown>)[k] === 'function')
+      )
+      return []
+    }
+
+    logger.debug('[searchUsers] Calling client.searchUserDirectory with:', { term: searchTerm, limit })
+    const response = await (
+      client.searchUserDirectory as (opts: { term: string; limit?: number }) => Promise<SearchUserDirectoryResponse>
+    )({
       term: searchTerm,
       limit
+    })
+
+    logger.info('[searchUsers] Search response received', {
+      resultsCount: response?.results?.length || 0,
+      limited: response?.limited
     })
 
     const suggestions: SearchSuggestion[] = (response?.results || []).map((user: MatrixUserLike) => {
@@ -329,9 +362,93 @@ export async function searchUsers(searchTerm: string, limit: number = 10): Promi
       return suggestion
     })
 
+    logger.info('[searchUsers] Returning suggestions:', suggestions.length)
     return suggestions
   } catch (error) {
-    logger.error('User search failed:', error)
+    logger.error('[searchUsers] User search failed:', error)
+    if (error instanceof Error) {
+      logger.error('[searchUsers] Error message:', error.message)
+      logger.error('[searchUsers] Error stack:', error.stack)
+    }
+    return []
+  }
+}
+
+/**
+ * 优化的用户搜索功能
+ * 优先使用好友系统 API，降级到 Matrix 标准 API
+ *
+ * @param searchTerm - 搜索关键词
+ * @param limit - 返回结果数量限制
+ * @returns 搜索建议列表
+ */
+export async function searchUsersOptimized(searchTerm: string, limit: number = 10): Promise<SearchSuggestion[]> {
+  logger.info('[searchUsersOptimized] Starting optimized user search', { searchTerm, limit })
+
+  const startTime = Date.now()
+
+  // 方案 1: 优先使用好友系统搜索 API (已完善的后端功能)
+  try {
+    const client = matrixClientService.getClient()
+    if (client) {
+      const friendsV2 = (client as Record<string, unknown>).friendsV2 as {
+        searchUsers: (
+          term: string,
+          lim: number
+        ) => Promise<
+          Array<{
+            user_id: string
+            display_name?: string
+            avatar_url?: string
+          }>
+        >
+      }
+
+      if (friendsV2 && typeof friendsV2.searchUsers === 'function') {
+        logger.info('[searchUsersOptimized] Using friends V2 API')
+        const results = await friendsV2.searchUsers(searchTerm, limit)
+
+        if (results && results.length > 0) {
+          logger.info('[searchUsersOptimized] Friends API found results:', results.length)
+
+          return results.map(
+            (user) =>
+              ({
+                type: 'user',
+                id: user.user_id,
+                title: user.display_name || user.user_id,
+                subtitle: user.user_id,
+                avatar: user.avatar_url
+              }) as SearchSuggestion
+          )
+        } else {
+          logger.info('[searchUsersOptimized] Friends API returned no results, trying fallback')
+        }
+      } else {
+        logger.warn('[searchUsersOptimized] Friends V2 API not available')
+      }
+    }
+  } catch (error) {
+    logger.warn('[searchUsersOptimized] Friends API failed, trying fallback:', error)
+  }
+
+  // 方案 2: 降级到 Matrix 用户目录 API
+  logger.info('[searchUsersOptimized] Falling back to Matrix user directory API')
+  try {
+    const suggestions = await searchUsers(searchTerm, limit)
+
+    if (suggestions.length > 0) {
+      logger.info('[searchUsersOptimized] Matrix user directory found results:', suggestions.length)
+    } else {
+      logger.info('[searchUsersOptimized] No results found from any source')
+    }
+
+    const elapsed = Date.now() - startTime
+    logger.info('[searchUsersOptimized] Search completed in', elapsed, 'ms')
+
+    return suggestions
+  } catch (error) {
+    logger.error('[searchUsersOptimized] All search methods failed:', error)
     return []
   }
 }

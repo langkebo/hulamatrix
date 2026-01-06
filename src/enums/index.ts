@@ -876,3 +876,22 @@ export enum IsAllUserEnum {
 export enum UserType {
   BOT = 'bot'
 }
+
+/**
+ * 应用初始化状态
+ * 用于统一管理应用的初始化、登录和就绪状态
+ */
+export enum AppState {
+  /** 应用初始化中 */
+  INITIALIZING = 'INITIALIZING',
+  /** 未登录 */
+  NOT_LOGGED_IN = 'NOT_LOGGED_IN',
+  /** 登录中 */
+  LOGGING_IN = 'LOGGING_IN',
+  /** 已登录，客户端初始化中 */
+  LOGGED_IN = 'LOGGED_IN',
+  /** 应用就绪，可以使用 */
+  READY = 'READY',
+  /** 错误状态 */
+  ERROR = 'ERROR'
+}

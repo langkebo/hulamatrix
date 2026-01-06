@@ -6,8 +6,9 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { logger } from '@/utils/logger'
+import { useMenuTopStore } from '@/stores/menuTop'
 
 /**
  * 插件徽章类型
@@ -18,29 +19,38 @@ export interface PluginBadge {
 }
 
 /**
- * 菜单项类型
+ * 菜单项类型 - 与 menuTop store 的 MenuItem 兼容
  */
 export interface MenuTopItem {
-  id: string
-  label: string
   url: string
-  title: string
   icon?: string
   iconAction?: string
-  badge?: number | PluginBadge
-  dot?: boolean
-  shortTitle?: string
   state?: unknown
+  isAdd?: boolean
+  dot?: boolean
+  progress?: number
+  miniShow?: boolean
+  title?: string
+  shortTitle?: string
+  badge?: number | PluginBadge
   window?: { resizable?: boolean }
   size?: unknown
   tip?: string
+  id?: string
+  label?: string
 }
 
 /**
  * @deprecated 使用核心 store 代替
+ * 兼容层：桥接到实际的 menuTopStore
  */
 export const useMenuTopStoreCompat = defineStore('menuTopCompat', () => {
-  const menuItems = ref<MenuTopItem[]>([])
+  // 桥接到实际的 menuTopStore
+  const actualStore = useMenuTopStore()
+
+  // 使用 computed 桥接数据，确保响应式
+  const menuItems = computed(() => actualStore.menuTop)
+  const menuTop = menuItems
   const activeItem = ref<string | null>(null)
 
   function setActiveItem(id: string) {
@@ -48,17 +58,14 @@ export const useMenuTopStoreCompat = defineStore('menuTopCompat', () => {
     activeItem.value = id
   }
 
-  function addMenuItem(item: MenuTopItem) {
+  function addMenuItem(_item: MenuTopItem) {
     logger.warn('[useMenuTopStoreCompat] addMenuItem() called - use core store instead')
-    menuItems.value.push(item)
+    // 实际 store 不支持动态添加，仅记录警告
   }
 
-  function removeMenuItem(id: string) {
+  function removeMenuItem(_id: string) {
     logger.warn('[useMenuTopStoreCompat] removeMenuItem() called - use core store instead')
-    const index = menuItems.value.findIndex((item) => item.id === id)
-    if (index !== -1) {
-      menuItems.value.splice(index, 1)
-    }
+    // 实际 store 不支持动态移除，仅记录警告
   }
 
   return {
@@ -67,7 +74,6 @@ export const useMenuTopStoreCompat = defineStore('menuTopCompat', () => {
     setActiveItem,
     addMenuItem,
     removeMenuItem,
-    // 添加 menuTop 别名以保持兼容性
-    menuTop: menuItems
+    menuTop
   }
 })

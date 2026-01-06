@@ -7,23 +7,17 @@
     :negative-text="t('common.cancel')"
     :loading="loading"
     @positive-click="handleConfirm"
-    @negative-click="handleCancel"
-  >
+    @negative-click="handleCancel">
     <n-flex vertical :size="16" class="py-4">
       <!-- 用户信息 -->
       <n-flex align="center" :size="12">
-        <n-avatar
-          :size="56"
-          :src="avatarUrl"
-          round
-          :fallback-src="'/logoD.png'"
-        />
+        <n-avatar :size="56" :src="avatarUrl" round :fallback-src="'/logoD.png'" />
         <n-flex vertical :size="4">
           <span class="text-16px font-medium">{{ displayName }}</span>
           <span class="text-12px text-gray-500">{{ userId }}</span>
         </n-flex>
       </n-flex>
-      
+
       <!-- 验证消息输入 -->
       <n-form-item :label="t('friends.verify_message')">
         <n-input
@@ -32,8 +26,7 @@
           :placeholder="t('friends.verify_message_placeholder')"
           :rows="3"
           :maxlength="200"
-          show-count
-        />
+          show-count />
       </n-form-item>
     </n-flex>
   </n-modal>
@@ -46,6 +39,7 @@ import { sendRequest } from '@/integrations/synapse/friends'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
+import { withAppCheck } from '@/utils/appErrorHandler'
 
 const { t } = useI18n()
 
@@ -84,24 +78,32 @@ watch(
 )
 
 const handleConfirm = async () => {
-  loading.value = true
-  try {
-    const auth = useMatrixAuthStore()
-    const requester = auth.userId || ''
+  // 使用 withAppCheck 包装整个操作
+  const result = await withAppCheck(
+    async () => {
+      loading.value = true
 
-    await sendRequest({
-      requester_id: requester,
-      target_id: props.userId,
-      message: verifyMessage.value || undefined
-    })
+      const auth = useMatrixAuthStore()
+      const requester = auth.userId || ''
 
-    msg.success(t('friends.request_sent_success'))
-    emit('success')
-    showModal.value = false
-  } catch (error: unknown) {
-    logger.error('[AddFriendModal] Failed to send friend request', { error })
+      await sendRequest({
+        requester_id: requester,
+        target_id: props.userId,
+        message: verifyMessage.value || undefined
+      })
 
-    // 尝试通过创建 DM 房间作为 fallback
+      msg.success(t('friends.request_sent_success'))
+      emit('success')
+      showModal.value = false
+    },
+    {
+      customMessage: t('friends.request_sent_failed')
+    }
+  )
+
+  // Fallback: 如果主要方法失败，尝试通过创建 DM 房间
+  if (result === undefined) {
+    loading.value = true
     try {
       const { getOrCreateDirectRoom, updateDirectMapping } = await import('@/integrations/matrix/contacts')
       const roomId = await getOrCreateDirectRoom(props.userId)
@@ -110,16 +112,14 @@ const handleConfirm = async () => {
         msg.success(t('friends.request_sent_success'))
         emit('success')
         showModal.value = false
-        return
       }
     } catch (fallbackError) {
       logger.error('[AddFriendModal] Fallback also failed', { error: fallbackError })
+      msg.error(t('friends.request_sent_failed'))
+    } finally {
+      loading.value = false
     }
-
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    msg.error(errorMessage || t('friends.request_sent_failed'))
-    emit('error', error instanceof Error ? error : new Error(String(error)))
-  } finally {
+  } else {
     loading.value = false
   }
 }

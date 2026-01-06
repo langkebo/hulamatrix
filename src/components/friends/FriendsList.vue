@@ -251,6 +251,8 @@ import {
 import { useFriendsStoreV2 } from '@/stores/friendsV2'
 import type { FriendItem, FriendCategoryItem, PendingRequestItem } from '@/types/matrix-sdk-v2'
 import { logger } from '@/utils/logger'
+import { checkAppReady, withAppCheck, handleAppError, AppErrorType } from '@/utils/appErrorHandler'
+import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -394,25 +396,29 @@ const handleRejectRequest = async (request: PendingRequestItem) => {
 }
 
 const handleSendFriendRequest = async () => {
-  try {
-    await addFriendFormRef.value?.validate()
-    isSendingRequest.value = true
+  // 使用 withAppCheck 包装整个操作
+  const result = await withAppCheck(
+    async () => {
+      await addFriendFormRef.value?.validate()
+      isSendingRequest.value = true
 
-    await friendsStore.sendRequest(
-      addFriendForm.value.userId,
-      addFriendForm.value.message,
-      addFriendForm.value.categoryId || undefined
-    )
+      await friendsStore.sendRequest(
+        addFriendForm.value.userId,
+        addFriendForm.value.message,
+        addFriendForm.value.categoryId || undefined
+      )
 
-    message.success(t('friends.requests.sent'))
-    showAddFriendDialog.value = false
-    addFriendForm.value = { userId: '', message: '', categoryId: null }
-  } catch (error) {
-    message.error(t('friends.requests.send_failed'))
-    logger.error('Failed to send friend request:', error)
-  } finally {
-    isSendingRequest.value = false
-  }
+      message.success(t('friends.requests.sent'))
+      showAddFriendDialog.value = false
+      addFriendForm.value = { userId: '', message: '', categoryId: null }
+    },
+    {
+      customMessage: t('friends.requests.send_failed')
+    }
+  )
+
+  // 重置发送状态
+  isSendingRequest.value = false
 }
 
 const getPresenceText = (presence?: string): string => {
@@ -432,13 +438,24 @@ const getPresenceText = (presence?: string): string => {
 
 // 生命周期
 onMounted(async () => {
-  try {
-    await friendsStore.initialize()
-    logger.info('[FriendsListV2] Initialized successfully')
-  } catch (error) {
-    logger.error('[FriendsListV2] Initialization failed:', error)
-    message.error('加载好友列表失败')
+  // 使用统一的应用状态检查
+  if (!checkAppReady()) {
+    return
   }
+
+  // 使用 withAppCheck 包装初始化
+  await withAppCheck(
+    async () => {
+      // 添加性能监控
+      appInitMonitor.markPhase(AppInitPhase.LOAD_STORES)
+
+      await friendsStore.initialize()
+      logger.info('[FriendsListV2] Initialized successfully')
+    },
+    {
+      customMessage: '加载好友列表失败'
+    }
+  )
 })
 
 // 导出刷新方法供父组件调用

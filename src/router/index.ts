@@ -742,14 +742,73 @@ const router = createRouter({
 }) as Router
 
 // 在创建路由后，添加全局前置守卫
-// 为解决 “已声明‘to’，但从未读取其值” 的问题，将 to 参数改为下划线开头表示该参数不会被使用
+// 为解决 "已声明'to'，但从未读取其值" 的问题，将 to 参数改为下划线开头表示该参数不会被使用
 router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  // 桌面端直接放行
-  if (!isMobile) {
-    logger.debug('[守卫] 非移动端，直接放行', undefined, 'index')
+  // ==================== 公开页面白名单 ====================
+  const publicPages = new Set([
+    '/login',
+    '/register',
+    '/forgetPassword',
+    '/splashscreen',
+    '/qrCode',
+    '/tray',
+    '/about',
+    '/onlineStatus',
+    '/capture',
+    '/network',
+    '/notify',
+    '/update',
+    '/checkupdate',
+    '/modal-serviceAgreement',
+    '/modal-privacyAgreement',
+    '/modal-remoteLogin',
+    '/mobile/login',
+    '/mobile/splashscreen',
+    '/mobile/MobileForgetPassword',
+    '/mobile/serviceAgreement',
+    '/mobile/privacyAgreement'
+  ])
+
+  // 公开页面直接放行
+  if (publicPages.has(to.path)) {
     return next()
   }
 
+  // ==================== 桌面端认证检查 ====================
+  if (!isMobile) {
+    // 导入应用状态 store (延迟导入以避免循环依赖)
+    const { useAppStateStore } = await import('@/stores/appState')
+    const appStateStore = useAppStateStore()
+
+    // 应用初始化中或登录中，允许继续 (会显示加载状态)
+    if (appStateStore.isInitializing || appStateStore.isLoggingIn) {
+      logger.debug('[守卫] 桌面端应用初始化或登录中')
+      return next()
+    }
+
+    // 未登录且不是登录页 → 跳转登录页
+    if (appStateStore.needsLogin) {
+      logger.warn('[守卫] 桌面端未登录，跳转到登录页')
+      return next('/login')
+    }
+
+    // 应用未就绪且不是登录页 → 等待应用就绪
+    if (!appStateStore.isReady && to.path !== '/login') {
+      logger.warn('[守卫] 桌面端应用未就绪，显示加载状态')
+      return next()
+    }
+
+    // 已登录但访问登录页 → 跳转首页
+    if (appStateStore.isFullyLoggedIn && to.path === '/login') {
+      logger.debug('[守卫] 桌面端已登录，跳转到首页')
+      return next('/home')
+    }
+
+    logger.debug('[守卫] 桌面端认证通过，继续导航')
+    return next()
+  }
+
+  // ==================== 移动端认证检查 (原有逻辑) ====================
   try {
     const isLoginPage = to.path === '/mobile/login'
     const isSplashPage = to.path === '/mobile/splashscreen'

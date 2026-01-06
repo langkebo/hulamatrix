@@ -1,5 +1,4 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { info } from '@tauri-apps/plugin-log'
 import { defineStore } from 'pinia'
 import { reactive, computed, ref, watch } from 'vue'
 import { MittEnum, StoresEnum } from '@/enums'
@@ -121,7 +120,7 @@ export const useGlobalStore = defineStore(
 
     // 更新全局未读消息计数
     const updateGlobalUnreadCount = () => {
-      info('[global]更新全局未读消息计数')
+      logger.info('[global]更新全局未读消息计数')
       calculateGlobalUnread(chatStore.sessionList, unReadMark)
     }
 
@@ -155,7 +154,7 @@ export const useGlobalStore = defineStore(
 
       const session = chatStore.getSession(val)
       if (session?.unreadCount) {
-        info(`[global]当前会话发生实际变化: ${oldVal} -> ${val}`)
+        logger.info(`[global]当前会话发生实际变化: ${oldVal} -> ${val}`)
         // 清理已读数查询队列
         clearQueue()
         // 延攱1秒后开始查询已读数

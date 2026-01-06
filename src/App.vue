@@ -1,5 +1,7 @@
 <template>
   <div id="app-container" class="h-100vh w-100vw">
+    <!-- 全局加载状态组件 -->
+    <AppLoading />
     <NaiveProvider :message-max="3" :notific-max="3" class="h-full">
       <div v-if="!isLock" class="h-full">
         <router-view />
@@ -39,6 +41,12 @@ import { useSettingStore } from '@/stores/setting'
 import { isDesktop, isIOS, isMobile, isWindows } from '@/utils/PlatformConstants'
 import LockScreen from '@/views/LockScreen.vue'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
+import AppLoading from '@/components/common/AppLoading.vue'
+import { useAppStateStore } from '@/stores/appState'
+import { AppState } from '@/enums'
+import { useMatrixAuthStore } from '@/stores/matrixAuth'
+import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
+import { handleAppError, AppErrorType } from '@/utils/appErrorHandler'
 import {
   type LoginSuccessResType,
   type OnStatusChangeType,
@@ -633,6 +641,58 @@ onMounted(async () => {
     )
   }
   listenMobileReLogin()
+
+  // 应用状态初始化 - 在现有初始化完成后执行
+  try {
+    const appStateStore = useAppStateStore()
+    const matrixAuthStore = useMatrixAuthStore()
+
+    // 开始性能监控
+    appInitMonitor.start()
+
+    // 初始状态设为初始化中
+    appStateStore.setState(AppState.INITIALIZING)
+
+    // 检查是否有存储的 Matrix 认证信息
+    appInitMonitor.markPhase(AppInitPhase.CHECK_CREDENTIALS)
+    const hasStoredAuth = !!(matrixAuthStore.accessToken && matrixAuthStore.userId)
+
+    if (!hasStoredAuth) {
+      logger.info('[App] No stored credentials, showing login')
+      appStateStore.setState(AppState.NOT_LOGGED_IN)
+      appInitMonitor.complete()
+    } else {
+      // 有存储的认证信息，直接设为已登录
+      logger.info('[App] Found stored credentials:', matrixAuthStore.userId)
+      appStateStore.setState(AppState.LOGGED_IN)
+      appInitMonitor.markPhase(AppInitPhase.READY)
+
+      // 等待一小段时间让客户端同步完成，然后设置为就绪
+      setTimeout(() => {
+        appStateStore.setState(AppState.READY)
+        logger.info('[App] Application ready')
+        appInitMonitor.complete()
+      }, 1000)
+    }
+  } catch (error) {
+    logger.error('[App] Initialization failed:', error)
+
+    // 使用统一的错误处理
+    handleAppError(error, {
+      customMessage: '应用初始化失败',
+      messageType: 'error'
+    })
+
+    // 如果初始化失败，设置为未登录状态，让用户重新登录
+    try {
+      const { useAppStateStore } = await import('@/stores/appState')
+      const appStateStore = useAppStateStore()
+      appStateStore.setState(AppState.NOT_LOGGED_IN)
+      appInitMonitor.complete()
+    } catch {
+      // 如果连导入都失败，忽略错误
+    }
+  }
 })
 
 onUnmounted(async () => {

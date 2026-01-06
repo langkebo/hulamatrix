@@ -7,10 +7,109 @@
  * - Render performance measurement
  * - Network performance tracking
  * - Component render time analysis
+ * - Application initialization timing
  */
 
 import { ref, type Ref } from 'vue'
 import { logger } from '@/utils/logger'
+
+// ==================== App Initialization Monitoring ====================
+
+/**
+ * 应用初始化阶段
+ */
+export enum AppInitPhase {
+  START = 'app_init_start',
+  CHECK_CREDENTIALS = 'check_credentials',
+  INIT_MATRIX_CLIENT = 'init_matrix_client',
+  START_MATRIX_SYNC = 'start_matrix_sync',
+  LOAD_STORES = 'load_stores',
+  READY = 'app_ready'
+}
+
+/**
+ * 应用初始化时间线
+ */
+interface AppInitTimeline {
+  startTime: number
+  endTime?: number
+  totalDuration?: number
+  phases: Map<AppInitPhase, { startTime: number; endTime?: number; duration?: number }>
+}
+
+class AppInitMonitor {
+  private timeline?: AppInitTimeline
+  private enabled = true
+
+  start() {
+    if (!this.enabled) return
+
+    this.timeline = {
+      startTime: performance.now(),
+      phases: new Map()
+    }
+
+    this.markPhase(AppInitPhase.START)
+    logger.info('[AppInitMonitor] Started monitoring')
+  }
+
+  markPhase(phase: AppInitPhase) {
+    if (!this.enabled || !this.timeline) return
+
+    const now = performance.now()
+    const existing = this.timeline.phases.get(phase)
+
+    if (existing) {
+      existing.endTime = now
+      existing.duration = now - existing.startTime
+    } else {
+      this.timeline.phases.set(phase, { startTime: now })
+    }
+
+    logger.debug('[AppInitMonitor] Phase:', { phase, time: now })
+  }
+
+  complete() {
+    if (!this.enabled || !this.timeline) return
+
+    const endTime = performance.now()
+    this.timeline.endTime = endTime
+    this.timeline.totalDuration = endTime - this.timeline.startTime
+
+    // Mark end for any incomplete phases
+    for (const [_phase, data] of this.timeline.phases) {
+      if (data.endTime === undefined) {
+        data.endTime = endTime
+        data.duration = endTime - data.startTime
+      }
+    }
+
+    this.logReport()
+    this.enabled = false
+  }
+
+  getReport(): AppInitTimeline | undefined {
+    return this.timeline
+  }
+
+  logReport() {
+    if (!this.timeline) return
+
+    const phases: Record<string, number> = {}
+
+    for (const [phase, data] of this.timeline.phases) {
+      phases[phase] = data.duration || 0
+    }
+
+    logger.info('[AppInitMonitor] Initialization Report:', {
+      totalDuration: `${this.timeline.totalDuration?.toFixed(2)}ms`,
+      phases
+    })
+  }
+}
+
+// 导出单例
+export const appInitMonitor = new AppInitMonitor()
 
 // ==================== Types ====================
 

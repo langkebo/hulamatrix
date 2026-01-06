@@ -1,11 +1,11 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { info } from '@tauri-apps/plugin-log'
 import { useDebounceFn } from '@vueuse/core'
 import { sumBy } from 'es-toolkit'
 import { NotificationTypeEnum } from '@/enums'
 import type { SessionItem } from '@/services/types'
 import { isMac } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import { logger } from '@/utils/logger'
 
 /**
  * 统一的未读计数管理器
@@ -69,7 +69,7 @@ export class UnreadCountManager {
       // Tauri API 不可用 (如测试环境)，继续执行
     }
 
-    info('[UnreadCountManager] 计算全局未读消息计数')
+    logger.info('[UnreadCountManager] 计算全局未读消息计数')
 
     // 计算总未读数
     const totalUnread = sumBy(sessionList, (session) => {

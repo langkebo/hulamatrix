@@ -108,6 +108,18 @@ import { logger } from '@/utils/logger'
         </n-input>
       </n-flex>
 
+      <!-- 排序选择器 (搜索时不显示) -->
+      <n-flex v-if="!isSearch" align="center" justify="space-between" class="pr-8px pl-8px h-32px">
+        <span class="text-12px text-[--chat-text-color]">{{ t('home.chat_sidebar.sort.label') }}</span>
+        <n-select
+          :value="memberSortOrder"
+          @update:value="handleSortChange"
+          :options="sortOptions"
+          size="tiny"
+          style="width: 140px"
+          :consistent-menu-width="false" />
+      </n-flex>
+
       <!-- 成员列表 -->
       <n-virtual-list
         id="image-chat-sidebar"
@@ -205,6 +217,7 @@ import { useLinkSegments } from '@/hooks/useLinkSegments'
 import type { UserItem } from '@/services/types'
 import { WsResponseMessageType } from '@/services/wsType'
 import { useGlobalStore } from '@/stores/global'
+import { MemberSortEnum } from '@/stores/setting'
 
 // Tauri WebviewWindow 扩展接口
 interface WebviewWindowWithListen {
@@ -267,6 +280,25 @@ const inputInstRef = ref<InputInst | null>(null)
 const isCollapsed = ref(false)
 const { optionsList, report, selectKey } = useChatMain()
 
+// 成员排序状态
+const memberSortOrder = ref<MemberSortEnum>(settingStore.layout?.memberSortOrder || MemberSortEnum.ONLINE_FIRST)
+
+// 排序选项 (i18n)
+const sortOptions = computed(() => [
+  {
+    label: t('home.chat_sidebar.sort.online_first'),
+    value: MemberSortEnum.ONLINE_FIRST
+  },
+  {
+    label: t('home.chat_sidebar.sort.role_first'),
+    value: MemberSortEnum.ROLE_FIRST
+  },
+  {
+    label: t('home.chat_sidebar.sort.alphabetical'),
+    value: MemberSortEnum.ALPHABETICAL
+  }
+])
+
 // Type for ContextMenu menu items
 interface ContextMenuItem {
   label?: string | (() => string)
@@ -298,6 +330,74 @@ const currentMembers = computed<UserItem[]>(() => {
     lastOptTime: 0
   }))
 })
+
+/** 根据选择偏好对成员排序 */
+const sortMembers = (members: UserItem[]): UserItem[] => {
+  const sorted = [...members]
+
+  switch (memberSortOrder.value) {
+    case MemberSortEnum.ONLINE_FIRST:
+      // 在线状态 > 角色 > 字母
+      sorted.sort((a, b) => {
+        // 在线状态优先
+        if (a.activeStatus !== b.activeStatus) {
+          return (b.activeStatus === OnlineEnum.ONLINE ? 1 : 0) - (a.activeStatus === OnlineEnum.ONLINE ? 1 : 0)
+        }
+        // 然后按角色 (群主 > 管理员 > 普通)
+        if (a.roleId !== b.roleId) {
+          return (
+            (b.roleId === RoleEnum.LORD ? 2 : b.roleId === RoleEnum.ADMIN ? 1 : 0) -
+            (a.roleId === RoleEnum.LORD ? 2 : a.roleId === RoleEnum.ADMIN ? 1 : 0)
+          )
+        }
+        // 最后按字母
+        const nameA = (a.myName || a.name || '').toLowerCase()
+        const nameB = (b.myName || b.name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      break
+
+    case MemberSortEnum.ROLE_FIRST:
+      // 角色 > 在线状态 > 字母
+      sorted.sort((a, b) => {
+        // 角色优先
+        if (a.roleId !== b.roleId) {
+          return (
+            (b.roleId === RoleEnum.LORD ? 2 : b.roleId === RoleEnum.ADMIN ? 1 : 0) -
+            (a.roleId === RoleEnum.LORD ? 2 : a.roleId === RoleEnum.ADMIN ? 1 : 0)
+          )
+        }
+        // 然后按在线状态
+        if (a.activeStatus !== b.activeStatus) {
+          return (b.activeStatus === OnlineEnum.ONLINE ? 1 : 0) - (a.activeStatus === OnlineEnum.ONLINE ? 1 : 0)
+        }
+        // 最后按字母
+        const nameA = (a.myName || a.name || '').toLowerCase()
+        const nameB = (b.myName || b.name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      break
+
+    case MemberSortEnum.ALPHABETICAL:
+      // 纯字母排序
+      sorted.sort((a, b) => {
+        const nameA = (a.myName || a.name || '').toLowerCase()
+        const nameB = (b.myName || b.name || '').toLowerCase()
+        return nameA.localeCompare(nameB, 'zh-CN')
+      })
+      break
+  }
+
+  return sorted
+}
+
+/** 处理排序方式变更 */
+const handleSortChange = (value: MemberSortEnum) => {
+  memberSortOrder.value = value
+  settingStore.setMemberSortOrder(value)
+  // 重新排序列表
+  displayedUserList.value = sortMembers(currentMembers.value)
+}
 
 watch(
   () => [globalStore.currentSessionRoomId, isGroup.value] as const,
@@ -355,7 +455,8 @@ watch(
       return
     }
 
-    displayedUserList.value = Array.isArray(newList) ? [...newList] : []
+    // 应用排序
+    displayedUserList.value = sortMembers(Array.isArray(newList) ? newList : [])
   },
   { immediate: true }
 )
@@ -368,9 +469,9 @@ const handleSearch = useDebounceFn((value: string) => {
   searchRef.value = value
   const keyword = value.trim().toLowerCase()
 
-  // 如果没有搜索关键字,显示全部成员
+  // 如果没有搜索关键字,显示全部成员并排序
   if (!keyword) {
-    displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
+    displayedUserList.value = sortMembers(Array.isArray(currentMembers.value) ? [...currentMembers.value] : [])
     return
   }
 
@@ -381,7 +482,8 @@ const handleSearch = useDebounceFn((value: string) => {
     return matchName || matchMyName
   })
 
-  displayedUserList.value = filteredList
+  // 过滤后也应用排序
+  displayedUserList.value = sortMembers(filteredList)
 }, 10)
 
 const handleBlur = () => {

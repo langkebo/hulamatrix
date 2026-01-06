@@ -53,7 +53,9 @@
                   <n-alert type="warning" :show-icon="true">{{ friendsStore.error }}</n-alert>
                   <n-space class="mt-8px">
                     <n-button size="small" type="primary" @click="refreshFriends">重试</n-button>
-                    <n-button size="small" tertiary type="default" @click="goAddFriends('user')">打开添加好友页</n-button>
+                    <n-button size="small" tertiary type="default" @click="goAddFriends('user')">
+                      打开添加好友页
+                    </n-button>
                   </n-space>
                 </div>
                 <template v-else>
@@ -66,28 +68,44 @@
                     </div>
                     <template v-if="group.items.length > 100">
                       <VirtualList
-                        :items="group.items.map((u: FriendItem): FriendVirtualListItem => ({
-                          message: { id: u.user_id },
-                          user_id: u.user_id,
-                          user_info: u // 传递完整的用户信息
-                        }))"
+                        :items="
+                          group.items.map(
+                            (u: FriendItem): FriendVirtualListItem => ({
+                              message: { id: u.user_id },
+                              user_id: u.user_id,
+                              user_info: u // 传递完整的用户信息
+                            })
+                          )
+                        "
                         :estimated-item-height="60">
                         <template #default="slotProps">
                           <!-- Cast slotProps.item to FriendVirtualListItem -->
                           <div
                             v-if="slotProps.item"
                             class="item-box w-full h-56px md:h-60px mb-5px"
-                            @click="handleClick((slotProps.item as FriendVirtualListItem).user_id, RoomTypeEnum.SINGLE)">
+                            @click="
+                              handleClick((slotProps.item as FriendVirtualListItem).user_id, RoomTypeEnum.SINGLE)
+                            ">
                             <n-flex align="center" :size="10" class="h-56px md:h-60px pl-6px pr-8px flex-1 truncate">
-                          <n-avatar
-                            round
-                            :size="36"
-                            :src="(slotProps.item as FriendVirtualListItem).user_info?.avatar_url || ''"
-                            :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
+                              <n-avatar
+                                round
+                                :size="36"
+                                :src="(slotProps.item as FriendVirtualListItem).user_info?.avatar_url || ''"
+                                :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                               <n-flex vertical justify="space-between" class="h-fit flex-1 truncate">
                                 <span class="text-13px leading-tight flex-1 truncate">
-                                  <n-badge :color="isOnline((slotProps.item as FriendVirtualListItem).user_id) ? '#1ab292' : '#909090'" dot />
-                                  {{ (slotProps.item as FriendVirtualListItem).user_info?.display_name || (slotProps.item as FriendVirtualListItem).user_info?.name || (slotProps.item as FriendVirtualListItem).user_id }}
+                                  <n-badge
+                                    :color="
+                                      isOnline((slotProps.item as FriendVirtualListItem).user_id)
+                                        ? '#1ab292'
+                                        : '#909090'
+                                    "
+                                    dot />
+                                  {{
+                                    (slotProps.item as FriendVirtualListItem).user_info?.display_name ||
+                                    (slotProps.item as FriendVirtualListItem).user_info?.name ||
+                                    (slotProps.item as FriendVirtualListItem).user_id
+                                  }}
                                 </span>
                                 <span class="text-10px text-gray-500 truncate">
                                   {{ (slotProps.item as FriendVirtualListItem).user_info?.status_text || '' }}
@@ -140,18 +158,18 @@
                   <div class="flex items-center justify-between">
                     <span>{{ p.requester_id }} → {{ p.target_id }}</span>
                     <n-space>
-                    <n-button
-                      size="small"
-                      type="primary"
-                      @click="friendsStore.accept(p.request_id).then(() => msg.success('已接受'))">
-                      接受
-                    </n-button>
-                    <n-button
-                      size="small"
-                      type="error"
-                      @click="friendsStore.reject(p.request_id).then(() => msg.success('已拒绝'))">
-                      拒绝
-                    </n-button>
+                      <n-button
+                        size="small"
+                        type="primary"
+                        @click="friendsStore.accept(p.request_id).then(() => msg.success('已接受'))">
+                        接受
+                      </n-button>
+                      <n-button
+                        size="small"
+                        type="error"
+                        @click="friendsStore.reject(p.request_id).then(() => msg.success('已拒绝'))">
+                        拒绝
+                      </n-button>
                     </n-space>
                   </div>
                 </n-list-item>
@@ -162,12 +180,9 @@
       </n-collapse>
     </n-tab-pane>
   </n-tabs>
-  
+
   <!-- 搜索好友对话框 -->
-  <SearchFriendModal
-    v-model:show="showSearchFriendModal"
-    @success="handleAddFriendSuccess"
-  />
+  <SearchFriendModal v-model:show="showSearchFriendModal" @success="handleAddFriendSuccess" />
 </template>
 <script setup lang="ts" name="friendsList">
 import { onMounted, onUnmounted, ref, watch, watchEffect, computed } from 'vue'
@@ -341,20 +356,15 @@ const goAddFriends = (_mode: 'user' | 'matrix') => {
     windowWithTauri.TAURI_ENV_PLATFORM === 'ios' ||
     windowWithTauri.TAURI_ENV_PLATFORM === 'android' ||
     (typeof location !== 'undefined' && location.pathname.startsWith('/mobile'))
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
-  logger.debug('[goAddFriends] Environment check:', { isMobile, isTauri, hasTauriInWindow: '__TAURI__' in window })
+  logger.debug('[goAddFriends] Environment check:', { isMobile })
 
   if (isMobile) {
     logger.debug('[goAddFriends] Mobile mode - navigating to mobile add friends')
     router.push('/mobile/mobileFriends/addFriends')
-  } else if (isTauri) {
-    // Tauri 桌面环境：跳转到搜索页面
-    logger.debug('[goAddFriends] Tauri mode - navigating to /searchFriend')
-    router.push('/searchFriend')
   } else {
-    // Web 环境：打开对话框
-    logger.debug('[goAddFriends] Web mode - opening modal dialog')
+    // PC/Tauri 和 Web 环境：打开对话框
+    logger.debug('[goAddFriends] Desktop mode - opening modal dialog')
     showSearchFriendModal.value = true
   }
 }

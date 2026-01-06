@@ -1,7 +1,12 @@
 # Matrix SDK 后端待完善事项汇总
 
-> **生成时间**: 2026-01-02
+> **最后更新**: 2026-01-06 | **文档版本**: 1.2.0
 > **用途**: 汇总所有需要后端（Synapse/Matrix 服务器）支持或配置的功能事项
+
+> **相关文档**:
+> - [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+> - [前端 PC/移动端要求](./PC_MOBILE_REQUIREMENTS.md) - 前端待实现功能清单
+> - [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
 
 ---
 
@@ -19,8 +24,8 @@
 | 在线状态/输入提示 | 100% | 100% | ✅ 完成 |
 | 媒体文件 | 93% | 100% | ✅ 完成 |
 | 搜索功能 | 100% | 100% | ✅ 完成 |
-| 好友系统 | 100% | 80% | ⚠️ 需要自定义 API |
-| 私聊功能 | 95% | 100% | ✅ 完成 |
+| 好友系统 | 100% | 0% | ❌ 后端未实现，前端使用降级方案 |
+| 私聊功能 | 95% | 0% | ❌ 后端未实现，前端使用降级方案 |
 | 管理员 API | 68% | 60% | ⚠️ 部分实现 |
 | 企业功能 | 100% | 80% | ⚠️ 需要扩展 |
 
@@ -31,9 +36,49 @@
 ### 1. Synapse 扩展 API - 好友系统
 
 **前端实现状态**: 100% ✅
-**后端支持状态**: 需要自定义实现 ⚠️
+**后端支持状态**: ❌ **未实现** (已测试验证，2026-01-06)
+
+#### 测试结果
+
+**测试日期**: 2026-01-06
+**测试服务器**: `https://matrix.cjystx.top`
+**测试方法**: HTTP GET/POST 请求测试
+
+| API 端点 | 方法 | 状态码 | 结果 |
+|----------|------|--------|------|
+| `/_synapse/client/friends?action=list` | GET | 404 | ❌ 未实现 |
+| `/_synapse/client/friends?action=pending_requests` | GET | 404 | ❌ 未实现 |
+| `/_synapse/client/friends?action=search` | GET | 404 | ❌ 未实现 |
+| `/_synapse/client/friends?action=stats` | GET | 404 | ❌ 未实现 |
+| `/_synapse/client/friends` | POST | 404 | ❌ 未实现 |
+
+#### 前端降级方案
+
+虽然后端 API 未实现，**前端已实现完整的降级方案**，所有好友功能正常工作：
+
+1. **使用 Matrix 标准 API**
+   - `m.direct` 账户数据存储好友关系
+   - `m.room.member` 事件管理好友状态
+   - Matrix 用户目录 API (`/_matrix/client/v3/user_directory/search`)
+
+2. **前端实现的功能**
+   - ✅ 添加/删除好友
+   - ✅ 搜索用户
+   - ✅ 好友列表展示
+   - ✅ 在线状态显示
+   - ✅ 好友请求（通过房间邀请）
+   - ✅ 好友分类（通过账户数据）
+
+3. **降级代码位置**
+   ```typescript
+   // src/integrations/synapse/friends.ts
+   // src/integrations/matrix/search.ts (searchUsersOptimized)
+   // src/stores/friendsV2.ts (完整的好友 Store 实现)
+   ```
 
 #### 需要实现的自定义 API 端点
+
+如果需要实现后端好友系统（可选），需要实现以下端点：
 
 ```http
 # 好友关系管理
@@ -43,6 +88,7 @@ POST   /_synapse/client/friends/accept/{userId}      # 接受好友请求
 POST   /_synapse/client/friends/reject/{userId}      # 拒绝好友请求
 DELETE /_synapse/client/friends/remove/{userId}      # 删除好友
 GET    /_synapse/client/friends/pending              # 获取待处理请求
+GET    /_synapse/client/friends/search?query=xxx     # 搜索用户
 ```
 
 #### 后端实现要点
@@ -59,12 +105,77 @@ GET    /_synapse/client/friends/pending              # 获取待处理请求
    - 接受好友请求时自动创建 DM 房间
    - 更新用户的 `m.direct` 账户数据
 
-#### 降级方案
+#### 优先级建议
 
-如果无法实现 Synapse 扩展，前端已实现完整的降级方案：
-- 使用 Matrix 标准的 `m.direct` 账户数据
-- 通过 DM 房间管理好友关系
-- 所有功能正常工作
+**优先级**: 🟡 中低（可选）
+**理由**:
+- 前端降级方案完全可用，所有功能正常
+- 实现 Synapse 扩展需要修改服务器代码
+- 建议优先完成其他高优先级功能
+- 如需更好的性能和扩展性，可在后期实现
+
+---
+
+### 2. Synapse 扩展 API - 私聊系统
+
+**前端实现状态**: 95% ✅
+**后端支持状态**: ❌ **未实现** (已测试验证，2026-01-06)
+
+#### 测试结果
+
+**测试日期**: 2026-01-06
+**测试服务器**: `https://matrix.cjystx.top`
+**测试方法**: HTTP GET/POST 请求测试
+
+| API 端点 | 方法 | 状态码 | 结果 |
+|----------|------|--------|------|
+| `/_synapse/client/private?action=list` | GET | 404 | ❌ 未实现 |
+| `/_synapse/client/private` | POST | 404 | ❌ 未实现 |
+
+#### 前端降级方案
+
+虽然后端 API 未实现，**前端已实现完整的降级方案**：
+
+1. **使用 Matrix 标准 API**
+   - `m.direct` 账户数据管理私聊关系
+   - `m.room.membership` 事件管理会话状态
+   - 标准 Matrix 房间 API 发送消息
+
+2. **前端实现的功能**
+   - ✅ 创建私聊会话
+   - ✅ 发送/接收消息
+   - ✅ 消息历史加载
+   - ✅ 消息 TTL（销毁模式）
+   - ✅ 会话列表
+   - ✅ 会话隐藏/删除
+
+3. **降级代码位置**
+   ```typescript
+   // src/integrations/matrix/contacts.ts (getOrCreateDirectRoom)
+   // src/stores/privateChatV2.ts (完整的私聊 Store 实现)
+   // src/views/private-chat/PrivateChatView.vue (私聊界面)
+   ```
+
+#### 需要实现的自定义 API 端点
+
+如果需要实现后端私聊系统（可选），需要实现以下端点：
+
+```http
+# 私聊会话管理
+GET    /_synapse/client/private?action=list&user_id=xxx        # 获取私聊列表
+POST   /_synapse/client/private                                 # 创建私聊会话
+POST   /_synapse/client/private?action=delete                   # 删除私聊会话
+POST   /_synapse/client/private?action=hide                     # 隐藏私聊会话
+GET    /_synapse/client/private?action=history&session_id=xxx    # 获取会话历史
+```
+
+#### 优先级建议
+
+**优先级**: 🟡 中低（可选）
+**理由**:
+- 前端降级方案完全可用，所有功能正常
+- Matrix 标准 API 已提供完整的私聊功能
+- 建议优先完成其他高优先级功能
 
 ---
 
@@ -364,5 +475,41 @@ push:
 
 ---
 
-**最后更新**: 2026-01-02
+## 🔗 相关文档
+
+### 项目文档
+- [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+- [前端 PC/移动端要求](./PC_MOBILE_REQUIREMENTS.md) - 前端待实现功能清单
+- [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
+- [认证分析和优化](../../AUTHENTICATION_ANALYSIS_AND_OPTIMIZATION.md) - 项目认证流程分析
+
+### Matrix 规范
+
+- [Matrix Spec - Client-Server API](https://spec.matrix.org/v1.11/client-server-api/)
+- [Matrix Spec - Server-Server API](https://spec.matrix.org/v1.11/server-server-api/)
+- [Matrix Spec - Application Service API](https://spec.matrix.org/v1.11/application-service-api/)
+
+### Synapse 文档
+
+- [Synapse Admin API](https://matrix-org.github.io/synapse/latest/admin_api/)
+- [Synapse Configuration](https://matrix-org.github.io/synapse/latest/configuration/)
+- [Synapse Module Development](https://matrix-org.github.io/synapse/latest/modules/)
+
+### 自定义开发
+
+- [Writing Synapse Modules](https://matrix-org.github.io/synapse/latest/modules.html)
+- [Synapse Extension APIs](https://matrix-org.github.io/synapse/latest/usage/administration/admin_api/index.html)
+
+---
+
+**最后更新**: 2026-01-06
+**文档版本**: 1.2.0
 **维护者**: HuLaMatrix 开发团队
+
+**更新内容 (v1.2.0)**:
+- ✅ 添加后端 API 测试结果（Friends, Private Chat）
+- ✅ 更新后端实现状态为"未实现"（基于 404 测试结果）
+- ✅ 添加前端降级方案详细说明
+- ✅ 更新优先级建议为"中低（可选）"
+- ✅ 说明前端已实现完整功能，使用 Matrix 标准 API
+- ✅ 添加降级代码位置说明

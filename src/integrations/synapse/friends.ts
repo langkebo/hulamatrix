@@ -1,22 +1,47 @@
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { logger } from '@/utils/logger'
 
+/**
+ * 检查是否为开发环境
+ */
+const isDev = () => import.meta.env.DEV
+
+/**
+ * 构建API URL
+ * - 开发环境：使用相对路径，通过Vite代理转发
+ * - 生产环境：使用完整的homeserver URL
+ */
 const buildUrl = (path: string, query?: Record<string, string>) => {
   const auth = useMatrixAuthStore()
-  let base = auth.getHomeserverBaseUrl() || ''
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
-  if (!isTauri) {
-    const u = new URL(path, typeof location !== 'undefined' ? location.origin : 'http://localhost')
-    if (query) Object.entries(query).forEach(([k, v]) => u.searchParams.set(k, v))
-    return `${u.pathname}${u.search}`
+
+  // 开发环境：使用相对路径，通过Vite代理
+  if (isDev()) {
+    // Vite代理配置：/_synapse 和 /_matrix 会代理到真实的Matrix服务器
+    let url = path
+    if (query) {
+      const searchParams = new URLSearchParams(query)
+      url += `?${searchParams.toString()}`
+    }
+    return url
   }
+
+  // 生产环境：使用完整的homeserver URL
+  let base = auth.getHomeserverBaseUrl() || ''
+
+  // 尝试从 Matrix 客户端服务获取 homeserver URL
   if (!base) {
     try {
       const { matrixClientService } = require('@/integrations/matrix/client')
       base = (matrixClientService.getClient()?.baseUrl || '').replace(/\/$/, '')
     } catch {}
   }
-  if (!base) throw new Error('未设置 homeserver 基础地址')
+
+  // 如果仍然没有 base URL，抛出错误
+  if (!base) {
+    throw new Error('未设置 homeserver 基础地址，请确保已完成 Matrix 服务发现')
+  }
+
+  // 构建完整的 URL
   const u = new URL(path, base)
   if (query) Object.entries(query).forEach(([k, v]) => u.searchParams.set(k, v))
   return u.toString()
@@ -65,14 +90,18 @@ export const listFriends = async () => {
     const res = await fetchWithTimeout(url, { headers: auth }, 5000)
     if (!res.ok) {
       if (res.status === 404) {
-        throw new Error('Synapse friends API not found (404)')
+        // Synapse Friends API 不可用，这是正常的，使用降级方案
+        logger.warn('[Synapse Friends] API not available (404), using Matrix SDK fallback')
+        return { friends: [] }
       }
+      logger.warn('[Synapse Friends] API returned error:', res.status, res.statusText)
       return { friends: [] }
     }
     return await res.json()
   } catch (error) {
-    if (error instanceof Error && error.message.includes('404')) {
-      throw error
+    if (error instanceof Error) {
+      // 网络错误或超时，记录但返回空列表
+      logger.warn('[Synapse Friends] Request failed:', error.message)
     }
     return { friends: [] }
   }
@@ -99,14 +128,17 @@ export const listPendingRequests = async () => {
     const res = await fetchWithTimeout(url, { headers: auth }, 5000)
     if (!res.ok) {
       if (res.status === 404) {
-        throw new Error('Synapse friends API not found (404)')
+        // Synapse Friends API 不可用，这是正常的
+        logger.warn('[Synapse Friends] Pending requests API not available (404)')
+        return { requests: [] }
       }
+      logger.warn('[Synapse Friends] Pending requests API error:', res.status)
       return { requests: [] }
     }
     return await res.json()
   } catch (error) {
-    if (error instanceof Error && error.message.includes('404')) {
-      throw error
+    if (error instanceof Error) {
+      logger.warn('[Synapse Friends] Pending requests failed:', error.message)
     }
     return { requests: [] }
   }
@@ -211,22 +243,27 @@ export const searchUsers = async (query: string) => {
 
     if (!res.ok) {
       const errorText = await res.text()
-      logger.error('[searchUsers] Error response:', errorText)
       if (res.status === 404) {
+        // Synapse Friends API 不可用，这是正常的，使用Matrix SDK fallback
+        logger.warn('[Synapse Friends] Search API not available (404), should use Matrix SDK fallback')
         throw new Error('Synapse friends API not found (404)')
       }
       if (res.status === 401) {
         throw new Error('Unauthorized - token may be invalid or missing')
       }
+      logger.warn('[searchUsers] Error response:', errorText)
       return { status: 'error', users: [] }
     }
     const data = await res.json()
     logger.debug('[searchUsers] Success, users count:', data.users?.length || 0)
     return data
   } catch (error) {
-    logger.error('[searchUsers] Error:', error)
-    if (error instanceof Error && (error.message.includes('404') || error.message.includes('Unauthorized'))) {
-      throw error
+    if (error instanceof Error) {
+      // 对于404和401错误，向上抛出让上层使用Matrix SDK fallback
+      if (error.message.includes('404') || error.message.includes('Unauthorized')) {
+        throw error
+      }
+      logger.warn('[searchUsers] Request failed:', error.message)
     }
     return { status: 'error', users: [] }
   }
@@ -263,14 +300,17 @@ export const stats = async () => {
     const res = await fetchWithTimeout(url, { headers: auth }, 5000)
     if (!res.ok) {
       if (res.status === 404) {
-        throw new Error('Synapse friends API not found (404)')
+        // Synapse Friends API 不可用，这是正常的
+        logger.warn('[Synapse Friends] Stats API not available (404)')
+        return {}
       }
+      logger.warn('[Synapse Friends] Stats API error:', res.status)
       return {}
     }
     return await res.json()
   } catch (error) {
-    if (error instanceof Error && error.message.includes('404')) {
-      throw error
+    if (error instanceof Error) {
+      logger.warn('[Synapse Friends] Stats request failed:', error.message)
     }
     return {}
   }

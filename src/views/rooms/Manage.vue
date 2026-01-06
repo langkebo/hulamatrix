@@ -62,7 +62,10 @@
             </div>
           </n-list-item>
         </n-list>
-        <n-pagination v-model:page="pagination.page" :page-count="pagination.pageCount" :page-size="pagination.pageSize" />
+        <n-pagination
+          v-model:page="pagination.page"
+          :page-count="pagination.pageCount"
+          :page-size="pagination.pageSize" />
       </n-card>
       <n-tabs type="line" animated>
         <n-tab-pane name="info" tab="房间信息">
@@ -172,6 +175,8 @@ import { logger, toError } from '@/utils/logger'
 import { mapRooms, searchRooms, type SearchCriteria, type RoomRow } from '@/views/rooms/search-logic'
 import type { RoomVisibility } from '@/types/matrix'
 import RoomDirectory from '@/components/rooms/RoomDirectory.vue'
+import { checkAppReady, withAppCheck } from '@/utils/appErrorHandler'
+import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
 
 // Type guard for directory visibility
 const isValidDirectoryVisibility = (value: unknown): value is RoomVisibility => {
@@ -248,25 +253,41 @@ const loading = ref(false)
 const loadError = ref('')
 const timeoutHandle = ref<number | null>(null)
 const refreshRooms = async () => {
-  const c = (await ensureMatrixReady()) || matrixClientService.getClient()
-  loading.value = true
-  try {
-    loadError.value = ''
-    const getRoomsMethod = c?.getRooms as (() => Record<string, unknown>[]) | undefined
-    rooms.value = getRoomsMethod?.() || []
-    if (timeoutHandle.value) {
-      clearTimeout(timeoutHandle.value)
-      timeoutHandle.value = null
-    }
-    timeoutHandle.value = window.setTimeout(() => {
-      if (loading.value) {
-        loading.value = false
-        loadError.value = '加载房间超时'
-      }
-    }, 15000)
-  } finally {
-    loading.value = false
+  // 使用统一的应用状态检查
+  if (!checkAppReady()) {
+    return
   }
+
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      // 添加性能监控
+      appInitMonitor.markPhase(AppInitPhase.LOAD_STORES)
+
+      const c = (await ensureMatrixReady()) || matrixClientService.getClient()
+      loading.value = true
+      try {
+        loadError.value = ''
+        const getRoomsMethod = c?.getRooms as (() => Record<string, unknown>[]) | undefined
+        rooms.value = getRoomsMethod?.() || []
+        if (timeoutHandle.value) {
+          clearTimeout(timeoutHandle.value)
+          timeoutHandle.value = null
+        }
+        timeoutHandle.value = window.setTimeout(() => {
+          if (loading.value) {
+            loading.value = false
+            loadError.value = '加载房间超时'
+          }
+        }, 15000)
+      } finally {
+        loading.value = false
+      }
+    },
+    {
+      customMessage: '加载房间列表失败'
+    }
+  )
 }
 const ensureMatrixReady = async (): Promise<Record<string, unknown> | null> => {
   const c = matrixClientService.getClient()
@@ -317,15 +338,23 @@ const pagedResults = computed(() => {
   return results.value.slice(start, end)
 })
 const doSearch = async () => {
-  searching.value = true
-  try {
-    const c = matrixClientService.getClient()
-    const rows = mapRooms(c)
-    results.value = searchRooms(rows, search.value)
-    pagination.value.page = 1
-  } finally {
-    searching.value = false
-  }
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      searching.value = true
+      try {
+        const c = matrixClientService.getClient()
+        const rows = mapRooms(c)
+        results.value = searchRooms(rows, search.value)
+        pagination.value.page = 1
+      } finally {
+        searching.value = false
+      }
+    },
+    {
+      customMessage: '搜索房间失败'
+    }
+  )
 }
 const resetSearch = () => {
   search.value = { query: '', mode: 'fuzzy', sortBy: 'created', filter: [] }
@@ -482,11 +511,19 @@ const openPowerEditor = () => {
 }
 
 const onInvite = async () => {
-  if (!roomId.value || !inviteUserId.value) return
-  await inviteUser(roomId.value, inviteUserId.value)
-  msg.success('已邀请')
-  members.value = await getJoinedMembers(roomId.value).then((list) =>
-    list.map((u: string | { userId: string }) => (typeof u === 'string' ? { userId: u } : u))
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      if (!roomId.value || !inviteUserId.value) return
+      await inviteUser(roomId.value, inviteUserId.value)
+      msg.success('已邀请')
+      members.value = await getJoinedMembers(roomId.value).then((list) =>
+        list.map((u: string | { userId: string }) => (typeof u === 'string' ? { userId: u } : u))
+      )
+    },
+    {
+      customMessage: '邀请成员失败'
+    }
   )
 }
 const onKick = async (uid: string) => {
@@ -522,19 +559,27 @@ const newRoomName = ref('')
 const newRoomTopic = ref('')
 const newRoomPublic = ref(false)
 const onCreateRoom = async () => {
-  const c = await ensureMatrixReady()
-  if (!c) return
-  const res = await createRoomDetailed({
-    name: newRoomName.value,
-    topic: newRoomTopic.value,
-    isPublic: newRoomPublic.value
-  })
-  msg.success(`房间创建成功（${res.preset}/${res.visibility}）`)
-  refreshRooms()
-  roomId.value = String(res.roomId)
-  joinRule.value = res.preset === 'public_chat' ? 'public' : 'invite'
-  // Validate and set directory visibility
-  directoryVisibility.value = isValidDirectoryVisibility(res.visibility) ? res.visibility : 'private'
+  // 使用 withAppCheck 包装整个操作
+  await withAppCheck(
+    async () => {
+      const c = await ensureMatrixReady()
+      if (!c) return
+      const res = await createRoomDetailed({
+        name: newRoomName.value,
+        topic: newRoomTopic.value,
+        isPublic: newRoomPublic.value
+      })
+      msg.success(`房间创建成功（${res.preset}/${res.visibility}）`)
+      refreshRooms()
+      roomId.value = String(res.roomId)
+      joinRule.value = res.preset === 'public_chat' ? 'public' : 'invite'
+      // Validate and set directory visibility
+      directoryVisibility.value = isValidDirectoryVisibility(res.visibility) ? res.visibility : 'private'
+    },
+    {
+      customMessage: '创建房间失败'
+    }
+  )
 }
 
 const memberCols = [
@@ -640,7 +685,12 @@ const handleDirectoryPreview = async (roomIdValue: string) => {
   }
 }
 
-onMounted(refreshRooms)
+onMounted(() => {
+  // 使用统一的应用状态检查
+  if (checkAppReady()) {
+    refreshRooms()
+  }
+})
 </script>
 
 <style scoped>

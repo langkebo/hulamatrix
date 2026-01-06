@@ -1,6 +1,9 @@
 /**
  * Matrix Push Notification Service
  * Handles Matrix push rules, notifications, and browser notifications
+ *
+ * Optimized to use SDK's PushProcessor for rule evaluation while maintaining
+ * custom browser notification handling (not provided by SDK).
  */
 
 import { matrixClientService } from '@/integrations/matrix/client'
@@ -8,6 +11,8 @@ import { logger } from '@/utils/logger'
 import { parseMatrixEvent } from '@/utils/messageUtils'
 import { MsgEnum } from '@/enums'
 import type { MatrixPushRule, MatrixPresence, MatrixTypingEvent } from '@/types/matrix'
+// @ts-expect-error - PushProcessor is exported from matrix-js-sdk
+import { PushProcessor } from 'matrix-js-sdk/lib/push/PushProcessor'
 
 export interface PushRuleScope {
   /** Global rules */
@@ -151,6 +156,8 @@ export class MatrixPushService {
   private notificationPermission: NotificationPermission = 'default'
   private activeNotifications = new Map<string, Notification>()
   private isInitialized = false
+  // SDK PushProcessor for rule evaluation (replaces custom logic)
+  private pushProcessor: PushProcessor | null = null
 
   static getInstance(): MatrixPushService {
     if (!MatrixPushService.instance) {
@@ -171,12 +178,19 @@ export class MatrixPushService {
    */
   async initialize(): Promise<void> {
     try {
-      logger.info('[MatrixPushService] Initializing push notification service')
+      logger.info('[MatrixPushService] Initializing push notification service (with SDK PushProcessor)')
 
       // Check and request notification permission
       await this.requestNotificationPermission()
 
-      // Load existing push rules
+      // Initialize SDK PushProcessor
+      const client = matrixClientService.getClient()
+      if (client) {
+        this.pushProcessor = new PushProcessor({ client })
+        logger.info('[MatrixPushService] SDK PushProcessor initialized')
+      }
+
+      // Load existing push rules (for display/management)
       await this.loadPushRules()
 
       // Set up push notification handlers
@@ -397,9 +411,46 @@ export class MatrixPushService {
   }
 
   /**
-   * Evaluate push rules for an event
+   * Evaluate push rules for an event using SDK PushProcessor
+   *
+   * Replaces custom implementation with SDK's PushProcessor.actionsForEvent()
    */
   private async evaluatePushRules(event: MatrixEventLike, room: MatrixRoomLike): Promise<PushRuleEvaluator> {
+    // Default evaluator
+    const evaluator: PushRuleEvaluator = {
+      shouldNotify: false,
+      highlight: false
+    }
+
+    // Use SDK PushProcessor if available (recommended by Phase 10 optimization)
+    if (this.pushProcessor) {
+      try {
+        // Convert our event-like object to SDK MatrixEvent format
+        const sdkEvent = this.convertToSdkEvent(event, room)
+        if (sdkEvent) {
+          // Use SDK's PushProcessor to evaluate push rules
+          const pushDetails = this.pushProcessor.actionsForEvent(sdkEvent)
+
+          // Map SDK push details to our evaluator format
+          evaluator.shouldNotify = pushDetails.notify || false
+          evaluator.highlight = pushDetails.tweaks?.highlight || false
+          evaluator.sound = pushDetails.tweaks?.sound as string
+
+          logger.debug('[MatrixPushService] SDK PushProcessor evaluation result:', {
+            shouldNotify: evaluator.shouldNotify,
+            highlight: evaluator.highlight,
+            sound: evaluator.sound
+          })
+
+          return evaluator
+        }
+      } catch (error) {
+        logger.warn('[MatrixPushService] SDK PushProcessor evaluation failed, using fallback:', error)
+        // Fall through to custom implementation
+      }
+    }
+
+    // Fallback: Custom implementation (when SDK is not available)
     const roomState = room.getLiveTimeline().getState()
 
     // Get current user info
@@ -407,12 +458,6 @@ export class MatrixPushService {
     const clientLike = client as unknown as MatrixClientLike
     const userId = clientLike?.getUserId?.() || ''
     const userDisplayName = roomState?.getUserDisplayName(userId) || userId
-
-    // Default evaluator
-    const evaluator: PushRuleEvaluator = {
-      shouldNotify: false,
-      highlight: false
-    }
 
     // Get all applicable rules
     const rules = [
@@ -452,6 +497,29 @@ export class MatrixPushService {
     }
 
     return evaluator
+  }
+
+  /**
+   * Convert our event-like object to SDK MatrixEvent format
+   * This is needed for PushProcessor.actionsForEvent()
+   */
+  private convertToSdkEvent(event: MatrixEventLike, room: MatrixRoomLike): any {
+    const client = matrixClientService.getClient()
+    if (!client) return null
+
+    // Get the actual Room object from client
+    // Use type assertion to bypass TS limitations
+    const sdkClient = client as any
+    const sdkRoom = sdkClient.getRoom?.(room.roomId)
+    if (!sdkRoom) return null
+
+    // Get the actual event from room timeline
+    const timeline = sdkRoom.getLiveTimeline()
+    if (!timeline) return null
+
+    const events = timeline.getEvents()
+    const sdkEvent = events.find((e: any) => e.getId() === event.getId())
+    return sdkEvent || null
   }
 
   /**

@@ -9,13 +9,18 @@
     <!-- 分隔条 -->
     <div
       v-if="!shrinkStatus && !isManageRoute"
-      class="resize-handle transition-all duration-600 ease-in-out pointer-events-none">
-      <div :class="{ 'opacity-100': isDragging }" class="transition-all duration-600 ease-in-out opacity-0 drag-icon">
+      class="resize-handle"
+      @mouseenter="isHandleHovered = true"
+      @mouseleave="isHandleHovered = false">
+      <div
+        class="drag-icon transition-all duration-300 ease-in-out"
+        :class="{ 'opacity-100': isDragging || isHandleHovered, 'opacity-0': !(isDragging || isHandleHovered) }">
         <div
           style="border-radius: 8px 0 0 8px"
-          class="bg-#c8c8c833 h-60px w-14px absolute top-40% right--18px drag-icon pointer-events-auto z-10"
+          class="bg-#c8c8c833 hover:bg-#c8c8c866 h-60px w-14px absolute top-40% right--18px pointer-events-auto z-10 transition-colors duration-200 cursor-col-resize"
           @mousedown="initDrag">
-          <svg class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500">
+          <svg
+            class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
             <use href="#sliding"></use>
           </svg>
         </div>
@@ -157,6 +162,9 @@
         </n-flex>
       </div>
     </n-modal>
+
+    <!-- 添加好友对话框 -->
+    <SearchFriendModal v-model:show="showSearchFriendModal" @success="handleAddFriendSuccess" />
   </main>
 </template>
 
@@ -174,8 +182,10 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
+import { useFriendsStore } from '@/stores/friends'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { sdkCreateRoom } from '@/services/rooms'
+import SearchFriendModal from '@/components/friends/SearchFriendModal.vue'
 
 import { msg } from '@/utils/SafeUI'
 import { options, renderLabel, renderSourceList, renderTargetList } from './model.tsx'
@@ -189,6 +199,7 @@ const spacesStore = useSpacesStore()
 const settingStore = useSettingStore()
 const globalStore = useGlobalStore()
 const groupStore = useGroupStore()
+const friendsStore = useFriendsStore()
 const page = computed(() => settingStore.page)
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
@@ -201,14 +212,15 @@ interface AppWindow {
 const appWindow: AppWindow = isTauri ? (WebviewWindow.getCurrent() as unknown as AppWindow) : { label: 'web' }
 const selectedValue = ref<string[]>([])
 const createGroupModal = ref(false)
+const showSearchFriendModal = ref(false)
 const preSelectedFriendId = ref('')
 const isFromChatbox = ref(false) // 标记是否来自聊天框
 /** 设置最小宽度 */
 const minWidth = 240
 /** 设置最大宽度 */
 const maxWidth = 480
-/** 初始化宽度 */
-const initWidth = ref(360)
+/** 初始化宽度 - 从设置加载或使用默认值 */
+const initWidth = ref(settingStore.layout?.centerColumnWidth || 360)
 /**! 使用(vueUse函数获取)视口宽度 */
 const { width } = useWindowSize()
 /** 是否拖拽 */
@@ -237,7 +249,7 @@ const addPanels = ref({
       label: 'home.action.add_friend_or_group',
       icon: 'people-plus',
       click: async () => {
-        await createWebviewWindow(t('home.action.add_friend_or_group'), 'searchFriend', 500, 580)
+        showSearchFriendModal.value = true
       }
     }
   ]
@@ -281,6 +293,7 @@ const startX = ref(0)
 const startWidth = ref(0)
 const shrinkStatus = ref(false)
 const isDragging = ref(false)
+const isHandleHovered = ref(false)
 const centerEl = shallowRef<HTMLElement | null>(null)
 // 统一测量布局宽度，避免多处重复读取 DOM
 const layoutMetrics = computed(() => {
@@ -440,6 +453,11 @@ const handleCreateGroup = async () => {
   }
 }
 
+// 添加好友成功回调
+const handleAddFriendSuccess = async () => {
+  await friendsStore.refreshAll()
+}
+
 const handleSearchFocus = () => {
   router.push('/searchDetails')
   searchText.value = ''
@@ -505,10 +523,14 @@ const stopDrag = () => {
   document.removeEventListener('mousemove', doDrag, false)
   document.removeEventListener('mouseup', stopDrag, false)
   isDragging.value = false
+
+  // 持久化宽度设置
+  settingStore.setCenterColumnWidth(initWidth.value)
+
   setTimeout(() => {
     // 移除 hover 样式
     const resizeHandle = document.querySelector('.resize-handle') as HTMLElement
-    resizeHandle.classList.remove('hover')
+    resizeHandle?.classList.remove('hover')
   }, 1000)
 }
 

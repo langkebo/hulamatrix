@@ -550,6 +550,16 @@ export const useAppStore = defineStore('app', (): AppStoreState => {
       // 启动客户端
       await matrixClientService.startClient()
 
+      // 初始化推送通知服务 (Phase 10 优化 - 使用 SDK PushProcessor)
+      try {
+        const { matrixPushService } = await import('@/services/matrixPushService')
+        await matrixPushService.initialize()
+        logger.info('[HuLaStore] Push notification service initialized')
+      } catch (pushError) {
+        logger.warn('[HuLaStore] Failed to initialize push notification service:', pushError)
+        // 推送服务初始化失败不影响登录流程
+      }
+
       // 更新状态
       const clientInstance = matrixClientService.getClient()
       if (clientInstance) {

@@ -1,7 +1,12 @@
 # PC 端和移动端待完善功能清单
 
-> **生成时间**: 2026-01-02
+> **最后更新**: 2026-01-06 | **文档版本**: 1.1.0
 > **用途**: 汇总所有需要 PC 端和移动端实现或优化的功能
+
+> **相关文档**:
+> - [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+> - [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
+> - [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
 
 ---
 
@@ -614,5 +619,33 @@ await adminClient.deleteDevice(userId, deviceId)
 
 ---
 
-**最后更新**: 2026-01-02
+## 🔗 相关文档
+
+### 项目文档
+- [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+- [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
+- [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
+- [认证分析和优化](../../AUTHENTICATION_ANALYSIS_AND_OPTIMIZATION.md) - 项目认证流程分析
+
+### UI 设计参考
+
+- [Naive UI 组件库](https://www.naiveui.com/)
+- [Material Design 移动端](https://material.io/design)
+- [iOS Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
+
+### 技术参考
+
+- [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+- [Matrix UIA 规范](https://spec.matrix.org/v1.11/client-server-api/#user-interactive-authentication-api)
+- [Matrix E2EE 实现](https://spec.matrix.org/v1.11/client-server-api/#end-to-end-encryption)
+
+---
+
+**最后更新**: 2026-01-06
+**文档版本**: 1.1.0
 **维护者**: HuLaMatrix 开发团队
+
+**更新内容 (v1.1.0)**:
+- ✅ 更新文档日期和版本号
+- ✅ 添加文档交叉引用
+- ✅ 整理相关文档链接
