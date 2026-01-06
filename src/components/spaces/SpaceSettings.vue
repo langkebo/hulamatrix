@@ -499,7 +499,9 @@ const handleAliasUpdate = async () => {
   try {
     const client = matrixClientService.getClient() as unknown as MatrixClientWithRoomMethods | null
     if (client && client.createAlias) {
-      await client.createAlias(`#space-${spaceAlias.value}:matrix.cjystx.top`, spaceId.value)
+      // Use dynamic server name from environment
+      const serverName = import.meta.env.VITE_MATRIX_SERVER_NAME || 'cjystx.top'
+      await client.createAlias(`#space-${spaceAlias.value}:${serverName}`, spaceId.value)
       msg.success('空间地址已更新')
     }
   } catch (err) {

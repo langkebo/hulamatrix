@@ -295,7 +295,7 @@ async function addAlias(): Promise<void> {
   }
 
   if (!isValidAliasFormat(alias)) {
-    message.error('Invalid alias format. Use format: #roomname:server.com (e.g., #my-room:matrix.org)')
+    message.error('Invalid alias format. Use format: #roomname:server.com (e.g., #my-room:cjystx.top)')
     return
   }
 
@@ -478,8 +478,7 @@ watch(
     title="Room Addresses"
     :style="{ width: '700px' }"
     :mask-closable="false"
-    :segmented="{ content: 'soft' }"
-  >
+    :segmented="{ content: 'soft' }">
     <template #header-extra>
       <NSpace>
         <NTag v-if="canonicalAlias" type="success" size="small">
@@ -501,27 +500,15 @@ watch(
     </div>
 
     <!-- Empty State -->
-    <NEmpty
-      v-else-if="aliases.length === 0"
-      description="No addresses set for this room"
-      style="padding: 40px 0"
-    >
+    <NEmpty v-else-if="aliases.length === 0" description="No addresses set for this room" style="padding: 40px 0">
       <template #extra>
-        <small style="color: #999">
-          Add an address to make this room discoverable by its alias
-        </small>
+        <small style="color: #999">Add an address to make this room discoverable by its alias</small>
       </template>
     </NEmpty>
 
     <!-- Aliases List -->
     <template v-else>
-      <NDataTable
-        :columns="aliasColumns"
-        :data="aliasData"
-        :bordered="false"
-        :single-line="false"
-        size="small"
-      />
+      <NDataTable :columns="aliasColumns" :data="aliasData" :bordered="false" :single-line="false" size="small" />
 
       <div style="margin-top: 16px">
         <NAlert type="info" :bordered="false" style="font-size: 12px">
@@ -541,8 +528,7 @@ watch(
             placeholder="#room-name:server.com"
             :disabled="isLoading"
             @keyup.enter="handleAddKeyPress"
-            style="flex: 1"
-          >
+            style="flex: 1">
             <template #prefix>
               <span style="color: #999">#</span>
             </template>
@@ -552,8 +538,7 @@ watch(
             type="primary"
             :disabled="isLoading || !newAliasInput.trim()"
             :loading="isAdding || isValidating"
-            @click="addAlias"
-          >
+            @click="addAlias">
             <template #icon>
               <NIcon><Plus /></NIcon>
             </template>
@@ -562,12 +547,14 @@ watch(
         </NSpace>
 
         <div style="font-size: 12px; color: #999">
-          Format: <code>#room-name:server.com</code> (e.g., #my-room:matrix.org)
+          Format:
+          <code>#room-name:server.com</code>
+          (e.g., #my-room:cjystx.top)
         </div>
 
         <NAlert type="warning" :bordered="false" style="font-size: 12px; margin-top: 8px">
-          Aliases must follow the Matrix naming convention and only contain lowercase letters,
-          numbers, and special characters (-_=./).
+          Aliases must follow the Matrix naming convention and only contain lowercase letters, numbers, and special
+          characters (-_=./).
         </NAlert>
       </NSpace>
     </template>

@@ -507,7 +507,7 @@ export async function setupPusherIfEnabled(): Promise<void> {
     // 构建推送器配置
     const pusherConfig: HttpPusherConfig = {
       // 使用 Matrix 推送网关或自定义推送网关
-      url: import.meta.env.VITE_MATRIX_PUSH_GATEWAY || 'https://matrix.org/_matrix/push/v1/notify',
+      url: import.meta.env.VITE_MATRIX_PUSH_GATEWAY || 'https://cjystx.top/_matrix/push/v1/notify',
       app_id: getPlatformAppId(),
       pushkey: pushToken,
       app_display_name: 'HuLa Matrix',

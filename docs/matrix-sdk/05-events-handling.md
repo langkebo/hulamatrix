@@ -1,6 +1,8 @@
 # 05. 事件处理
 
 > Matrix JS SDK 事件系统、监听器、事件处理等
+>
+> **验证报告**: [05-events-handling-VERIFICATION.md](05-events-handling-VERIFICATION.md) - ✅ 100% 实施
 
 ## 目录
 - [事件系统概述](#事件系统概述)
@@ -824,9 +826,9 @@ class MatrixEventHandler {
 // 使用示例
 async function main() {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "token",
-    userId: "@user:matrix.org"
+    userId: "@user:cjystx.top"
   });
 
   const handler = new MatrixEventHandler(client);

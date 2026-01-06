@@ -62,7 +62,7 @@
         <n-tab-pane
           v-for="category in friendsStore.categories"
           :key="category.id"
-          :name="String(category.id)"
+          :name="category.id"
           :tab="`${category.name} (${getFriendsByCategory(category.id).length})`">
           <n-grid x-gap="12" y-gap="12" cols="2 s:1" class="mt-8px">
             <n-grid-item v-for="f in getFriendsByCategory(category.id)" :key="f.user_id">
@@ -90,9 +90,9 @@
     </div>
 
     <!-- 待处理好友请求 -->
-    <n-divider class="mt-16px">待处理好友请求 ({{ friendsStore.pending.length }})</n-divider>
-    <n-list v-if="friendsStore.pending.length > 0">
-      <n-list-item v-for="p in friendsStore.pending" :key="p.id">
+    <n-divider class="mt-16px">待处理好友请求 ({{ friendsStore.pendingRequests.length }})</n-divider>
+    <n-list v-if="friendsStore.pendingRequests.length > 0">
+      <n-list-item v-for="p in friendsStore.pendingRequests" :key="p.id">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-8px">
             <n-avatar :size="40" round>
@@ -119,7 +119,7 @@
     <n-modal v-model:show="showAddDialog" preset="card" title="添加好友" style="width: 90%; max-width: 400px">
       <n-form label-placement="left" label-width="80">
         <n-form-item label="用户 ID">
-          <n-input v-model:value="addUserId" placeholder="请输入完整用户 ID，如 @user:matrix.org" />
+          <n-input v-model:value="addUserId" placeholder="请输入完整用户 ID，如 @user:cjystx.top" />
         </n-form-item>
         <n-form-item label="验证消息">
           <n-input
@@ -164,14 +164,14 @@ import {
   NAvatar,
   useMessage
 } from 'naive-ui'
-import { useFriendsStoreV2 } from '@/stores/friendsV2'
-import type { FriendItem } from '@/types/matrix-sdk-v2'
+import { useFriendsSDKStore } from '@/stores/friendsSDK'
+import type { FriendWithProfile } from '@/stores/friendsSDK'
 
 const router = useRouter()
 const message = useMessage()
 
-// 使用 v2 Store
-const friendsStore = useFriendsStoreV2()
+// 使用 SDK Store
+const friendsStore = useFriendsSDKStore()
 
 // 本地状态
 const showAddDialog = ref(false)
@@ -181,21 +181,21 @@ const isSending = ref(false)
 
 // 方法
 const refresh = async () => {
-  await friendsStore.refreshAll()
+  await friendsStore.refresh()
 }
 
-const getFriendsByCategory = (categoryId: number) => {
+const getFriendsByCategory = (categoryId: string) => {
   return friendsStore.friends.filter((f) => f.category_id === categoryId)
 }
 
-const startChat = async (friend: FriendItem) => {
+const startChat = async (friend: FriendWithProfile) => {
   // 导航到私聊页面
   router.push({ path: '/private-chat', query: { userId: friend.user_id } })
 }
 
 const acceptRequest = async (requestId: string) => {
   try {
-    await friendsStore.acceptRequest(requestId, 1) // 默认分类 ID 为 1
+    await friendsStore.acceptFriendRequest(requestId, { categoryId: '1' })
     message.success('已接受好友请求')
   } catch (error) {
     message.error('接受请求失败: ' + error)
@@ -204,7 +204,7 @@ const acceptRequest = async (requestId: string) => {
 
 const rejectRequest = async (requestId: string) => {
   try {
-    await friendsStore.rejectRequest(requestId)
+    await friendsStore.rejectFriendRequest(requestId)
     message.success('已拒绝好友请求')
   } catch (error) {
     message.error('拒绝请求失败: ' + error)
@@ -219,7 +219,7 @@ const sendRequest = async () => {
 
   isSending.value = true
   try {
-    await friendsStore.sendRequest(addUserId.value, addMessage.value)
+    await friendsStore.sendFriendRequest(addUserId.value, { message: addMessage.value })
     message.success('好友请求已发送')
     showAddDialog.value = false
     addUserId.value = ''

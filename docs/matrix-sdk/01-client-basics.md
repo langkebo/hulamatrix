@@ -39,7 +39,7 @@ import * as sdk from "matrix-js-sdk";
 
 // 最简单的创建方式（匿名客户端）
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org"
+  baseUrl: "https://cjystx.top"
 });
 ```
 
@@ -47,9 +47,9 @@ const client = sdk.createClient({
 
 ```typescript
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "syt_YourAccessTokenHere",
-  userId: "@user:matrix.org"
+  userId: "@user:cjystx.top"
 });
 ```
 
@@ -58,7 +58,7 @@ const client = sdk.createClient({
 ```typescript
 // 创建后登录
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org"
+  baseUrl: "https://cjystx.top"
 });
 
 const loginResponse = await client.login("m.login.password", {
@@ -75,9 +75,9 @@ console.log("Device ID:", loginResponse.device_id);
 ```typescript
 const client = sdk.createClient({
   // 基础配置
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "your_token",
-  userId: "@user:matrix.org",
+  userId: "@user:cjystx.top",
   deviceId: "your_device_id",
 
   // 存储配置
@@ -151,9 +151,9 @@ interface ICreateClientOpts {
 ```typescript
 // 生产环境配置
 const client = sdk.createClient({
-  baseUrl: "https://matrix.server.com",
+  baseUrl: "https://matrix.cjystx.top",
   accessToken: "token",
-  userId: "@user:server.com",
+  userId: "@user:cjystx.top",
 
   // 启用时间线支持
   timelineSupport: true,
@@ -395,7 +395,7 @@ console.log("Is guest:", isGuest);
 
 ```typescript
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   store: new sdk.MemoryStore()
 });
 ```
@@ -405,7 +405,7 @@ const client = sdk.createClient({
 ```typescript
 // 使用 SDK 内置的 IndexedDB 存储
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   store: new sdk.IndexedDBStore({
     indexedDB: window.indexedDB,
     dbName: "matrix-js-sdk",
@@ -430,7 +430,7 @@ class CustomStore implements IStore {
 }
 
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   store: new CustomStore()
 });
 ```
@@ -449,7 +449,7 @@ const rooms = client.getRooms();
 console.log("Total rooms:", rooms.length);
 
 // 获取用户
-const user = client.getUser("@user:server");
+const user = client.getUser("@user:cjystx.top");
 if (user) {
   console.log("User display name:", user.displayName);
 }
@@ -469,9 +469,9 @@ import { ClientEvent, RoomEvent } from "matrix-js-sdk";
 async function initMatrixClient() {
   // 1. 创建客户端
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "your_access_token",
-    userId: "@user:matrix.org",
+    userId: "@user:cjystx.top",
     deviceId: "your_device_id",
 
     // 配置选项
@@ -626,9 +626,9 @@ class MatrixClientManager {
 
 // 使用
 const manager = new MatrixClientManager({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "token",
-  userId: "@user:matrix.org"
+  userId: "@user:cjystx.top"
 });
 
 await manager.getClient().startClient();
@@ -639,15 +639,15 @@ await manager.getClient().startClient();
 ```typescript
 async function initClientWithSlidingSync() {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "token",
-    userId: "@user:matrix.org",
-    slidingSyncProxy: "https://sliding-sync.matrix.org"
+    userId: "@user:cjystx.top",
+    slidingSyncProxy: "https://sliding-sync.cjystx.top"
   });
 
   // 创建滑动同步实例
   const slidingSync = new sdk.SlidingSyncSdk(
-    "https://sliding-sync.matrix.org",
+    "https://sliding-sync.cjystx.top",
     client,
     new sdk.MemoryStore()
   );

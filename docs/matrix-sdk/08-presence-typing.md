@@ -731,9 +731,9 @@ class PresenceTypingManager {
 // 使用示例
 async function example() {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "token",
-    userId: "@user:matrix.org"
+    userId: "@user:cjystx.top"
   });
 
   await client.startClient();

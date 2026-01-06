@@ -805,9 +805,9 @@ class RoomManager {
 // 使用示例
 async function example() {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "token",
-    userId: "@user:matrix.org"
+    userId: "@user:cjystx.top"
   });
 
   await client.startClient();
@@ -818,7 +818,7 @@ async function example() {
   const roomId = await roomManager.createPublicRoom("My Room", "Discussion");
 
   // 邀请用户
-  await roomManager.inviteUser(roomId, "@friend:matrix.org");
+  await roomManager.inviteUser(roomId, "@friend:cjystx.top");
 
   // 设置标签
   await roomManager.tagRoom(roomId, "m.favourite", 0.1);

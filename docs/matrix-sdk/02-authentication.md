@@ -43,7 +43,7 @@
 import * as sdk from "matrix-js-sdk";
 
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org"
+  baseUrl: "https://cjystx.top"
 });
 
 // 方法1: 使用 login 方法的简化形式
@@ -91,9 +91,9 @@ const response3 = await client.login("m.login.password", {
 ```typescript
 // 如果已有访问令牌，直接创建客户端
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "syt_existing_token_here",
-  userId: "@user:matrix.org",
+  userId: "@user:cjystx.top",
   deviceId: "existing_device_id"
 });
 
@@ -147,7 +147,7 @@ console.log("Is guest:", whoami.is_guest);
 
 ```typescript
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org"
+  baseUrl: "https://cjystx.top"
 });
 
 // 简单注册
@@ -209,7 +209,7 @@ const registerResponse = await client.registerRequest({
 ```typescript
 async function registerAndLogin(username: string, password: string) {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org"
+    baseUrl: "https://cjystx.top"
   });
 
   // 注册
@@ -221,7 +221,7 @@ async function registerAndLogin(username: string, password: string) {
 
   // 使用返回的令牌创建客户端
   const authenticatedClient = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: registerResponse.access_token,
     userId: registerResponse.user_id,
     deviceId: registerResponse.device_id
@@ -411,7 +411,7 @@ window.location.href = oauthResponse.redirect_url;
 // 在回调处理页面
 async function handleOAuthCallback(code: string) {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org"
+    baseUrl: "https://cjystx.top"
   });
 
   // 使用授权码交换令牌
@@ -684,7 +684,7 @@ class MatrixAuthManager {
 // 使用示例
 async function main() {
   const authManager = new MatrixAuthManager({
-    baseUrl: "https://matrix.org"
+    baseUrl: "https://cjystx.top"
   });
 
   try {
@@ -712,7 +712,7 @@ class PersistentAuthManager {
   private storageKey = "matrix_auth_data";
 
   async login(username: string, password: string) {
-    const client = sdk.createClient({ baseUrl: "https://matrix.org" });
+    const client = sdk.createClient({ baseUrl: "https://cjystx.top" });
 
     const response = await client.login("m.login.password", {
       identifier: { type: "m.id.user", user: username },
@@ -724,7 +724,7 @@ class PersistentAuthManager {
       accessToken: response.access_token,
       userId: response.user_id,
       deviceId: response.device_id,
-      baseUrl: "https://matrix.org"
+      baseUrl: "https://cjystx.top"
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(authData));
@@ -855,7 +855,7 @@ async function loginWithRemember(username: string, password: string, remember: b
 ```typescript
 // SSO 登录流程
 async function ssoLogin(identityProviderId?: string) {
-  const client = sdk.createClient({ baseUrl: "https://matrix.org" });
+  const client = sdk.createClient({ baseUrl: "https://cjystx.top" });
 
   // 获取 SSO 登录 URL
   const ssoUrl = client.getSsoLoginUrl(
@@ -870,7 +870,7 @@ async function ssoLogin(identityProviderId?: string) {
 
 // 在回调页面处理
 async function handleSsoCallback(loginToken: string) {
-  const client = sdk.createClient({ baseUrl: "https://matrix.org" });
+  const client = sdk.createClient({ baseUrl: "https://cjystx.top" });
 
   const response = await client.login("m.login.token", {
     token: loginToken

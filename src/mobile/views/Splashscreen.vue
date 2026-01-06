@@ -4,15 +4,28 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSettingStore } from '@/stores/setting'
 import { useLogin } from '@/hooks/useLogin'
 import { invoke } from '@tauri-apps/api/core'
+import { isAndroid, isIOS } from '@/utils/PlatformConstants'
 
 const settingStore = useSettingStore()
 const router = useRouter()
 const { normalLogin } = useLogin()
+
+// 根据平台选择启动图片
+const splashImage = computed(() => {
+  if (isAndroid()) {
+    return '/Mobile/3.png'
+  }
+  if (isIOS()) {
+    return '/Mobile/4.png'
+  }
+  // 默认启动图片
+  return '/Mobile/2.png'
+})
 
 const init = async () => {
   if (settingStore.login.autoLogin) {
@@ -24,6 +37,12 @@ const init = async () => {
 }
 
 onMounted(() => {
+  // 动态设置背景图片
+  const loadingPage = document.getElementById('loading-page')
+  if (loadingPage) {
+    loadingPage.style.backgroundImage = `url('${splashImage.value}')`
+  }
+
   init()
 })
 </script>
@@ -31,7 +50,6 @@ onMounted(() => {
 <style scoped lang="scss">
 #loading-page {
   z-index: 9999;
-  background-image: url('/Mobile/2.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
