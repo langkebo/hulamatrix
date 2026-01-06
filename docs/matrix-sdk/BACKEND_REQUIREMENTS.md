@@ -16,111 +16,196 @@
 - 相关管理器：好友系统管理器 `FriendSystemManager`
 - 聊天能力：以 Matrix 标准客户端 API 为主（创建房间、发送消息、m.direct 维护）
 
-## 二、后端 API 测试结果
+## 二、后端 API 测试结果（更新：2026-01-06）
 
-### 2.1 生产环境测试（2026-01-06）
+### 2.1 生产环境测试（带认证）
 
-#### 测试服务器信息
-- **服务器地址**: `https://matrix.cjystx.top`
-- **测试时间**: 2026-01-06
-- **测试方法**: HTTP GET/POST 请求测试
+#### 测试环境配置
+- **服务器地址**: `https://matrix.cjystx.top:8443` ⚠️ 注意端口
+- **服务发现**: `https://cjystx.top/.well-known/matrix/client`
+- **测试用户**: `@rere:cjystx.top`
+- **测试时间**: 2026-01-06 13:42:15
+- **认证方式**: Bearer Token (必需)
 
 #### 测试结果汇总
 
 | API 端点 | 方法 | 状态码 | 结果 |
 |----------|------|--------|------|
 | **Friends API v1** ||||
-| `/_synapse/client/friends?action=list` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/friends?action=pending_requests` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/friends?action=search` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/friends?action=stats` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/friends` | POST | 404 | ❌ 未实现 |
+| `/_synapse/client/friends?action=list` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/friends?action=pending_requests` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/friends?action=search` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/friends?action=stats` | GET | 200 | ✅ 正常 |
 | **Friends API v2** ||||
-| `/_synapse/client/enhanced/friends/v2/list` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/categories` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/stats` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/blocked` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/search` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/requests/pending` | GET | 404 | ❌ 未实现 |
-| `/_synapse/client/enhanced/friends/v2/request` | POST | 404 | ❌ 未实现 |
+| `/_synapse/client/enhanced/friends/v2/list` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/categories` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/stats` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/blocked` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/search` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/requests/pending` | GET | 200 | ✅ 正常 |
+| `/_synapse/client/enhanced/friends/v2/request` | POST | 200 | ✅ 正常 |
+| **Matrix 用户搜索** ||||
+| `/_matrix/client/v3/user_directory/search` | POST | 200 | ✅ 正常 |
 | **Private Chat API** ||||
-| `/_synapse/client/private?action=list` | GET | 404 | ❌ 未实现 |
-| **Matrix 标准 API** ||||
-| `/_matrix/client/versions` | GET | 404 | ❌ Synapse 未运行 |
-| `/.well-known/matrix/client` | GET | 200 | ✅ 配置正确 |
+| `/_synapse/client/private?action=list` | GET | 200 | ⚠️ 不支持此 action |
+| **认证测试** ||||
+| 无 token 访问任意端点 | GET | 401 | ✅ 鉴权正常 |
 
-#### 结论
+#### API 响应示例
 
-**生产环境后端状态**：
-1. ❌ **Synapse Friends API 扩展模块未部署** - 所有自定义好友/私聊 API 返回 404
-2. ❌ **Matrix Synapse 服务器未正确运行** - 标准 Matrix 端点返回 404
-3. ✅ **Nginx 反向代理正常运行** - 服务器端口 443 可访问
+**v1: list**
+```json
+{"status": "ok", "friends": []}
+```
 
-**前端当前实现**：
-- 前端已实现完整的降级方案，使用 Matrix 标准 API 模拟好友功能
-- 详见：[前端降级方案](#22-前端降级方案)
+**v1: stats**
+```json
+{"status": "ok", "stats": {"total_friends": 0, "pending_requests": 0, "blocked_count": 0}}
+```
 
-**优先级调整**：
-- 后端 API 实现优先级从 **高** 调整为 **中低（可选）**
-- 原因：前端已有完整实现，后端 API 非必需
+**v2: categories**
+```json
+{"status": "ok", "categories": [{"id": "default", "name": "默认分组", "created_at": ""}]}
+```
 
-### 2.2 前端降级方案
+**v2: request (添加好友)**
+```json
+{"status": "ok", "request_id": "4bc9fc2b-77dd-46ca-8a6d-0277c7fc1ffb"}
+```
 
-虽然后端 Synapse Friends API 未部署，**前端已实现完整的降级方案**，所有好友功能正常工作：
+**用户目录搜索 (搜索 "tete")**
+```json
+{
+  "limited": false,
+  "results": [
+    {"user_id": "@tete:cjystx.top", "display_name": "tete", "avatar_url": null},
+    {"user_id": "@tete1:cjystx.top", "display_name": null, "avatar_url": null}
+  ]
+}
+```
 
-#### 2.2.1 使用 Matrix 标准 API
+**无 token 访问**
+```json
+{"errcode": "M_MISSING_TOKEN", "error": "missing access token"}
+```
 
-1. **好友关系存储**
-   - 使用 `m.direct` account data 存储好友关系
-   - 通过 `m.room.member` 事件管理房间成员
+### 2.2 关键发现
 
-2. **用户搜索**
-   - 使用 Matrix 用户目录 API：`/_matrix/client/v3/user_directory/search`
-   - 前端实现：`src/integrations/matrix/search.ts` - `searchUsersOptimized()`
+#### ✅ **已实现的功能**
+1. **Friends API v1 全部端点** - action 风格 API 完全可用
+2. **Friends API v2 全部端点** - REST 风格 API 完全可用
+3. **用户搜索** - Matrix 用户目录 API 正常工作
+4. **好友请求** - 成功发送请求并返回 request_id
+5. **好友分组** - 默认分组已创建
+6. **统计信息** - 实时统计好友数、待处理请求数等
+7. **鉴权机制** - 正确返回 401 当 token 缺失或无效
 
-3. **好友列表**
-   - 从 `m.direct` account data 解析好友列表
-   - 前端 Store 实现：`src/stores/friendsV2.ts`
+#### ⚠️ **需要注意的问题**
+1. **端口配置**
+   - Matrix Synapse 运行在 **8443 端口**（不是标准的 443）
+   - 443 端口只返回 Nginx 页面（404）
+   - **前端配置必须使用**: `https://matrix.cjystx.top:8443`
 
-4. **好友请求**
-   - 通过 Matrix 房间邀请机制模拟
-   - 创建 DM 房间并发送邀请
+2. **服务发现**
+   - ✅ **正确**: `https://cjystx.top/.well-known/matrix/client` → 200
+   - ❌ **错误**: `https://matrix.cjystx.top/.well-known/matrix/client` → 404
+   - **前端必须使用**: `cjystx.top` 做服务发现
 
-#### 2.2.2 前端实现位置
+3. **认证要求**
+   - **所有 Friends API 端点都需要 Bearer Token**
+   - 无 token 返回: `{"errcode": "M_MISSING_TOKEN", "error": "missing access token"}` (HTTP 401)
+   - 之前测试返回 404 是因为**没有带 token**
 
-| 功能 | 文件路径 |
-|------|----------|
-| 好友 API 适配器 | `src/integrations/synapse/friends.ts` |
-| 用户搜索（优化） | `src/integrations/matrix/search.ts` |
-| 好友 Store | `src/stores/friendsV2.ts` |
-| 好友列表组件 | `src/views/friends/FriendsList.vue` |
-| 添加好友组件 | `src/components/friends/AddFriendModal.vue` |
-| 搜索好友组件 | `src/components/friends/SearchFriendModal.vue` |
+4. **Private Chat API**
+   - `/_synapse/client/private?action=list` 返回: `{"errcode": "M_UNRECOGNIZED", "error": "unsupported_action: list"}`
+   - **此 API 端点未实现**，但 Friends API 已足够
 
-#### 2.2.3 功能对比
+#### 🔧 **前端配置建议**
 
-| 功能 | 后端 API | 前端降级方案 | 状态 |
-|------|----------|--------------|------|
-| 搜索用户 | ❌ 未部署 | ✅ Matrix user_directory | 正常工作 |
-| 添加好友 | ❌ 未部署 | ✅ DM 房间邀请 | 正常工作 |
-| 好友列表 | ❌ 未部署 | ✅ m.direct account data | 正常工作 |
-| 删除好友 | ❌ 未部署 | ✅ 离开 DM 房间 | 正常工作 |
-| 好友备注 | ❌ 未部署 | ✅ 本地存储 | 正常工作 |
-| 好友分组 | ❌ 未部署 | ✅ 本地存储 | 正常工作 |
+**.env 配置**:
+```bash
+# 正确的服务器配置
+VITE_MATRIX_BASE_URL=https://matrix.cjystx.top:8443
+VITE_MATRIX_SERVER_NAME=cjystx.top
+```
 
-## 三、原设计方案（供后端实现参考）
+**vite.config.ts 代理配置**:
+```typescript
+proxy: {
+  '/_matrix': {
+    target: 'https://matrix.cjystx.top:8443',  // 注意 8443 端口
+    changeOrigin: true,
+    rewrite: (p: string) => p
+  },
+  '/_synapse': {
+    target: 'https://matrix.cjystx.top:8443',  // 注意 8443 端口
+    changeOrigin: true,
+    rewrite: (p: string) => p
+  }
+}
+```
 
-> **注意**: 以下内容为原始设计文档，描述的是 Synapse Friends API 扩展模块的规范。当前生产环境未部署此模块，前端已使用上述降级方案实现所有功能。
+### 2.3 测试方法
 
-### 3.1 自动化测试结论（本地环境，2026-01-06 02:27:59）
+**正确的测试流程**:
+```bash
+# 1. 通过服务发现获取真实服务器地址
+curl -s "https://cjystx.top/.well-known/matrix/client"
+# 返回: {"m.homeserver": {"base_url": "https://matrix.cjystx.top"}}
 
-- 运行脚本：[comprehensive_api_test.py](file:///home/matrix/synapse/new/comprehensive_api_test.py)
-- 运行时间：2026-01-06 02:27:59 ～ 02:28:12（本地执行）
-- 关键结果：
-  - Friends：List / Invalid Params / Full Flow（request → accept → remove）均通过
-  - PrivateChat：Full Flow 通过
-  - 报告输出：`/home/matrix/API_FULL_TEST_REPORT.md`（由测试脚本生成）
-- ⚠️ **注意**: 本地测试通过，但**生产环境未部署**此模块
+# 2. 登录获取 access_token (使用 8443 端口)
+curl -s -X POST "https://matrix.cjystx.top:8443/_matrix/client/v3/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "m.login.password",
+    "identifier": {"type": "m.id.user", "user": "rere"},
+    "password": "Ljf3790791"
+  }' | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])'
+
+# 3. 使用 token 访问 Friends API
+curl -s "https://matrix.cjystx.top:8443/_synapse/client/enhanced/friends/v2/list?user_id=@rere:cjystx.top" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**常见错误**:
+| 错误做法 | 正确做法 |
+|---------|---------|
+| 使用 443 端口 | 使用 8443 端口 |
+| 不带 token 测试 | 必须带 `Authorization: Bearer $TOKEN` |
+| 使用 matrix.cjystx.top 做服务发现 | 使用 cjystx.top 做服务发现 |
+| 期望返回 404 | 无 token 应返回 401 |
+
+## 三、API 使用指南
+
+> **注意**: 本章节基于实际测试结果，描述如何在生产环境正确使用 Friends API。
+> **生产环境状态**: ✅ Friends API v1/v2 已部署并正常运行 (2026-01-06 测试确认)
+
+### 3.1 认证流程
+
+所有 Friends API 请求都需要 Bearer Token 认证：
+
+```typescript
+// 1. 登录获取 token
+const loginResponse = await fetch('https://matrix.cjystx.top:8443/_matrix/client/v3/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    type: 'm.login.password',
+    identifier: { type: 'm.id.user', user: 'username' },
+    password: 'password'
+  })
+})
+
+const { access_token, user_id } = await loginResponse.json()
+
+// 2. 使用 token 访问 Friends API
+const response = await fetch(
+  `https://matrix.cjystx.top:8443/_synapse/client/enhanced/friends/v2/list?user_id=${user_id}`,
+  {
+    headers: { 'Authorization': `Bearer ${access_token}` }
+  }
+)
+```
 
 ### 3.2 好友 API 契约（可用于 SDK 对接）
 
@@ -323,13 +408,34 @@ export async function listFriends(baseUrl: string, token: string, userId: string
 
 ## 四、更新记录
 
-### 2026-01-06
+### 2026-01-06 (第二次更新)
 
-#### 生产环境测试
-- ✅ 完成后端 Friends API 生产环境测试
-- ❌ 确认生产环境未部署 Synapse Friends API 扩展模块
-- ✅ 确认前端已实现完整的降级方案，所有功能正常工作
-- 📝 更新文档：添加测试结果章节和前端降级方案说明
+#### 生产环境测试 (带认证)
+- ✅ **完成带认证的后端 Friends API 测试**
+- ✅ **确认生产环境已部署** Synapse Friends API 扩展模块
+- ✅ **所有 Friends API v1/v2 端点正常工作**
+- ✅ Matrix 用户目录搜索正常
+- ✅ 好友请求功能正常 (成功发送请求)
+- ⚠️ 发现关键配置问题：
+  - **服务器端口**: 必须使用 8443 (不是 443)
+  - **服务发现**: 必须使用 cjystx.top (不是 matrix.cjystx.top)
+  - **认证要求**: 所有端点需要 Bearer Token
+- 📝 **重大更新**: 完全重写"后端 API 测试结果"章节
+
+#### 修正之前的错误结论
+- ❌ 之前错误结论: "生产环境未部署，返回 404"
+- ✅ 正确结论: "已部署，需带 token 访问，使用 8443 端口"
+- 原因分析: 之前测试未带 token 且使用了错误的端口 (443)
+
+### 2026-01-06 (第一次更新 - 已过时)
+
+> ⚠️ **以下结论已证明不正确，仅供参考**
+
+#### 生产环境测试 (无认证)
+- ❌ 错误结论: 确认生产环境未部署 Synapse Friends API 扩展模块
+- ❌ 错误结论: Matrix Synapse 服务器未正确运行
+- ✅ 正确发现: Nginx 反向代理正常运行
+- 📝 添加了"前端降级方案"章节 (现已证明不需要)
 
 #### 本地测试（原始记录）
 - 已完成：运行全量 API 测试脚本并确认通过（好友全流程 + 私聊全流程）
