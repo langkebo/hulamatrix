@@ -490,7 +490,7 @@ const handleBlur = () => {
   if (searchRef.value) return
   isSearch.value = false
   searchRequestId.value++
-  displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
+  displayedUserList.value = sortMembers(Array.isArray(currentMembers.value) ? [...currentMembers.value] : [])
 }
 
 /**
@@ -523,7 +523,7 @@ const handleSelect = () => {
   } else {
     searchRequestId.value++
     searchRef.value = ''
-    displayedUserList.value = Array.isArray(currentMembers.value) ? [...currentMembers.value] : []
+    displayedUserList.value = sortMembers(Array.isArray(currentMembers.value) ? [...currentMembers.value] : [])
   }
 }
 
@@ -596,8 +596,8 @@ onMounted(async () => {
 
   // 初始化时获取当前群组用户的信息
   if (currentMembers.value.length > 0) {
-    // 初始展示当前列表
-    displayedUserList.value = [...currentMembers.value]
+    // 初始展示当前列表（应用排序）
+    displayedUserList.value = sortMembers([...currentMembers.value])
     // const currentRoom = globalStore.currentSessionRoomId
     // if (currentRoom) {
     //   groupStore.updateMemberCache(currentRoom, displayedUserList.value)
