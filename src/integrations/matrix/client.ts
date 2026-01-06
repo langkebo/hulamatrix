@@ -100,6 +100,7 @@ interface MatrixAccountSettings {
 
 export interface MatrixClientLike {
   getHomeserverUrl?: () => string
+  getAccessToken?(): string
   startClient?(options?: {
     initialSyncLimit?: number
     pollTimeout?: number
@@ -1335,4 +1336,99 @@ export function initializeMatrixBridges() {
     // 动态导入以避免循环依赖
     import('./index').then((m) => m.setupMatrixBridges())
   } catch {}
+}
+
+// =============================================================================
+// Friends SDK Integration
+// =============================================================================
+
+/**
+ * 获取增强的 Matrix 客户端（包含 Friends API）
+ *
+ * 此函数会自动扩展 Matrix 客户端，添加 Friends API 功能。
+ * 如果客户端已经扩展过，则直接返回现有客户端。
+ *
+ * @returns 增强的 Matrix 客户端，包含 friends 属性
+ * @throws {Error} 如果客户端未初始化
+ *
+ * @example
+ * ```typescript
+ * const client = await getEnhancedMatrixClient();
+ * const { friends } = await client.friends.list();
+ * ```
+ */
+export async function getEnhancedMatrixClient(): Promise<any> {
+  const client = matrixClientService.getClient()
+
+  if (!client) {
+    throw new Error('Matrix client not initialized. Please call matrixClientService.initialize() first.')
+  }
+
+  // 确保 client 有 getAccessToken 方法（用于 Friends SDK）
+  if (!client.getAccessToken) {
+    client.getAccessToken = () => {
+      const token = matrixClientService.getAccessToken()
+      if (!token) {
+        throw new Error('Access token not available')
+      }
+      return token
+    }
+  }
+
+  // 确保 client 有 getUserId 方法（用于 Friends SDK）
+  if (!client.getUserId) {
+    client.getUserId = () => {
+      const userId = matrixClientService.getUserId()
+      if (!userId) {
+        throw new Error('User ID not available')
+      }
+      return userId
+    }
+  }
+
+  // 动态导入 Friends SDK 以避免循环依赖
+  try {
+    const { isFriendsApiEnabled, extendMatrixClient } = await import('@/sdk/matrix-friends')
+
+    // 使用类型断言来解决类型兼容性问题
+    const clientForSDK = client as unknown as Parameters<typeof isFriendsApiEnabled>[0]
+
+    // 检查是否已扩展 Friends API
+    if (!isFriendsApiEnabled(clientForSDK)) {
+      // 获取当前 base URL
+      const baseUrl = matrixClientService.getBaseUrl() || undefined
+
+      // 扩展客户端，添加 Friends API
+      extendMatrixClient(clientForSDK, baseUrl)
+
+      logger.info('[MatrixClientService] Friends API extension enabled', {
+        baseUrl
+      })
+    }
+
+    return client
+  } catch (e) {
+    logger.error('[MatrixClientService] Failed to extend client with Friends API', {
+      error: e
+    })
+    throw new Error(`Failed to enable Friends API: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
+/**
+ * 检查 Friends API 是否可用
+ *
+ * @returns {boolean} 如果 Friends API 可用则返回 true
+ */
+export async function isFriendsApiAvailable(): Promise<boolean> {
+  try {
+    const client = matrixClientService.getClient()
+    if (!client) return false
+
+    const { isFriendsApiEnabled } = await import('@/sdk/matrix-friends')
+    const clientForSDK = client as unknown as Parameters<typeof isFriendsApiEnabled>[0]
+    return isFriendsApiEnabled(clientForSDK)
+  } catch {
+    return false
+  }
 }
