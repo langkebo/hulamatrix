@@ -8,6 +8,7 @@ import { EventEmitter } from 'node:events'
 import type {
   PrivateChatApi,
   PrivateChatSession,
+  PrivateChatMessage,
   MatrixClientLike,
   CreateSessionOptions,
   CreateSessionResponse,
@@ -21,7 +22,12 @@ import type {
   GetStatsOptions,
   GetStatsResponse,
   OperationResponse,
-  MessageHandler
+  MessageHandler,
+  EncryptedContent,
+  E2EEApi,
+  PrivateChatStorageApi,
+  StoredPrivateChatSession,
+  StoredPrivateChatMessage
 } from './types.js'
 import {
   fetchAndParse,
@@ -42,6 +48,12 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
   private readonly baseUrl: string
   private readonly logger: ReturnType<typeof createDebugLogger>
 
+  // E2EE 和存储扩展（可选）
+  private e2ee?: E2EEApi
+  private storage?: PrivateChatStorageApi
+  private e2eeEnabled = false
+  private storageEnabled = false
+
   // 缓存相关
   private sessionCache: Map<string, PrivateChatSession> = new Map()
   private cacheExpiry: number = 0
@@ -61,6 +73,71 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
     this.client = client
     this.baseUrl = privateChatApiBaseUrl.replace(/\/$/, '') // 移除末尾斜杠
     this.logger = createDebugLogger('PrivateChatExtension')
+  }
+
+  // ==================== E2EE 和存储初始化 ====================
+
+  /**
+   * 初始化 E2EE（按需调用）
+   */
+  async initializeE2EE(e2ee: E2EEApi): Promise<void> {
+    this.e2ee = e2ee
+    await this.e2ee.initialize()
+    this.e2eeEnabled = true
+    this.logger.info('E2EE initialized')
+  }
+
+  /**
+   * 初始化存储（按需调用）
+   */
+  async initializeStorage(storage: PrivateChatStorageApi): Promise<void> {
+    this.storage = storage
+    await this.storage.initialize()
+    this.storageEnabled = true
+    this.logger.info('Storage initialized')
+
+    // 从存储加载会话
+    await this.loadFromStorage()
+  }
+
+  /**
+   * 从存储加载数据
+   */
+  private async loadFromStorage(): Promise<void> {
+    if (!this.storage) return
+
+    try {
+      const storedSessions = await this.storage.getSessions()
+      if (storedSessions.length > 0) {
+        // 更新缓存
+        for (const session of storedSessions) {
+          if (!session.expires_at || !isSessionExpired(session.expires_at)) {
+            this.sessionCache.set(session.session_id, session as PrivateChatSession)
+          }
+        }
+        this.cacheExpiry = Date.now() + this.CACHE_TTL_MS
+        this.logger.info('Loaded sessions from storage', { count: storedSessions.length })
+      }
+    } catch (error) {
+      this.logger.error('Failed to load from storage', { error })
+    }
+  }
+
+  /**
+   * 检查内容是否为加密格式
+   */
+  private isEncryptedContent(content: string): boolean {
+    try {
+      const parsed = JSON.parse(content) as Partial<EncryptedContent>
+      return (
+        parsed.algorithm === 'aes-gcm-256' &&
+        typeof parsed.key_id === 'string' &&
+        typeof parsed.ciphertext === 'string' &&
+        typeof parsed.iv === 'string'
+      )
+    } catch {
+      return false
+    }
   }
 
   // ==================== 会话管理 ====================
@@ -152,6 +229,25 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
     if (response.session) {
       // 更新缓存
       this.sessionCache.set(response.session.session_id, response.session)
+
+      // 如果启用 E2EE，协商会话密钥
+      if (this.e2eeEnabled && this.e2ee && response.session_id) {
+        try {
+          await this.e2ee.negotiateSessionKey(response.session_id, participants)
+          this.logger.info('Session key negotiated', { sessionId: response.session_id })
+        } catch (error) {
+          this.logger.error('Failed to negotiate session key', { error })
+        }
+      }
+
+      // 保存到存储
+      if (this.storageEnabled && this.storage && response.session) {
+        try {
+          await this.storage.saveSession(response.session as unknown as StoredPrivateChatSession)
+        } catch (error) {
+          this.logger.error('Failed to save session to storage', { error })
+        }
+      }
     }
 
     // 触发事件
@@ -194,6 +290,25 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
     // 从缓存中移除
     const cachedSession = this.sessionCache.get(sessionId)
     this.sessionCache.delete(sessionId)
+
+    // 从存储中删除
+    if (this.storageEnabled && this.storage) {
+      try {
+        await this.storage.deleteSession(sessionId)
+        await this.storage.deleteMessages(sessionId)
+      } catch (error) {
+        this.logger.error('Failed to delete session from storage', { error })
+      }
+    }
+
+    // 清理 E2EE 密钥
+    if (this.e2eeEnabled && this.e2ee) {
+      try {
+        await this.e2ee.cleanupSessionKey(sessionId)
+      } catch (error) {
+        this.logger.error('Failed to cleanup session key', { error })
+      }
+    }
 
     // 停止轮询
     this.stopPolling(sessionId)
@@ -250,10 +365,26 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
       throw new SendMessageError('Message content is required', 400)
     }
 
+    let contentToSend = options.content
+    let isEncrypted = false
+
+    // 如果启用 E2EE，加密内容
+    if (this.e2eeEnabled && this.e2ee) {
+      try {
+        const encrypted = await this.e2ee.encryptMessage(options.session_id, options.content)
+        contentToSend = JSON.stringify(encrypted)
+        isEncrypted = true
+        this.logger.debug('Message encrypted', { sessionId: options.session_id })
+      } catch (error) {
+        this.logger.error('Failed to encrypt message', { error })
+        throw new SendMessageError('Failed to encrypt message', 500)
+      }
+    }
+
     // 构建请求体
     const body = {
       session_id: options.session_id,
-      content: options.content,
+      content: contentToSend,
       sender_id: options.sender_id || this.getUserId(),
       type: options.type || 'text',
       ttl_seconds: options.ttl_seconds
@@ -261,7 +392,8 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
 
     this.logger.debug('Sending message', {
       sessionId: options.session_id,
-      type: body.type
+      type: body.type,
+      encrypted: isEncrypted
     })
 
     const url = `${this.baseUrl}/_synapse/client/enhanced/private_chat/v2/messages`
@@ -273,6 +405,23 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
 
     checkBaseStatus(response)
 
+    // 保存到存储
+    if (this.storageEnabled && this.storage && response.message_id) {
+      try {
+        await this.storage.saveMessage({
+          message_id: response.message_id,
+          session_id: options.session_id,
+          sender_id: body.sender_id,
+          content: options.content, // 存储明文（或根据需求存储加密内容）
+          type: body.type,
+          created_at: new Date().toISOString(),
+          is_encrypted: isEncrypted
+        } as StoredPrivateChatMessage)
+      } catch (error) {
+        this.logger.error('Failed to save message to storage', { error })
+      }
+    }
+
     // 触发事件
     this.emit('message.sent', {
       sessionId: options.session_id,
@@ -281,7 +430,8 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
 
     this.logger.info('Message sent', {
       sessionId: options.session_id,
-      messageId: response.message_id
+      messageId: response.message_id,
+      encrypted: isEncrypted
     })
 
     return response
@@ -308,6 +458,40 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
       throw new SendMessageError('Invalid session ID', 400)
     }
 
+    // 先尝试从本地存储加载
+    if (this.storageEnabled && this.storage) {
+      try {
+        const storedMessages = await this.storage.getMessages(options.session_id)
+        if (storedMessages.length > 0) {
+          this.logger.debug('Loaded messages from storage', {
+            sessionId: options.session_id,
+            count: storedMessages.length
+          })
+
+          // 解密存储的消息（如果启用 E2EE）
+          if (this.e2eeEnabled && this.e2ee) {
+            for (const message of storedMessages) {
+              if (message.is_encrypted) {
+                try {
+                  const encrypted = JSON.parse(message.content) as EncryptedContent
+                  message.content = await this.e2ee.decryptMessage(options.session_id, encrypted)
+                } catch (error) {
+                  this.logger.error('Failed to decrypt stored message', { error })
+                }
+              }
+            }
+          }
+
+          return {
+            status: 'ok',
+            messages: storedMessages as PrivateChatMessage[]
+          }
+        }
+      } catch (error) {
+        this.logger.error('Failed to load messages from storage', { error })
+      }
+    }
+
     // 构建查询参数
     const params: Record<string, string | number> = {
       session_id: options.session_id,
@@ -330,6 +514,33 @@ export class PrivateChatExtension extends EventEmitter implements PrivateChatApi
     })
 
     checkBaseStatus(response)
+
+    // 如果启用 E2EE，解密消息
+    if (this.e2eeEnabled && this.e2ee && response.messages) {
+      for (const message of response.messages) {
+        // 检查内容是否为加密格式
+        if (this.isEncryptedContent(message.content)) {
+          try {
+            const encrypted = JSON.parse(message.content) as EncryptedContent
+            message.content = await this.e2ee.decryptMessage(options.session_id, encrypted)
+            message.is_encrypted = true
+          } catch (error) {
+            this.logger.error('Failed to decrypt message', { error, messageId: message.message_id })
+          }
+        }
+      }
+    }
+
+    // 保存到存储
+    if (this.storageEnabled && this.storage && response.messages) {
+      try {
+        for (const message of response.messages) {
+          await this.storage.saveMessage(message as unknown as StoredPrivateChatMessage)
+        }
+      } catch (error) {
+        this.logger.error('Failed to save messages to storage', { error })
+      }
+    }
 
     this.logger.debug('Messages fetched', {
       sessionId: options.session_id,

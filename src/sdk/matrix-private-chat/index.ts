@@ -3,6 +3,7 @@
  * 基于 matrix-js-sdk v39.1.3
  * 后端服务器: https://matrix.cjystx.top:443
  *
+ * @module sdk/matrix-private-chat
  * @example
  * ```typescript
  * import { createEnhancedMatrixClient, extendMatrixClient } from '@/sdk/matrix-private-chat';
@@ -70,7 +71,21 @@ export type {
   MessageHandler,
   MatrixClientLike,
   EnhancedMatrixClient,
-  PrivateChatApi
+  PrivateChatApi,
+  // E2EE 类型
+  EncryptedContent,
+  SessionKeyMetadata,
+  EncryptedKeyData,
+  // 存储类型
+  StoredPrivateChatSession,
+  StoredPrivateChatMessage,
+  SyncResult,
+  SyncStrategy,
+  // 扩展 API
+  E2EEApi,
+  PrivateChatStorageApi,
+  ExtendedPrivateChatApi,
+  FullyEnhancedMatrixClient
 } from './types.js'
 
 // =============================================================================
@@ -91,6 +106,49 @@ export {
 // =============================================================================
 
 export { PrivateChatExtension } from './PrivateChatExtension.js'
+
+// =============================================================================
+// E2EE 和存储服务导出
+// =============================================================================
+
+export {
+  PrivateChatE2EEExtension,
+  createE2EEExtension
+} from './E2EEExtension.js'
+
+export {
+  PrivateChatStorageService,
+  createStorageService
+} from './StorageService.js'
+
+// =============================================================================
+// 存储模块导出
+// =============================================================================
+
+export {
+  IndexedDBAdapter,
+  createIndexedDBAdapter,
+  StorageEncryption,
+  createStorageEncryption,
+  createRandomStorageEncryption,
+  StorageSyncManager,
+  createStorageSyncManager,
+  StorageQuotaManager,
+  createStorageQuotaManager,
+  SyncStrategy as StorageSyncStrategy
+} from '@/services/privateChatStorage'
+
+export type {
+  StorageAdapter,
+  StorageAdapterOptions,
+  KEKMetadata,
+  SyncResult as StorageSyncResult,
+  SyncOptions as StorageSyncOptions,
+  CleanupResult as StorageCleanupResult,
+  CleanupPolicy,
+  StorageUsage as StorageQuotaUsage,
+  StorageStatistics
+} from '@/services/privateChatStorage'
 
 // =============================================================================
 // 工厂函数导出

@@ -49,6 +49,7 @@ export interface PrivateChatMessage {
   message_type?: string // 消息类型（后端字段）
   created_at: string // 创建时间 (ISO 8601)
   expires_at?: string // 过期时间 (ISO 8601)
+  is_encrypted?: boolean // 是否加密（E2EE 标记）
 }
 
 /**
@@ -312,4 +313,287 @@ export class NetworkError extends PrivateChatError {
     super(message, 0, '')
     this.name = 'NetworkError'
   }
+}
+
+// =============================================================================
+// E2EE 类型定义 (端到端加密)
+// =============================================================================
+
+/**
+ * 加密内容格式
+ * 根据 PRIVATE_CHAT_E2EE_STORAGE_OPTIMIZATION_PLAN.md
+ */
+export interface EncryptedContent {
+  /** 加密算法 */
+  algorithm: 'aes-gcm-256'
+  /** 会话密钥 ID */
+  key_id: string
+  /** 密文 (Base64 编码) */
+  ciphertext: string
+  /** 初始化向量 (Base64) */
+  iv: string
+  /** 认证标签 (Base64) */
+  tag: string
+  /** 时间戳 */
+  timestamp: number
+}
+
+/**
+ * 会话密钥元数据
+ */
+export interface SessionKeyMetadata {
+  /** 会话 ID */
+  session_id: string
+  /** 密钥 ID */
+  key_id: string
+  /** 创建时间 */
+  created_at: number
+  /** 过期时间 */
+  expires_at?: number
+  /** 轮换时间 */
+  rotated_at?: number
+  /** 参与者 */
+  participants: string[]
+  /** 密钥状态 */
+  status: 'active' | 'rotated' | 'expired' | 'revoked'
+}
+
+/**
+ * 加密的密钥数据 (用于存储)
+ */
+export interface EncryptedKeyData {
+  /** 会话 ID */
+  session_id: string
+  /** 加密后的密钥 (Base64) */
+  encrypted_key: string
+  /** 初始化向量 (Base64) */
+  iv: string
+  /** 加密算法 */
+  algorithm: string
+  /** 创建时间 */
+  created_at: number
+}
+
+// =============================================================================
+// 存储类型定义 (本地持久化)
+// =============================================================================
+
+/**
+ * 存储的会话数据
+ */
+export interface StoredPrivateChatSession extends PrivateChatSession {
+  /** 同步时间戳 */
+  synced_at?: number
+  /** 是否已加密 */
+  is_encrypted?: boolean
+}
+
+/**
+ * 存储的消息数据
+ */
+export interface StoredPrivateChatMessage extends PrivateChatMessage {
+  /** 消息 ID (V2) */
+  message_id: string
+  /** 会话 ID */
+  session_id: string
+  /** 是否为加密消息 */
+  is_encrypted?: boolean
+  /** 是否为已销毁消息 */
+  is_destroyed?: boolean
+  /** 同步时间戳 */
+  synced_at?: number
+}
+
+/**
+ * 同步结果
+ */
+export interface SyncResult {
+  /** 是否成功 */
+  success: boolean
+  /** 耗时 (毫秒) */
+  duration: number
+  /** 合并的会话数 */
+  sessionsMerged?: number
+  /** 解决的冲突数 */
+  conflictsResolved?: number
+  /** 错误信息 */
+  error?: string
+}
+
+/**
+ * 同步策略
+ */
+export type SyncStrategy = 'manual' | 'lazy' | 'periodic' | 'realtime'
+
+/**
+ * 存储使用情况
+ */
+export interface StorageUsage {
+  /** 已使用字节数 */
+  used: number
+  /** 总容量字节数 */
+  total: number
+  /** 使用百分比 */
+  percentage: number
+}
+
+/**
+ * 清理结果
+ */
+export interface CleanupResult {
+  /** 删除的会话数 */
+  sessionsDeleted: number
+  /** 删除的消息数 */
+  messagesDeleted: number
+  /** 释放的空间字节数 */
+  spaceFreed: number
+}
+
+// =============================================================================
+// E2EE API 扩展
+// =============================================================================
+
+/**
+ * E2EE 扩展 API
+ * 用于端到端加密的 PrivateChat
+ */
+export interface E2EEApi {
+  /**
+   * 协商会话密钥
+   */
+  negotiateSessionKey(sessionId: string, participants: string[]): Promise<CryptoKey>
+
+  /**
+   * 加密消息
+   */
+  encryptMessage(sessionId: string, content: string): Promise<EncryptedContent>
+
+  /**
+   * 解密消息
+   */
+  decryptMessage(sessionId: string, encryptedContent: EncryptedContent): Promise<string>
+
+  /**
+   * 轮换会话密钥
+   */
+  rotateSessionKey(sessionId: string): Promise<void>
+
+  /**
+   * 清理会话密钥
+   */
+  cleanupSessionKey(sessionId: string): Promise<void>
+
+  /**
+   * 初始化 E2EE
+   */
+  initialize(): Promise<void>
+}
+
+// =============================================================================
+// 存储 API 扩展
+// =============================================================================
+
+/**
+ * PrivateChat 存储服务 API
+ * 用于本地持久化存储
+ */
+export interface PrivateChatStorageApi {
+  /**
+   * 保存会话
+   */
+  saveSession(session: StoredPrivateChatSession): Promise<void>
+
+  /**
+   * 获取所有会话
+   */
+  getSessions(): Promise<StoredPrivateChatSession[]>
+
+  /**
+   * 获取单个会话
+   */
+  getSession(sessionId: string): Promise<StoredPrivateChatSession | null>
+
+  /**
+   * 删除会话
+   */
+  deleteSession(sessionId: string): Promise<void>
+
+  /**
+   * 保存消息
+   */
+  saveMessage(message: StoredPrivateChatMessage): Promise<void>
+
+  /**
+   * 获取会话消息
+   */
+  getMessages(sessionId: string): Promise<StoredPrivateChatMessage[]>
+
+  /**
+   * 删除会话消息
+   */
+  deleteMessages(sessionId: string): Promise<void>
+
+  /**
+   * 保存会话密钥 (加密)
+   */
+  saveSessionKey(sessionId: string, key: CryptoKey): Promise<void>
+
+  /**
+   * 获取会话密钥
+   */
+  getSessionKey(sessionId: string): Promise<CryptoKey | null>
+
+  /**
+   * 删除会话密钥
+   */
+  deleteSessionKey(sessionId: string): Promise<void>
+
+  /**
+   * 同步数据
+   */
+  syncFromServer(): Promise<SyncResult>
+
+  /**
+   * 获取最后同步时间
+   */
+  getLastSyncTime(): Promise<number>
+
+  /**
+   * 清除缓存
+   */
+  clearCache(): Promise<void>
+
+  /**
+   * 获取缓存大小
+   */
+  getCacheSize(): Promise<number>
+
+  /**
+   * 初始化存储
+   */
+  initialize(): Promise<void>
+}
+
+// =============================================================================
+// 扩展的 Matrix 客户端 (包含 E2EE 和存储)
+// =============================================================================
+
+/**
+ * 扩展的 PrivateChat API (包含 E2EE 和存储)
+ */
+export interface ExtendedPrivateChatApi extends PrivateChatApi {
+  /** E2EE 扩展 (可选) */
+  e2ee?: E2EEApi
+  /** 存储服务 (可选) */
+  storage?: PrivateChatStorageApi
+}
+
+/**
+ * 完全增强的 Matrix 客户端 (包含所有扩展)
+ */
+export interface FullyEnhancedMatrixClient extends MatrixClientLike {
+  /** Friends API */
+  readonly friends: import('@/sdk/matrix-friends/types').FriendsApi
+  /** PrivateChat API (扩展版) */
+  readonly privateChatV2: ExtendedPrivateChatApi
 }
