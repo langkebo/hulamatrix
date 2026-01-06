@@ -20,9 +20,9 @@
 import * as sdk from "matrix-js-sdk";
 
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "your_access_token",
-  userId: "@user:matrix.org"
+  userId: "@user:cjystx.top"
 });
 
 // 初始化 Rust 加密（推荐）
@@ -58,9 +58,9 @@ await client.initRustCrypto({
 ```typescript
 // 如果之前使用旧加密栈，需要迁移数据
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "token",
-  userId: "@user:matrix.org",
+  userId: "@user:cjystx.top",
 
   // 提供旧的加密存储
   cryptoStore: myLegacyCryptoStore,
@@ -433,9 +433,9 @@ if (crypto) {
 
 ```typescript
 const client = sdk.createClient({
-  baseUrl: "https://matrix.org",
+  baseUrl: "https://cjystx.top",
   accessToken: "token",
-  userId: "@user:matrix.org",
+  userId: "@user:cjystx.top",
   cryptoCallbacks: {
     // 提示用户输入存储密钥
     getSecretStorageKey: async (keys) => {
@@ -826,9 +826,9 @@ class CryptoManager {
 // 使用示例
 async function example() {
   const client = sdk.createClient({
-    baseUrl: "https://matrix.org",
+    baseUrl: "https://cjystx.top",
     accessToken: "token",
-    userId: "@user:matrix.org"
+    userId: "@user:cjystx.top"
   });
 
   // 初始化加密
@@ -846,7 +846,7 @@ async function example() {
   console.log("Backup version:", backupVersion);
 
   // 获取设备列表
-  const userId = "@user:matrix.org";
+  const userId = "@user:cjystx.top";
   const devices = await cryptoManager.getDevices(userId);
   console.log(`User has ${devices.size} devices`);
 

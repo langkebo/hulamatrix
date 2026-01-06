@@ -128,7 +128,7 @@ import { CreateSessionError, PrivateChatError } from '@/sdk/matrix-private-chat'
 
 try {
   const session = await privateChat.createSession({
-    participants: ['@alice:server.com'],
+    participants: ['@alice:cjystx.top'],
     session_name: 'Private Chat',
   });
   console.log('Session created:', session.session_id);
@@ -269,7 +269,7 @@ type PrivateChatSession[] = Array<{
 ```typescript
 // 创建一个1小时后过期的私聊会话
 const response = await privateChat.createSession({
-    participants: ["@alice:matrix.org", "@bob:matrix.org"],
+    participants: ["@alice:cjystx.top", "@bob:cjystx.top"],
     session_name: "项目讨论",
     ttl_seconds: 3600  // 1小时后过期
 });
@@ -284,8 +284,8 @@ console.log("会话详情:", response.session);
 //   session: {
 //     session_id: "uuid-string",
 //     session_name: "项目讨论",
-//     creator_id: "@user:server.com",
-//     participants: ["@alice:matrix.org", "@bob:matrix.org"],
+//     creator_id: "@user:cjystx.top",
+//     participants: ["@alice:cjystx.top", "@bob:cjystx.top"],
 //     created_at: "2024-01-01T00:00:00Z",
 //     expires_at: "2024-01-01T01:00:00Z",
 //     ttl_seconds: 3600
@@ -322,7 +322,7 @@ import { CreateSessionError } from '@/sdk/matrix-private-chat';
 async function createPrivateChat() {
   try {
     const response = await privateChat.createSession({
-      participants: ['@alice:server.com'],
+      participants: ['@alice:cjystx.top'],
       session_name: 'Private Discussion',
       ttl_seconds: 7200, // 2小时
     });
@@ -798,7 +798,7 @@ export function usePrivateChatMessages(sessionId: string) {
 ```typescript
 // 创建会话后清除缓存
 await privateChat.createSession({
-  participants: ['@alice:server.com']
+  participants: ['@alice:cjystx.top']
 });
 privateChat.invalidateCache();
 
@@ -1026,7 +1026,7 @@ async function sendMessage(sessionId: string, content: string) {
 
 // 使用示例
 const sessionId = await createSession(
-    ["@alice:server.com"],
+    ["@alice:cjystx.top"],
     "机密讨论"
 );
 
@@ -1295,7 +1295,7 @@ async function createSessionWithRetry(
 
 // 使用示例
 try {
-  const sessionId = await createSessionWithRetry(['@alice:server.com']);
+  const sessionId = await createSessionWithRetry(['@alice:cjystx.top']);
   if (sessionId) {
     console.log('会话创建成功:', sessionId);
   } else {
@@ -1643,7 +1643,7 @@ import {
 
 try {
     await privateChat.createSession({
-        participants: ["@alice:matrix.org"]
+        participants: ["@alice:cjystx.top"]
     });
 } catch (error) {
     if (error instanceof CreateSessionError) {
