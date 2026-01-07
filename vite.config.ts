@@ -172,7 +172,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         resolvers: [NaiveUiResolver()],
         dts: componentsDtsPath,
         // 排除有命名冲突的组件，改为手动导入
-        exclude: [/VoiceRecorderMobile\.vue$/, /VoiceRecorder\.vue$/]
+        exclude: [
+          /VoiceRecorderMobile\.vue$/,
+          /VoiceRecorder\.vue$/,
+          /EmojiPicker\.vue$/ // 排除我们的 EmojiPicker，避免与 Naive UI 冲突
+        ]
       })
     ],
     worker: {
@@ -273,11 +277,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
           'https://matrix.cjystx.top'
         const proxy: Record<string, ViteProxyOptions> = {}
         if (matrixTarget) {
-          proxy['/_synapse'] = { target: matrixTarget, changeOrigin: true, rewrite: (p: string) => p }
-          proxy['/_matrix'] = { target: matrixTarget, changeOrigin: true, rewrite: (p: string) => p }
+          proxy['/_synapse'] = { target: matrixTarget, changeOrigin: true, secure: true, rewrite: (p: string) => p }
+          proxy['/_matrix'] = { target: matrixTarget, changeOrigin: true, secure: true, rewrite: (p: string) => p }
         }
         if (adminTarget) {
-          proxy['/api/me'] = { target: adminTarget, changeOrigin: true, rewrite: (p: string) => p }
+          proxy['/api/me'] = { target: adminTarget, changeOrigin: true, secure: true, rewrite: (p: string) => p }
         }
         return proxy
       })(),
