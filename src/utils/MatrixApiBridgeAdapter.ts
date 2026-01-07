@@ -8,6 +8,7 @@
 import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
 import { friendsServiceV2 } from '@/services/friendsServiceV2'
 import { logger } from '@/utils/logger'
+import { matrixClientService } from '@/integrations/matrix/client'
 
 export async function requestWithFallback<T = unknown>(options: {
   url: string
@@ -50,9 +51,56 @@ export async function requestWithFallback<T = unknown>(options: {
         return [] as T
       }
 
+    case 'get_user_info':
+      // 获取当前用户信息
+      try {
+        const client = matrixClientService.getClient()
+        if (!client) {
+          logger.warn('[MatrixApiBridgeAdapter] Client not initialized for get_user_info')
+          return {} as T
+        }
+        const userId = client.getUserId()
+        if (!userId) {
+          logger.warn('[MatrixApiBridgeAdapter] No user ID found')
+          return {} as T
+        }
+        const user = client.getUser(userId)
+        return {
+          uid: userId,
+          account: userId,
+          name: user?.displayName || userId.split(':')[0].substring(1),
+          avatar: user?.avatarUrl || '',
+          email: '' // Matrix SDK doesn't expose email
+        } as T
+      } catch (error) {
+        logger.error('[MatrixApiBridgeAdapter] get_user_info failed:', error)
+        return {} as T
+      }
+
+    case 'get_room_list':
+      // 获取房间列表
+      try {
+        const client = matrixClientService.getClient()
+        if (!client) {
+          logger.warn('[MatrixApiBridgeAdapter] Client not initialized for get_room_list')
+          return [] as T
+        }
+        const rooms = client.getRooms()
+        return rooms.map((room) => ({
+          roomId: room.roomId,
+          name: room.name || room.roomId,
+          avatar: room.getAvatarUrl('') || '',
+          memberNum: room.getJoinedMemberCount(),
+          topic: room.getTopic() || ''
+        })) as T
+      } catch (error) {
+        logger.error('[MatrixApiBridgeAdapter] get_room_list failed:', error)
+        return [] as T
+      }
+
     default:
-      // 对于不支持的 URL，返回空数组（保持向后兼容）
-      logger.warn('[MatrixApiBridgeAdapter] Unsupported URL:', url)
-      return [] as T
+      // 对于不支持的 URL，记录并返回空值（保持向后兼容）
+      logger.debug('[MatrixApiBridgeAdapter] Unsupported URL:', url)
+      return undefined as T
   }
 }

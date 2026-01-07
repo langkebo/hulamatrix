@@ -129,7 +129,12 @@ export const listPendingRequests = async () => {
     if (!res.ok) {
       if (res.status === 404) {
         // Synapse Friends API 不可用，这是正常的
-        logger.warn('[Synapse Friends] Pending requests API not available (404)')
+        logger.debug('[Synapse Friends] Pending requests API not available (404)')
+        return { requests: [] }
+      }
+      // 401 是未登录时的正常情况，使用 debug 级别
+      if (res.status === 401) {
+        logger.debug('[Synapse Friends] Not authenticated for pending requests')
         return { requests: [] }
       }
       logger.warn('[Synapse Friends] Pending requests API error:', res.status)
@@ -138,7 +143,7 @@ export const listPendingRequests = async () => {
     return await res.json()
   } catch (error) {
     if (error instanceof Error) {
-      logger.warn('[Synapse Friends] Pending requests failed:', error.message)
+      logger.debug('[Synapse Friends] Pending requests failed:', error.message)
     }
     return { requests: [] }
   }
@@ -301,7 +306,12 @@ export const stats = async () => {
     if (!res.ok) {
       if (res.status === 404) {
         // Synapse Friends API 不可用，这是正常的
-        logger.warn('[Synapse Friends] Stats API not available (404)')
+        logger.debug('[Synapse Friends] Stats API not available (404)')
+        return {}
+      }
+      // 401 是未登录时的正常情况，使用 debug 级别
+      if (res.status === 401) {
+        logger.debug('[Synapse Friends] Not authenticated for stats')
         return {}
       }
       logger.warn('[Synapse Friends] Stats API error:', res.status)
@@ -310,7 +320,7 @@ export const stats = async () => {
     return await res.json()
   } catch (error) {
     if (error instanceof Error) {
-      logger.warn('[Synapse Friends] Stats request failed:', error.message)
+      logger.debug('[Synapse Friends] Stats request failed:', error.message)
     }
     return {}
   }

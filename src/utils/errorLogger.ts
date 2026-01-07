@@ -46,6 +46,10 @@ class ErrorLogger {
       // Filter seemly color library warnings (Naive UI dependency)
       message.includes('[seemly/rgba]: Invalid color value') ||
       (errorObj?.message && errorObj.message.includes('[seemly/rgba]: Invalid color value')) ||
+      // Filter Vue internal property access warnings (Vue 3 internal behavior)
+      message.includes('Property "$type" was accessed') ||
+      message.includes('Property "toJSON" was accessed') ||
+      message.includes('enumerating keys on a component instance') ||
       // Other dev noise
       message.includes('@vite/client') ||
       message.includes('WebSocket closed without opened')

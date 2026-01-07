@@ -325,6 +325,10 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
         // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
         text.includes('No default value') ||
         text.includes('[seemly/rgba]: Invalid color value') ||
+        // Filter Vue internal property access warnings (Vue 3 internal behavior)
+        text.includes('Property "$type" was accessed') ||
+        text.includes('Property "toJSON" was accessed') ||
+        text.includes('enumerating keys on a component instance') ||
         (text.includes('TypeError') && args.some((a) => a instanceof Error && a.message === 'No default value'))
       if (isDevNoise) return
     } catch (_error) {
@@ -345,7 +349,11 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
         text.includes('📊 Matrix SDK Performance Report') ||
         text.includes('[PerformanceMonitor] Long task detected:') ||
         text.includes('[Performance] Long task detected:') ||
-        text.includes('[Performance] Slow resource:')
+        text.includes('[Performance] Slow resource:') ||
+        // Filter Vue internal property access warnings (Vue 3 internal behavior)
+        text.includes('Property "$type" was accessed') ||
+        text.includes('Property "toJSON" was accessed') ||
+        text.includes('enumerating keys on a component instance')
       if (isDevNoise) return
     } catch (_error) {
       // Silently ignore console.warn filtering errors
