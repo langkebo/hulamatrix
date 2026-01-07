@@ -443,6 +443,23 @@ export const useLogin = () => {
             logger.info('[useLogin] 导航后再次触发 resize 事件')
           }
 
+          // 手动触发布局初始化（因为窗口 label 仍然是 'login'，不会触发 layout 的 watch）
+          try {
+            const { initListener, readCountQueue } = await import('@/utils/ReadCountQueue')
+            initListener()
+            readCountQueue()
+            logger.info('[useLogin] 手动触发布局初始化')
+          } catch (error) {
+            logger.warn('[useLogin] 布局初始化失败:', error)
+          }
+
+          // 多次触发 resize 确保 CSS 媒体查询和布局正确计算
+          await new Promise((resolve) => setTimeout(resolve, 300))
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('resize'))
+            logger.info('[useLogin] 第三次触发 resize 事件')
+          }
+
           logger.info('[useLogin] 单窗口模式转换完成')
           return
         }
