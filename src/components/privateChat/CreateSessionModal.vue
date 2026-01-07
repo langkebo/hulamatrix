@@ -122,7 +122,9 @@ const showModal = computed({
 // 选择好友
 const handleSelectFriend = (friend: FriendWithProfile) => {
   const userId = friend.friend_id || friend.user_id
-  formData.value.userId = userId
+  if (userId) {
+    formData.value.userId = userId
+  }
 }
 
 // 创建会话

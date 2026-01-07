@@ -409,7 +409,7 @@ export const useMatrixAuth = (options: MatrixAuthOptions = {}) => {
     // 5. 并行执行：启动客户端、注册桥接、检查管理员
     // Note: startClient now has error recovery for builder errors (IndexedDB corruption)
     const [, , isAdmin] = await Promise.all([
-      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000, threadSupport: true }).catch((startError) => {
+      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000 }).catch((startError) => {
         const errorMsg = startError instanceof Error ? startError.message : String(startError)
         // If it's a recovery error (user needs to refresh), let it propagate
         if (errorMsg.includes('refresh the page')) {
@@ -576,7 +576,7 @@ export const useMatrixAuth = (options: MatrixAuthOptions = {}) => {
 
     // 并行执行初始化
     const [, , isAdmin] = await Promise.all([
-      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000, threadSupport: true }).catch((startError) => {
+      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000 }).catch((startError) => {
         const errorMsg = startError instanceof Error ? startError.message : String(startError)
         if (errorMsg.includes('refresh the page')) {
           throw startError

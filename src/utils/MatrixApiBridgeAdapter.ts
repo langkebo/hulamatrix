@@ -59,17 +59,17 @@ export async function requestWithFallback<T = unknown>(options: {
           logger.warn('[MatrixApiBridgeAdapter] Client not initialized for get_user_info')
           return {} as T
         }
-        const userId = client.getUserId()
+        const userId = typeof client.getUserId === 'function' ? client.getUserId() : null
         if (!userId) {
           logger.warn('[MatrixApiBridgeAdapter] No user ID found')
           return {} as T
         }
-        const user = client.getUser(userId)
+        const user = typeof client.getUser === 'function' ? client.getUser(userId) : undefined
         return {
           uid: userId,
           account: userId,
-          name: user?.displayName || userId.split(':')[0].substring(1),
-          avatar: user?.avatarUrl || '',
+          name: (user as any)?.displayName || userId.split(':')[0].substring(1),
+          avatar: (user as any)?.avatarUrl || '',
           email: '' // Matrix SDK doesn't expose email
         } as T
       } catch (error) {
@@ -85,13 +85,13 @@ export async function requestWithFallback<T = unknown>(options: {
           logger.warn('[MatrixApiBridgeAdapter] Client not initialized for get_room_list')
           return [] as T
         }
-        const rooms = client.getRooms()
-        return rooms.map((room) => ({
+        const rooms = typeof client.getRooms === 'function' ? client.getRooms() : []
+        return rooms.map((room: any) => ({
           roomId: room.roomId,
           name: room.name || room.roomId,
-          avatar: room.getAvatarUrl('') || '',
-          memberNum: room.getJoinedMemberCount(),
-          topic: room.getTopic() || ''
+          avatar: typeof room.getAvatarUrl === 'function' ? room.getAvatarUrl('') || '' : '',
+          memberNum: typeof room.getJoinedMemberCount === 'function' ? room.getJoinedMemberCount() : 0,
+          topic: typeof room.getTopic === 'function' ? room.getTopic() || '' : ''
         })) as T
       } catch (error) {
         logger.error('[MatrixApiBridgeAdapter] get_room_list failed:', error)

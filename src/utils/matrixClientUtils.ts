@@ -206,3 +206,11 @@ export async function setAvatarUrl(client: Record<string, unknown> | null, mxcUr
   }
   return client.setAvatarUrl(mxcUrl)
 }
+
+/**
+ * Convert an object to a Record type
+ * Utility function for type conversion
+ */
+export function toRecord<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+  return obj as Record<string, unknown>
+}

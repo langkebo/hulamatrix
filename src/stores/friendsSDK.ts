@@ -14,10 +14,16 @@ import type {
   Stats,
   BlockedUser,
   SearchResultUser,
-  FriendsApi
+  FriendsApi,
+  CategoryWithColor,
+  FriendWithProfile,
+  FriendRequestWithProfile
 } from '@/sdk/matrix-friends'
 import { getEnhancedMatrixClient } from '@/integrations/matrix/client.js'
 import { logger } from '@/utils/logger'
+
+// Re-export types for components
+export type { CategoryWithColor, FriendWithProfile, FriendRequestWithProfile }
 
 export const useFriendsSDKStore = defineStore('friendsSDK', () => {
   // ==================== 辅助函数 ====================

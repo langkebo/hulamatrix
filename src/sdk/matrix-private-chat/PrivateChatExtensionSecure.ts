@@ -853,7 +853,9 @@ export class PrivateChatExtensionSecure extends EventEmitter implements PrivateC
               message_id: message.message_id,
               session_id: options.session_id,
               sender_id: message.sender_id,
-              content: isEncrypted ? message.content : JSON.stringify({ content: message.content }), // 存储加密内容
+              content: this.isEncryptedContent(message.content)
+                ? message.content
+                : JSON.stringify({ content: message.content }), // 存储加密内容
               type: message.type,
               created_at: message.created_at,
               is_encrypted: true
@@ -975,7 +977,9 @@ export class PrivateChatExtensionSecure extends EventEmitter implements PrivateC
 
         if (response.messages && response.messages.length > 0) {
           // 更新最后消息 ID
-          this.lastMessageIds.set(sessionId, response.messages[0].message_id)
+          if (response.messages[0]?.message_id) {
+            this.lastMessageIds.set(sessionId, response.messages[0].message_id)
+          }
 
           // 过滤并通知新消息
           for (const message of response.messages) {
@@ -1038,7 +1042,7 @@ export class PrivateChatExtensionSecure extends EventEmitter implements PrivateC
     }
 
     // 获取审计日志统计
-    const auditStats = {
+    const _auditStats = {
       total: this.auditLog.filter((l) => l.sessionId === options.session_id).length,
       keyNegotiated: this.auditLog.filter((l) => l.sessionId === options.session_id && l.operation === 'key_negotiated')
         .length,
@@ -1067,15 +1071,10 @@ export class PrivateChatExtensionSecure extends EventEmitter implements PrivateC
 
     return {
       status: 'ok',
-      session_id: options.session_id,
-      message_count: messageCount,
-      encrypted_count: encryptedCount,
-      encryption_rate: messageCount > 0 ? (encryptedCount / messageCount) * 100 : 100,
       stats: {
-        total_messages: messageCount,
-        encrypted_messages: encryptedCount,
-        encryption_enabled: true,
-        audit_stats: auditStats
+        message_count: messageCount,
+        participant_count: 2, // PrivateChat is always 1:1
+        last_activity: new Date().toISOString()
       }
     }
   }
@@ -1121,6 +1120,32 @@ export class PrivateChatExtensionSecure extends EventEmitter implements PrivateC
    */
   invalidateCache(): void {
     this.cacheExpiry = 0
+  }
+
+  /**
+   * 释放所有资源（实现 PrivateChatApi.dispose）
+   */
+  dispose(): void {
+    // 停止所有轮询
+    for (const sessionId of this.pollTimers.keys()) {
+      this.stopPolling(sessionId)
+    }
+
+    // 停止所有密钥轮换
+    for (const sessionId of this.keyRotationTimers.keys()) {
+      this.stopKeyRotation(sessionId)
+    }
+
+    // 清除缓存
+    this.clearCache()
+
+    // 清除审计日志
+    this.auditLog = []
+
+    // 移除所有消息处理器
+    this.messageHandlers.clear()
+
+    this.logger.info('PrivateChatExtensionSecure disposed')
   }
 }
 

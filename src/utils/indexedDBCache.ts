@@ -224,6 +224,42 @@ export class PersistentMediaCache {
   }
 
   /**
+   * Clear cached media for a specific domain
+   */
+  async clearDomain(domain: string): Promise<void> {
+    await this.ensureInitialized()
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
+      const store = transaction.objectStore(STORE_NAME)
+      const index = store.index('domain')
+      const request = index.openCursor(IDBKeyRange.only(domain))
+
+      request.onsuccess = () => {
+        const cursor = request.result
+        if (cursor) {
+          cursor.delete()
+          cursor.continue()
+        } else {
+          // All entries for this domain have been deleted
+          // Update current size by recalculating
+          this.getStats()
+            .then(() => {
+              logger.info('[PersistentMediaCache] Domain cache cleared', { domain })
+              resolve()
+            })
+            .catch(reject)
+        }
+      }
+
+      request.onerror = () => {
+        logger.error('[PersistentMediaCache] Failed to clear domain:', request.error)
+        reject(request.error)
+      }
+    })
+  }
+
+  /**
    * Get cache statistics
    */
   async getStats(): Promise<CacheStats> {

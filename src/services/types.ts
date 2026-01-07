@@ -851,6 +851,10 @@ export type SessionItem = {
   /** 是否选中（非后端） */
   isCheck?: boolean
   allowScanEnter: boolean
+  /** 是否为 PrivateChat 会话（扩展字段） */
+  isPrivateChat?: boolean
+  /** PrivateChat session ID（扩展字段） */
+  privateChatSessionId?: string
 }
 
 /** 消息已读未读数列表项 */

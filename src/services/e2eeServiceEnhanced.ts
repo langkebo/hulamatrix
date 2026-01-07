@@ -13,7 +13,7 @@ import type {
   KeyInfo,
   EncryptionValidationResult
 } from '@/types/private-chat-security'
-import { DEFAULT_SECURITY_CONFIG } from '@/types/private-chat-security'
+import { DEFAULT_SECURITY_CONFIG, EncryptionLevel } from '@/types/private-chat-security'
 import { logger } from '@/utils/logger'
 
 /**
@@ -221,7 +221,7 @@ export class E2EEServiceEnhanced extends EventEmitter {
 
     if (!keyInfo) {
       return {
-        level: 'basic',
+        level: EncryptionLevel.BASIC,
         encrypted: false,
         algorithm: 'none',
         needsRotation: false,
@@ -236,11 +236,11 @@ export class E2EEServiceEnhanced extends EventEmitter {
     const needsRotation = timeUntilExpiry < this.securityConfig.keyRotationIntervalMs
 
     // 计算加密级别
-    let level: 'basic' | 'standard' | 'advanced' = 'basic'
+    let level: EncryptionLevel = EncryptionLevel.BASIC
     if (this.securityConfig.forwardSecrecyEnabled && keyInfo.rotationCount > 0) {
-      level = 'advanced'
+      level = EncryptionLevel.ADVANCED
     } else if (this.securityConfig.keyRotationIntervalMs < 24 * 60 * 60 * 1000) {
-      level = 'standard'
+      level = EncryptionLevel.STANDARD
     }
 
     // 计算强度评分
@@ -392,7 +392,6 @@ export class E2EEServiceEnhanced extends EventEmitter {
    */
   emitSecurityWarning(event: SecurityWarningEvent): void {
     this.addAuditLog({
-      timestamp: event.timestamp,
       sessionId: event.sessionId,
       operation: 'unencrypted_rejected',
       success: false,
@@ -550,6 +549,27 @@ export class E2EEServiceEnhanced extends EventEmitter {
     this.auditLog = []
     this.encryptionTimings.clear()
     logger.warn('[E2EEServiceEnhanced] Service reset')
+  }
+
+  /**
+   * 要求有效的加密（如果会话没有有效加密则抛出错误）
+   */
+  requireValidEncryption(sessionId: string): void {
+    const keyInfo = this.sessionKeys.get(sessionId)
+
+    if (!keyInfo) {
+      throw new Error(`No encryption key found for session: ${sessionId}`)
+    }
+
+    if (keyInfo.expiresAt < Date.now()) {
+      throw new Error(`Encryption key has expired for session: ${sessionId}`)
+    }
+
+    if (this.securityConfig.mandatoryEncryption && !keyInfo.status) {
+      throw new Error(`Invalid encryption status for session: ${sessionId}`)
+    }
+
+    logger.debug('[E2EEServiceEnhanced] Encryption validated', { sessionId })
   }
 }
 

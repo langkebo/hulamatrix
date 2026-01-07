@@ -42,6 +42,12 @@ export interface Friend {
   category_name?: string | null
   /** 用户 ID (备用字段) */
   user_id?: string
+  /** 显示名称 (扩展字段) */
+  display_name?: string
+  /** 头像 URL (扩展字段) */
+  avatar_url?: string
+  /** 在线状态 (扩展字段) */
+  presence?: 'online' | 'offline' | 'unavailable' | 'away'
 }
 
 /**
@@ -54,6 +60,8 @@ export interface Category {
   name: string
   /** 创建时间 (ISO8601) */
   created_at: string
+  /** 分组颜色 (可选) */
+  color?: string
 }
 
 /**
@@ -84,6 +92,10 @@ export interface FriendRequest {
   category_id?: string | null
   /** 目标用户 ID */
   target_id?: string
+  /** 发起人显示名称 (扩展字段) */
+  requester_display_name?: string
+  /** 发起人头像 URL (扩展字段) */
+  requester_avatar_url?: string
 }
 
 /**
@@ -428,4 +440,30 @@ export class NetworkError extends Error {
     this.name = 'NetworkError'
     Object.setPrototypeOf(this, NetworkError.prototype)
   }
+}
+
+// ==================== 复合类型（用于组件） ====================
+
+/**
+ * 带颜色的分组类型
+ */
+export interface CategoryWithColor extends Category {
+  color?: string
+}
+
+/**
+ * 带完整资料的好友类型
+ */
+export interface FriendWithProfile extends Friend {
+  display_name?: string
+  avatar_url?: string
+  presence?: 'online' | 'offline' | 'unavailable' | 'away'
+}
+
+/**
+ * 带完整资料的请求类型
+ */
+export interface FriendRequestWithProfile extends FriendRequest {
+  requester_display_name?: string
+  requester_avatar_url?: string
 }

@@ -1,13 +1,17 @@
 <template>
   <div class="encryption-indicator" :class="statusClass">
     <!-- 加密状态图标 -->
-    <div class="encryption-icon">
-      <Icon v-if="status.encrypted" :size="iconSize">
-        <LockClosedRound />
-      </Icon>
-      <Icon v-else :size="iconSize">
-        <LockOpenRound />
-      </Icon>
+    <div class="encryption-icon" :style="{ width: `${iconSize}px`, height: `${iconSize}px` }">
+      <svg v-if="status.encrypted" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 1 1 6 0v2H9V6z" />
+      </svg>
+      <svg v-else viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 1 1 6 0v2H9V6z"
+          opacity="0.5" />
+        <path d="M12 23a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z" />
+      </svg>
     </div>
 
     <!-- 加密状态文本 -->
@@ -19,9 +23,9 @@
     <!-- 加密详情（悬停显示） -->
     <n-tooltip v-if="showDetails" trigger="hover" placement="top">
       <template #trigger>
-        <Icon :size="16" class="info-icon">
-          <InfoRound />
-        </Icon>
+        <svg class="info-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+        </svg>
       </template>
       <div class="encryption-details">
         <div class="detail-row">
@@ -72,10 +76,22 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
-import { Icon } from '@vicons/utils'
-import { LockClosedRound, LockOpenRound, InfoRound } from '@vicons/material'
 import { NTooltip, NProgress, NBadge } from 'naive-ui'
 import type { EncryptionStatus } from '@/types/private-chat-security'
+import { EncryptionLevel } from '@/types/private-chat-security'
+
+// Inline SVG icons (since @vicons/material is not installed)
+const LockClosedIcon = {
+  template: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 1 1 6 0v2H9V6z"/></svg>`
+}
+
+const LockOpenIcon = {
+  template: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 1 1 6 0v2H9V6z" opacity="0.5"/><path d="M12 23a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/></svg>`
+}
+
+const InfoIcon = {
+  template: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`
+}
 
 // Props
 interface Props {
@@ -99,7 +115,7 @@ const e2eeService = inject<any>('e2eeService')
 
 // 加密状态
 const status = ref<EncryptionStatus>({
-  level: 'basic',
+  level: EncryptionLevel.BASIC,
   encrypted: false,
   algorithm: 'aes-gcm-256',
   needsRotation: false,
@@ -121,7 +137,7 @@ const refreshStatus = async () => {
 
     if (encryptionStatus) {
       status.value = {
-        level: encryptionStatus.level || 'standard',
+        level: encryptionStatus.level || EncryptionLevel.STANDARD,
         encrypted: encryptionStatus.encrypted,
         algorithm: encryptionStatus.algorithm || 'aes-gcm-256',
         keyId: encryptionStatus.keyId,
