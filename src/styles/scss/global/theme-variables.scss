@@ -1,11 +1,48 @@
 /* ==========================================================================
    HuLa 统一主题变量定义
    适用于 PC 端 (Naive UI) 和移动端 (Vant + Naive UI)
+   基于设计参考图片: img2-8.webp (PC), img3-*.webp (Mobile)
    ========================================================================== */
 
+/* 导入设计令牌系统 */
+@use '../../tokens/index.scss';
+
 :root {
-  /* ==================== 主色调 ==================== */
-  /* 主色 - 青绿色系 */
+  /* ==================== PC端配色（深色主题）==================== */
+  /* 基于设计图 img2-8.webp, img2-3.webp */
+  --pc-left-bg: #2D5A5A;           /* 左侧导航：深青绿色 */
+  --pc-center-bg: #2A2A2A;         /* 中间会话列表：深灰色 */
+  --pc-right-bg: #3A3A3A;          /* 右侧聊天区：中灰色 */
+  --pc-accent-green: #00BFA5;      /* 强调色：亮绿色（发送按钮、选中状态） */
+  --pc-accent-red: #3D1A1A;        /* 选中背景：深红色 */
+
+  --pc-text-primary: #FFFFFF;      /* 主文字：白色 */
+  --pc-text-secondary: #E0E0E0;    /* 次要文字：浅灰色 */
+  --pc-text-tertiary: #A0A0A0;     /* 辅助文字：中灰色 */
+
+  --pc-bubble-sent: #00BFA5;       /* 发送气泡：亮绿色 */
+  --pc-bubble-sent-text: #FFFFFF;  /* 发送文字：白色 */
+  --pc-bubble-received: #4A4A4A;   /* 接收气泡：灰色 */
+  --pc-bubble-received-text: #E0E0E0; /* 接收文字：浅灰色 */
+
+  /* ==================== 移动端配色（浅色主题）==================== */
+  /* 基于设计图 img3-1.webp ~ img3-4.webp */
+  --mobile-bg-primary: #E6F7F0;    /* 主背景：薄荷绿 */
+  --mobile-bg-card: #FFFFFF;       /* 卡片背景：白色 */
+  --mobile-bg-input: #F5F5F5;      /* 输入框背景：浅灰色 */
+
+  --mobile-text-primary: #333333;  /* 主文字：深灰色 */
+  --mobile-text-secondary: #999999;/* 次要文字：浅灰色 */
+
+  --mobile-accent-green: #00B894;  /* 强调色：绿色 */
+  --mobile-accent-light: #A8D5C1;  /* 浅绿色（未激活按钮） */
+
+  --mobile-bubble-sent: #00B894;   /* 发送气泡：绿色 */
+  --mobile-bubble-sent-text: #FFFFFF; /* 发送文字：白色 */
+  --mobile-bubble-received: #FFFFFF; /* 接收气泡：白色 */
+  --mobile-bubble-received-text: #333333; /* 接收文字：深灰色 */
+
+  /* ==================== 主色调（保持向后兼容）==================== */
   --hula-primary: #64a29c;
   --hula-primary-light: #82b2ac;
   --hula-primary-lighter: #b8d4d1;
