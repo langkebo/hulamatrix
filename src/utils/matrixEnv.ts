@@ -32,9 +32,11 @@ export function getMatrixBaseUrl(): string {
   const discovered = getHomeserverUrl()
   if (discovered) return discovered
 
-  // 回退到环境变量（兼容旧代码）
+  // 注意：不再回退到 VITE_MATRIX_BASE_URL
+  // 这样可以强制使用服务发现，确保通过 .well-known 获取正确的 homeserver
+  // 如果需要直接指定 homeserver（不推荐），应该设置 VITE_MATRIX_HOMESERVER
   const env = (import.meta.env || {}) as ViteEnv
-  const v = env.VITE_MATRIX_HOMESERVER || env.VITE_MATRIX_BASE_URL || ''
+  const v = env.VITE_MATRIX_HOMESERVER || ''
   return String(v).trim()
 }
 

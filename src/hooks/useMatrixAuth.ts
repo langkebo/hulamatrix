@@ -288,19 +288,33 @@ export const useMatrixAuth = (options: MatrixAuthOptions = {}) => {
       }
     }
 
-    // 2. 获取服务器URL（带缓存）
+    // 2. 获取服务器URL（确保执行服务发现）
     let url = store.getHomeserverBaseUrl()
-    if (!url && store.customServer) {
+
+    // 如果没有 URL，执行服务发现
+    if (!url) {
       try {
-        const { homeserverUrl } = await safeAutoDiscovery(store.customServer)
-        url = homeserverUrl
-        store.baseUrl = url
+        if (verboseLogging) {
+          logger.info('[MatrixAuth] 未发现缓存的 homeserver URL，开始服务发现...')
+        }
+        await store.discover()
+        url = store.getHomeserverBaseUrl()
+        if (!url) {
+          throw new Error('服务发现未能返回 homeserver URL')
+        }
       } catch (e) {
-        logger.warn('[MatrixAuth] 服务发现失败:', e)
-        throw new Error('无法连接到 Matrix 服务器，请检查服务器地址')
+        logger.error('[MatrixAuth] 服务发现失败:', e)
+        throw new Error('无法连接到 Matrix 服务器，请检查服务器地址或网络连接')
       }
     }
-    if (url) matrixClient.setBaseUrl(url)
+
+    // 设置客户端 baseUrl
+    if (url) {
+      matrixClient.setBaseUrl(url)
+      if (verboseLogging) {
+        logger.info(`[MatrixAuth] Homeserver URL 设置成功: ${url}`)
+      }
+    }
 
     logger.info(`[MatrixAuth] 服务器URL: ${url}, 耗时: ${Date.now() - startTime}ms`)
 
@@ -395,7 +409,7 @@ export const useMatrixAuth = (options: MatrixAuthOptions = {}) => {
     // 5. 并行执行：启动客户端、注册桥接、检查管理员
     // Note: startClient now has error recovery for builder errors (IndexedDB corruption)
     const [, , isAdmin] = await Promise.all([
-      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000 }).catch((startError) => {
+      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000, threadSupport: true }).catch((startError) => {
         const errorMsg = startError instanceof Error ? startError.message : String(startError)
         // If it's a recovery error (user needs to refresh), let it propagate
         if (errorMsg.includes('refresh the page')) {
@@ -562,7 +576,7 @@ export const useMatrixAuth = (options: MatrixAuthOptions = {}) => {
 
     // 并行执行初始化
     const [, , isAdmin] = await Promise.all([
-      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000 }).catch((startError) => {
+      matrixClient.startClient({ initialSyncLimit: 5, pollTimeout: 15000, threadSupport: true }).catch((startError) => {
         const errorMsg = startError instanceof Error ? startError.message : String(startError)
         if (errorMsg.includes('refresh the page')) {
           throw startError
