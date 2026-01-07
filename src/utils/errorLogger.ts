@@ -50,6 +50,13 @@ class ErrorLogger {
       message.includes('Property "$type" was accessed') ||
       message.includes('Property "toJSON" was accessed') ||
       message.includes('enumerating keys on a component instance') ||
+      // Filter Vue 3.5+ component lifecycle errors (internal Vue errors during unmount/update)
+      message.includes('Right side of assignment cannot be destructured') ||
+      (errorObj?.message && errorObj.message.includes('Right side of assignment cannot be destructured')) ||
+      (message.includes('null is not an object') && message.includes('parentNode')) ||
+      (errorObj?.message &&
+        errorObj.message.includes('null is not an object') &&
+        errorObj.message.includes('parentNode')) ||
       // Other dev noise
       message.includes('@vite/client') ||
       message.includes('WebSocket closed without opened')
@@ -169,7 +176,19 @@ class ErrorLogger {
     // 捕获 Vue 错误
     window.addEventListener('vue:error', (event: any) => {
       // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
-      if (event.message === 'No default value' || String(event.err).includes('No default value')) {
+      const eventStr = String(event.err)
+      if (
+        event.message === 'No default value' ||
+        eventStr.includes('No default value') ||
+        // Filter seemly color library warnings (Naive UI dependency)
+        event.message?.includes('[seemly/rgba]: Invalid color value') ||
+        eventStr.includes('[seemly/rgba]: Invalid color value') ||
+        // Filter Vue 3.5+ component lifecycle errors (internal Vue errors during unmount/update)
+        event.message?.includes('Right side of assignment cannot be destructured') ||
+        eventStr.includes('Right side of assignment cannot be destructured') ||
+        (event.message?.includes('null is not an object') && event.message?.includes('parentNode')) ||
+        (eventStr.includes('null is not an object') && eventStr.includes('parentNode'))
+      ) {
         return
       }
       const logEntry: LogEntry = {

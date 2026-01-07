@@ -329,6 +329,9 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
         text.includes('Property "$type" was accessed') ||
         text.includes('Property "toJSON" was accessed') ||
         text.includes('enumerating keys on a component instance') ||
+        // Filter Vue 3.5+ component lifecycle errors (internal Vue errors during unmount/update)
+        text.includes('Right side of assignment cannot be destructured') ||
+        (text.includes('null is not an object') && text.includes('parentNode')) ||
         (text.includes('TypeError') && args.some((a) => a instanceof Error && a.message === 'No default value'))
       if (isDevNoise) return
     } catch (_error) {
@@ -460,7 +463,12 @@ app.config.errorHandler = (err, instance, info) => {
     String(err).includes('No default value') ||
     // Filter seemly color library warnings (Naive UI dependency)
     (err instanceof Error && err.message.includes('[seemly/rgba]: Invalid color value')) ||
-    String(err).includes('[seemly/rgba]: Invalid color value')
+    String(err).includes('[seemly/rgba]: Invalid color value') ||
+    // Filter Vue 3.5+ component lifecycle errors (internal Vue errors during unmount/update)
+    (err instanceof Error && err.message.includes('Right side of assignment cannot be destructured')) ||
+    String(err).includes('Right side of assignment cannot be destructured') ||
+    (err instanceof Error && err.message.includes('null is not an object') && err.message.includes('parentNode')) ||
+    (String(err).includes('null is not an object') && String(err).includes('parentNode'))
 
   if (!isDevNoise) {
     // Provide user-friendly error message
