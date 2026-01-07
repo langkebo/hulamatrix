@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { emit } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { LogicalSize } from '@tauri-apps/api/dpi'
 import { useRouter } from 'vue-router'
 import { EventEnum, MittEnum, TauriCommand } from '@/enums'
 import { useWindow } from '@/hooks/useWindow'
@@ -95,7 +96,6 @@ export const useLogin = () => {
   const userStore = useUserStore()
   const loginHistoriesStore = useLoginHistoriesStore()
   const initialSyncStore = useInitialSyncStore()
-  const { createWebviewWindow } = useWindow()
 
   const { t } = useI18nGlobal()
 
@@ -377,24 +377,84 @@ export const useLogin = () => {
 
   /**
    * 根据平台类型执行不同的跳转逻辑
-   * 桌面端: 创建主窗口
+   * 桌面端: 将 login 窗口转换为主窗口（单窗口模式）
    * 移动端: 路由跳转到主页
    */
   const routerOrOpenHomeWindow = async () => {
     const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
-    if (isDesktop() && isTauri) {
-      const registerWindow = await WebviewWindow.getByLabel('register')
-      if (registerWindow) {
-        await registerWindow.close().catch((error) => {
-          logger.warn('关闭注册窗口失败:', error)
-        })
-      }
-      await createWebviewWindow('HuLa', 'home', 960, 720, 'login', true, 330, 480, undefined, false)
-      globalStore.isTrayMenuShow = true
-      return
-    }
     const goMobile = typeof location !== 'undefined' && location.pathname.startsWith('/mobile')
-    router?.push(goMobile || isMobile() ? '/mobile/home' : '/home')
+    const isMobileValue = isMobile()
+
+    if (isDesktop() && isTauri) {
+      try {
+        // 关键：在导航之前先更新 appState，避免路由守卫重定向到登录页
+        const { useAppStateStore } = await import('@/stores/appState')
+        const { AppState } = await import('@/enums')
+        const appStateStore = useAppStateStore()
+
+        logger.info('[useLogin] 设置应用状态为已就绪')
+        appStateStore.setState(AppState.READY)
+
+        const currentWindow = await WebviewWindow.getCurrent()
+        const currentLabel = currentWindow.label
+
+        // 如果当前窗口是 login 窗口，直接转换为主窗口
+        if (currentLabel === 'login') {
+          logger.info('[useLogin] 将 login 窗口转换为主窗口')
+
+          // 关闭注册窗口（如果存在）
+          const registerWindow = await WebviewWindow.getByLabel('register')
+          if (registerWindow) {
+            await registerWindow.close().catch((error) => {
+              logger.warn('关闭注册窗口失败:', error)
+            })
+          }
+
+          // 调整窗口大小到主窗口尺寸
+          await currentWindow.setSize(new LogicalSize(960, 720))
+          await currentWindow.center()
+          logger.info('[useLogin] 窗口大小已调整')
+
+          // 触发 resize 事件，让布局重新计算
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('resize'))
+            logger.info('[useLogin] 已触发 resize 事件')
+          }
+
+          // 启用托盘菜单
+          globalStore.isTrayMenuShow = true
+
+          // 导航到主页面
+          const targetRoute = goMobile || isMobileValue ? '/mobile/chatRoom/chatMain' : '/message'
+          logger.info('[useLogin] 导航到主页面:', targetRoute)
+
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => {
+              router?.push(targetRoute)
+              resolve()
+            })
+          })
+
+          // 导航后再次触发 resize 事件，确保布局正确
+          await new Promise((resolve) => setTimeout(resolve, 200))
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('resize'))
+            logger.info('[useLogin] 导航后再次触发 resize 事件')
+          }
+
+          logger.info('[useLogin] 单窗口模式转换完成')
+          return
+        }
+      } catch (error) {
+        logger.error('[useLogin] 窗口操作失败:', error)
+        loginText.value = t('login.button.login.default')
+        loading.value = false
+        loginDisabled.value = false
+        msg.error('窗口操作失败，请重试')
+      }
+    }
+    router?.push(goMobile || isMobileValue ? '/mobile/home' : '/home')
   }
 
   const normalLogin = async (
