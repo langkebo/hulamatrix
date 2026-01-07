@@ -321,7 +321,10 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
         text.includes('builder error') ||
         text.includes('Event builder') ||
         text.includes('Invalid event') ||
-        text.includes('MatrixEvent builder')
+        text.includes('MatrixEvent builder') ||
+        // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+        text.includes('No default value') ||
+        (text.includes('TypeError') && args.some((a) => a instanceof Error && a.message === 'No default value'))
       if (isDevNoise) return
     } catch (_error) {
       // Silently ignore console.error filtering errors
@@ -442,7 +445,10 @@ app.config.errorHandler = (err, instance, info) => {
   const isDevNoise =
     String(err).includes('@vite') ||
     String(err).includes('WebSocket closed without opened') ||
-    String(err).includes('transformCallback')
+    String(err).includes('transformCallback') ||
+    // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+    (err instanceof Error && err.message === 'No default value') ||
+    String(err).includes('No default value')
 
   if (!isDevNoise) {
     // Provide user-friendly error message

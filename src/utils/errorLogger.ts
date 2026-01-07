@@ -33,6 +33,23 @@ class ErrorLogger {
   }
 
   /**
+   * 检查是否为开发环境噪音（不需要记录的错误/警告）
+   */
+  private isDevNoise(args: unknown[]): boolean {
+    const message = args.map((a) => (typeof a === 'string' ? a : '')).join(' ')
+    const errorObj = args.find((a) => a instanceof Error) as Error | undefined
+
+    return (
+      // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+      message.includes('No default value') ||
+      errorObj?.message === 'No default value' ||
+      // Other dev noise
+      message.includes('@vite/client') ||
+      message.includes('WebSocket closed without opened')
+    )
+  }
+
+  /**
    * 覆盖原生 console 方法以捕获所有日志
    */
   private setupConsoleOverrides() {
@@ -45,6 +62,10 @@ class ErrorLogger {
 
     // 覆盖 console.error
     console.error = (...args: unknown[]) => {
+      if (this.isDevNoise(args)) {
+        originalConsole.error(...args)
+        return
+      }
       const logEntry = this.createLogEntry('error', args)
       this.addLog(logEntry)
       originalConsole.error(...args)
@@ -52,6 +73,10 @@ class ErrorLogger {
 
     // 覆盖 console.warn
     console.warn = (...args: unknown[]) => {
+      if (this.isDevNoise(args)) {
+        originalConsole.warn(...args)
+        return
+      }
       const logEntry = this.createLogEntry('warn', args)
       this.addLog(logEntry)
       originalConsole.warn(...args)
@@ -59,6 +84,10 @@ class ErrorLogger {
 
     // 覆盖 console.info
     console.info = (...args: unknown[]) => {
+      if (this.isDevNoise(args)) {
+        originalConsole.info(...args)
+        return
+      }
       const logEntry = this.createLogEntry('info', args)
       this.addLog(logEntry)
       originalConsole.info(...args)
@@ -75,6 +104,10 @@ class ErrorLogger {
         message.includes('WARN') ||
         message.includes('Warning')
       ) {
+        if (this.isDevNoise(args)) {
+          originalConsole.log(...args)
+          return
+        }
         const logEntry = this.createLogEntry('log', args)
         this.addLog(logEntry)
       }
@@ -88,6 +121,13 @@ class ErrorLogger {
   private setupGlobalErrorHandlers() {
     // 捕获未处理的 JavaScript 错误
     window.addEventListener('error', (event) => {
+      // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+      if (
+        event.message === 'No default value' ||
+        (event.error instanceof Error && event.error.message === 'No default value')
+      ) {
+        return
+      }
       const logEntry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: 'error',
@@ -102,10 +142,18 @@ class ErrorLogger {
 
     // 捕获未处理的 Promise rejection
     window.addEventListener('unhandledrejection', (event) => {
+      // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+      const reasonStr = String(event.reason)
+      if (
+        reasonStr.includes('No default value') ||
+        (event.reason instanceof Error && event.reason.message === 'No default value')
+      ) {
+        return
+      }
       const logEntry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: 'error',
-        message: `Unhandled Promise Rejection: ${String(event.reason)}`,
+        message: `Unhandled Promise Rejection: ${reasonStr}`,
         stack: event.reason instanceof Error ? event.reason.stack : undefined
       }
       this.addLog(logEntry)
@@ -113,6 +161,10 @@ class ErrorLogger {
 
     // 捕获 Vue 错误
     window.addEventListener('vue:error', (event: any) => {
+      // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
+      if (event.message === 'No default value' || String(event.err).includes('No default value')) {
+        return
+      }
       const logEntry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: 'error',
