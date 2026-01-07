@@ -1,0 +1,26 @@
+/* ==========================================================================
+   Shadow Tokens - 阴影系统
+   ========================================================================== */
+
+$shadows: (
+  sm: 0 1px 2px rgba(0, 0, 0, 0.05),
+  md: 0 4px 6px rgba(0, 0, 0, 0.1),
+  lg: 0 10px 15px rgba(0, 0, 0, 0.1),
+  xl: 0 20px 25px rgba(0, 0, 0, 0.15),
+
+  // PC深色主题
+  dark-sm: 0 1px 2px rgba(0, 0, 0, 0.3),
+  dark-md: 0 4px 6px rgba(0, 0, 0, 0.4),
+  dark-lg: 0 10px 15px rgba(0, 0, 0, 0.5),
+
+  // 移动端浅色主题
+  light-sm: 0 1px 3px rgba(0, 184, 148, 0.1),
+  light-md: 0 4px 8px rgba(0, 184, 148, 0.15),
+  light-lg: 0 8px 16px rgba(0, 184, 148, 0.2),
+);
+
+@mixin export {
+  @each $name, $value in $shadows {
+    --shadow-#{$name}: #{$value};
+  }
+}

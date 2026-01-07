@@ -2,67 +2,62 @@
 :root {
   .hula {
     // 侧边栏样式 - 采用HuLa的青色系
-    --left-bg-color: #64a29c;
+    --left-bg-color: #2D5A5A;
     --left-active-bg-color: rgba(222, 222, 222, 0.2);
-    --left-text-color: #e3e3e3;
-    --left-icon-color: #e3e3e3;
-    --left-active-hover: #f1f1f1;
+    --left-text-color: #E0E0E0;
+    --left-icon-color: #E0E0E0;
+    --left-active-hover: #A8D5C1;
     --left-bg-hover: rgba(255, 255, 255, 0.2);
-    --left-active-icon-color: #f1f1f1;
+    --left-active-icon-color: #A8D5C1;
     --left-win-icon-color: rgba(255, 255, 255, 0.4);
-    --left-gradient-bg: linear-gradient(180deg, #64a29c 0%, #4d8b85 100%);
+    --left-gradient-bg: linear-gradient(180deg, #2D5A5A 0%, #1F4040 100%);
 
     // 包含边框的选中样式
-    --border-active-color: #64a29c;
-    --primary-color: #13987f;
-    --primary-color-hover: #0f7d69;
-    --primary-color-active: #0c6354;
+    --border-active-color: #2D5A5A;
+    --primary-color: #00BFA5;
+    --primary-color-hover: #00E6C8;
+    --primary-color-active: #009A8A;
 
-    // 右边布局内容背景 - 使用HuLa的渐变背景
-    --right-theme-bg: radial-gradient(
-      circle at top left,
-      rgba(255, 209, 255, 0.3) 20%,
-      rgba(130, 193, 187, 0.3) 100%
-    );
-    --right-theme-bg-color: radial-gradient(
-      circle at top left,
-      rgba(255, 209, 255, 0.3) 20%,
-      rgba(130, 193, 187, 0.3) 100%
-    );
+    // 右边布局内容背景 - PC深色主题
+    --right-theme-bg: #3A3A3A;
+    --right-theme-bg-color: #3A3A3A;
+
+    // 中央列表背景
+    --center-bg-color: #2A2A2A;
 
     // 聊天框主体样式
-    --right-chat-reply-color: #f1f1f1;
-    --right-chat-reply-active-color: rgba(99, 99, 99, 0.1);
-    --right-chat-footer-line-color: rgba(99, 99, 99, 0.1);
+    --right-chat-reply-color: #4A4A4A;
+    --right-chat-reply-active-color: rgba(0, 191, 165, 0.2);
+    --right-chat-footer-line-color: rgba(255, 255, 255, 0.1);
 
     // 消息列表样式
-    --msg-active-color: #13987f;
-    --msg-hover-bg: rgba(100, 162, 156, 0.1);
+    --msg-active-color: #00BFA5;
+    --msg-hover-bg: rgba(0, 191, 165, 0.15);
 
     // 群公告消息背景色
-    --group-notice-bg: #fff;
+    --group-notice-bg: #3A3A3A;
 
     // 列表通用hover
-    --list-hover-color: rgba(99, 99, 99, 0.1);
+    --list-hover-color: rgba(0, 191, 165, 0.1);
 
     // 整体hover图标的样式
-    --icon-hover-color: rgba(166, 166, 166, 0.2);
+    --icon-hover-color: rgba(0, 191, 165, 0.15);
 
     // Naive UI组件主题覆盖
-    --n-color: #ffffff;
-    --n-color-modal: rgba(255, 255, 255, 0.95);
-    --n-color-popover: rgba(255, 255, 255, 0.95);
-    --n-color-embedded: #f8f8f8;
+    --n-color: #3A3A3A;
+    --n-color-modal: rgba(42, 42, 42, 0.95);
+    --n-color-popover: rgba(42, 42, 42, 0.95);
+    --n-color-embedded: #2A2A2A;
 
-    --n-text-color: #18181c;
-    --n-text-color-1: #18181c;
-    --n-text-color-2: #5f5f5f;
-    --n-text-color-3: #999999;
+    --n-text-color: #E0E0E0;
+    --n-text-color-1: #E0E0E0;
+    --n-text-color-2: #A0A0A0;
+    --n-text-color-3: #707070;
 
-    --n-primary-color: #13987f;
-    --n-primary-color-hover: #0f7d69;
-    --n-primary-color-pressed: #0c6354;
-    --n-primary-color-suppl: #14a38a;
+    --n-primary-color: #00BFA5;
+    --n-primary-color-hover: #00E6C8;
+    --n-primary-color-pressed: #009A8A;
+    --n-primary-color-suppl: #1FDDD4;
 
     --n-info-color: #2080f0;
     --n-info-color-hover: #4098fc;
@@ -84,30 +79,30 @@
     --n-error-color-pressed: #cf1322;
     --n-error-color-suppl: #ff7875;
 
-    --n-border-color: #e3e3e3;
-    --n-border-color-1: #e3e3e3;
-    --n-border-color-2: #f0f0f0;
-    --n-border-color-3: #f5f5f5;
+    --n-border-color: #4A4A4A;
+    --n-border-color-1: #4A4A4A;
+    --n-border-color-2: #5A5A5A;
+    --n-border-color-3: #6A6A6A;
 
-    --n-divider-color: #e3e3e3;
+    --n-divider-color: #4A4A4A;
 
-    --n-hover-color: #f0f0f0;
-    --n-pressed-color: #e5e5e5;
+    --n-hover-color: #4A4A4A;
+    --n-pressed-color: #5A5A5A;
 
-    --n-scrollbar-color: #e3e3e3;
-    --n-scrollbar-color-hover: #cfcfcf;
+    --n-scrollbar-color: #4A4A4A;
+    --n-scrollbar-color-hover: #5A5A5A;
 
     // Matrix组件特定样式
-    --matrix-bg-primary: rgba(255, 255, 255, 0.95);
-    --matrix-bg-secondary: rgba(248, 248, 248, 0.95);
-    --matrix-bg-chat: rgba(255, 255, 255, 0.9);
-    --matrix-border: rgba(100, 162, 156, 0.2);
-    --matrix-text: #18181c;
-    --matrix-text-secondary: #5f5f5f;
-    --matrix-avatar-border: rgba(100, 162, 156, 0.3);
-    --matrix-bubble-sent: #13987f;
-    --matrix-bubble-received: #f1f1f1;
-    --matrix-typing-indicator: #13987f;
+    --matrix-bg-primary: #3A3A3A;
+    --matrix-bg-secondary: #2A2A2A;
+    --matrix-bg-chat: #3A3A3A;
+    --matrix-border: rgba(0, 191, 165, 0.2);
+    --matrix-text: #E0E0E0;
+    --matrix-text-secondary: #A0A0A0;
+    --matrix-avatar-border: rgba(0, 191, 165, 0.3);
+    --matrix-bubble-sent: #00BFA5;
+    --matrix-bubble-received: #4A4A4A;
+    --matrix-typing-indicator: #00BFA5;
   }
 }
 

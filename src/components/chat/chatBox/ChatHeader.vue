@@ -130,18 +130,6 @@
         </n-popover>
       </div>
 
-      <!-- 私密聊天按钮 -->
-      <div v-if="!isChannel" class="options-box">
-        <n-popover trigger="hover" :show-arrow="false" placement="bottom">
-          <template #trigger>
-            <svg @click="handleCreatePrivateChat" class="private-chat-icon">
-              <use href="#lock"></use>
-            </svg>
-          </template>
-          <span>{{ t('home.chat_header.toolbar.private_chat') }}</span>
-        </n-popover>
-      </div>
-
       <div class="options-box" @click="sidebarShow = !sidebarShow">
         <svg>
           <use href="#more"></use>
@@ -523,12 +511,6 @@
     class="hidden"
     @change="handleFileChange" />
   <AvatarCropper ref="cropperRef" v-model:show="showCropper" :image-url="localImageUrl" @crop="handleCrop" />
-
-  <!-- 私密聊天对话框 -->
-  <PrivateChatDialog v-model:show="showPrivateChatDialog" @chat-created="handlePrivateChatCreated" />
-
-  <!-- 私密聊天按钮组件（用于对话框） -->
-  <PrivateChatButton ref="privateChatButtonRef" :show="false" @chat-created="handlePrivateChatCreated" />
 </template>
 
 <script setup lang="ts">
@@ -573,8 +555,6 @@ import { msg } from '@/utils/SafeUI'
 import { getRoom } from '@/utils/matrixClientUtils'
 import { useRoomStats } from '@/composables/useRoomStats'
 import { sessionSettingsService } from '@/services/sessionSettingsService'
-import PrivateChatButton from '@/components/chat/PrivateChatButton.vue'
-import PrivateChatDialog from '@/components/chat/PrivateChatDialog.vue'
 import { sdkSetSessionTop, sdkUpdateRoomName } from '@/services/rooms'
 import { flags } from '@/utils/envFlags'
 import { logger } from '@/utils/logger'
@@ -606,10 +586,6 @@ const { formattedStats } = useRoomStats()
 const typingStore = useTypingStore()
 const presenceStore = usePresenceStore()
 //
-
-// 私密聊天相关状态
-const showPrivateChatDialog = ref(false)
-const privateChatButtonRef = ref()
 
 const typingUsers = computed(() => {
   const list = typingStore.get(globalStore.currentSessionRoomId)
@@ -803,27 +779,6 @@ const handleCopy = () => {
   if (!session?.account) return
   navigator.clipboard.writeText(session.account)
   msg.success(t('home.chat_header.toast.copy_success', { account: session.account }))
-}
-
-/** 处理创建私密聊天 */
-const handleCreatePrivateChat = () => {
-  showPrivateChatDialog.value = true
-  if (privateChatButtonRef.value) {
-    privateChatButtonRef.value.openPrivateChatDialog()
-  }
-}
-
-/** 处理私密聊天创建成功 */
-const handlePrivateChatCreated = async (roomId: string) => {
-  try {
-    showPrivateChatDialog.value = false
-    await globalStore.updateCurrentSessionRoomId(roomId)
-  } catch (error) {
-    logger.error(
-      '[ChatHeader] Failed to handle private chat created:',
-      error instanceof Error ? error : new Error(String(error))
-    )
-  }
 }
 
 /** 处理创建群聊或邀请进群 */

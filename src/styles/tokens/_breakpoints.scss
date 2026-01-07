@@ -1,0 +1,40 @@
+/* ==========================================================================
+   Breakpoint Tokens - 断点系统
+   ========================================================================== */
+
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+  xxl: 1536px,
+);
+
+@mixin export {
+  @each $name, $value in $breakpoints {
+    --breakpoint-#{$name}: #{$value};
+  }
+}
+
+// 媒体查询混入
+@mixin up($name) {
+  $value: map.get($breakpoints, $name);
+  @media (min-width: $value) {
+    @content;
+  }
+}
+
+@mixin down($name) {
+  $value: map.get($breakpoints, $name);
+  @media (max-width: ($value - 1px)) {
+    @content;
+  }
+}
+
+@mixin between($lower, $upper) {
+  $lower-value: map.get($breakpoints, $lower);
+  $upper-value: map.get($breakpoints, $upper);
+  @media (min-width: $lower-value) and (max-width: ($upper-value - 1px)) {
+    @content;
+  }
+}

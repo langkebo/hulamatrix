@@ -1,0 +1,40 @@
+/* ==========================================================================
+   Typography Tokens - 字体系统
+   ========================================================================== */
+
+$sizes: (
+  xs: 12px,
+  sm: 14px,
+  md: 16px,
+  lg: 18px,
+  xl: 20px,
+  2xl: 24px,
+  3xl: 30px,
+);
+
+$weights: (
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+);
+
+$line-heights: (
+  tight: 1.2,
+  normal: 1.5,
+  loose: 1.8,
+);
+
+@mixin export {
+  @each $name, $value in $sizes {
+    --font-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $weights {
+    --font-weight-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $line-heights {
+    --leading-#{$name}: #{$value};
+  }
+}

@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Design Tokens - Unified UI System for HuLa Matrix
+   基于预览图(img2-*.webp, img3-*.webp)提取的设计令牌
+   ========================================================================== */
+
+@use 'colors';
+@use 'spacing';
+@use 'typography';
+@use 'shadows';
+@use 'radius';
+@use 'breakpoints';
+
+/* 导出所有令牌为CSS变量 */
+:root {
+  /* 颜色系统 */
+  @include colors.export('light');
+
+  /* 间距系统 */
+  @include spacing.export;
+
+  /* 字体系统 */
+  @include typography.export;
+
+  /* 阴影系统 */
+  @include shadows.export;
+
+  /* 圆角系统 */
+  @include radius.export;
+
+  /* 断点 */
+  @include breakpoints.export;
+}
+
+/* PC深色主题 */
+@media (min-width: 769px) {
+  :root {
+    @include colors.export('dark');
+  }
+}
+
+/* 移动端浅色主题 */
+@media (max-width: 768px) {
+  :root {
+    @include colors.export('mobile');
+  }
+}

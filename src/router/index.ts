@@ -612,6 +612,11 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
     path: '/addGroupVerify',
     name: 'addGroupVerify',
     component: () => import('@/views/friendWindow/AddGroupVerify.vue')
+  },
+  {
+    path: '/private-chat/:roomId?',
+    name: 'privateChat',
+    component: () => import('@/views/private-chat/PrivateChatView.vue')
   }
 ]
 

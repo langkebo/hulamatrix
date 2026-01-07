@@ -408,6 +408,16 @@ provideMatrixClientManager(app)
 app.use(router).use(pinia).use(setupI18n).directive('resize', vResize).directive('slide', vSlide).mount('#app')
 Perf.measure('app-mounted', 'app-start')
 
+// 预加载关键资源（头像、表情、文件图标）
+import { AssetPreloader } from '@/utils/assetLoader'
+AssetPreloader.preload()
+  .then(() => {
+    logger.info('[Assets] Critical assets preloaded successfully')
+  })
+  .catch((error) => {
+    logger.warn('[Assets] Failed to preload some assets:', error)
+  })
+
 // 应用环境变量中的锁屏设置（必须在 Pinia 安装之后）
 try {
   const { useSettingStore } = await import('@/stores/setting')
