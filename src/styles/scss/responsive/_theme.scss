@@ -1,0 +1,309 @@
+// ============================================================================
+// 主题变量系统 - 统一的颜色和样式变量
+// ============================================================================
+// 提供一致的设计令牌（Design Tokens）
+// 支持亮色和暗色主题
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 颜色系统 - 语义化颜色变量
+// ----------------------------------------------------------------------------
+
+// 品牌色
+$color-primary: #13987f;
+$color-primary-hover: rgba(19, 152, 127, 0.8);
+$color-primary-active: rgba(19, 152, 127, 0.4);
+$color-primary-light: #64a29c;
+
+// 文本颜色
+$color-text-primary: #18181c;
+$color-text-secondary: #666666;
+$color-text-tertiary: #999999;
+$color-text-disabled: #c1c1c1;
+
+// 背景颜色
+$color-bg-primary: #FAFAFA;
+$color-bg-secondary: #ffffff;
+$color-bg-tertiary: #f5f5f5;
+$color-bg-elevated: #ffffff;
+$color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+// 边框颜色
+$color-border: #e3e3e3;
+$color-border-light: #f0f0f0;
+$color-border-dark: #d0d0d0;
+
+// 状态颜色
+$color-success: #28a745;
+$color-success-light: #52c41a;
+$color-warning: #faad14;
+$color-warning-light: #ffc53d;
+$color-error: #ff4d4f;
+$color-error-light: #ff7875;
+$color-info: #1890ff;
+$color-info-light: #40a9ff;
+
+// 消息特定颜色
+$color-message-bg-self: #13987f;
+$color-message-bg-other: #ffffff;
+$color-message-text-self: #ffffff;
+$color-message-text-other: #18181c;
+
+// ----------------------------------------------------------------------------
+// 间距系统 - 8px基准网格
+// ----------------------------------------------------------------------------
+
+$spacing-0: 0;
+$spacing-1: 4px;
+$spacing-2: 8px;
+$spacing-3: 12px;
+$spacing-4: 16px;
+$spacing-5: 20px;
+$spacing-6: 24px;
+$spacing-8: 32px;
+$spacing-10: 40px;
+$spacing-12: 48px;
+$spacing-16: 64px;
+$spacing-20: 80px;
+
+// ----------------------------------------------------------------------------
+// 圆角系统
+// ----------------------------------------------------------------------------
+
+$radius-xs: 2px;
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-xl: 12px;
+$radius-2xl: 16px;
+$radius-full: 9999px;
+
+// ----------------------------------------------------------------------------
+// 阴影系统
+// ----------------------------------------------------------------------------
+
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
+
+// ----------------------------------------------------------------------------
+// 字体系统
+// ----------------------------------------------------------------------------
+
+$font-family-base: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+$font-family-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-2xl: 24px;
+$font-size-3xl: 30px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// ----------------------------------------------------------------------------
+// 过渡动画
+// ----------------------------------------------------------------------------
+
+$transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+$easing-linear: linear;
+$easing-ease: ease;
+$easing-ease-in: ease-in;
+$easing-ease-out: ease-out;
+$easing-ease-in-out: ease-in-out;
+$easing-custom: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ----------------------------------------------------------------------------
+// Z-index 系统
+// ----------------------------------------------------------------------------
+
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// ----------------------------------------------------------------------------
+// CSS 自定义属性导出（供 JavaScript 使用）
+// ----------------------------------------------------------------------------
+
+:root {
+  // 品牌色
+  --color-primary: #{$color-primary};
+  --color-primary-hover: #{$color-primary-hover};
+  --color-primary-active: #{$color-primary-active};
+  --color-primary-light: #{$color-primary-light};
+
+  // 文本色
+  --color-text-primary: #{$color-text-primary};
+  --color-text-secondary: #{$color-text-secondary};
+  --color-text-tertiary: #{$color-text-tertiary};
+  --color-text-disabled: #{$color-text-disabled};
+
+  // 背景色
+  --color-bg-primary: #{$color-bg-primary};
+  --color-bg-secondary: #{$color-bg-secondary};
+  --color-bg-tertiary: #{$color-bg-tertiary};
+  --color-bg-elevated: #{$color-bg-elevated};
+  --color-bg-overlay: #{$color-bg-overlay};
+
+  // 边框色
+  --color-border: #{$color-border};
+  --color-border-light: #{$color-border-light};
+  --color-border-dark: #{$color-border-dark};
+
+  // 状态色
+  --color-success: #{$color-success};
+  --color-success-light: #{$color-success-light};
+  --color-warning: #{$color-warning};
+  --color-warning-light: #{$color-warning-light};
+  --color-error: #{$color-error};
+  --color-error-light: #{$color-error-light};
+  --color-info: #{$color-info};
+  --color-info-light: #{$color-info-light};
+
+  // 消息色
+  --color-message-bg-self: #{$color-message-bg-self};
+  --color-message-bg-other: #{$color-message-bg-other};
+  --color-message-text-self: #{$color-message-text-self};
+  --color-message-text-other: #{$color-message-text-other};
+
+  // 间距
+  --spacing-1: #{$spacing-1};
+  --spacing-2: #{$spacing-2};
+  --spacing-3: #{$spacing-3};
+  --spacing-4: #{$spacing-4};
+  --spacing-6: #{$spacing-6};
+  --spacing-8: #{$spacing-8};
+
+  // 圆角
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+
+  // 阴影
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  // 字体
+  --font-family-base: #{$font-family-base};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-md: #{$font-size-md};
+  --font-size-lg: #{$font-size-lg};
+
+  // 过渡
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+  --transition-slow: #{$transition-slow};
+}
+
+// ----------------------------------------------------------------------------
+// 暗色主题
+// ----------------------------------------------------------------------------
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    // 文本色（暗色模式下反转）
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #b0b0b0;
+    --color-text-tertiary: #808080;
+    --color-text-disabled: #505050;
+
+    // 背景色（暗色模式下反转）
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #2a2a2a;
+    --color-bg-tertiary: #333333;
+    --color-bg-elevated: #3a3a3a;
+
+    // 边框色（暗色模式下调整）
+    --color-border: #404040;
+    --color-border-light: #353535;
+    --color-border-dark: #505050;
+
+    // 消息背景（暗色模式下调整）
+    --color-message-bg-other: #2a2a2a;
+  }
+}
+
+// 手动暗色模式类（优先级更高）
+.dark {
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #b0b0b0;
+  --color-text-tertiary: #808080;
+  --color-text-disabled: #505050;
+
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #2a2a2a;
+  --color-bg-tertiary: #333333;
+  --color-bg-elevated: #3a3a3a;
+
+  --color-border: #404040;
+  --color-border-light: #353535;
+  --color-border-dark: #505050;
+
+  --color-message-bg-other: #2a2a2a;
+}
+
+// ----------------------------------------------------------------------------
+// 主题混合器
+// ----------------------------------------------------------------------------
+
+/**
+ * 应用亮色主题
+ */
+@mixin light-theme {
+  --color-text-primary: #{$color-text-primary};
+  --color-text-secondary: #{$color-text-secondary};
+  --color-bg-primary: #{$color-bg-primary};
+  --color-bg-secondary: #{$color-bg-secondary};
+}
+
+/**
+ * 应用暗色主题
+ */
+@mixin dark-theme {
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #b0b0b0;
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #2a2a2a;
+}
+
+/**
+ * 响应式文本大小
+ */
+@mixin responsive-font-size($min: 14px, $max: 18px, $min-vw: 320px, $max-vw: 1280px) {
+  font-size: $min;
+
+  @media (min-width: $min-vw) {
+    font-size: calc(#{$min} + #{strip-unit($max - $min)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}));
+  }
+
+  @media (min-width: $max-vw) {
+    font-size: $max;
+  }
+}
+
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+  @return $number;
+}

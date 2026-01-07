@@ -1,0 +1,367 @@
+// ============================================================================
+// 响应式断点系统
+// ============================================================================
+// 统一的响应式断点定义和混合器
+// 参考标准: Material Design, Bootstrap, Tailwind CSS
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 断点定义
+// ----------------------------------------------------------------------------
+
+// 标准断点（基于常见设备和视口宽度）
+$breakpoint-mobile: 480px;      // 小屏手机
+$breakpoint-mobile-l: 640px;    // 大屏手机
+$breakpoint-tablet: 768px;      // 平板竖屏
+$breakpoint-tablet-l: 1024px;   // 平板横屏/小屏笔记本
+$breakpoint-desktop: 1280px;    // 桌面显示器
+$breakpoint-wide: 1536px;       // 宽屏显示器
+
+// 断点映射（用于循环和条件判断）
+$breakpoints: (
+  'mobile': $breakpoint-mobile,
+  'mobile-l': $breakpoint-mobile-l,
+  'tablet': $breakpoint-tablet,
+  'tablet-l': $breakpoint-tablet-l,
+  'desktop': $breakpoint-desktop,
+  'wide': $breakpoint-wide
+);
+
+// ----------------------------------------------------------------------------
+// 响应式混合器
+// ----------------------------------------------------------------------------
+
+/**
+ * 移动端及以下（<= 480px）
+ * 用于小屏手机的样式
+ */
+@mixin mobile {
+  @media (max-width: #{$breakpoint-mobile}) {
+    @content;
+  }
+}
+
+/**
+ * 移动端大屏及以下（<= 640px）
+ * 用于大屏手机的样式
+ */
+@mixin mobile-l {
+  @media (max-width: #{$breakpoint-mobile-l}) {
+    @content;
+  }
+}
+
+/**
+ * 平板及以下（<= 768px）
+ * 用于平板竖屏的样式
+ */
+@mixin tablet {
+  @media (max-width: #{$breakpoint-tablet}) {
+    @content;
+  }
+}
+
+/**
+ * 平板横屏及以下（<= 1024px）
+ * 用于平板横屏和小屏笔记本的样式
+ */
+@mixin tablet-l {
+  @media (max-width: #{$breakpoint-tablet-l}) {
+    @content;
+  }
+}
+
+/**
+ * 桌面及以下（<= 1280px）
+ * 用于标准桌面显示器的样式
+ */
+@mixin desktop {
+  @media (max-width: #{$breakpoint-desktop}) {
+    @content;
+  }
+}
+
+/**
+ * 桌面及以上（>= 1280px）
+ * 用于桌面优先的响应式设计
+ */
+@mixin desktop-up {
+  @media (min-width: #{$breakpoint-desktop}) {
+    @content;
+  }
+}
+
+/**
+ * 宽屏及以上（>= 1536px）
+ * 用于大屏显示器的样式
+ */
+@mixin wide-up {
+  @media (min-width: #{$breakpoint-wide}) {
+    @content;
+  }
+}
+
+/**
+ * 移动端及以上（>= 481px）
+ * 用于移动优先的响应式设计
+ */
+@mixin mobile-up {
+  @media (min-width: #{$breakpoint-mobile + 1}) {
+    @content;
+  }
+}
+
+/**
+ * 平板及以上（>= 769px）
+ * 用于平板和桌面的样式
+ */
+@mixin tablet-up {
+  @media (min-width: #{$breakpoint-tablet + 1}) {
+    @content;
+  }
+}
+
+/**
+ * 通用断点混合器
+ * @param $breakpoint - 断点名称（mobile, tablet, desktop等）
+ * @param $direction - max（默认，向下兼容）或 min（向上兼容）
+ */
+@mixin breakpoint($breakpoint, $direction: 'max') {
+  $value: map-get($breakpoints, $breakpoint);
+
+  @if not $value {
+    @warn "断点 `#{$breakpoint}` 未定义";
+    @content;
+  } @else if $direction == 'min' {
+    @media (min-width: #{$value + 1}) {
+      @content;
+    }
+  } @else {
+    @media (max-width: #{$value}) {
+      @content;
+    }
+  }
+}
+
+/**
+ * 断点范围混合器
+ * @param $min - 最小断点
+ * @param $max - 最大断点
+ */
+@mixin between($min, $max) {
+  $min-value: map-get($breakpoints, $min);
+  $max-value: map-get($breakpoints, $max);
+
+  @if not $min-value or not $max-value {
+    @warn "断点范围无效: `#{$min}` 到 `#{$max}`";
+    @content;
+  } @else {
+    @media (min-width: #{$min-value + 1}) and (max-width: #{$max-value}) {
+      @content;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 设备特性混合器
+// ----------------------------------------------------------------------------
+
+/**
+ * 横屏模式
+ */
+@mixin landscape {
+  @media (orientation: landscape) {
+    @content;
+  }
+}
+
+/**
+ * 竖屏模式
+ */
+@mixin portrait {
+  @media (orientation: portrait) {
+    @content;
+  }
+}
+
+/**
+ * 触摸设备
+ */
+@mixin touch {
+  @media (hover: none) and (pointer: coarse) {
+    @content;
+  }
+}
+
+/**
+ * 鼠标设备
+ */
+@mixin mouse {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+/**
+ * 高分辨率屏幕（Retina）
+ */
+@mixin retina {
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    @content;
+  }
+}
+
+/**
+ * 深色模式
+ */
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+/**
+ * 浅色模式
+ */
+@mixin light-mode {
+  @media (prefers-color-scheme: light) {
+    @content;
+  }
+}
+
+/**
+ * 减少动画（辅助功能）
+ */
+@mixin reduce-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/**
+ * 高对比度模式（辅助功能）
+ */
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
+    @content;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 安全区域混合器（用于刘海屏适配）
+// ----------------------------------------------------------------------------
+
+/**
+ * 添加顶部安全区域
+ */
+@mixin safe-top($padding: env(safe-area-inset-top)) {
+  padding-top: $padding;
+}
+
+/**
+ * 添加底部安全区域
+ */
+@mixin safe-bottom($padding: env(safe-area-inset-bottom)) {
+  padding-bottom: $padding;
+}
+
+/**
+ * 添加左侧安全区域
+ */
+@mixin safe-left($padding: env(safe-area-inset-left)) {
+  padding-left: $padding;
+}
+
+/**
+ * 添加右侧安全区域
+ */
+@mixin safe-right($padding: env(safe-area-inset-right)) {
+  padding-right: $padding;
+}
+
+/**
+ * 添加所有安全区域
+ */
+@mixin safe-area($top: env(safe-area-inset-top), $right: env(safe-area-inset-right), $bottom: env(safe-area-inset-bottom), $left: env(safe-area-inset-left)) {
+  padding-top: $top;
+  padding-right: $right;
+  padding-bottom: $bottom;
+  padding-left: $left;
+}
+
+/**
+ * 添加顶部和底部安全区域（常用）
+ */
+@mixin safe-vertical {
+  @include safe-top;
+  @include safe-bottom;
+}
+
+// ----------------------------------------------------------------------------
+// 工具类
+// ----------------------------------------------------------------------------
+
+// 隐藏元素
+.u-hide-mobile {
+  @include mobile {
+    display: none !important;
+  }
+}
+
+.u-hide-tablet {
+  @include tablet {
+    display: none !important;
+  }
+}
+
+.u-desktop-only {
+  @include mobile {
+    display: none !important;
+  }
+
+  @include tablet {
+    display: none !important;
+  }
+}
+
+.u-mobile-only {
+  @include desktop-up {
+    display: none !important;
+  }
+}
+
+// 文字大小响应式
+.u-text-responsive {
+  font-size: 14px;
+
+  @include tablet-up {
+    font-size: 16px;
+  }
+
+  @include desktop-up {
+    font-size: 18px;
+  }
+}
+
+// 容器宽度限制
+.u-container {
+  width: 100%;
+  max-width: $breakpoint-desktop;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+
+  @include tablet-up {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+// 触摸目标最小尺寸（符合WCAG标准）
+.u-touch-target {
+  @include touch {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

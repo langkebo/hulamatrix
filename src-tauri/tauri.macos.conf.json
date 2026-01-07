@@ -74,7 +74,7 @@
         "height": 448,
         "skipTaskbar": false,
         "transparent": false,
-        "visible": false,
+        "visible": true,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true
       },

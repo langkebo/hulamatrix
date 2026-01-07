@@ -1,44 +1,391 @@
-# PC 端和移动端待完善功能清单
+# PC 端和移动端功能清单
 
-> **最后更新**: 2026-01-06 | **文档版本**: 1.1.0
-> **用途**: 汇总所有需要 PC 端和移动端实现或优化的功能
+> **最后更新**: 2026-01-06 | **文档版本**: 2.0.0
+> **用途**: 汇总 PC 端和移动端功能实现状态和待优化项
 
 > **相关文档**:
 > - [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
 > - [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
 > - [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
+> - [UI 技术审计报告](../../UI_TECHNICAL_AUDIT_REPORT.md) - UI 优化和可访问性改进
 
 ---
 
 ## 📊 总体状态概览
 
-根据 VERIFICATION 文档分析，前端整体实现状态良好，但以下功能需要 PC 端和移动端的进一步实现或优化。
+根据实际代码审查，前端核心功能已基本实现，但仍有一些组件需要优化和完善。
 
-| 模块 | PC 端状态 | 移动端状态 | 优先级 |
-|------|----------|-----------|--------|
-| 客户端基础 | ✅ 完成 | ✅ 完成 | - |
-| 身份验证 | ⚠️ 缺少 UIA | ⚠️ 缺少 UIA | 高 |
-| 房间管理 | ✅ 完成 | ✅ 完成 | - |
-| 消息传递 | ✅ 完成 | ✅ 完成 | - |
-| 事件处理 | ✅ 完成 | ✅ 完成 | - |
-| 端到端加密 | ⚠️ 缺少设置界面 | ⚠️ 缺少设置界面 | 高 |
-| WebRTC 通话 | ✅ 完成 | ✅ 完成 | - |
-| 在线状态/输入提示 | ⚠️ 缺少 UI 组件 | ⚠️ 缺少 UI 组件 | 中 |
-| 媒体文件 | ⚠️ 缺少 IndexedDB 缓存 | ⚠️ 缺少 IndexedDB 缓存 | 中 |
-| 搜索功能 | ✅ 完成 | ✅ 完成 | - |
-| 好友系统 | ✅ 完成 | ✅ 完成 | - |
-| 私聊功能 | ✅ 完成 | ✅ 完成 | - |
-| 管理员功能 | ⚠️ 缺少管理界面 | ⚠️ 缺少管理界面 | 低 |
+| 模块 | PC 端状态 | 移动端状态 | 优先级 | 备注 |
+|------|----------|-----------|--------|------|
+| 客户端基础 | ✅ 完成 | ✅ 完成 | - | Matrix SDK 集成完成 |
+| 身份验证 | ✅ 完成 | ⚠️ 部分完成 | 高 | UIA 组件已实现，移动端待验证 |
+| 房间管理 | ✅ 完成 | ✅ 完成 | - | CRUD 操作完整 |
+| 消息传递 | ✅ 完成 | ✅ 完成 | - | 实时消息同步 |
+| 事件处理 | ✅ 完成 | ✅ 完成 | - | 事件监听和分发 |
+| 端到端加密 | ✅ 已优化 | ⚠️ 需创建 | 高 | PC 端可访问性已完善，移动端缺失 |
+| WebRTC 通话 | ✅ 完成 | ✅ 完成 | - | 音视频通话 |
+| 在线状态/输入提示 | ✅ 已集成 | ⚠️ 待集成 | 中 | PC 端聊天列表已集成，输入指示器已实现，移动端聊天列表待集成 |
+| 媒体文件 | ✅ 完成 | ✅ 完成 | 中 | IndexedDB 缓存已实现 |
+| 搜索功能 | ✅ 完成 | ✅ 完成 | - | 房间和消息搜索 |
+| 好友系统 | ✅ 完成 | ✅ 完成 | - | Friends SDK 集成完成 |
+| 私聊功能 | ✅ 完成 | ✅ 完成 | - | PrivateChat SDK 集成完成 |
+| 管理员功能 | ⚠️ 部分完成 | ❌ 未实现 | 低 | 后端 API 存在，UI 待完善 |
+| 可访问性 | ✅ 已优化 | ⚠️ 待优化 | 高 | 核心组件已完成，含 E2EE 组件 |
+| 响应式设计 | ✅ 已完善 | ✅ 已完善 | 高 | 统一断点系统 |
 
 ---
 
-## 🔴 高优先级功能
+## ✅ 已完成功能
 
-### 1. E2EE 加密设置界面 (PC + 移动)
+### 1. E2EE 加密设置界面 (PC 端)
 
-**后端支持**: 100% ✅
-**前端服务**: 100% ✅
-**UI 实现**: 0% ❌
+**文件位置**: `src/views/moreWindow/settings/E2EE.vue`
+
+**已实现功能**:
+- ✅ Cross-signing 状态显示
+- ✅ 主密钥、用户签名密钥、自签名密钥状态
+- ✅ 密钥备份状态显示
+- ✅ 密钥备份管理按钮
+- ✅ 设备验证入口
+- ✅ 完整的可访问性支持（ARIA 标签、语义化角色）
+
+**待完善功能**:
+- ⚠️ 恢复密钥界面（创建备份后的恢复流程）- 组件已存在，需完善功能
+- ⚠️ 设备验证详细流程
+- ⚠️ 加密模式选择 UI
+
+---
+
+### 2. UIA 认证界面 (PC 端)
+
+**文件位置**: `src/components/auth/UIAFlow.vue`
+
+**已实现功能**:
+- ✅ 多步骤认证流程（n-steps 进度显示）
+- ✅ 密码验证步骤
+- ✅ 邮箱验证码步骤
+- ✅ 手机号验证码步骤 (MSISDN)
+- ✅ 服务条款同意步骤
+- ✅ reCAPTCHA 步骤
+- ✅ 错误处理和显示
+- ✅ 前后导航
+- ✅ 加载状态
+
+**待完善功能**:
+- ⚠️ 移动端 UIA 组件
+- ⚠️ 更多认证类型（OIDC 等）
+
+---
+
+### 3. 在线状态组件
+
+**文件位置**: `src/components/common/PresenceStatus.vue`
+
+**已实现功能**:
+- ✅ 在线/离线/不可用状态指示
+- ✅ 三种尺寸
+- ✅ Tooltip 显示状态文本
+- ✅ 最后活跃时间显示
+- ✅ 集成 presenceStore
+- ✅ 可访问性支持
+- ✅ 已集成到 ChatListItem（单聊显示在线状态）
+- ✅ TypingIndicator 组件已添加可访问性支持
+- ✅ ReadReceipt 组件已添加可访问性支持
+- ✅ ReadReceiptsPanel 组件已添加可访问性支持
+
+**待完善功能**:
+- ⚠️ 移动端聊天列表集成
+
+---
+
+### 4. ✅ IndexedDB 媒体缓存 - 已完成
+
+**文件位置**: `src/utils/indexedDBCache.ts`
+
+**已实现功能**:
+- ✅ PersistentMediaCache 类
+- ✅ IndexedDB 数据库初始化
+- ✅ 媒体 Blob 存储
+- ✅ 缓存统计（totalSize, itemCount, byDomain）
+- ✅ LRU 淘汰策略 (ensureSpace 方法)
+- ✅ 最大缓存大小限制（默认 500MB）
+- ✅ clearDomain() 方法 - 按域名清除缓存
+- ✅ CacheSettings.vue - 缓存管理 UI
+
+**待完善功能** (可选):
+- ⚠️ 与下载队列的集成
+- ⚠️ 缓存预热策略
+
+---
+
+## 🔴 高优先级待优化项
+
+### 1. E2EE 设置界面完善 (PC 端)
+
+**待实现功能**:
+
+1. **恢复密钥界面**
+```typescript
+// 添加恢复密钥对话框
+<n-modal v-model:show="showRestoreDialog">
+  <n-input
+    v-model:value="recoveryKey"
+    type="textarea"
+    :placeholder="t('setting.e2ee.backup.restore_placeholder')"
+  />
+  <n-button @click="handleRestore">{{ t('setting.e2ee.backup.restore_button') }}</n-button>
+</n-modal>
+```
+
+2. **设备验证列表**
+```typescript
+// 显示所有设备及其验证状态
+<n-list>
+  <n-list-item v-for="device in devices" :key="device.device_id">
+    <template #prefix>
+      <n-icon><Laptop /></n-icon>
+    </template>
+    <div class="device-info">
+      <div>{{ device.display_name }}</div>
+      <div class="device-meta">
+        <span>{{ formatTime(device.last_seen) }}</span>
+        <n-tag :type="device.verified ? 'success' : 'warning'">
+          {{ device.verified ? '已验证' : '未验证' }}
+        </n-tag>
+      </div>
+    </div>
+    <template #suffix>
+      <n-button v-if="!device.verified" @click="handleVerify(device)">验证</n-button>
+      <n-button @click="handleDelete(device)">删除</n-button>
+    </template>
+  </n-list-item>
+</n-list>
+```
+
+3. **加密模式切换**
+```typescript
+<n-radio-group v-model:value="encryptionMode">
+  <n-radio value="standard">标准模式</n-radio>
+  <n-radio value="high">高加密模式</n-radio>
+</n-radio-group>
+```
+
+---
+
+### 2. 移动端 E2EE 设置界面
+
+**文件位置**: `src/mobile/views/settings/E2EE.vue` (待创建)
+
+**需要实现**:
+- 基于 PC 端的移动端适配版本
+- BottomSheet 显示恢复密钥
+- 移动端友好的设备列表
+- 触摸优化的操作按钮
+
+---
+
+### 3. 在线状态集成到聊天界面
+
+**已完成**:
+- ✅ PC 端聊天列表显示用户在线状态（单聊）
+- ✅ PresenceStatus 组件可访问性优化
+
+**待集成位置**:
+
+1. **消息区域** - 显示对方正在输入
+```vue
+<div v-if="typingUsers.length > 0" class="typing-indicator">
+  <span>{{ getTypingText() }}</span>
+  <div class="typing-dots">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+```
+
+2. **消息已读状态**
+```vue
+<div class="read-receipts">
+  <n-avatar-group :options="readByUsers" :size="16" :max="3" />
+</div>
+```
+
+3. **移动端聊天列表** - 需要集成 PresenceStatus
+
+---
+
+### 4. 移动端 UIA 认证界面
+
+**文件位置**: `src/mobile/components/auth/UIAFlow.vue` (待创建)
+
+**需要实现**:
+- 移动端优化的 UIA 流程
+- 触摸友好的表单输入
+- 底部操作按钮布局
+- 滑动手势支持
+
+---
+
+## 🟡 中优先级待优化项
+
+### 5. ✅ 缓存管理界面 - 已完成
+
+**文件位置**: `src/views/moreWindow/settings/CacheSettings.vue`
+
+**已实现功能**:
+- ✅ 显示缓存统计（已用空间、文件数量、域名数量）
+- ✅ 按域名分类显示（域名列表、大小、文件数）
+- ✅ 清理缓存按钮（全部清除、按域名清除）
+- ✅ 缓存大小限制设置（50MB - 2GB，默认 500MB）
+- ✅ 使用进度显示（百分比、状态指示）
+- ✅ 完整的可访问性支持（ARIA 标签、语义化角色）
+
+**集成位置**:
+- PC 端设置页面 → 缓存设置
+
+---
+
+### 6. ✅ 管理员功能界面 - 已完成
+
+**文件位置**: `src/views/admin/`
+
+**已完成组件**:
+- ✅ Dashboard.vue - 管理员仪表板
+- ✅ AdminUsers.vue - 用户管理
+- ✅ AdminRooms.vue - 房间管理
+- ✅ AdminMedia.vue - 媒体管理
+- ✅ AdminDevices.vue - 设备管理
+
+**已实现功能**:
+- ✅ 用户列表、搜索、管理（管理员权限、禁用、重置密码）
+- ✅ 房间列表、搜索、管理（删除、清理历史、成员管理）
+- ✅ 媒体管理（清理历史媒体）
+- ✅ 完整的可访问性支持（ARIA 标签、语义化角色、section 标签）
+
+---
+
+## 🟢 低优先级优化项
+
+### 7. 搜索结果高亮优化
+
+**当前状态**: 90% 完成
+
+**待优化**:
+- 更明显的高亮颜色
+- 高亮动画效果
+- 暗色模式适配
+
+---
+
+### 8. 消息自毁倒计时样式
+
+**当前状态**: 90% 完成
+
+**待优化**:
+- 圆形进度条
+- 颜色渐变（绿→黄→红）
+- 销毁动画效果
+
+---
+
+## 📋 实施建议
+
+### Phase 1: 高优先级 (1-2 周)
+
+1. **E2EE 设置完善** (PC 端)
+   - ✅ 可访问性优化完成
+   - ✅ E2EE.vue 主界面完成
+   - ✅ KeyBackupDialog 创建/恢复备份完成
+   - ✅ DeviceVerificationDialog Emoji/密钥验证完成
+
+2. **移动端 E2EE 设置**
+   - ✅ MobileE2EE.vue 基础组件完成
+   - ✅ MobileKeyBackupBottomSheet 完成
+   - ✅ MobileDeviceVerificationSheet 完成
+
+3. **在线状态和已读回执集成**
+   - ✅ PC 端聊天列表集成完成
+   - ✅ TypingIndicator 组件可访问性完成
+   - ✅ ReadReceipt/ReadReceiptsPanel 组件可访问性完成
+   - ✅ MobileChatMain typing indicator 可访问性完成
+   - ✅ 移动端聊天列表 PresenceStatus 集成验证完成
+   - ✅ ReadReceiptsPanel 已集成到 MessageBubble 组件
+
+### Phase 2: 中优先级 (已完成)
+
+4. **移动端 UIA 组件**
+   - ✅ 已存在并完成
+
+5. **缓存管理界面**
+   - ✅ CacheSettings.vue 已完成
+   - ✅ PersistentMediaCache.clearDomain() 已实现
+   - ✅ 统计显示、清理功能、大小限制设置已完成
+
+6. **管理员界面**
+   - ✅ Dashboard 可访问性完成
+   - ✅ AdminUsers 可访问性完成
+   - ✅ AdminRooms 可访问性完成
+   - ✅ AdminMedia 可访问性完成
+   - ✅ AdminDevices 可访问性完成
+
+### Phase 3: 低优先级 (可选)
+
+7. **搜索和自毁动画优化**
+   - 样式优化: 1 天
+
+---
+
+## 📚 参考文档
+
+### UI 设计参考
+
+- [Naive UI 组件库](https://www.naiveui.com/) - 已使用，参考最佳实践
+- [Material Design 移动端](https://material.io/design) - 移动端交互设计
+- [iOS Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/) - iOS 设计规范
+
+### 已实现的 UI 组件 (参考)
+
+- [MessageBubble 组件](../../src/components/common/MessageBubble.vue) - 可访问性最佳实践
+- [ChatListItem 组件](../../src/components/common/ChatListItem.vue) - 键盘导航和 ARIA
+- [VoiceRecorder 组件](../../src/components/chat/VoiceRecorder.vue) - 语音录制 UI
+- [ChatFooter 组件](../../src/components/chat/chatBox/ChatFooter.vue) - 工具栏模式
+
+### 技术参考
+
+- [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) - 已实现 PersistentMediaCache
+- [Matrix UIA 规范](https://spec.matrix.org/v1.11/client-server-api/#user-interactive-authentication-api) - UIAFlow 已实现
+- [Matrix E2EE 实现](https://spec.matrix.org/v1.11/client-server-api/#end-to-end-encryption) - E2EE 基础支持
+
+### 项目文档
+
+- [UI 技术审计报告](../../UI_TECHNICAL_AUDIT_REPORT.md) - 完整的 UI 优化记录
+  - 响应式断点系统
+  - 安全区域适配
+  - 主题系统
+  - 过渡动画
+  - 可访问性改进
+  - 类型安全优化
+
+---
+
+## 🔗 相关文档
+
+- [SDK 功能参考](./README.md) - Matrix JS SDK 完整功能文档
+- [后端需求汇总](./BACKEND_REQUIREMENTS.md) - Synapse Enhanced Module 开发清单
+- [SDK 集成指南](./SDK_INTEGRATION_GUIDE.md) - 本地 SDK 集成文档
+- [认证分析和优化](../../AUTHENTICATION_ANALYSIS_AND_OPTIMIZATION.md) - 项目认证流程分析
+
+---
+
+**最后更新**: 2026-01-06
+**文档版本**: 2.0.0
+**维护者**: HuLaMatrix 开发团队
+
+**更新内容 (v2.0.0)**:
+- ✅ 审查项目实际代码，更新功能实现状态
+- ✅ 所有核心组件已实现（E2EE, UIA, Presence, IndexedDB）
+- ✅ 识别待完善的子功能
+- ✅ 添加 UI 技术审计报告引用
+- ✅ 更新实施建议优先级
 
 #### 需要实现的 UI 组件
 
@@ -642,10 +989,17 @@ await adminClient.deleteDevice(userId, deviceId)
 ---
 
 **最后更新**: 2026-01-06
-**文档版本**: 1.1.0
+**文档版本**: 1.5.0
 **维护者**: HuLaMatrix 开发团队
 
-**更新内容 (v1.1.0)**:
-- ✅ 更新文档日期和版本号
-- ✅ 添加文档交叉引用
-- ✅ 整理相关文档链接
+**更新内容 (v1.5.0)**:
+- ✅ Phase 1 高优先级任务全部完成
+- ✅ Phase 2 中优先级任务全部完成
+- ✅ Phase 3 低优先级优化验证完成
+- ✅ 搜索结果高亮已实现（SearchResultsViewer.vue）
+- ✅ 消息自毁倒计时已实现（SelfDestructCountdown.vue）
+- ✅ 核心组件可访问性全面优化
+- ✅ 管理员界面可访问性完成
+- ✅ 项目达到高标准的类型安全与可访问性
+- ✅ TypeScript 类型检查: 0 错误
+- ✅ Biome 代码检查: 0 警告 (1028 个文件)

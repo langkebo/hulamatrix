@@ -43,6 +43,9 @@ class ErrorLogger {
       // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
       message.includes('No default value') ||
       errorObj?.message === 'No default value' ||
+      // Filter seemly color library warnings (Naive UI dependency)
+      message.includes('[seemly/rgba]: Invalid color value') ||
+      (errorObj?.message && errorObj.message.includes('[seemly/rgba]: Invalid color value')) ||
       // Other dev noise
       message.includes('@vite/client') ||
       message.includes('WebSocket closed without opened')

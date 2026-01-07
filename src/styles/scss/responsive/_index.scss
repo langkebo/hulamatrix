@@ -1,0 +1,23 @@
+// ============================================================================
+// 响应式系统主入口
+// ============================================================================
+// 统一导入断点、主题和工具类
+// ============================================================================
+
+@forward 'breakpoints';
+@forward 'theme';
+
+// 导出说明
+// 使用方法:
+// 1. 在组件中导入: @use '@/styles/scss/responsive' as responsive;
+// 2. 使用混合器: @include responsive.mobile { ... }
+// 3. 使用变量: $breakpoint-mobile
+//
+// 示例:
+// .my-component {
+//   padding: responsive.$spacing-4;
+//
+//   @include responsive.tablet {
+//     padding: responsive.$spacing-6;
+//   }
+// }

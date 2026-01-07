@@ -324,6 +324,7 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
         text.includes('MatrixEvent builder') ||
         // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
         text.includes('No default value') ||
+        text.includes('[seemly/rgba]: Invalid color value') ||
         (text.includes('TypeError') && args.some((a) => a instanceof Error && a.message === 'No default value'))
       if (isDevNoise) return
     } catch (_error) {
@@ -448,7 +449,10 @@ app.config.errorHandler = (err, instance, info) => {
     String(err).includes('transformCallback') ||
     // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
     (err instanceof Error && err.message === 'No default value') ||
-    String(err).includes('No default value')
+    String(err).includes('No default value') ||
+    // Filter seemly color library warnings (Naive UI dependency)
+    (err instanceof Error && err.message.includes('[seemly/rgba]: Invalid color value')) ||
+    String(err).includes('[seemly/rgba]: Invalid color value')
 
   if (!isDevNoise) {
     // Provide user-friendly error message
