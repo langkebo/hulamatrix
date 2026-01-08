@@ -63,7 +63,7 @@ import { logger } from '@/utils/logger'
             style="user-select: text"
             class="announcement-text text-(12px #909090) leading-6 line-clamp-4 max-w-99% break-words">
             <template v-if="announcementSegments.length > 0">
-              <template v-for="(segment, index) in announcementSegments" :key="index">
+              <template v-for="(segment, index) in announcementSegments" :key="`segment-${segment.text}-${index}`">
                 <span
                   v-if="segment.isLink"
                   class="cursor-pointer hover:underline hover:opacity-80 text-brand"

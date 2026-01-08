@@ -31,7 +31,7 @@
 
       <!-- 成员列表 -->
       <div ref="scrollArea" class="flex-1 overflow-y-auto px-16px mt-10px" :style="{ height: scrollHeight + 'px' }">
-        <n-scrollbar style="max-height: calc(100vh - 150px)">
+        <n-scrollbar class="member-scrollbar-mobile">
           <n-checkbox-group v-model:value="selectedList" class="flex flex-col gap-2">
             <div
               v-for="item in filteredMembers"
@@ -53,7 +53,7 @@
                       :size="44"
                       :src="AvatarUtils.getAvatarUrl(item.avatar)"
                       fallback-src="/logo.png"
-                      style="border: 1px solid var(--avatar-border-color)" />
+                      class="member-avatar-mobile" />
                     <!-- 文字信息 -->
                     <div class="flex flex-col leading-tight truncate">
                       <span class="text-14px font-medium truncate">
@@ -117,7 +117,7 @@
 
     <!-- 成员列表 -->
     <div ref="scrollArea" class="flex-1 overflow-y-auto px-20px mt-10px">
-      <n-scrollbar style="max-height: 450px">
+      <n-scrollbar class="member-scrollbar-pc">
         <n-checkbox-group v-model:value="selectedList" class="flex flex-col gap-2">
           <div
             v-for="item in filteredMembers"
@@ -139,7 +139,7 @@
                     :size="40"
                     :src="AvatarUtils.getAvatarUrl(item.avatar)"
                     fallback-src="/logo.png"
-                    style="border: 1px solid var(--avatar-border-color)" />
+                    class="member-avatar-pc" />
                   <!-- 文字信息 -->
                   <div class="flex flex-col leading-tight truncate">
                     <span class="text-13px font-medium truncate text-[--text-color]">
@@ -377,4 +377,17 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.member-scrollbar-mobile {
+  max-height: calc(100vh - 150px);
+}
+
+.member-scrollbar-pc {
+  max-height: 450px;
+}
+
+.member-avatar-mobile,
+.member-avatar-pc {
+  border: 1px solid var(--avatar-border-color);
+}
+</style>

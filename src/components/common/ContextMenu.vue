@@ -10,7 +10,7 @@
           style="height: fit-content"
           :style="emojiMenuPosition">
           <div class="emoji-container">
-            <div v-for="(item, index) in displayedEmojis" :key="index" class="p-4px">
+            <div v-for="(item, index) in displayedEmojis" :key="item.title || index" class="p-4px">
               <n-popover :delay="500" :duration="0" trigger="hover" :show-arrow="false" placement="top">
                 <template #trigger>
                   <div class="emoji-item" @click="handleReplyEmoji(item)">
@@ -37,7 +37,7 @@
             v-resize="handleSize"
             v-if="(visibleMenu && visibleMenu.length > 0) || (visibleSpecialMenu && visibleSpecialMenu.length > 0)"
             class="menu-list">
-            <div v-for="(item, index) in visibleMenu" :key="index">
+            <div v-for="(item, index) in visibleMenu" :key="getMenuItemKey(item, index)">
               <!-- 禁止的菜单选项需要禁止点击事件  -->
               <div class="menu-item-disabled" v-if="item.disabled" @click.prevent="$event.preventDefault()">
                 <div class="menu-item-content">
@@ -69,8 +69,8 @@
                 @click="handleClick(item)"
                 class="menu-item"
                 :class="{ 'menu-item-danger': isDangerousItem(item) }"
-                v-for="item in visibleSpecialMenu"
-                :key="typeof item.label === 'function' ? item.label(props.content) : item.label">
+                v-for="(item, index) in visibleSpecialMenu"
+                :key="getSpecialMenuItemKey(item, index)">
                 <svg><use :href="`#${getMenuItemProp(item, 'icon')}`"></use></svg>
                 <p class="h-24px">{{ getMenuItemProp(item, 'label') }}</p>
               </div>
@@ -93,7 +93,7 @@
             <div
               @click="handleClick(item)"
               v-for="(item, index) in visibleMenu"
-              :key="index"
+              :key="getMenuItemKey(item, index)"
               class="w-45px h-45px flex justify-center items-center">
               <div class="flex w-45px flex-col active:bg-gray-200 justify-center items-center max-h-45px">
                 <svg class="w-18px w-18px"><use :href="`#${getMenuItemProp(item, 'icon')}`"></use></svg>
@@ -111,7 +111,7 @@
           <div class="menu-list">
             <div
               v-for="(subItem, subIndex) in activeSubmenu"
-              :key="subIndex"
+              :key="getMenuItemKey(subItem, subIndex)"
               class="menu-item"
               :class="{ 'menu-item-danger': isDangerousItem(subItem) }">
               <div class="menu-item-content" @click="handleSubItemClick(subItem)">
@@ -465,6 +465,25 @@ const shouldShowArrow = (item: MenuItem) => {
 
   // 检查是否有有效的子菜单内容
   return Array.isArray(children) && children.length > 0
+}
+
+/**
+ * Get unique identifier for menu item
+ */
+const getMenuItemKey = (item: MenuItem, index: number): string | number => {
+  if (item.id && typeof item.id === 'string') return item.id
+  if (typeof item.label === 'string') return item.label
+  return `menu-item-${index}`
+}
+
+/**
+ * Get unique identifier for special menu item
+ */
+const getSpecialMenuItemKey = (item: MenuItem, index: number): string | number => {
+  if (item.id && typeof item.id === 'string') return item.id
+  const labelValue = typeof item.label === 'function' ? item.label(props.content) : item.label
+  if (typeof labelValue === 'string') return labelValue
+  return `special-menu-item-${index}`
 }
 </script>
 

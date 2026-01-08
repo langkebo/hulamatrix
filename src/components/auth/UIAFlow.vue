@@ -9,7 +9,7 @@
       aria-modal="true">
       <!-- Progress Steps -->
       <n-steps :current="currentStepIndex" :status="stepStatus">
-        <n-step v-for="(step, index) in steps" :key="index" :title="step.title" />
+        <n-step v-for="(step, index) in steps" :key="step.type || index" :title="step.title" />
       </n-steps>
 
       <n-divider />

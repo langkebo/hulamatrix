@@ -7,12 +7,7 @@
         <h1 class="page-title">媒体缓存</h1>
       </div>
       <div class="header-actions">
-        <n-button
-          v-if="cacheStats.totalSize > 0"
-          text
-          type="error"
-          @click="handleClearAll"
-        >
+        <n-button v-if="cacheStats.totalSize > 0" text type="error" @click="handleClearAll">
           <template #icon>
             <n-icon><Trash /></n-icon>
           </template>
@@ -40,8 +35,7 @@
                 type="circle"
                 :percentage="storagePercentage"
                 :stroke-width="8"
-                :color="getProgressColor(storagePercentage)"
-              >
+                :color="getProgressColor(storagePercentage)">
                 <template #default="{ percentage }">
                   <span class="percentage-text">{{ percentage }}%</span>
                 </template>
@@ -68,11 +62,7 @@
         <div class="type-breakdown">
           <h3 class="card-title">类型分布</h3>
           <div class="type-list">
-            <div
-              v-for="stat in cacheStats.byType"
-              :key="stat.type"
-              class="type-item"
-            >
+            <div v-for="stat in cacheStats.byType" :key="stat.type" class="type-item">
               <div class="type-icon">
                 <n-icon :size="24" :color="getTypeColor(stat.type)">
                   <component :is="getTypeIcon(stat.type)" />
@@ -101,9 +91,8 @@
                   v-model:value="settings.maxCacheSize"
                   :options="sizeOptions"
                   size="small"
-                  style="width: 120px"
-                  @update:value="handleSettingChange"
-                />
+                  class="max-cache-size-select"
+                  @update:value="handleSettingChange" />
               </template>
             </n-list-item>
             <n-list-item>
@@ -121,9 +110,7 @@
               </template>
               清理过期文件
               <template #suffix>
-                <n-button text type="primary" size="small">
-                  立即清理
-                </n-button>
+                <n-button text type="primary" size="small">立即清理</n-button>
               </template>
             </n-list-item>
           </n-list>
@@ -133,12 +120,7 @@
         <div class="items-section">
           <div class="section-header">
             <h3 class="card-title">缓存文件</h3>
-            <n-select
-              v-model:value="filterType"
-              :options="filterOptions"
-              size="small"
-              style="width: 100px"
-            />
+            <n-select v-model:value="filterType" :options="filterOptions" size="small" class="filter-type-select" />
           </div>
 
           <div v-if="cacheItems.length === 0" class="empty-state">
@@ -146,12 +128,7 @@
           </div>
 
           <div v-else class="items-list">
-            <div
-              v-for="item in paginatedItems"
-              :key="item.url"
-              class="cache-item"
-              @click="handlePreview(item)"
-            >
+            <div v-for="item in paginatedItems" :key="item.url" class="cache-item" @click="handlePreview(item)">
               <div class="item-preview">
                 <img v-if="item.type === 'image'" :src="item.preview" alt="" />
                 <n-icon v-else :size="32" :color="getTypeColor(item.type)">
@@ -182,35 +159,20 @@
 
           <!-- Pagination -->
           <div v-if="totalPages > 1" class="pagination">
-            <n-pagination
-              v-model:page="currentPage"
-              :page-count="totalPages"
-              :page-size="pageSize"
-              simple
-            />
+            <n-pagination v-model:page="currentPage" :page-count="totalPages" :page-size="pageSize" simple />
           </div>
         </div>
       </div>
     </div>
 
     <!-- Preview Modal -->
-    <n-modal v-model:show="showPreview" preset="card" style="width: 90vw; max-width: 600px">
+    <n-modal v-model:show="showPreview" preset="card" class="preview-modal">
       <template #header>
         <span>文件预览</span>
       </template>
       <div v-if="previewItem" class="preview-content">
-        <img
-          v-if="previewItem.type === 'image'"
-          :src="previewItem.preview"
-          alt="Preview"
-          style="max-width: 100%; border-radius: 8px"
-        />
-        <video
-          v-else-if="previewItem.type === 'video'"
-          :src="previewItem.preview"
-          controls
-          style="max-width: 100%; border-radius: 8px"
-        />
+        <img v-if="previewItem.type === 'image'" :src="previewItem.preview" alt="Preview" class="preview-media" />
+        <video v-else-if="previewItem.type === 'video'" :src="previewItem.preview" controls class="preview-media" />
         <n-empty v-else description="无法预览此文件类型" />
         <div class="preview-info">
           <n-descriptions :column="1" bordered size="small">
@@ -968,10 +930,28 @@ onMounted(async () => {
       max-height: 50vh;
     }
 
+    .preview-media {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
     .preview-info {
       margin-top: 16px;
     }
   }
+}
+
+.max-cache-size-select {
+  width: 120px;
+}
+
+.filter-type-select {
+  width: 100px;
+}
+
+.preview-modal {
+  width: 90vw;
+  max-width: 600px;
 }
 
 // Safe area for mobile

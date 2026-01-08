@@ -153,7 +153,9 @@
                   'content-wrapper',
                   { 'content-collapsed': !announcement.expanded && needsExpansion(announcement.content) }
                 ]">
-                <template v-for="(segment, index) in extractLinkSegments(announcement?.content || '')" :key="index">
+                <template
+                  v-for="(segment, index) in extractLinkSegments(announcement?.content || '')"
+                  :key="`segment-${segment.text}-${index}`">
                   <span v-if="segment.isLink" class="announcement-link" @click.stop="openExternalUrl(segment.text)">
                     {{ segment.text }}
                   </span>

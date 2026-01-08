@@ -24,17 +24,13 @@
         <!-- Answers -->
         <n-form-item :label="t('message.poll.answers_label')" :show-label="true" required>
           <div class="poll-answers-list">
-            <div v-for="(answer, index) in answers" :key="index" class="poll-answer-input">
+            <div v-for="(answer, index) in answers" :key="`answer-${answer}-${index}`" class="poll-answer-input">
               <n-input
                 v-model:value="answers[index]"
                 :placeholder="`${t('message.poll.answer_placeholder')} ${index + 1}`"
                 :maxlength="100">
                 <template #suffix>
-                  <n-button
-                    v-if="answers.length > 2"
-                    text
-                    size="small"
-                    @click="removeAnswer(index)">
+                  <n-button v-if="answers.length > 2" text size="small" @click="removeAnswer(index)">
                     <svg class="size-14px color-#d5304f">
                       <use href="#close"></use>
                     </svg>
@@ -42,11 +38,7 @@
                 </template>
               </n-input>
             </div>
-            <n-button
-              v-if="answers.length < 20"
-              dashed
-              block
-              @click="addAnswer">
+            <n-button v-if="answers.length < 20" dashed block @click="addAnswer">
               <template #icon>
                 <svg class="size-14px">
                   <use href="#plus"></use>
@@ -90,11 +82,7 @@
         <n-button @click="handleClose">
           {{ t('message.poll.cancel') }}
         </n-button>
-        <n-button
-          type="primary"
-          :loading="loading"
-          :disabled="!isValid"
-          @click="handleCreate">
+        <n-button type="primary" :loading="loading" :disabled="!isValid" @click="handleCreate">
           {{ t('message.poll.create') }}
         </n-button>
       </div>

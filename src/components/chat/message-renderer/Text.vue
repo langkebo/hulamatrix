@@ -1,6 +1,6 @@
 <template>
   <div :class="isMobile() ? 'text-16px' : 'text-14px'">
-    <template v-for="(item, index) in fragments" :key="index">
+    <template v-for="(item, index) in fragments" :key="`${item}-${index}`">
       <n-popover
         trigger="click"
         placement="left"
