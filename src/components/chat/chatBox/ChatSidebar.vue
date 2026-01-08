@@ -3,8 +3,7 @@ import { logger } from '@/utils/logger'
 <template>
   <!--! 这里最好不要使用n-flex,滚动高度会有问题  -->
   <main
-    style="height: 100%"
-    class="flex-shrink-0"
+    class="sidebar-main flex-shrink-0"
     :class="[
       isGroup
         ? isCollapsed
@@ -17,8 +16,7 @@ import { logger } from '@/utils/logger'
     <div
       v-show="isGroup"
       @click.stop="isCollapsed = !isCollapsed"
-      style="border-radius: 18px 0 0 18px"
-      class="contraction transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-#c8c8c833 h-60px w-14px">
+      class="contraction-with-radius transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-#c8c8c833 h-60px w-14px">
       <svg
         :class="isCollapsed ? 'rotate-0' : 'rotate-180'"
         class="size-16px color-#909090 dark:color-#303030 absolute top-38%">
@@ -60,8 +58,7 @@ import { logger } from '@/utils/logger'
           </p>
           <p
             v-else
-            style="user-select: text"
-            class="announcement-text text-(12px #909090) leading-6 line-clamp-4 max-w-99% break-words">
+            class="announcement-text selectable-text text-(12px #909090) leading-6 line-clamp-4 max-w-99% break-words">
             <template v-if="announcementSegments.length > 0">
               <template v-for="(segment, index) in announcementSegments" :key="`segment-${segment.text}-${index}`">
                 <span
@@ -116,14 +113,14 @@ import { logger } from '@/utils/logger'
           @update:value="handleSortChange"
           :options="sortOptions"
           size="tiny"
-          style="width: 140px"
+          class="sort-select"
           :consistent-menu-width="false" />
       </n-flex>
 
       <!-- 成员列表 -->
       <n-virtual-list
         id="image-chat-sidebar"
-        style="max-height: calc(100vh / var(--page-scale, 1) - 250px)"
+        class="member-list"
         item-resizable
         @scroll="handleScroll($event)"
         :item-size="46"
@@ -622,6 +619,26 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/chat-sidebar';
+
+.sidebar-main {
+  height: 100%;
+}
+
+.contraction-with-radius {
+  border-radius: 18px 0 0 18px;
+}
+
+.selectable-text {
+  user-select: text;
+}
+
+.sort-select {
+  width: 140px;
+}
+
+.member-list {
+  max-height: calc(100vh / var(--page-scale, 1) - 250px);
+}
 
 .chat-sidebar-popover {
   padding: 0;
