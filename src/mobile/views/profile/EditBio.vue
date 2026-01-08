@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         room-name="编辑简介" />
     </template>
@@ -62,4 +61,9 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @use '@/styles/scss/form-item.scss';
+
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
 </style>
