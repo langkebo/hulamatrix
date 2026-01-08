@@ -80,7 +80,7 @@
             v-model:value="imageSizeLimit"
             :options="imageSizeOptions"
             size="medium"
-            style="width: 120px"
+            class="image-size-select"
             @update:value="handleImageSizeChange" />
         </div>
       </div>
@@ -277,5 +277,9 @@ onMounted(() => {
     font-size: 12px;
     color: #999;
   }
+}
+
+.image-size-select {
+  width: 120px;
 }
 </style>
