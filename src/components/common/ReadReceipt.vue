@@ -20,7 +20,7 @@
           </template>
           <div class="reader-info">
             <n-text strong>{{ reader.displayName }}</n-text>
-            <n-text depth="3" style="font-size: 12px">
+            <n-text depth="3" class="read-time">
               {{ formatReadTime(reader.timestamp) }}
             </n-text>
           </div>
@@ -123,6 +123,10 @@ function formatReadTime(timestamp: number): string {
     display: flex;
     flex-direction: column;
     gap: 2px;
+
+    .read-time {
+      font-size: 12px;
+    }
   }
 }
 </style>
