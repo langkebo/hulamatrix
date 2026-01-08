@@ -29,7 +29,7 @@
       :mask-closable="true"
       preset="dialog"
       :title="t('reaction.addReaction')"
-      style="width: 400px">
+      class="reaction-picker-modal">
       <div class="reaction-picker">
         <!-- Category Tabs -->
         <div class="reaction-categories">
@@ -190,6 +190,10 @@ defineExpose({
 </script>
 
 <style scoped>
+.reaction-picker-modal {
+  width: 400px;
+}
+
 .message-reactions {
   display: flex;
   align-items: center;
