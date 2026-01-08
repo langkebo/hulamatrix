@@ -8,7 +8,7 @@
           v-model:value="selfDestructTime"
           :options="selfDestructOptions"
           size="tiny"
-          style="width: 140px"
+          class="self-destruct-select"
           @update:value="handleSelfDestructChange" />
         <n-switch v-model:value="enableSelfDestruct" size="small" />
       </n-flex>
@@ -152,5 +152,9 @@ watch(currentSessionId, () => {
 <style scoped lang="scss">
 .private-chat-footer {
   background: var(--right-chat-footer-bg);
+
+  .self-destruct-select {
+    width: 140px;
+  }
 }
 </style>
