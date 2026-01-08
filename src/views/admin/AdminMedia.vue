@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical :size="12">
     <n-flex align="center" :size="8">
-      <n-input v-model:value="roomId" placeholder="room_id" style="max-width: 260px" />
+      <n-input v-model:value="roomId" placeholder="room_id" class="room-input" />
       <n-input-number v-model:value="days" :min="1" :max="365" />
       <n-button type="warning" @click="purge">清理历史媒体</n-button>
     </n-flex>
@@ -25,3 +25,10 @@ const purge = async () => {
   await adminClient.purgeHistory(roomId.value, ts)
 }
 </script>
+
+<style scoped>
+/* 房间输入框 */
+.room-input {
+  max-width: 260px;
+}
+</style>
