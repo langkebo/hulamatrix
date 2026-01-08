@@ -2,8 +2,7 @@
   <div class="size-full bg-[--right-bg-color]">
     <ActionBar :shrink="false" :current-label="WebviewWindow.getCurrent().label" />
     <n-scrollbar
-      style="max-height: calc(100vh)"
-      class="w-full box-border bg-[--center-bg-color] rounded-b-8px border-(solid 1px [--line-color])">
+      class="preview-scrollbar w-full box-border bg-[--center-bg-color] rounded-b-8px border-(solid 1px [--line-color])">
       <div class="flex flex-col gap-4 bg-#808080">
         <!-- @vue-office依赖已移除，暂时禁用文档预览功能 -->
         <div v-if="isShowWord || isShowPdf || isShowExcel || isShowPpt" class="flex items-center justify-center h-96">
@@ -205,4 +204,8 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.preview-scrollbar {
+  max-height: calc(100vh);
+}
+</style>
