@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-model:show="visible" :mask-closable="false" preset="card" title="创建空间" style="width: 400px">
+  <n-modal v-model:show="visible" :mask-closable="false" preset="card" title="创建空间" class="create-space-modal">
     <n-form ref="formRef" :model="formData" :rules="rules" label-placement="top" label-width="80">
       <!-- Space name -->
       <n-form-item label="空间名称" path="name">
@@ -197,6 +197,10 @@ useMitt.on(MittEnum.SHOW_CREATE_SPACE_MODAL, () => {
 </script>
 
 <style lang="scss" scoped>
+.create-space-modal {
+  width: 400px;
+}
+
 :deep(.n-form-item-label) {
   font-weight: 500;
 }
