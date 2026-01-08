@@ -6,8 +6,7 @@
         <!-- emoji表情菜单 -->
         <div
           v-if="showMenu && emoji && emoji.length > 0"
-          class="context-menu select-none"
-          style="height: fit-content"
+          class="context-menu select-none emoji-menu"
           :style="emojiMenuPosition">
           <div class="emoji-container">
             <div v-for="(item, index) in displayedEmojis" :key="item.title || index" class="p-4px">
@@ -594,6 +593,11 @@ const getSpecialMenuItemKey = (item: MenuItem, index: number): string | number =
 
 .context-menu {
   @include menu-item-style();
+
+  &.emoji-menu {
+    height: fit-content;
+  }
+
   .emoji-container {
     -webkit-backdrop-filter: blur(10px);
     background: var(--bg-menu);
