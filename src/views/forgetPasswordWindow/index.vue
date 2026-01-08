@@ -59,9 +59,8 @@
             :loading="verifyLoading"
             :disabled="nextDisabled"
             tertiary
-            style="color: #fff"
             @click="verifyEmail"
-            class="mt-10px w-full gradient-button">
+            class="mt-10px w-full gradient-button submit-button">
             {{ t('auth.forget.buttons.next') }}
           </n-button>
         </n-form>
@@ -130,9 +129,8 @@
             <n-button
               :loading="submitLoading"
               tertiary
-              style="color: #fff"
               @click="submitNewPassword"
-              class="flex-1 gradient-button">
+              class="flex-1 gradient-button submit-button">
               {{ t('auth.forget.buttons.submit') }}
             </n-button>
           </n-flex>
@@ -424,5 +422,10 @@ onBeforeUnmount(() => {
 :deep(.no-indent-input.n-input .n-input__input),
 :deep(.no-indent-input.n-input .n-input__textarea) {
   margin-left: 0 !important;
+}
+
+/* 提交按钮 */
+.submit-button {
+  color: #fff;
 }
 </style>
