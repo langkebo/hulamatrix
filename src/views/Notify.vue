@@ -6,7 +6,7 @@
       <p>{{ msgCount }}</p>
     </n-flex>
     <component :is="division" />
-    <n-scrollbar style="max-height: 320px">
+    <n-scrollbar class="notify-scrollbar">
       <n-flex
         v-for="group in content"
         :key="group.id"
@@ -357,5 +357,9 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .notify {
   @apply bg-[--center-bg-color] size-full p-8px box-border select-none text-[--text-color] text-12px;
+
+  .notify-scrollbar {
+    max-height: 320px;
+  }
 }
 </style>
