@@ -18,7 +18,7 @@ interface MatrixClientLike {
   kick(roomId: string, userId: string, reason?: string): Promise<unknown>
   ban(roomId: string, userId: string, reason?: string): Promise<unknown>
   unban(roomId: string, userId: string): Promise<unknown>
-  joinRoom(roomId: string): Promise<unknown>
+  joinRoom(roomId: string, opts?: unknown): Promise<unknown>
   leave(roomId: string): Promise<unknown>
   forget(roomId: string): Promise<unknown>
   getRooms(): MatrixRoomLike[]
@@ -782,16 +782,26 @@ export class MatrixRoomManager {
 
   /**
    * Join room
+   * @param roomId - The room ID to join
+   * @param viaServers - Optional list of servers to try and join through
    */
-  async joinRoom(roomId: string): Promise<void> {
+  async joinRoom(roomId: string, viaServers?: string[]): Promise<void> {
     const client = this.client
     if (!client) {
       throw new Error('Matrix client not available')
     }
 
     try {
-      logger.info('[MatrixRoomManager] Joining room', { roomId })
-      await client.joinRoom(roomId)
+      logger.info('[MatrixRoomManager] Joining room', { roomId, viaServers })
+
+      // Build join options with viaServers if provided
+      const opts: Record<string, unknown> = {}
+      if (viaServers !== undefined) {
+        opts.viaServers = viaServers
+      }
+
+      // Use type assertion to match the Matrix SDK signature
+      await client.joinRoom(roomId, opts as unknown)
       logger.info('[MatrixRoomManager] Room joined successfully')
     } catch (error) {
       logger.error('[MatrixRoomManager] Failed to join room:', error)

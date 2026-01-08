@@ -121,7 +121,7 @@ export interface MatrixClientLike {
   ): Promise<RegisterResponse>
   getRooms?(): Record<string, unknown>[]
   getRoom?(roomId: string): Record<string, unknown> | null
-  joinRoom?(roomIdOrAlias: string): Promise<Record<string, unknown>>
+  joinRoom?(roomIdOrAlias: string, opts?: unknown): Promise<Record<string, unknown>>
   getUserId?(): string
   getDeviceId?(): string
   isGuest?(): boolean
