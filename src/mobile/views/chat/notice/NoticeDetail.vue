@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         room-name="公告详情" />
     </template>
@@ -20,8 +19,7 @@
           <div v-else-if="announcement" class="bg-white flex flex-col shadow p-10px gap-15px text-14px rounded-15px">
             <!-- 公告头部信息 -->
             <div
-              style="border-bottom: 1px solid; border-color: #ebebeb"
-              class="grid grid-cols-[2.2rem_1fr_4rem] items-start px-2 py-3 gap-1">
+              class="announcement-header grid grid-cols-[2.2rem_1fr_4rem] items-start px-2 py-3 gap-1">
               <!-- 头像 -->
               <div class="self-center h-38px">
                 <n-badge>
@@ -52,19 +50,7 @@
 
             <!-- 编辑按钮（仅管理员/群主可见） -->
             <div v-if="canEdit" class="flex justify-center mb-10px">
-              <div
-                @click="goToNoticeEdit"
-                style="
-                  background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
-                  border-radius: 30px;
-                  padding: 10px 30px;
-                  color: white;
-                  font-weight: 500;
-                  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-                  text-align: center;
-                  display: inline-block;
-                  cursor: pointer;
-                ">
+              <div @click="goToNoticeEdit" class="edit-button">
                 编辑公告
               </div>
             </div>
@@ -187,6 +173,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+
+.announcement-header {
+  border-bottom: 1px solid;
+  border-color: #ebebeb;
+}
+
+.edit-button {
+  background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
+  border-radius: 30px;
+  padding: 10px 30px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .announcement-content {
   line-height: 1.6;
   max-height: none; /* 移除高度限制，让内容自然滚动 */
