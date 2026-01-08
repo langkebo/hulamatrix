@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         :room-name="isEditMode ? '编辑群公告' : '新增群公告'" />
     </template>
@@ -175,6 +174,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+
 .upload-image-container {
   width: 100%;
 }
