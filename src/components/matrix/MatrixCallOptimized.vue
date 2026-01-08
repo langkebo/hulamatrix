@@ -183,7 +183,7 @@
       :mask-closable="false"
       preset="dialog"
       title="来电"
-      style="width: 400px"
+      class="incoming-call-modal"
     >
       <div class="incoming-call-content">
         <n-avatar
@@ -216,7 +216,7 @@
       v-model:show="showSettings"
       preset="dialog"
       title="通话设置"
-      style="width: 500px"
+      class="call-settings-modal"
     >
       <div class="call-settings">
         <n-form label-placement="left">
@@ -1032,6 +1032,10 @@ watch(
 }
 
 /* 来电弹窗 */
+.incoming-call-modal {
+  width: 400px;
+}
+
 .incoming-call-content {
   display: flex;
   flex-direction: column;
@@ -1055,6 +1059,10 @@ watch(
 }
 
 /* 设置弹窗 */
+.call-settings-modal {
+  width: 500px;
+}
+
 .call-settings {
   padding: 16px 0;
 }
