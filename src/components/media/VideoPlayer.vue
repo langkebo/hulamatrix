@@ -58,7 +58,7 @@ import { TIME_INTERVALS } from '@/constants' import { msg } from '@/utils/SafeUI
           :min="0"
           :max="100"
           :step="1"
-          style="width: 80px; margin: 0 8px"
+          class="volume-slider"
           @update:value="updateVolume" />
         <n-button text @click="toggleFullscreen" class="control-btn">
           <template #icon>
@@ -548,5 +548,10 @@ watch(
 
 .play-button-overlay:hover .n-button {
   transform: scale(1.1);
+}
+
+.volume-slider {
+  width: 80px;
+  margin: 0 8px;
 }
 </style>

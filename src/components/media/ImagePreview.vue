@@ -3,7 +3,7 @@
     :show="visible"
     :mask-closable="true"
     preset="card"
-    :style="{ width: '90vw', maxWidth: '1200px' }"
+    class="image-preview-modal"
     @close="handleClose"
     @mask-click="handleClose">
     <template #header>
@@ -19,12 +19,12 @@
 
     <div class="image-preview-container">
       <!-- 加载状态 -->
-      <div v-if="loading" class="flex-center" style="height: 400px">
+      <div v-if="loading" class="flex-center status-container">
         <n-spin size="large" />
       </div>
 
       <!-- 错误状态 -->
-      <div v-else-if="error" class="flex-center flex-col" style="height: 400px">
+      <div v-else-if="error" class="flex-center flex-col status-container">
         <n-result status="error" title="加载失败" :description="error">
           <template #footer>
             <n-button @click="retry">重试</n-button>
@@ -69,8 +69,7 @@
             :class="['preview-image', { 'contain-mode': fitMode === 'contain' }]"
             @load="handleImageLoad"
             @error="handleImageError"
-            draggable="false"
-          />
+            draggable="false" />
         </div>
 
         <!-- 缩放控制 -->
@@ -88,19 +87,12 @@
               </template>
             </n-button>
           </n-button-group>
-          <n-select
-            v-model:value="fitMode"
-            :options="fitModeOptions"
-            style="width: 120px; margin-left: 12px" />
+          <n-select v-model:value="fitMode" :options="fitModeOptions" class="fit-mode-select" />
         </div>
 
         <!-- 导航按钮（多图时） -->
         <template v-if="images.length > 1">
-          <n-button
-            circle
-            class="nav-button prev-button"
-            @click="prevImage"
-            :disabled="currentIndex === 0">
+          <n-button circle class="nav-button prev-button" @click="prevImage" :disabled="currentIndex === 0">
             <template #icon>
               <svg class="size-24px"><use href="#left"></use></svg>
             </template>
@@ -114,9 +106,7 @@
               <svg class="size-24px"><use href="#right"></use></svg>
             </template>
           </n-button>
-          <div class="image-indicator">
-            {{ currentIndex + 1 }} / {{ images.length }}
-          </div>
+          <div class="image-indicator">{{ currentIndex + 1 }} / {{ images.length }}</div>
         </template>
       </div>
     </div>
@@ -124,9 +114,7 @@
     <template #footer>
       <n-space justify="end">
         <n-button @click="handleClose">关闭</n-button>
-        <n-button v-if="canDownload" type="primary" @click="download">
-          下载图片
-        </n-button>
+        <n-button v-if="canDownload" type="primary" @click="download">下载图片</n-button>
       </n-space>
     </template>
   </n-modal>
@@ -387,6 +375,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.image-preview-modal {
+  width: 90vw;
+  max-width: 1200px;
+}
+
+.status-container {
+  height: 400px;
+}
+
+.fit-mode-select {
+  width: 120px;
+  margin-left: 12px;
+}
+
 .image-preview-container {
   position: relative;
   min-height: 400px;
