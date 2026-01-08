@@ -63,7 +63,7 @@
       v-model:show="showSearchModal"
       preset="dialog"
       title="搜索消息"
-      style="width: 600px"
+      class="search-modal"
     >
       <MatrixSearch :room-id="roomId" />
     </n-modal>
@@ -73,7 +73,7 @@
       v-model:show="showNotificationsModal"
       preset="dialog"
       title="通知历史"
-      style="width: 500px"
+      class="notifications-modal"
     >
       <MatrixNotificationHistory />
     </n-modal>
@@ -83,7 +83,7 @@
       v-model:show="showMembersModal"
       preset="dialog"
       :title="`房间成员 (${members.length})`"
-      style="width: 500px"
+      class="members-modal"
     >
       <div class="member-list">
         <div
@@ -422,6 +422,18 @@ onUnmounted(() => {
 
 .member-status {
   flex-shrink: 0;
+}
+
+.search-modal {
+  width: 600px;
+}
+
+.notifications-modal {
+  width: 500px;
+}
+
+.members-modal {
+  width: 500px;
 }
 
 /* Responsive */
