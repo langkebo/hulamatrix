@@ -25,6 +25,7 @@ import { provideMatrixClientManager } from '@/integrations/matrix/client-manager
 import { Perf } from '@/utils/Perf'
 import { flagSummary, validateEnvFlags, flags } from '@/utils/envFlags'
 import { msg } from '@/utils/SafeUI'
+import type { ComponentInternalInstance } from 'vue'
 
 // Type definitions for import.meta
 interface ImportMetaEnv {
@@ -47,6 +48,23 @@ interface ImportMetaLike {
 }
 
 declare const importMeta: ImportMetaLike
+
+// Extended Vue component instance type for error handler
+interface VueComponentInstance extends ComponentInternalInstance {
+  $type?: {
+    __name?: string
+  }
+  $?: {
+    type?: {
+      name?: string
+    }
+    vnode?: {
+      type?: {
+        name?: string
+      }
+    }
+  }
+}
 
 // Type definitions for error events
 interface ErrorEventLike {
@@ -436,12 +454,13 @@ try {
 // Global Vue error handler - improved with better logging and user feedback
 app.config.errorHandler = (err, instance, info) => {
   // Enhanced error logging to capture more details
+  const vueInstance = instance as VueComponentInstance | null
   const errorDetails = {
     errorMessage: err instanceof Error ? err.message : String(err),
     errorStack: err instanceof Error ? err.stack : undefined,
     errorName: err instanceof Error ? err.name : undefined,
-    componentName: instance?.$options?.name || (instance as any)?.$?.type?.name || 'Unknown',
-    componentTag: (instance as any)?.$type?.__name || (instance as any)?.$?.vnode?.type?.name || 'Unknown',
+    componentName: instance?.$options?.name || vueInstance?.$?.type?.name || 'Unknown',
+    componentTag: vueInstance?.$type?.__name || vueInstance?.$?.vnode?.type?.name || 'Unknown',
     info,
     fullError: err
   }
