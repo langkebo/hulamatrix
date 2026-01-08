@@ -78,7 +78,7 @@
 
           <!-- Normal Scroll Mode (fallback for compatibility) -->
           <template v-else>
-            <n-scrollbar ref="scrollbarRef" style="max-height: calc(100vh / var(--page-scale, 1) - 120px)">
+            <n-scrollbar ref="scrollbarRef" class="chat-list-scrollbar">
               <div class="chat-list-items desktop">
                 <ContextMenu
                   v-for="(item, index) in filteredSessions"
@@ -480,6 +480,10 @@ if (isMobile.value) {
   &.mobile {
     padding: 0;
   }
+}
+
+.chat-list-scrollbar {
+  max-height: calc(100vh / var(--page-scale, 1) - 120px);
 }
 
 .chat-list-item {
