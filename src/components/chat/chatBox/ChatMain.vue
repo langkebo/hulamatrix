@@ -102,9 +102,8 @@
 
     <!--  悬浮按钮提示(底部悬浮) -->
     <footer
-      class="float-footer-button"
-      v-if="shouldShowFloatFooter && currentNewMsgCount && !isMobileRef"
-      :style="{ bottom: '24px', right: '50px' }">
+      class="float-footer-button positioned-float-footer"
+      v-if="shouldShowFloatFooter && currentNewMsgCount && !isMobileRef">
       <div class="float-box" :class="{ max: currentNewMsgCount?.count > 99 }" @click="handleFloatButtonClick">
         <n-flex justify="space-between" align="center">
           <n-icon :color="currentNewMsgCount?.count > 99 ? '#ce304f' : '#13987f'">
@@ -832,6 +831,11 @@ onUnmounted(() => {
   user-select: none;
   color: #13987f;
   cursor: pointer;
+
+  &.positioned-float-footer {
+    bottom: 24px;
+    right: 50px;
+  }
 }
 
 // 原生滚动容器样式
