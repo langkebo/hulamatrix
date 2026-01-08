@@ -139,8 +139,8 @@
 
     <!-- 侧边选项栏 -->
     <Transition v-if="shouldShowDeleteFriend || chatStore.isGroup" name="sidebar">
-      <div v-if="sidebarShow" style="border: 1px solid rgba(90, 90, 90, 0.1)" class="sidebar">
-        <n-scrollbar style="height: calc(100vh / var(--page-scale, 1) - 24px)" class="p-22px box-border">
+      <div v-if="sidebarShow" class="sidebar">
+        <n-scrollbar class="sidebar-scrollbar p-22px box-border">
           <!-- 单聊侧边栏选项 -->
           <template v-if="!chatStore.isGroup">
             <div class="box-item flex-col-y-center">
@@ -210,7 +210,7 @@
                         @blur.stop="handleGroupNameChange"
                         @keydown.enter.stop="handleGroupNameChange"
                         size="tiny"
-                        style="width: 100px; height: 22px"
+                        class="group-name-input"
                         maxlength="12"
                         spellCheck="false"
                         autoComplete="off"
@@ -462,7 +462,7 @@
       <div class="flex flex-col gap-20px p-[22px_20px_20px_22px] select-none">
         <div class="flex flex-col items-center gap-16px">
           <n-qr-code
-            style="border-radius: 16px"
+            class="qr-code"
             :value="JSON.stringify({ type: 'scanEnterGroup', roomId: currentSession?.roomId })"
             :size="200"
             :color="themes.content === ThemeEnum.DARK ? '#202020' : '#000000'"
@@ -1283,5 +1283,22 @@ onUnmounted(() => {
       color: #13987f;
     }
   }
+}
+
+.sidebar {
+  border: 1px solid rgba(90, 90, 90, 0.1);
+}
+
+.sidebar-scrollbar {
+  height: calc(100vh / var(--page-scale, 1) - 24px);
+}
+
+.group-name-input {
+  width: 100px;
+  height: 22px;
+}
+
+.qr-code {
+  border-radius: 16px;
 }
 </style>
