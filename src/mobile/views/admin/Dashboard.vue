@@ -8,7 +8,7 @@
     </van-nav-bar>
 
     <!-- Stats Grid -->
-    <van-grid :column-num="2" :border="false" style="padding: 16px">
+    <van-grid :column-num="2" :border="false" class="stats-grid">
       <van-grid-item>
         <div class="stat-item">
           <van-icon name="friends" size="32" color="#07c160" />
@@ -203,6 +203,10 @@ function formatTime(timestamp: number): string {
 .mobile-admin-dashboard {
   min-height: 100vh;
   background: var(--van-gray-1);
+
+  .stats-grid {
+    padding: 16px;
+  }
 
   .stat-item {
     display: flex;
