@@ -40,7 +40,7 @@
     <n-card v-if="qrData">
       <n-space vertical :size="8">
         <div>请用另一设备扫描二维码完成验证</div>
-        <img :src="qrData" alt="QR" style="max-width: 220px; border-radius: 8px" />
+        <img :src="qrData" alt="QR" class="qr-image" />
         <n-space>
           <n-button type="primary" @click="confirmQr">确认完成</n-button>
           <n-button tertiary @click="cancelQr">取消</n-button>
@@ -240,3 +240,10 @@ const autoRepair = async () => {
   }
 }
 </script>
+
+<style scoped>
+.qr-image {
+  max-width: 220px;
+  border-radius: 8px;
+}
+</style>
