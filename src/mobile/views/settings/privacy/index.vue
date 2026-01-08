@@ -27,7 +27,7 @@
             v-model:value="form.targetId"
             :placeholder="t('setting.privacy.target_id_placeholder')"
             clearable
-            style="width: 200px"
+            class="target-id-input"
             size="medium" />
         </div>
 
@@ -39,7 +39,7 @@
           <n-select
             v-model:value="form.action"
             :options="actionOptions"
-            style="width: 140px"
+            class="action-select"
             size="medium" />
         </div>
 
@@ -267,5 +267,13 @@ const goToManage = () => {
   .n-button {
     flex-shrink: 0;
   }
+}
+
+.target-id-input {
+  width: 200px;
+}
+
+.action-select {
+  width: 140px;
 }
 </style>
