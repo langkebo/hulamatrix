@@ -1,33 +1,33 @@
 <template>
   <n-flex vertical :size="12">
     <n-flex align="center" :size="8">
-      <n-input v-model:value="q" placeholder="搜索房间名或ID" style="max-width: 240px" />
+      <n-input v-model:value="q" placeholder="搜索房间名或ID" class="search-input" />
       <n-button @click="fetchRooms" :loading="loading">刷新</n-button>
     </n-flex>
     <n-data-table :columns="columns" :data="filtered" size="small" />
     <n-flex align="center" :size="8" class="mt-8px">
-      <n-input v-model:value="roomId" placeholder="room_id" style="max-width: 260px" />
+      <n-input v-model:value="roomId" placeholder="room_id" class="room-id-input" />
       <n-select
         v-model:value="visibility"
         :options="[
           { label: 'public', value: 'public' },
           { label: 'private', value: 'private' }
         ]"
-        style="max-width: 160px" />
+        class="visibility-select" />
       <n-button @click="applyVisibility">设置目录可见性</n-button>
     </n-flex>
     <n-flex align="center" :size="8" class="mt-8px">
-      <n-input v-model:value="purgeRoomId" placeholder="room_id" style="max-width: 260px" />
+      <n-input v-model:value="purgeRoomId" placeholder="room_id" class="room-id-input" />
       <n-input-number v-model:value="purgeDays" :min="1" :max="365" />
       <n-button type="warning" @click="applyPurge">清理历史</n-button>
     </n-flex>
 
     <n-divider></n-divider>
     <n-flex align="center" :size="8">
-      <n-input v-model:value="memberRoomId" placeholder="room_id" style="max-width: 260px" />
+      <n-input v-model:value="memberRoomId" placeholder="room_id" class="room-id-input" />
       <n-button @click="fetchMembers">查看成员</n-button>
     </n-flex>
-    <n-input v-model:value="reason" placeholder="理由(可选)" style="max-width: 360px" class="mt-6px" />
+    <n-input v-model:value="reason" placeholder="理由(可选)" class="reason-input mt-6px" />
     <n-data-table :columns="memberCols" :data="pagedMembers" size="small" />
     <n-flex justify="end" class="mt-8px">
       <n-pagination
@@ -215,3 +215,21 @@ const memberCols = [
   }
 ]
 </script>
+
+<style scoped>
+.search-input {
+  max-width: 240px;
+}
+
+.room-id-input {
+  max-width: 260px;
+}
+
+.visibility-select {
+  max-width: 160px;
+}
+
+.reason-input {
+  max-width: 360px;
+}
+</style>
