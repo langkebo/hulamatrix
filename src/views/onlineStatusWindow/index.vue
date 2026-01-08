@@ -5,8 +5,7 @@
     <n-flex
       vertical
       :size="130"
-      :style="`background: linear-gradient(to bottom, ${RGBA} 0%, #f1f1f1 100%)`"
-      class="size-full p-20px box-border"
+      class="main-container size-full p-20px box-border"
       data-tauri-drag-region>
       <!-- 当前选中的状态 -->
       <n-flex justify="center" align="center" class="pt-80px" data-tauri-drag-region>
@@ -119,6 +118,10 @@ onMounted(async () => {
 })
 </script>
 <style scoped lang="scss">
+.main-container {
+  background: linear-gradient(to bottom, v-bind(RGBA) 0%, #f1f1f1 100%);
+}
+
 .status-item {
   width: 56px;
   height: 70px;
