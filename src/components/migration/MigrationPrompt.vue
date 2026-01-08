@@ -49,7 +49,7 @@
               v-model:value="scheduledTime"
               type="datetime"
               :placeholder="t('migration.prompt.schedule.placeholder')"
-              style="width: 100%"
+              class="full-width"
             />
           </n-space>
         </div>
@@ -342,5 +342,9 @@ defineExpose({
   .n-card__content {
     padding: 0;
   }
+}
+
+.full-width {
+  width: 100%;
 }
 </style>
