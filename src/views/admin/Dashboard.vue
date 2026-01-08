@@ -57,7 +57,7 @@
     </n-grid>
 
     <!-- Quick Actions -->
-    <n-card :title="t('admin.quick_actions')" :bordered="false" style="margin-top: 16px">
+    <n-card :title="t('admin.quick_actions')" :bordered="false" class="card-spacing">
       <n-space>
         <n-button type="primary" @click="handleManageUsers">
           <template #icon>
@@ -83,7 +83,7 @@
     </n-card>
 
     <!-- Recent Activity -->
-    <n-card :title="t('admin.recent_activity')" :bordered="false" style="margin-top: 16px">
+    <n-card :title="t('admin.recent_activity')" :bordered="false" class="card-spacing">
       <n-timeline>
         <n-timeline-item
           v-for="activity in recentActivities"
@@ -229,6 +229,10 @@ function formatTime(timestamp: number): string {
       font-size: 28px;
       font-weight: 600;
     }
+  }
+
+  .card-spacing {
+    margin-top: 16px;
   }
 }
 </style>
