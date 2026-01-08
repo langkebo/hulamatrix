@@ -1,12 +1,12 @@
 <template>
   <n-flex vertical :size="12">
     <n-flex justify="space-between">
-      <n-input v-model:value="q" placeholder="搜索用户" style="max-width: 240px" />
+      <n-input v-model:value="q" placeholder="搜索用户" class="search-input" />
       <n-button @click="fetchUsers" :loading="loading">刷新</n-button>
     </n-flex>
     <n-data-table :columns="columns" :data="rows" :bordered="false" size="small" />
     <n-modal v-model:show="showPwd">
-      <n-card style="max-width: 360px" title="重置密码">
+      <n-card class="password-modal" title="重置密码">
         <n-input v-model:value="pwd" type="password" placeholder="新密码" />
         <n-flex class="mt-10px" justify="end" :size="8">
           <n-button tertiary @click="showPwd = false">取消</n-button>
@@ -15,7 +15,7 @@
       </n-card>
     </n-modal>
     <n-modal v-model:show="showDevices">
-      <n-card style="max-width: 640px" title="设备列表">
+      <n-card class="devices-modal" title="设备列表">
         <n-data-table :columns="deviceCols" :data="pagedDevices" size="small" />
         <n-flex justify="end" class="mt-8px">
           <n-pagination
@@ -190,3 +190,20 @@ const deviceCols: DataTableColumns<AdminDevice> = [
   }
 ]
 </script>
+
+<style scoped>
+/* 搜索输入框 */
+.search-input {
+  max-width: 240px;
+}
+
+/* 密码重置模态框 */
+.password-modal {
+  max-width: 360px;
+}
+
+/* 设备列表模态框 */
+.devices-modal {
+  max-width: 640px;
+}
+</style>
