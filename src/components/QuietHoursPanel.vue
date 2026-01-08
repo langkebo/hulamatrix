@@ -1,8 +1,8 @@
 <template>
   <div class="p-12px">
     <n-space align="center" :size="8">
-      <n-input v-model:value="start" placeholder="开始 HH:MM" style="width: 120px" />
-      <n-input v-model:value="end" placeholder="结束 HH:MM" style="width: 120px" />
+      <n-input v-model:value="start" placeholder="开始 HH:MM" class="time-input" />
+      <n-input v-model:value="end" placeholder="结束 HH:MM" class="time-input" />
       <n-button type="primary" @click="save">保存静音时段</n-button>
     </n-space>
     <div class="mt-8px">{{ tip }}</div>
@@ -28,4 +28,9 @@ const save = () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 时间输入框 */
+.time-input {
+  width: 120px;
+}
+</style>
