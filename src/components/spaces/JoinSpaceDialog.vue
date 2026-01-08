@@ -4,7 +4,7 @@
     :mask-closable="false"
     preset="dialog"
     title="加入工作区"
-    style="width: 500px; max-height: 90vh; overflow: hidden;"
+    class="join-space-modal"
     :style="{ width: isMobile() ? '100%' : '500px' }"
   >
     <div class="join-space-dialog" :class="{ 'is-mobile': isMobile }">
@@ -194,7 +194,7 @@
     preset="dialog"
     type="success"
     title="申请已提交"
-    style="width: 400px">
+    class="success-modal">
     <div class="success-content">
       <n-result status="success" title="申请已成功提交">
         <template #footer>
@@ -440,6 +440,16 @@ const dialog = useDialog()
 </script>
 
 <style lang="scss" scoped>
+.join-space-modal {
+  width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.success-modal {
+  width: 400px;
+}
+
 .join-space-dialog {
   .space-info {
     display: flex;
