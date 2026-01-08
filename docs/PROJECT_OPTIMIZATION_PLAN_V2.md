@@ -426,7 +426,7 @@ src/
 
 ### 阶段 6: 剩余内联样式清理 (优先级: 🟢 低) 🟡 部分完成
 
-**状态**: ✅ 已清理 6 个文件
+**状态**: ✅ 已清理 9 个文件
 
 **已清理文件**:
 1. `src/mobile/views/media/MediaCache.vue`
@@ -450,10 +450,18 @@ src/
 6. `src/views/moreWindow/settings/Notification.vue`
    - 替换 13 处内联样式为 CSS 类
    - 添加 `.search-input`, `.group-scrollbar`, `.keyword-input`, `.preset-select`, `.pagination`, `.page-control`, `.hidden-input`, `.time-picker`, `.preset-input` 类
+7. `src/mobile/views/chat/ChatSetting.vue`
+   - 替换 8 处内联样式为 CSS 类
+   - 添加 `.header-bar`, `.avatar-container`, `.divider-bottom`, `.name-input`, `.remark-input` 类
+8. `src/views/admin/AdminRooms.vue`
+   - 替换 6 处内联样式为 CSS 类
+   - 添加 `.search-input`, `.room-id-input`, `.visibility-select`, `.reason-input` 类
+9. `src/views/rooms/Manage.vue`
+   - 替换 5 处内联样式为 CSS 类
+   - 添加 `.room-select`, `.room-name-input`, `.room-topic-input`, `.skeleton-item`, `.invite-input` 类
+   - 保留响应式 clamp() 模式
 
 **待清理文件** (较低优先级):
-- `src/mobile/views/chat/ChatSetting.vue` (8 处)
-- `src/views/admin/AdminRooms.vue` (6 处)
 - 多个文件包含 5 处内联样式
 - 其他 ~15 个文件
 
@@ -475,7 +483,7 @@ src/
 - [x] 修复主要 v-for key 问题
 - [ ] 优化所有复杂 computed 属性
 - [ ] 减少不必要的 watch
-- [x] 清理部分内联样式 (6 个文件)
+- [x] 清理部分内联样式 (9 个文件)
 
 ### 第 3-4 周: 大文件重构
 - [ ] 拆分 2-3 个超大组件
@@ -538,11 +546,11 @@ src/
 
 ---
 
-**文档版本**: v2.4
+**文档版本**: v2.5
 **创建日期**: 2025-01-08
 **最后更新**: 2025-01-08
 **负责人**: Claude Code
 **更新说明**:
 - ✅ Phase 2: 内存泄漏修复 - 已验证完成
 - ✅ Phase 3 (部分): v-for key 问题 - 已修复 13 个关键文件
-- ✅ Phase 6 (部分): 内联样式清理 - 已清理 6 个文件 (共 35 处内联样式)
+- ✅ Phase 6 (部分): 内联样式清理 - 已清理 9 个文件 (共 54 处内联样式)
