@@ -8,7 +8,6 @@
       :title="title"
       :bordered="false"
       size="small"
-      style="max-width: 500px"
       class="user-profile-card"
     >
       <template #header-extra>
