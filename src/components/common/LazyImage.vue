@@ -7,6 +7,7 @@
  */
 
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { logger } from '@/utils/logger'
 import { matrixThumbnailService } from '@/services/matrixThumbnailService'
 import type { LazyLoadOptions } from '@/services/matrixThumbnailService'
 
@@ -113,7 +114,7 @@ async function loadImage() {
 
     emit('loaded', new Event('load') as Event)
   } catch (error) {
-    console.error('[LazyImage] Failed to load image:', error)
+    logger.error('[LazyImage] Failed to load image:', error)
     hasError.value = true
     loading.value = false
     emit('error', error as Event)
@@ -230,24 +231,23 @@ defineExpose({
 </script>
 
 <template>
-  <div class="lazy-image-wrapper" :style="{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }">
+  <div
+    class="lazy-image-wrapper"
+    :style="{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }">
     <!-- Placeholder -->
     <img
       v-if="placeholderUrl && !loaded && !hasError"
       :src="placeholderUrl"
       :alt="alt"
       class="lazy-image-placeholder"
-      :style="{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined, objectFit: fit }"
-    />
+      :style="{
+        width: width ? `${width}px` : undefined,
+        height: height ? `${height}px` : undefined,
+        objectFit: fit
+      }" />
 
     <!-- Actual image -->
-    <img
-      ref="imageRef"
-      :src="currentUrl"
-      :alt="alt"
-      :style="imageStyle"
-      class="lazy-image"
-    />
+    <img ref="imageRef" :src="currentUrl" :alt="alt" :style="imageStyle" class="lazy-image" />
 
     <!-- Loading indicator -->
     <div v-if="loading && !loaded" class="lazy-image-loading">

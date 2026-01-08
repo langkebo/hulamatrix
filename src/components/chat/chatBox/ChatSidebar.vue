@@ -135,7 +135,7 @@ import { logger } from '@/utils/logger'
             trigger="click"
             placement="left"
             :show-arrow="false"
-            style="padding: 0; background: var(--bg-info)">
+            class="chat-sidebar-popover">
             <template #trigger>
               <ContextMenu
                 :content="item"
@@ -622,4 +622,9 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/chat-sidebar';
+
+.chat-sidebar-popover {
+  padding: 0;
+  background: var(--bg-info);
+}
 </style>

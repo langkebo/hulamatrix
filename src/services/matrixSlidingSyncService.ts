@@ -26,6 +26,7 @@ import type {
 // Note: SlidingSync is not exported from the main SDK index, need to import from sliding-sync module
 import type * as SlidingSyncTypes from 'matrix-js-sdk/lib/sliding-sync'
 import type * as SlidingSyncSdkTypes from 'matrix-js-sdk/lib/sliding-sync-sdk'
+import type { MatrixClient } from 'matrix-js-sdk'
 
 /**
  * List data structure for tracking rooms in a list
@@ -55,6 +56,26 @@ interface FriendData {
   category_id?: number
   category_name?: string
   category_color?: string
+}
+
+/**
+ * FriendsClient V2 interface (minimized)
+ */
+interface FriendsClientV2 {
+  listFriends(): Promise<FriendData[]>
+  [key: string]: unknown
+}
+
+/**
+ * Extended Matrix client with Friends API
+ */
+interface ExtendedMatrixClient {
+  friendsV2?: FriendsClientV2
+  getRoom?(roomId: string): { roomId: string } | null | undefined
+  getDeviceId?(): string
+  getUserId?(): string
+  getRooms?(): { roomId: string }[]
+  [key: string]: unknown
 }
 
 /**
@@ -126,7 +147,7 @@ export class MatrixSlidingSyncService {
       this.proxyUrl = proxyUrl
 
       // 获取 Matrix 客户端
-      const client = await this.getMatrixClient()
+      const client = (await this.getMatrixClient()) as MatrixClient
       if (!client) {
         throw new Error('Matrix client not available')
       }
@@ -515,13 +536,13 @@ export class MatrixSlidingSyncService {
    */
   async getDMListWithFriendInfo(): Promise<DMWithFriendInfo[]> {
     try {
-      const client = await this.getMatrixClient()
+      const client = (await this.getMatrixClient()) as ExtendedMatrixClient | null
       if (!client) {
         return []
       }
 
       // 获取 FriendsClient (如果可用)
-      const friends = (client as any).friendsV2
+      const friends = client.friendsV2
       if (!friends) {
         logger.warn('[SlidingSyncService] FriendsClient not available')
         return []
@@ -857,7 +878,7 @@ export class MatrixSlidingSyncService {
   /**
    * Get Matrix client
    */
-  private async getMatrixClient(): Promise<any> {
+  private async getMatrixClient(): Promise<unknown> {
     return matrixClientService.getClient()
   }
 
@@ -865,7 +886,7 @@ export class MatrixSlidingSyncService {
    * Get DM room list
    */
   private async getDMRoomList(): Promise<MSC3575RoomData[]> {
-    const client = await this.getMatrixClient()
+    const client = (await this.getMatrixClient()) as MatrixClient | null
     if (!client) return []
 
     const rooms = client.getRooms?.() || []
@@ -877,11 +898,11 @@ export class MatrixSlidingSyncService {
         dmRooms.push({
           room_id: room.roomId,
           name: room.name || '',
-          avatar_url: room.avatarUrl || undefined,
+          avatar_url: (room as unknown as Record<string, unknown>).avatarUrl as string | undefined,
           is_dm: true,
           updated: Date.now(),
-          required_state: {} as Record<string, unknown>,
-          timeline: [] as any[]
+          required_state: {} as Record<string, unknown>[],
+          timeline: [] as Record<string, unknown>[]
         })
       }
     }

@@ -399,11 +399,10 @@ watch(
     v-model:show="show"
     preset="card"
     title="Upload Room Avatar"
-    :style="{ width: '500px' }"
+    class="modal-medium"
     :mask-closable="false"
     :segmented="{ content: 'soft' }"
-    @after-leave="reset"
-  >
+    @after-leave="reset">
     <template #header-extra>
       <NTooltip>
         <template #trigger>
@@ -419,32 +418,18 @@ watch(
 
     <div class="avatar-cropper">
       <!-- Error Alert -->
-      <NAlert
-        v-if="hasError"
-        type="error"
-        :title="error"
-        closable
-        @close="error = ''"
-        style="margin-bottom: 16px"
-      />
+      <NAlert v-if="hasError" type="error" :title="error" closable @close="error = ''" class="alert-spacing" />
 
       <!-- File Upload -->
       <div v-if="!hasImage" class="upload-section">
-        <NUpload
-          :show-file-list="false"
-          :custom-request="handleFileSelect"
-          accept="image/*"
-          :disabled="isProcessing"
-        >
+        <NUpload :show-file-list="false" :custom-request="handleFileSelect" accept="image/*" :disabled="isProcessing">
           <div class="upload-area">
             <NIcon size="64" color="#999">
               <CloudUpload />
             </NIcon>
             <div class="upload-text">
-              <div style="font-weight: 500; margin-bottom: 8px">Click or drag to upload</div>
-              <div style="font-size: 12px; color: #999">
-                PNG, JPG, GIF up to 10MB
-              </div>
+              <div class="upload-title">Click or drag to upload</div>
+              <div class="upload-subtitle">PNG, JPG, GIF up to 10MB</div>
             </div>
           </div>
         </NUpload>
@@ -454,32 +439,30 @@ watch(
       <template v-else>
         <!-- Crop Shape Selection -->
         <div class="shape-selector">
-          <div style="font-size: 13px; font-weight: 500; margin-bottom: 8px">Shape</div>
+          <div class="shape-label">Shape</div>
           <NRadioGroup v-model:value="cropShape" size="small">
             <NSpace>
               <NRadio value="square">
-                <div style="display: flex; align-items: center; gap: 6px">
+                <div class="flex-row">
                   <div
                     :style="{
                       width: '16px',
                       height: '16px',
                       border: '2px solid currentColor',
                       borderRadius: '3px'
-                    }"
-                  />
+                    }" />
                   Square
                 </div>
               </NRadio>
               <NRadio value="circle">
-                <div style="display: flex; align-items: center; gap: 6px">
+                <div class="flex-row">
                   <div
                     :style="{
                       width: '16px',
                       height: '16px',
                       border: '2px solid currentColor',
                       borderRadius: '50%'
-                    }"
-                  />
+                    }" />
                   Circle
                 </div>
               </NRadio>
@@ -497,8 +480,7 @@ watch(
             @mouseleave="handleMouseUp"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
-            @touchend="handleTouchEnd"
-          >
+            @touchend="handleTouchEnd">
             <img v-if="imageUrl" :src="imageUrl" :style="imageStyle" alt="Preview" />
             <div v-if="isDragging" class="drag-overlay">
               <NIcon size="32"><Crop /></NIcon>
@@ -508,45 +490,36 @@ watch(
 
         <!-- Zoom Control -->
         <div class="zoom-control">
-          <div style="display: flex; align-items: center; gap: 12px">
-            <span style="font-size: 13px; min-width: 40px">Zoom</span>
+          <div class="flex-row-wide">
+            <span class="zoom-label">Zoom</span>
             <NSlider
               :value="imagePosition.scale * 100"
               :min="10"
               :max="300"
               :step="5"
-              style="flex: 1"
-              @update:value="handleZoomChange"
-            />
-            <span style="font-size: 12px; min-width: 40px; text-align: right">
-              {{ Math.round(imagePosition.scale * 100) }}%
-            </span>
+              class="flex-1"
+              @update:value="handleZoomChange" />
+            <span class="zoom-value">{{ Math.round(imagePosition.scale * 100) }}%</span>
           </div>
         </div>
 
         <!-- Instructions -->
-        <NAlert type="info" :bordered="false" style="font-size: 12px; margin-top: 16px">
-          Drag to reposition, use slider to zoom. The {{ cropShape }} area will be used as the room
-          avatar.
+        <NAlert type="info" :bordered="false" class="info-alert">
+          Drag to reposition, use slider to zoom. The {{ cropShape }} area will be used as the room avatar.
         </NAlert>
       </template>
     </div>
 
     <!-- Actions -->
     <template #footer>
-      <NSpace justify="end" style="width: 100%">
+      <NSpace justify="end" class="width-full">
         <NButton @click="handleCancel" :disabled="isUploading">
           <template #icon>
             <NIcon><X /></NIcon>
           </template>
           Cancel
         </NButton>
-        <NButton
-          type="primary"
-          :disabled="!hasImage"
-          :loading="isUploading"
-          @click="cropAndUpload"
-        >
+        <NButton type="primary" :disabled="!hasImage" :loading="isUploading" @click="cropAndUpload">
           <template #icon>
             <NIcon><Check /></NIcon>
           </template>
@@ -630,5 +603,66 @@ img {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+}
+
+/* Inline style replacements */
+.modal-medium {
+  width: 500px;
+}
+
+.alert-spacing {
+  margin-bottom: 16px;
+}
+
+.upload-title {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.upload-subtitle {
+  font-size: 12px;
+  color: #999;
+}
+
+.shape-label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flex-row-wide {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zoom-label {
+  font-size: 13px;
+  min-width: 40px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.zoom-value {
+  font-size: 12px;
+  min-width: 40px;
+  text-align: right;
+}
+
+.info-alert {
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.width-full {
+  width: 100%;
 }
 </style>

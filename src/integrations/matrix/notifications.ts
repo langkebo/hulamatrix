@@ -84,8 +84,14 @@ export function setupMatrixNotificationBridge() {
     }
   }
 
-  const getUserIdMethod = client.getUserId as (() => string) | undefined
-  const myUserId = getUserIdMethod?.() || ''
+  let myUserId = ''
+  try {
+    const getUserIdMethod = client.getUserId as (() => string) | undefined
+    myUserId = getUserIdMethod?.() || ''
+  } catch (error) {
+    logger.warn('[MatrixNotificationBridge] Could not get user ID, using empty string', { error })
+    myUserId = ''
+  }
 
   const shouldNotify = (ev: MatrixEventLike): boolean => {
     try {

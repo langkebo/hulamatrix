@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-scrollbar style="max-height: 280px">
+    <n-scrollbar class="plugins-scrollbar">
       <n-flex :size="26" class="z-10 p-[18px_18px_36px_18px] box-border w-full">
         <template v-for="(plugin, index) in allPlugins" :key="index">
           <Transition name="state-change" mode="out-in">
@@ -101,7 +101,7 @@
               <n-popover
                 v-if="plugin.state === PluginEnum.INSTALLED || index === isCurrently"
                 :show="isCurrently === index"
-                style="padding: 0"
+                class="popover-no-padding"
                 :show-arrow="false"
                 trigger="click"
                 placement="bottom">
@@ -266,6 +266,15 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/global/variable.scss' as *;
+
+.plugins-scrollbar {
+  max-height: 280px;
+}
+
+.popover-no-padding {
+  padding: 0;
+}
+
 .box {
   @apply relative select-none custom-shadow cursor-pointer size-fit w-100px h-100px rounded-8px overflow-hidden;
   transition: all 0.3s ease-in-out;

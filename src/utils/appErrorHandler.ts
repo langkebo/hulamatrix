@@ -176,7 +176,7 @@ export async function withAppCheck<T>(
 /**
  * 创建带应用状态检查的异步函数包装器
  */
-export function createAppCheckedOperation<T extends (...args: any[]) => any>(
+export function createAppCheckedOperation<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   options: ErrorHandlerOptions = {}
 ): T {

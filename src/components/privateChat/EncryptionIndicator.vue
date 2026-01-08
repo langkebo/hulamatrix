@@ -76,6 +76,7 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
+import { logger } from '@/utils/logger'
 import { NTooltip, NProgress, NBadge } from 'naive-ui'
 import type { EncryptionStatus } from '@/types/private-chat-security'
 import { EncryptionLevel } from '@/types/private-chat-security'
@@ -152,7 +153,7 @@ const refreshStatus = async () => {
     // 获取安全警告
     warnings.value = (await e2eeService.getSecurityWarnings?.(props.sessionId)) || []
   } catch (error) {
-    console.error('Failed to refresh encryption status:', error)
+    logger.error('Failed to refresh encryption status:', error)
   }
 }
 

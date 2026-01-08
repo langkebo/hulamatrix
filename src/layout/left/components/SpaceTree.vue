@@ -11,14 +11,12 @@
       <div class="space-header" @click="handleSpaceClick(currentSpace)">
         <div class="flex items-center gap-8px">
           <!-- Expand/collapse icon -->
-          <svg
-            class="size-12px transition-transform"
-            :class="{ 'rotate-90deg': isExpanded(currentSpace.roomId) }">
+          <svg class="size-12px transition-transform" :class="{ 'rotate-90deg': isExpanded(currentSpace.roomId) }">
             <use href="#arrow-right"></use>
           </svg>
 
           <!-- Space avatar -->
-          <n-avatar :size="32" round :src="currentSpace.avatar">
+          <n-avatar :size="32" round :src="currentSpace.avatar" color="#00BFA5">
             <template #fallback>
               <svg class="size-full">
                 <use href="#space"></use>

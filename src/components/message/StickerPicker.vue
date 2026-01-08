@@ -426,17 +426,11 @@ watch(
     v-model:show="show"
     preset="card"
     title="Send Sticker"
-    :style="{ width: '500px', maxHeight: '70vh' }"
+    class="modal-container"
     :mask-closable="true"
-    :segmented="{ content: 'soft' }"
-  >
+    :segmented="{ content: 'soft' }">
     <template #header-extra>
-      <NUpload
-        :show-file-list="false"
-        :custom-request="handleUpload"
-        accept="image/*"
-        :disabled="isUploading"
-      >
+      <NUpload :show-file-list="false" :custom-request="handleUpload" accept="image/*" :disabled="isUploading">
         <NButton size="tiny" circle :loading="isUploading">
           <template #icon>
             <NIcon><Plus /></NIcon>
@@ -448,12 +442,7 @@ watch(
     <div class="sticker-picker">
       <!-- Search -->
       <div class="sticker-search">
-        <NInput
-          v-model:value="searchQuery"
-          placeholder="Search stickers..."
-          clearable
-          size="small"
-        >
+        <NInput v-model:value="searchQuery" placeholder="Search stickers..." clearable size="small">
           <template #prefix>
             <NIcon size="16"><MoodHappy /></NIcon>
           </template>
@@ -464,7 +453,7 @@ watch(
       <NTabs v-model:value="activeTab" type="line" animated>
         <NTabPane name="recent" tab="Recent">
           <template #tab>
-            <div style="display: flex; align-items: center; gap: 6px">
+            <div class="tab-label">
               <NIcon size="16"><Clock /></NIcon>
               <span>Recent</span>
               <NTag v-if="recentStickers.length > 0" size="small" :bordered="false">
@@ -476,7 +465,7 @@ watch(
 
         <NTabPane name="favorites" tab="Favorites">
           <template #tab>
-            <div style="display: flex; align-items: center; gap: 6px">
+            <div class="tab-label">
               <NIcon size="16"><Star /></NIcon>
               <span>Favorites</span>
               <NTag v-if="favoriteStickers.length > 0" size="small" :bordered="false">
@@ -488,7 +477,7 @@ watch(
 
         <NTabPane name="library" tab="Library">
           <template #tab>
-            <div style="display: flex; align-items: center; gap: 6px">
+            <div class="tab-label">
               <NIcon size="16"><MoodHappy /></NIcon>
               <span>Library</span>
               <NTag size="small" :bordered="false">
@@ -501,7 +490,7 @@ watch(
 
       <!-- Stickers Grid -->
       <div class="stickers-content">
-        <NScrollbar style="max-height: 400px">
+        <NScrollbar class="scrollable-area">
           <div v-if="displayedStickers.length === 0" class="stickers-empty">
             <NEmpty description="No stickers found" size="small" />
           </div>
@@ -517,9 +506,7 @@ watch(
 
     <!-- Upload Hint -->
     <div v-if="activeTab === 'library'" class="sticker-upload-hint">
-      <NText depth="3" style="font-size: 11px">
-        💡 Click the + button in the header to upload custom stickers
-      </NText>
+      <NText depth="3" class="hint-text">💡 Click the + button in the header to upload custom stickers</NText>
     </div>
   </NModal>
 </template>
@@ -587,6 +574,26 @@ watch(
   text-align: center;
   border-top: 1px solid var(--n-border-color);
   margin-top: 8px;
+}
+
+/* Inline style replacements */
+.modal-container {
+  width: 500px;
+  max-height: 70vh;
+}
+
+.tab-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scrollable-area {
+  max-height: 400px;
+}
+
+.hint-text {
+  font-size: 11px;
 }
 
 :deep(.n-image img) {

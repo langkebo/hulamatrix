@@ -352,10 +352,9 @@ watch(
     v-model:show="show"
     preset="card"
     title="推送规则设置"
-    :style="{ width: '900px', maxHeight: '80vh' }"
+    class="modal-container"
     :mask-closable="false"
-    :segmented="{ content: 'soft' }"
-  >
+    :segmented="{ content: 'soft' }">
     <template #header-extra>
       <NSpace align="center">
         <!-- Sync status -->
@@ -369,7 +368,7 @@ watch(
         </NTooltip>
 
         <!-- Last sync time -->
-        <NText v-if="lastSyncTime" depth="3" style="font-size: 12px">
+        <NText v-if="lastSyncTime" depth="3" class="text-small">
           {{ lastSyncTime }}
         </NText>
 
@@ -379,8 +378,7 @@ watch(
           circle
           size="small"
           :loading="pushRulesStore.syncStatus === 'syncing'"
-          @click="handleManualSync"
-        >
+          @click="handleManualSync">
           <template #icon>
             <NIcon>
               <Refresh />
@@ -391,17 +389,10 @@ watch(
     </template>
 
     <!-- Error Alert -->
-    <NAlert
-      v-if="error"
-      type="error"
-      :title="error"
-      closable
-      @close="error = ''"
-      style="margin-bottom: 16px"
-    />
+    <NAlert v-if="error" type="error" :title="error" closable @close="error = ''" class="mb-16" />
 
     <!-- Loading Skeleton -->
-    <NSkeleton v-if="isLoading" :n="10" style="margin-top: 16px" />
+    <NSkeleton v-if="isLoading" :n="10" class="mt-16" />
 
     <!-- Settings Content -->
     <template v-else>
@@ -413,53 +404,44 @@ watch(
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">
-                  <NIcon size="18" :style="{ marginRight: '8px' }">
+                  <NIcon size="18" class="icon-spacing">
                     <Bell />
                   </NIcon>
                   <span>启用通知</span>
                 </div>
                 <NSwitch v-model:value="settings.globalEnabled" :disabled="isSaving" />
               </div>
-              <div class="setting-description">
-                全局启用或禁用所有通知
-              </div>
+              <div class="setting-description">全局启用或禁用所有通知</div>
             </div>
 
             <!-- Auto-sync toggle -->
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">
-                  <NIcon size="18" :style="{ marginRight: '8px' }">
+                  <NIcon size="18" class="icon-spacing">
                     <RefreshAlert />
                   </NIcon>
                   <span>自动同步</span>
                 </div>
-                <NSwitch
-                  :model-value="pushRulesStore.autoSyncEnabled"
-                  @update:value="toggleAutoSync"
-                />
+                <NSwitch :model-value="pushRulesStore.autoSyncEnabled" @update:value="toggleAutoSync" />
               </div>
-              <div class="setting-description">
-                自动同步服务器推送规则变更
-              </div>
+              <div class="setting-description">自动同步服务器推送规则变更</div>
             </div>
 
-            <NDivider style="margin: 20px 0" />
+            <NDivider class="divider-spacing" />
 
             <!-- Sound settings -->
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">
-                  <NIcon size="18" :style="{ marginRight: '8px' }">
+                  <NIcon size="18" class="icon-spacing">
                     <Volume />
                   </NIcon>
                   <span>通知声音</span>
                 </div>
                 <NSwitch v-model:value="settings.messageSound" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                收到通知时播放声音
-              </div>
+              <div class="setting-description">收到通知时播放声音</div>
             </div>
 
             <!-- Desktop notifications -->
@@ -468,40 +450,27 @@ watch(
                 <div class="setting-title">桌面通知</div>
                 <NSwitch
                   v-model:value="settings.desktopNotifications"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                  :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                在桌面显示通知
-              </div>
+              <div class="setting-description">在桌面显示通知</div>
             </div>
 
             <!-- Mobile notifications -->
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">移动端通知</div>
-                <NSwitch
-                  v-model:value="settings.mobileNotifications"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                <NSwitch v-model:value="settings.mobileNotifications" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                在移动设备显示推送通知
-              </div>
+              <div class="setting-description">在移动设备显示推送通知</div>
             </div>
 
             <!-- Show previews -->
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">显示消息预览</div>
-                <NSwitch
-                  v-model:value="settings.showPreviews"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                <NSwitch v-model:value="settings.showPreviews" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                在通知中显示消息内容预览
-              </div>
+              <div class="setting-description">在通知中显示消息内容预览</div>
             </div>
           </NSpace>
         </NTabPane>
@@ -513,19 +482,14 @@ watch(
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">
-                  <NIcon size="18" :style="{ marginRight: '8px' }">
+                  <NIcon size="18" class="icon-spacing">
                     <Key />
                   </NIcon>
                   <span>@提及高亮</span>
                 </div>
-                <NSwitch
-                  v-model:value="settings.highlightMentions"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                <NSwitch v-model:value="settings.highlightMentions" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                当有人@你时高亮通知
-              </div>
+              <div class="setting-description">当有人@你时高亮通知</div>
             </div>
 
             <!-- Keyword highlights -->
@@ -534,14 +498,9 @@ watch(
                 <div class="setting-title">
                   <span>关键词高亮</span>
                 </div>
-                <NSwitch
-                  v-model:value="settings.highlightKeywords"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                <NSwitch v-model:value="settings.highlightKeywords" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                包含特定关键词时高亮通知
-              </div>
+              <div class="setting-description">包含特定关键词时高亮通知</div>
 
               <div v-if="settings.highlightKeywords" class="setting-content">
                 <div class="keyword-list">
@@ -554,24 +513,20 @@ watch(
                       closable
                       type="info"
                       size="medium"
-                      @close="removeKeyword(keyword)"
-                    >
+                      @close="removeKeyword(keyword)">
                       {{ keyword }}
                     </NTag>
                   </NSpace>
                 </div>
 
-                <div style="margin-top: 12px; display: flex; gap: 8px">
+                <div class="keyword-input-container">
                   <NInput
                     v-model:value="newKeywordInput"
                     placeholder="添加关键词..."
                     :disabled="isSaving"
                     @keyup.enter="addKeyword"
-                    style="flex: 1"
-                  />
-                  <NButton :disabled="isSaving || !newKeywordInput.trim()" @click="addKeyword">
-                    添加
-                  </NButton>
+                    class="flex-1" />
+                  <NButton :disabled="isSaving || !newKeywordInput.trim()" @click="addKeyword">添加</NButton>
                 </div>
               </div>
             </div>
@@ -584,42 +539,25 @@ watch(
             <div class="setting-section">
               <div class="setting-header">
                 <div class="setting-title">
-                  <NIcon size="18" :style="{ marginRight: '8px' }">
+                  <NIcon size="18" class="icon-spacing">
                     <Clock />
                   </NIcon>
                   <span>启用静默时间</span>
                 </div>
-                <NSwitch
-                  v-model:value="settings.quietHoursEnabled"
-                  :disabled="!settings.globalEnabled || isSaving"
-                />
+                <NSwitch v-model:value="settings.quietHoursEnabled" :disabled="!settings.globalEnabled || isSaving" />
               </div>
-              <div class="setting-description">
-                在指定时间段内静音所有通知
-              </div>
+              <div class="setting-description">在指定时间段内静音所有通知</div>
 
               <div v-if="settings.quietHoursEnabled" class="setting-content">
                 <NSpace align="center">
-                  <div style="flex: 1">
-                    <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px">
-                      开始时间
-                    </label>
-                    <NInput
-                      v-model:value="settings.quietHoursStart"
-                      placeholder="22:00"
-                      :disabled="isSaving"
-                    />
+                  <div class="flex-1">
+                    <label class="label-text">开始时间</label>
+                    <NInput v-model:value="settings.quietHoursStart" placeholder="22:00" :disabled="isSaving" />
                   </div>
 
-                  <div style="flex: 1">
-                    <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px">
-                      结束时间
-                    </label>
-                    <NInput
-                      v-model:value="settings.quietHoursEnd"
-                      placeholder="08:00"
-                      :disabled="isSaving"
-                    />
+                  <div class="flex-1">
+                    <label class="label-text">结束时间</label>
+                    <NInput v-model:value="settings.quietHoursEnd" placeholder="08:00" :disabled="isSaving" />
                   </div>
                 </NSpace>
               </div>
@@ -632,8 +570,8 @@ watch(
           <NSpace vertical size="large">
             <!-- Muted rooms -->
             <div class="setting-section">
-              <div class="setting-title" style="margin-bottom: 12px">
-                <NIcon size="18" :style="{ marginRight: '8px' }">
+              <div class="setting-title mb-12">
+                <NIcon size="18" class="icon-spacing">
                   <Building />
                 </NIcon>
                 <span>已静音房间 ({{ mutedRoomsList.length }})</span>
@@ -650,25 +588,18 @@ watch(
                   </template>
                   <NText>{{ room.name || room.id }}</NText>
                   <template #suffix>
-                    <NButton
-                      text
-                      type="error"
-                      size="small"
-                      @click="unmuteRoom(room.id)"
-                    >
-                      取消静音
-                    </NButton>
+                    <NButton text type="error" size="small" @click="unmuteRoom(room.id)">取消静音</NButton>
                   </template>
                 </NListItem>
               </NList>
             </div>
 
-            <NDivider style="margin: 20px 0" />
+            <NDivider class="divider-spacing" />
 
             <!-- Muted users -->
             <div class="setting-section">
-              <div class="setting-title" style="margin-bottom: 12px">
-                <NIcon size="18" :style="{ marginRight: '8px' }">
+              <div class="setting-title mb-12">
+                <NIcon size="18" class="icon-spacing">
                   <User />
                 </NIcon>
                 <span>已静音用户 ({{ mutedUsersList.length }})</span>
@@ -685,14 +616,7 @@ watch(
                   </template>
                   <NText>{{ user.name || user.id }}</NText>
                   <template #suffix>
-                    <NButton
-                      text
-                      type="error"
-                      size="small"
-                      @click="unmuteUser(user.id)"
-                    >
-                      取消静音
-                    </NButton>
+                    <NButton text type="error" size="small" @click="unmuteUser(user.id)">取消静音</NButton>
                   </template>
                 </NListItem>
               </NList>
@@ -703,11 +627,7 @@ watch(
         <!-- Templates Tab -->
         <NTabPane name="templates" tab="规则模板">
           <NCollapse accordion>
-            <NCollapseItem
-              v-for="(templates, category) in templatesByCategory"
-              :key="category"
-              :title="category"
-            >
+            <NCollapseItem v-for="(templates, category) in templatesByCategory" :key="category" :title="category">
               <NList>
                 <NListItem v-for="template in templates" :key="template.id">
                   <template #prefix>
@@ -721,11 +641,10 @@ watch(
                             removeTemplate(template.id)
                           }
                         }
-                      "
-                    />
+                      " />
                   </template>
                   <NText strong>{{ template.name }}</NText>
-                  <NText depth="3" style="font-size: 12px; display: block">
+                  <NText depth="3" class="small-block-text">
                     {{ template.description }}
                   </NText>
                 </NListItem>
@@ -805,11 +724,9 @@ watch(
 
     <!-- Actions Footer -->
     <template #footer>
-      <NSpace justify="end" style="width: 100%">
+      <NSpace justify="end" class="width-full">
         <NButton @click="show = false" :disabled="isSaving">取消</NButton>
-        <NButton type="primary" :loading="isSaving" :disabled="!hasChanges" @click="saveSettings">
-          保存设置
-        </NButton>
+        <NButton type="primary" :loading="isSaving" :disabled="!hasChanges" @click="saveSettings">保存设置</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -864,5 +781,49 @@ watch(
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Inline style replacements */
+.modal-container {
+  width: 900px;
+  max-height: 80vh;
+}
+
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.divider-spacing {
+  margin: 20px 0;
+}
+
+.keyword-input-container {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.label-text {
+  font-size: 13px;
+  color: #666;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+
+.small-block-text {
+  font-size: 12px;
+  display: block;
+}
+
+.width-full {
+  width: 100%;
 }
 </style>

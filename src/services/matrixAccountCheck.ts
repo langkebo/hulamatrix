@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/utils/logger'
+import { getMatrixServerName } from '@/utils/matrixEnv'
 
 // 带超时的 fetch 封装（本地实现）
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 5000): Promise<Response> => {
@@ -34,6 +35,36 @@ export interface AccountCheckResult {
 }
 
 /**
+ * 获取 Matrix 服务器名称
+ * 从环境变量 VITE_MATRIX_SERVER_NAME 获取，而不是从 baseUrl 提取
+ * 例如：cjystx.top
+ */
+function getServerName(): string {
+  try {
+    return getMatrixServerName()
+  } catch {
+    return 'cjystx.top' // 默认值
+  }
+}
+
+/**
+ * 规范化 Matrix 用户名为完整格式
+ * 例如：tete -> @tete:server.com, @tete -> @tete:server.com
+ */
+function normalizeMatrixUsername(username: string, serverName: string): string {
+  // 如果已经包含完整格式 @username:server，直接返回
+  if (username.includes(':') && username.startsWith('@')) {
+    return username
+  }
+
+  // 去掉开头的 @（如果有的话）
+  const localpart = username.startsWith('@') ? username.slice(1) : username
+
+  // 构建完整的 Matrix ID
+  return `@${localpart}:${serverName}`
+}
+
+/**
  * 检查 Matrix 账户是否存在
  * 通过查询用户的 profile 来判断
  */
@@ -43,12 +74,15 @@ export async function checkMatrixAccountExists(baseUrl: string, username: string
     return false
   }
 
-  // 规范化用户名格式
-  const normalizedUsername = username.startsWith('@') ? username : `@${username}`
+  // 从环境变量获取服务器名称
+  const serverName = getServerName()
+
+  // 规范化为完整的 Matrix ID 格式
+  const fullUsername = normalizeMatrixUsername(username, serverName)
 
   try {
     // 尝试查询用户 profile
-    const url = `${baseUrl.replace(/\/$/, '')}/_matrix/client/v3/profile/${encodeURIComponent(normalizedUsername)}`
+    const url = `${baseUrl.replace(/\/$/, '')}/_matrix/client/v3/profile/${encodeURIComponent(fullUsername)}`
 
     const response = await fetchWithTimeout(url, { method: 'GET' }, 5000)
 
@@ -71,8 +105,12 @@ export async function checkUsernameAvailability(baseUrl: string, username: strin
     return false
   }
 
-  // 只使用 localpart（去掉 @ 和 :server 部分）
-  const localpart = username.startsWith('@') ? username.split(':')[0].slice(1) : username.split(':')[0]
+  // 从环境变量获取服务器名称
+  const serverName = getServerName()
+
+  // 规范化用户名，然后提取 localpart（去掉 @ 和 :server 部分）
+  const fullUsername = normalizeMatrixUsername(username, serverName)
+  const localpart = fullUsername.split(':')[0].slice(1) // 去掉 @
 
   try {
     const url = `${baseUrl.replace(/\/$/, '')}/_matrix/client/v3/register/available?username=${encodeURIComponent(localpart)}`
@@ -171,6 +209,24 @@ export async function checkMatrixAccountStatus(baseUrl: string, username: string
  */
 export async function suggestActionForLogin(baseUrl: string, username: string): Promise<MatrixAccountStatus> {
   try {
+    // 验证输入
+    if (!username || username.length < 3) {
+      return {
+        exists: false,
+        suggestedAction: 'none',
+        reason: '用户名至少需要 3 个字符'
+      }
+    }
+
+    // 验证 baseUrl
+    if (!baseUrl) {
+      return {
+        exists: false,
+        suggestedAction: 'none',
+        reason: 'Matrix 服务器配置未完成，请检查设置'
+      }
+    }
+
     const result = await checkMatrixAccountStatus(baseUrl, username)
 
     let reason: string | undefined
@@ -179,8 +235,15 @@ export async function suggestActionForLogin(baseUrl: string, username: string): 
       reason = '检测到您已有 Matrix 账户，将直接登录'
     } else if (result.suggestedAction === 'register') {
       reason = '检测到您还没有 Matrix 账户，建议先注册'
-    } else {
-      reason = '无法连接到 Matrix 服务器'
+    } else if (result.suggestedAction === 'none') {
+      // 提供更详细的错误信息
+      if (!result.exists && !result.canRegister) {
+        reason = '无法连接到 Matrix 服务器，请检查网络连接'
+      } else if (!result.canRegister) {
+        reason = '该服务器暂时不支持新用户注册'
+      } else {
+        reason = '账户状态检查失败，请稍后重试'
+      }
     }
 
     return {

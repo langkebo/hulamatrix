@@ -2,7 +2,7 @@
   <div class="server-card" :class="{ active: isActive, clickable: isClickable }" @click="handleClick">
     <!-- 服务器头像 -->
     <div class="server-avatar">
-      <n-avatar :size="48" round :src="server.avatar">
+      <n-avatar :size="48" round :src="server.avatar" color="#00BFA5">
         <template #fallback>
           <n-icon size="24">
             <Server />

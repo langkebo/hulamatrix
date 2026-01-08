@@ -23,6 +23,24 @@
   }
 }
 
+.drag-handle-inner {
+  border-radius: 8px 0 0 8px;
+  background-color: rgb(200 200 200 / 0.2);
+  height: 60px;
+  width: 14px;
+  position: absolute;
+  top: 40%;
+  right: -18px;
+  pointer-events: auto;
+  z-index: 10;
+  transition: background-color 0.2s;
+  cursor: col-resize;
+
+  &:hover {
+    background-color: rgb(200 200 200 / 0.4);
+  }
+}
+
 .add-item {
   @include menu-item-style(absolute);
   top: 36px;
@@ -98,4 +116,21 @@
     opacity 0.3s var(--n-bezier),
     background-color 0.3s var(--n-bezier),
     color 0.3s var(--n-bezier);
+}
+
+/* Search input background */
+.search-input-bg {
+  background: var(--search-bg-color);
+}
+
+/* Add panel popover */
+.popover-add-panel {
+  padding: 0;
+  background: transparent;
+  user-select: none;
+}
+
+/* Add panel button */
+.btn-add-panel {
+  padding: 0 5px;
 }

@@ -1,4 +1,5 @@
 import { setupMatrixMessageBridge } from './messages'
+import { logger } from '@/utils/logger'
 import { setupMatrixRoomBridge } from './rooms'
 import { setupMatrixNotificationBridge } from './notifications'
 import { setupMatrixMediaBridge } from './media'
@@ -59,6 +60,6 @@ export function setupMatrixBridges() {
   // Initialize enhanced v2 features (friendsV2, privateChatV2)
   // These use the new RESTful API endpoints
   setupEnhancedV2Features().catch((error) => {
-    console.error('[Matrix Bridges] Failed to setup enhanced v2 features:', error)
+    logger.error('[Matrix Bridges] Failed to setup enhanced v2 features:', error)
   })
 }

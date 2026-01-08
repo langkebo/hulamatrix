@@ -11,8 +11,7 @@
           :placeholder="isEditing ? '编辑消息...' : '输入新消息...'"
           @keydown="handleKeyDown"
           @focus="handleFocus"
-          @blur="handleBlur"
-        />
+          @blur="handleBlur" />
         <div class="edit-toolbar">
           <div class="toolbar-left">
             <!-- 格式化工具 -->
@@ -52,8 +51,7 @@
               :show-file-list="false"
               :max="5"
               @before-upload="beforeUpload"
-              @finish="handleFileUpload"
-            >
+              @finish="handleFileUpload">
               <n-button quaternary size="small">
                 <template #icon>
                   <n-icon><Paperclip /></n-icon>
@@ -71,21 +69,8 @@
 
           <div class="toolbar-right">
             <span class="char-count">{{ editContent.length }}/{{ maxLength }}</span>
-            <n-button
-              v-if="isEditing"
-              type="warning"
-              size="small"
-              @click="cancelEdit"
-            >
-              取消
-            </n-button>
-            <n-button
-              type="primary"
-              size="small"
-              @click="saveMessage"
-              :disabled="!canSave"
-              :loading="isSaving"
-            >
+            <n-button v-if="isEditing" type="warning" size="small" @click="cancelEdit">取消</n-button>
+            <n-button type="primary" size="small" @click="saveMessage" :disabled="!canSave" :loading="isSaving">
               {{ isEditing ? '保存' : '发送' }}
             </n-button>
           </div>
@@ -94,11 +79,7 @@
 
       <!-- 附件预览 -->
       <div v-if="typedAttachedFiles.length > 0" class="attached-files">
-        <div
-          v-for="file in typedAttachedFiles"
-          :key="String(file.id)"
-          class="file-item"
-        >
+        <div v-for="file in typedAttachedFiles" :key="String(file.id)" class="file-item">
           <div class="file-preview">
             <n-icon v-if="file.file?.type?.startsWith('image/')"><Photo /></n-icon>
             <n-icon v-else-if="file.file?.type?.startsWith('video/')"><Video /></n-icon>
@@ -109,12 +90,7 @@
             <div class="file-name">{{ file.name }}</div>
             <div class="file-size">{{ formatFileSize(Number(file.size || 0)) }}</div>
           </div>
-          <n-button
-            quaternary
-            circle
-            size="tiny"
-            @click="removeFile(file.id)"
-          >
+          <n-button quaternary circle size="tiny" @click="removeFile(file.id)">
             <template #icon>
               <n-icon><X /></n-icon>
             </template>
@@ -124,10 +100,7 @@
 
       <!-- 编辑历史记录 -->
       <div v-if="isEditing && editHistory.length > 0" class="edit-history">
-        <n-dropdown
-          :options="historyOptions"
-          @select="restoreFromHistory"
-        >
+        <n-dropdown :options="historyOptions" @select="restoreFromHistory">
           <n-button quaternary size="tiny">
             <template #icon>
               <n-icon><History /></n-icon>
@@ -170,8 +143,7 @@
             @keydown="handleRichKeyDown"
             @paste="handlePaste"
             @drop="handleDrop"
-            @dragover.prevent
-          ></div>
+            @dragover.prevent></div>
 
           <!-- 格式化工具栏 -->
           <div class="format-toolbar">
@@ -191,7 +163,10 @@
                   <n-icon><Underline /></n-icon>
                 </template>
               </n-button>
-              <n-button quaternary @click="execCommand('strikethrough')" :class="{ active: isCommandActive('strikethrough') }">
+              <n-button
+                quaternary
+                @click="execCommand('strikethrough')"
+                :class="{ active: isCommandActive('strikethrough') }">
                 <template #icon>
                   <n-icon><Strikethrough /></n-icon>
                 </template>
@@ -203,12 +178,18 @@
             <n-button-group>
               <n-button quaternary @click="insertHeading('h2')">H2</n-button>
               <n-button quaternary @click="insertHeading('h3')">H3</n-button>
-              <n-button quaternary @click="execCommand('insertUnorderedList')" :class="{ active: isCommandActive('insertUnorderedList') }">
+              <n-button
+                quaternary
+                @click="execCommand('insertUnorderedList')"
+                :class="{ active: isCommandActive('insertUnorderedList') }">
                 <template #icon>
                   <n-icon><List /></n-icon>
                 </template>
               </n-button>
-              <n-button quaternary @click="execCommand('insertOrderedList')" :class="{ active: isCommandActive('insertOrderedList') }">
+              <n-button
+                quaternary
+                @click="execCommand('insertOrderedList')"
+                :class="{ active: isCommandActive('insertOrderedList') }">
                 <template #icon>
                   <n-icon><ListNumbers /></n-icon>
                 </template>
@@ -263,8 +244,7 @@
               directory-dnd
               @before-upload="beforeUpload"
               @finish="handleFileUpload"
-              @remove="removeFile"
-            >
+              @remove="removeFile">
               <n-button block dashed>
                 <template #icon>
                   <n-icon><Upload /></n-icon>
@@ -277,25 +257,18 @@
           <!-- @提及 -->
           <div class="sidebar-section">
             <h4>@提及</h4>
-            <n-input
-              v-model:value="mentionSearch"
-              placeholder="搜索用户..."
-              @input="searchUsers"
-            />
+            <n-input v-model:value="mentionSearch" placeholder="搜索用户..." @input="searchUsers" />
             <div v-if="mentionResults.length > 0" class="mention-results">
-              <div
-                v-for="user in mentionResults"
-                :key="user.id"
-                class="mention-item"
-                @click="insertMention(user)"
-              >
+              <div v-for="user in mentionResults" :key="user.id" class="mention-item" @click="insertMention(user)">
                 <n-avatar
-                  v-bind="createStrictAvatarProps({
-                    src: user.avatar || null,
-                    size: 24,
-                    round: true
-                  })"
-                />
+                  v-bind="
+                    createStrictAvatarProps({
+                      src: user.avatar || null,
+                      size: 24,
+                      round: true,
+                      color: '#00BFA5'
+                    })
+                  " />
                 <span>{{ user.name }}</span>
               </div>
             </div>
@@ -304,13 +277,7 @@
           <!-- 话题标签 -->
           <div class="sidebar-section">
             <h4>#话题</h4>
-            <n-button
-              v-for="tag in popularTags"
-              :key="tag"
-              quaternary
-              size="small"
-              @click="insertTag(tag)"
-            >
+            <n-button v-for="tag in popularTags" :key="tag" quaternary size="small" @click="insertTag(tag)">
               #{{ tag }}
             </n-button>
           </div>
@@ -320,25 +287,16 @@
             <h4>选项</h4>
             <n-form :model="messageOptions" label-placement="left">
               <n-form-item label="消息类型">
-                <n-select
-                  v-model:value="messageOptions.type"
-                  :options="messageTypeOptions"
-                />
+                <n-select v-model:value="messageOptions.type" :options="messageTypeOptions" />
               </n-form-item>
               <n-form-item label="优先级">
-                <n-select
-                  v-model:value="messageOptions.priority"
-                  :options="priorityOptions"
-                />
+                <n-select v-model:value="messageOptions.priority" :options="priorityOptions" />
               </n-form-item>
               <n-form-item label="定时发送">
                 <n-switch v-model:value="messageOptions.scheduled" />
               </n-form-item>
               <n-form-item v-if="messageOptions.scheduled" label="发送时间">
-                <n-date-picker
-                  v-model:value="messageOptions.scheduledTime"
-                  type="datetime"
-                />
+                <n-date-picker v-model:value="messageOptions.scheduledTime" type="datetime" />
               </n-form-item>
             </n-form>
           </div>
@@ -349,23 +307,12 @@
       <div class="editor-footer">
         <div class="footer-left">
           <span class="char-count">{{ contentLength }}/{{ maxLength }}</span>
-          <n-tag v-if="messageOptions.scheduled" type="info" size="small">
-            定时发送
-          </n-tag>
+          <n-tag v-if="messageOptions.scheduled" type="info" size="small">定时发送</n-tag>
         </div>
         <div class="footer-right">
-          <n-button v-if="isEditing" @click="cancelEdit">
-            取消编辑
-          </n-button>
-          <n-button @click="saveDraft">
-            保存草稿
-          </n-button>
-          <n-button
-            type="primary"
-            @click="saveMessage"
-            :disabled="!canSave"
-            :loading="isSaving"
-          >
+          <n-button v-if="isEditing" @click="cancelEdit">取消编辑</n-button>
+          <n-button @click="saveDraft">保存草稿</n-button>
+          <n-button type="primary" @click="saveMessage" :disabled="!canSave" :loading="isSaving">
             {{ isEditing ? '保存编辑' : '发送消息' }}
           </n-button>
         </div>
@@ -374,25 +321,18 @@
 
     <!-- 提及对话框 -->
     <n-modal v-model:show="showMentionDialog" preset="dialog" title="选择要提及的用户">
-      <n-input
-        v-model:value="mentionSearch"
-        placeholder="搜索用户..."
-        @input="searchUsers"
-      />
+      <n-input v-model:value="mentionSearch" placeholder="搜索用户..." @input="searchUsers" />
       <div class="mention-list">
-        <div
-          v-for="user in mentionResults"
-          :key="user.id"
-          class="mention-item"
-          @click="insertInlineMention(user)"
-        >
+        <div v-for="user in mentionResults" :key="user.id" class="mention-item" @click="insertInlineMention(user)">
           <n-avatar
-              v-bind="createStrictAvatarProps({
+            v-bind="
+              createStrictAvatarProps({
                 src: user.avatar || null,
                 size: 32,
-                round: true
-              })"
-            />
+                round: true,
+                color: '#00BFA5'
+              })
+            " />
           <div class="mention-info">
             <div class="mention-name">{{ user.name }}</div>
             <div class="mention-status">{{ user.status }}</div>

@@ -4,6 +4,7 @@
  * 后端服务器: https://matrix.cjystx.top:443
  */
 
+import { logger } from '@/utils/logger'
 import type {
   FriendsApi,
   BaseOptions,
@@ -28,6 +29,7 @@ import { buildQueryString } from './utils'
 export interface MatrixClientLike {
   getAccessToken?(): string
   getUserId?(): string
+  setUserId?(userId: string): void
   getHomeserverUrl?(): string
   createRoom?(opts: {
     preset?: string
@@ -36,6 +38,8 @@ export interface MatrixClientLike {
   }): Promise<{ room_id?: string; roomId?: string }>
   getAccountData?(type: string): Promise<Record<string, string[]> | { getContent?: () => Record<string, string[]> }>
   setAccountData?(type: string, data: Record<string, string[]>): Promise<void>
+  // 动态扩展的 API
+  friends?: unknown
 }
 
 /**
@@ -200,7 +204,7 @@ export class MatrixFriendsApiExtension implements FriendsApi {
         response.dm_room_id = await this.createDM(response.requester_id)
         response.dm_note = 'DM room created by client'
       } catch (error) {
-        console.warn('[FriendsApi] Failed to create DM room:', error)
+        logger.warn('[FriendsApi] Failed to create DM room:', error)
       }
     }
 
@@ -320,7 +324,7 @@ export class MatrixFriendsApiExtension implements FriendsApi {
    */
   private async setAccountDataSafely(type: string, content: Record<string, string[]>): Promise<void> {
     if (!this.client.setAccountData) {
-      console.warn('[FriendsApi] Cannot set account data: method not available')
+      logger.warn('[FriendsApi] Cannot set account data: method not available')
       return
     }
 

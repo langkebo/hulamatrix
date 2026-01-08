@@ -102,8 +102,7 @@ export const hulaThemeOverrides = {
  * 深色模式主题配置
  */
 export function createHulaDarkTheme(): GlobalTheme {
-  return {
-    name: 'hula-dark',
+  const themeOverrides: GlobalThemeOverrides = {
     common: {
       primaryColor: '#1ec29f',
       primaryColorHover: '#4dd6b5',
@@ -143,8 +142,13 @@ export function createHulaDarkTheme(): GlobalTheme {
 
       borderColor: '#3a3a3a',
       dividerColor: '#4a4a4a'
-    } as any // 类型断言: 允许部分覆盖，Naive UI 会自动应用默认值
+    }
   }
+
+  return {
+    name: 'hula-dark',
+    ...themeOverrides
+  } as GlobalTheme
 }
 
 /**

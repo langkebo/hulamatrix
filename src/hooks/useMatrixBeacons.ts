@@ -60,7 +60,7 @@ export function useMatrixBeacons(options: UseMatrixBeaconsOptions = {}) {
       activeBeacons.value = roomBeacons.filter((b) => b.isLive && !b.isExpired)
 
       // 找到当前用户的 Beacon
-      const client = (window as any).__MATRIX_CLIENT__
+      const client = window.__MATRIX_CLIENT__
       const userId = client?.getUserId?.() || ''
       myActiveBeacon.value = activeBeacons.value.find((b) => b.ownerId === userId) || null
 

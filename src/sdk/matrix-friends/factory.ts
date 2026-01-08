@@ -65,8 +65,8 @@ export async function createEnhancedMatrixClient(config: EnhancedMatrixClientCon
   }) as unknown as MatrixClientLike
 
   // 设置 userId（如果需要）
-  if (config.userId && typeof (baseClient as any).setUserId === 'function') {
-    ;(baseClient as any).setUserId(config.userId)
+  if (config.userId && typeof baseClient.setUserId === 'function') {
+    baseClient.setUserId(config.userId)
   }
 
   // 创建 Friends API 扩展
@@ -81,7 +81,7 @@ export async function createEnhancedMatrixClient(config: EnhancedMatrixClientCon
     configurable: true // 允许在测试中重新定义
   })
 
-  return baseClient as EnhancedMatrixClient
+  return baseClient as unknown as EnhancedMatrixClient
 }
 
 /**
@@ -150,7 +150,7 @@ export function extendMatrixClient(client: MatrixClientLike, friendsApiBaseUrl?:
     configurable: true // 允许在测试中重新定义
   })
 
-  return client as EnhancedMatrixClient
+  return client as unknown as EnhancedMatrixClient
 }
 
 /**
@@ -160,5 +160,5 @@ export function extendMatrixClient(client: MatrixClientLike, friendsApiBaseUrl?:
  * @returns 是否已扩展
  */
 export function isFriendsApiEnabled(client: MatrixClientLike): boolean {
-  return 'friends' in client && typeof (client as any).friends === 'object'
+  return 'friends' in client && client.friends !== null && typeof client.friends === 'object'
 }

@@ -10,7 +10,7 @@
           openWindowsList.has(item.url) ? 'color-[--left-win-icon-color]' : 'top-action flex-col-center',
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
-        style="text-align: center"
+        class="action-item-center"
         @click="pageJumps(item.url, item.title, item.size, { resizable: !!item.window?.resizable })"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
@@ -26,7 +26,12 @@
           <p>{{ item.title }} 已打开</p>
         </n-popover>
         <!-- 该选项有提示时展示 -->
-        <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
+        <n-popover
+          class="popover-padding-12"
+          v-else-if="item.tip"
+          trigger="manual"
+          v-model:show="tipShow"
+          placement="right">
           <template #trigger>
             <n-badge :max="99" :value="item.badge" dot :show="item.dot">
               <svg class="size-22px" @click="handleTipShow(item)">
@@ -74,7 +79,7 @@
           openWindowsList.has(item.url) ? 'color-[--left-win-icon-color]' : 'top-action flex-col-center',
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
-        style="text-align: center"
+        class="action-item-center"
         @click="pageJumps(item.url, item.title, item.size, { resizable: !!item.window?.resizable })"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
@@ -90,7 +95,12 @@
           <p>{{ item.title }} 已打开</p>
         </n-popover>
         <!-- 该选项有提示时展示 -->
-        <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
+        <n-popover
+          class="popover-padding-12"
+          v-else-if="item.tip"
+          trigger="manual"
+          v-model:show="tipShow"
+          placement="right">
           <template #trigger>
             <n-badge
               :max="99"
@@ -136,11 +146,7 @@
       <!-- (独立)菜单选项 -->
       <div
         :class="showMode === ShowModeEnum.ICON ? 'top-action p-[6px_8px]' : 'top-action w-46px py-4px flex-col-center'">
-        <n-popover
-          style="padding: 8px; margin-left: 4px; background: var(--bg-setting-item)"
-          :show-arrow="false"
-          trigger="hover"
-          placement="right">
+        <n-popover class="popover-menu-setting" :show-arrow="false" trigger="hover" placement="right">
           <template #trigger>
             <svg class="size-22px">
               <use href="#menu"></use>
@@ -182,9 +188,9 @@
         :class="[
           { active: activeUrl === item.url },
           openWindowsList.has(item.url) ? 'color-[--left-win-icon-color]' : 'bottom-action flex-col-center',
-          showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
+          showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px',
+          'text-center'
         ]"
-        style="text-align: center"
         @click="pageJumps(item.url, item.title, item.size, getWindowConfig(item.window))"
         :title="item.title">
         <!-- 已经打开窗口时展示 -->
@@ -200,7 +206,12 @@
           <p>{{ item.title }} 已打开</p>
         </n-popover>
         <!-- 该选项有提示时展示 -->
-        <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
+        <n-popover
+          class="popover-padding-12"
+          v-else-if="item.tip"
+          trigger="manual"
+          v-model:show="tipShow"
+          placement="right">
           <template #trigger>
             <n-badge :max="99" :value="getBadgeValue(item.badge)">
               <svg class="size-22px" @click="tipShow = false">
@@ -230,11 +241,7 @@
 
       <!--  更多选项面板  -->
       <div :title="t('home.action.more')" :class="{ 'bottom-action py-4px': showMode === ShowModeEnum.TEXT }">
-        <n-popover
-          v-model:show="settingShow"
-          style="padding: 0; background: transparent; user-select: none"
-          :show-arrow="false"
-          trigger="click">
+        <n-popover v-model:show="settingShow" class="popover-setting-transparent" :show-arrow="false" trigger="click">
           <template #trigger>
             <svg
               :class="[
@@ -248,7 +255,7 @@
           </template>
           <div class="setting-item">
             <div class="menu-list">
-              <div v-for="(item, index) in moreList" :key="index">
+              <div v-for="item in moreList" :key="item.icon">
                 <div class="menu-item" @click="() => item.click()">
                   <svg>
                     <use :href="`#${item.icon}`"></use>
@@ -304,24 +311,33 @@ const pluginsStore = usePluginsStore()
 // REMOVED: feedStore - Moments/Feed feature removed
 const showMode = computed(() => useSettingStore().showMode)
 const menuTop = computed(() => useMenuTopStore().menuTop)
+
+/**
+ * Process menu top item - extract badge and dot values
+ */
+function processMenuItem(item: MenuTopItem) {
+  const badgeVal =
+    typeof item.badge === 'object' && item.badge ? ((item.badge as PluginBadge).count ?? 0) : (item.badge ?? 0)
+  const dotVal =
+    item.dot ?? (typeof item.badge === 'object' && item.badge ? ((item.badge as PluginBadge).dot ?? false) : false)
+
+  return {
+    badge: badgeVal,
+    tip: '',
+    dot: dotVal,
+    shortTitle: item.shortTitle ?? item.title,
+    window: { resizable: false },
+    size: undefined,
+    icon: item.icon,
+    iconAction: item.iconAction,
+    title: item.title,
+    url: item.url,
+    state: item.state
+  }
+}
+
 const menuTopProcessed = computed(() => {
-  return (menuTop.value || []).map((i: MenuTopItem) => {
-    const badgeVal = typeof i.badge === 'object' && i.badge ? ((i.badge as PluginBadge).count ?? 0) : (i.badge ?? 0)
-    const dotVal = i.dot ?? (typeof i.badge === 'object' && i.badge ? ((i.badge as PluginBadge).dot ?? false) : false)
-    return {
-      badge: badgeVal,
-      tip: '',
-      dot: dotVal,
-      shortTitle: i.shortTitle ?? i.title,
-      window: { resizable: false },
-      size: undefined,
-      icon: i.icon,
-      iconAction: i.iconAction,
-      title: i.title,
-      url: i.url,
-      state: i.state
-    }
-  })
+  return (menuTop.value || []).map(processMenuItem)
 })
 const itemsBottom = useItemsBottom()
 const plugins = computed(() => pluginsStore.plugins)
@@ -461,5 +477,25 @@ onMounted(async () => {
 .setting-item {
   left: 24px;
   bottom: -40px;
+}
+
+.action-item-center {
+  text-align: center;
+}
+
+.popover-padding-12 {
+  padding: 12px;
+}
+
+.popover-menu-setting {
+  padding: 8px;
+  margin-left: 4px;
+  background: var(--bg-setting-item);
+}
+
+.popover-setting-transparent {
+  padding: 0;
+  background: transparent;
+  user-select: none;
 }
 </style>

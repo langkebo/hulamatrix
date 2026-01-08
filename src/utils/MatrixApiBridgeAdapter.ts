@@ -10,6 +10,20 @@ import { friendsServiceV2 } from '@/services/friendsServiceV2'
 import { logger } from '@/utils/logger'
 import { matrixClientService } from '@/integrations/matrix/client'
 
+// Type definitions for Matrix SDK objects
+interface MatrixUser {
+  displayName?: string
+  avatarUrl?: string
+}
+
+interface MatrixRoom {
+  roomId: string
+  name?: string
+  getAvatarUrl?(baseUrl?: string): string
+  getJoinedMemberCount?(): number
+  getTopic?(): string
+}
+
 export async function requestWithFallback<T = unknown>(options: {
   url: string
   body?: unknown
@@ -65,11 +79,12 @@ export async function requestWithFallback<T = unknown>(options: {
           return {} as T
         }
         const user = typeof client.getUser === 'function' ? client.getUser(userId) : undefined
+        const typedUser = user as MatrixUser | undefined
         return {
           uid: userId,
           account: userId,
-          name: (user as any)?.displayName || userId.split(':')[0].substring(1),
-          avatar: (user as any)?.avatarUrl || '',
+          name: typedUser?.displayName || userId.split(':')[0].substring(1),
+          avatar: typedUser?.avatarUrl || '',
           email: '' // Matrix SDK doesn't expose email
         } as T
       } catch (error) {
@@ -86,7 +101,7 @@ export async function requestWithFallback<T = unknown>(options: {
           return [] as T
         }
         const rooms = typeof client.getRooms === 'function' ? client.getRooms() : []
-        return rooms.map((room: any) => ({
+        return rooms.map((room: MatrixRoom) => ({
           roomId: room.roomId,
           name: room.name || room.roomId,
           avatar: typeof room.getAvatarUrl === 'function' ? room.getAvatarUrl('') || '' : '',

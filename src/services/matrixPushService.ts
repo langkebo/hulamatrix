@@ -503,22 +503,29 @@ export class MatrixPushService {
    * Convert our event-like object to SDK MatrixEvent format
    * This is needed for PushProcessor.actionsForEvent()
    */
-  private convertToSdkEvent(event: MatrixEventLike, room: MatrixRoomLike): any {
+  private convertToSdkEvent(event: MatrixEventLike, room: MatrixRoomLike): unknown {
     const client = matrixClientService.getClient()
     if (!client) return null
 
     // Get the actual Room object from client
     // Use type assertion to bypass TS limitations
-    const sdkClient = client as any
+    const sdkClient = client as {
+      getRoom?: (roomId: string) => { getLiveTimeline?: () => { getEvents?: () => unknown[] } | null } | null
+    }
     const sdkRoom = sdkClient.getRoom?.(room.roomId)
     if (!sdkRoom) return null
 
     // Get the actual event from room timeline
-    const timeline = sdkRoom.getLiveTimeline()
+    const timeline = sdkRoom.getLiveTimeline?.()
     if (!timeline) return null
 
-    const events = timeline.getEvents()
-    const sdkEvent = events.find((e: any) => e.getId() === event.getId())
+    const events = timeline.getEvents?.()
+    if (!events) return null
+
+    const sdkEvent = events.find((e: unknown) => {
+      const eventLike = e as { getId?: () => string } | null
+      return eventLike?.getId?.() === event.getId()
+    })
     return sdkEvent || null
   }
 

@@ -10,6 +10,7 @@ import { logger } from '@/utils/logger'
 // 本地 Matrix 类型定义（与项目其他部分保持一致）
 interface MatrixDevice {
   deviceId: string
+  displayName?: string
   [key: string]: unknown
 }
 
@@ -183,7 +184,7 @@ export class MatrixCryptoManager {
           deviceList.push({
             deviceId,
             userId,
-            displayName: (device as any).displayName || device.deviceId,
+            displayName: device.displayName || device.deviceId,
             trustLevel: trustInfo?.isVerified ? 'trusted' : 'untrusted',
             isVerified: trustInfo?.isVerified || false,
             isCurrentDevice: deviceId === currentDeviceId

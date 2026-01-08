@@ -180,7 +180,8 @@ export const useMetricsStore = defineStore('metrics', () => {
   // 旧的简单指标系统方法
   const record = (name: string, meta?: Record<string, unknown>) => {
     const ev = { name, ts: Date.now(), meta: meta ?? {} }
-    events.value.push(ev)
+    // 创建新数组以强制触发 Vue 响应式更新
+    events.value = [...events.value, ev]
     try {
       const key = '__metrics__'
       const raw = localStorage.getItem(key)
@@ -450,14 +451,19 @@ export const useMetricsStore = defineStore('metrics', () => {
     }
 
     // 添加新警报（避免重复）
+    const newAlertsToAdd: MetricsAlert[] = []
     for (const newAlert of newAlerts) {
       const exists = alerts.value.some(
         (alert) => alert.metric === newAlert.metric && alert.category === newAlert.category && !alert.acknowledged
       )
 
       if (!exists) {
-        alerts.value.push(newAlert)
+        newAlertsToAdd.push(newAlert)
       }
+    }
+    // 创建新数组以强制触发 Vue 响应式更新
+    if (newAlertsToAdd.length > 0) {
+      alerts.value = [...alerts.value, ...newAlertsToAdd]
     }
   }
 

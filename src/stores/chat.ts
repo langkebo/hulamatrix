@@ -215,8 +215,8 @@ export const useChatStore = defineStore(
       const roomId = currentSessionRoomId.value
       if (!roomId) return undefined
 
-      // 直接从 sessionMap 中查找（页面刷新后会自动恢复）
-      return sessionMap.value[roomId]
+      // ✅ 使用 getSession 而不是直接访问 sessionMap，利用双重查找和自动修复
+      return getSession(roomId)
     })
 
     // 新消息计数相关的响应式数据
@@ -310,7 +310,8 @@ export const useChatStore = defineStore(
 
       // 标记当前会话已读
       if (currentSessionRoomId.value) {
-        const session = sessionMap.value[currentSessionRoomId.value]
+        // ✅ 使用 getSession 而不是直接访问 sessionMap
+        const session = getSession(currentSessionRoomId.value)
         if (session?.unreadCount) {
           markSessionRead(currentSessionRoomId.value)
           updateTotalUnreadCount()
@@ -521,6 +522,9 @@ export const useChatStore = defineStore(
 
         sortAndUniqueSessionList()
 
+        // ✅ 检查数据一致性（开发环境）
+        checkDataConsistency()
+
         // 获取会话列表后，更新全局未读计数以确保同步
         updateTotalUnreadCount()
       } catch (e) {
@@ -531,29 +535,96 @@ export const useChatStore = defineStore(
       }
     }
 
-    /** 会话列表去重并排序（置顶优先，其次按活跃时间降序） */
+    /**
+     * 对会话列表进行去重和排序
+     * 置顶优先，其次按活跃时间降序
+     * 同时同步更新 sessionMap 以保持数据一致性
+     */
     const sortAndUniqueSessionList = () => {
       // 使用 uniqBy 按 roomId 去重
       const base = sessionList.value.filter((s) => s && s.roomId && !hiddenSessions.isHidden(s.roomId))
       const unique = uniqBy(base, (item) => item.roomId)
       // 置顶优先，其次按活跃时间降序
       const uniqueAndSorted = orderBy(unique, [(item) => !!item.top, (item) => item.activeTime], ['desc', 'desc'])
-      sessionList.value.splice(0, sessionList.value.length, ...uniqueAndSorted)
+
+      // ✅ 同时更新两个数据结构
+      sessionList.value = [...uniqueAndSorted]
+
+      // ✅ 同步更新 sessionMap - 修复数据不一致问题
+      const newSessionMap: Record<string, SessionItem> = {}
+      for (const session of uniqueAndSorted) {
+        newSessionMap[session.roomId] = session
+      }
+      sessionMap.value = newSessionMap
+
+      logger.debug('[sortAndUniqueSessionList] Synced sessionList and sessionMap:', {
+        sessionListCount: sessionList.value.length,
+        sessionMapCount: Object.keys(newSessionMap).length
+      })
+    }
+
+    /**
+     * 强制同步 sessionMap 和 sessionList
+     * 确保 sessionMap 只包含 sessionList 中的会话
+     * 在关键操作后调用此函数以保证数据一致性
+     */
+    const _syncSessionMap = () => {
+      const newSessionMap: Record<string, SessionItem> = {}
+      for (const session of sessionList.value) {
+        newSessionMap[session.roomId] = session
+      }
+      sessionMap.value = newSessionMap
+      logger.debug('[syncSessionMap] Synced sessionMap with sessionList:', {
+        sessionListCount: sessionList.value.length,
+        sessionMapCount: Object.keys(newSessionMap).length
+      })
+    }
+
+    /**
+     * 检查 sessionMap 和 sessionList 的一致性
+     * 在开发环境中自动运行，检测数据不同步问题
+     * @returns 一致性检查结果
+     */
+    const checkDataConsistency = () => {
+      const sessionListIds = new Set(sessionList.value.map((s) => s.roomId))
+      const sessionMapIds = new Set(Object.keys(sessionMap.value))
+
+      const inListNotInMap = [...sessionListIds].filter((id) => !sessionMapIds.has(id))
+      const inMapNotInList = [...sessionMapIds].filter((id) => !sessionListIds.has(id))
+
+      if (inListNotInMap.length > 0 || inMapNotInList.length > 0) {
+        logger.warn('[checkDataConsistency] Inconsistency detected:', {
+          inListNotInMapCount: inListNotInMap.length,
+          inMapNotInListCount: inMapNotInList.length,
+          sampleInListNotInMap: inListNotInMap.slice(0, 5),
+          sampleInMapNotInList: inMapNotInList.slice(0, 5)
+        })
+      } else {
+        logger.debug('[checkDataConsistency] Data consistency OK:', {
+          sessionListCount: sessionList.value.length,
+          sessionMapCount: Object.keys(sessionMap.value).length
+        })
+      }
+
+      return {
+        inListNotInMap,
+        inMapNotInList,
+        isConsistent: inListNotInMap.length === 0 && inMapNotInList.length === 0
+      }
     }
 
     // 更新会话
     const updateSession = (roomId: string, data: Partial<SessionItem>) => {
-      const session = sessionMap.value[roomId]
-      if (session) {
-        const updatedSession = { ...session, ...data }
+      // ✅ 从 sessionList 查找而不是 sessionMap，避免依赖 sessionMap
+      const index = sessionList.value.findIndex((s) => s.roomId === roomId)
+      if (index !== -1) {
+        const updatedSession = { ...sessionList.value[index], ...data }
 
-        // 同步更新 sessionList - 使用 splice 确保响应式更新
-        const index = sessionList.value.findIndex((s) => s.roomId === roomId)
-        if (index !== -1) {
-          sessionList.value.splice(index, 1, updatedSession)
-        }
+        // 同时更新两个数据结构
+        const newList = [...sessionList.value]
+        newList[index] = updatedSession
+        sessionList.value = newList
 
-        // 同步更新 sessionMap
         sessionMap.value[roomId] = updatedSession
 
         if ('unreadCount' in data && typeof updatedSession.unreadCount === 'number') {
@@ -569,13 +640,15 @@ export const useChatStore = defineStore(
         if ('top' in data) {
           sortAndUniqueSessionList()
         }
+      } else {
+        logger.warn('[updateSession] Session not found in sessionList:', { roomId })
       }
     }
 
     // 更新会话最后活跃时间, 只要更新的过程中会话不存在，那么将会话刷新出来
     const updateSessionLastActiveTime = (roomId: string) => {
-      // O(1) 查找
-      const session = sessionMap.value[roomId]
+      // ✅ 使用 getSession 而不是直接访问 sessionMap，以利用双重查找和自动修复
+      const session = getSession(roomId)
       if (session) {
         Object.assign(session, { activeTime: Date.now() })
       } else {
@@ -608,16 +681,33 @@ export const useChatStore = defineStore(
       // 同步更新 sessionMap
       sessionMap.value[roomId] = resp
       sortAndUniqueSessionList()
+
+      // ✅ 检查数据一致性（开发环境）
+      checkDataConsistency()
     }
 
     // 通过房间ID获取会话信息
-    const getSession = (roomId: string) => {
+    const getSession = (roomId: string): SessionItem | undefined => {
       if (!roomId) {
         return sessionList.value[0]
       }
 
-      // O(1) 查找（页面刷新后自动从持久化恢复）
-      return sessionMap.value[roomId]
+      // ✅ 双重查找机制：
+      // 1. 优先从 sessionMap 查找（O(1)）
+      let session: SessionItem | undefined = sessionMap.value[roomId]
+
+      // 2. 如果找不到，从 sessionList 查找（O(n)）并修复同步
+      if (!session) {
+        const foundSession = sessionList.value.find((s) => s.roomId === roomId)
+        if (foundSession) {
+          logger.warn('[getSession] Found session in sessionList but not in sessionMap, auto-fixing...', { roomId })
+          // 自动修复同步问题
+          sessionMap.value[roomId] = foundSession
+          session = foundSession
+        }
+      }
+
+      return session
     }
 
     // 推送消息
@@ -921,7 +1011,8 @@ export const useChatStore = defineStore(
       }
 
       if (resolvedRoomId) {
-        const session = sessionMap.value[resolvedRoomId]
+        // ✅ 使用 getSession 而不是直接访问 sessionMap
+        const session = getSession(resolvedRoomId)
         if (session && recallMessageBody) {
           session.text = recallMessageBody
         }
@@ -1030,8 +1121,8 @@ export const useChatStore = defineStore(
 
     // 标记已读数为 0
     const markSessionRead = (roomId: string) => {
-      // O(1) 查找
-      const session = sessionMap.value[roomId]
+      // ✅ 使用 getSession 而不是直接访问 sessionMap，利用双重查找和自动修复
+      const session = getSession(roomId)
       if (session) {
         // 更新会话的未读数
         session.unreadCount = 0
@@ -1057,49 +1148,76 @@ export const useChatStore = defineStore(
      */
     const removeSession = async (roomId: string, options?: RemoveSessionOptions): Promise<void> => {
       const { clearMessages: shouldClearMessages = false, leaveRoom: shouldLeaveRoom = false } = options || {}
-      const session = sessionMap.value[roomId]
-      if (session) {
-        // 如果是彻底删除/退出，调用 Matrix API
-        if (shouldLeaveRoom) {
-          const { client } = useMatrixClient()
-          if (client.value) {
-            try {
-              const leaveMethod = client.value.leave as ((roomId: string) => Promise<unknown>) | undefined
-              await leaveMethod?.(roomId)
-              logger.info(`Successfully left room: ${roomId}`)
-            } catch (error: unknown) {
-              logger.error('Failed to leave room:', error)
-              // 即使leave失败，仍然继续本地删除操作
-            }
+
+      logger.info('[removeSession] Called with:', { roomId, shouldClearMessages, shouldLeaveRoom })
+
+      // 先检查并执行 leave room 操作（如果需要）
+      if (shouldLeaveRoom) {
+        const { client } = useMatrixClient()
+        if (client.value && client.value.store && typeof client.value.leave === 'function') {
+          try {
+            // ✅ 检查 client.store 是否已初始化（leave 方法内部会使用）
+            await client.value.leave(roomId)
+            logger.info('[removeSession] Successfully left room:', roomId)
+          } catch (error: unknown) {
+            logger.error('[removeSession] Failed to leave room:', error)
+            // 即使leave失败，仍然继续本地删除操作
           }
+        } else {
+          logger.warn('[removeSession] Matrix client or store not available, skipping leave API', {
+            hasClient: !!client.value,
+            hasStore: !!client.value?.store,
+            hasLeaveMethod: typeof client.value?.leave === 'function'
+          })
         }
-
-        // 将房间加入隐藏列表，防止重新激活
-        hiddenSessions.add(roomId)
-
-        // 从数组中删除
-        const index = sessionList.value.findIndex((s) => s.roomId === roomId)
-        if (index !== -1) {
-          sessionList.value.splice(index, 1)
-        }
-
-        // 从 map 中删除
-        delete sessionMap.value[roomId]
-
-        if (currentSessionRoomId.value === roomId) {
-          const nextId = sessionList.value[0]?.roomId || ''
-          setCurrentSessionRoomId(nextId)
-        }
-
-        // 删除会话后更新未读计数
-        requestUnreadCountUpdate()
       }
+
+      // 将房间加入隐藏列表，防止重新激活
+      hiddenSessions.add(roomId)
+
+      // 从 sessionList 中查找并删除（无论 sessionMap 中是否存在）
+      const index = sessionList.value.findIndex((s) => s.roomId === roomId)
+      logger.info('[removeSession] Session lookup result:', {
+        foundInList: index !== -1,
+        sessionListLength: sessionList.value.length,
+        sessionMapKeys: Object.keys(sessionMap.value)
+      })
+
+      if (index !== -1) {
+        // 创建新数组来强制触发 Vue 响应式更新
+        const newList = [...sessionList.value]
+        newList.splice(index, 1)
+        sessionList.value = newList
+        logger.info('[removeSession] Removed from sessionList, remaining:', sessionList.value.length)
+      } else {
+        logger.warn('[removeSession] Session not found in sessionList')
+      }
+
+      // 从 sessionMap 中删除（如果存在）
+      if (sessionMap.value[roomId]) {
+        delete sessionMap.value[roomId]
+        logger.info('[removeSession] Removed from sessionMap')
+      }
+
+      // 处理当前会话切换
+      if (currentSessionRoomId.value === roomId) {
+        const nextId = sessionList.value[0]?.roomId || ''
+        setCurrentSessionRoomId(nextId)
+        logger.info('[removeSession] Switched current session to:', nextId)
+      }
+
+      // 更新未读计数
+      requestUnreadCountUpdate()
+
+      // 清除缓存
       removeUnreadCountCache(roomId)
 
       // 如果需要，同时清除该房间的聊天记录
       if (shouldClearMessages) {
         clearRoomMessages(roomId)
       }
+
+      logger.info('[removeSession] Completed')
     }
 
     // 监听 Worker 消息
@@ -1524,7 +1642,8 @@ export const useChatStore = defineStore(
      * 更新房间信息
      */
     const updateRoomInfo = async (roomId: string, info: { name?: string; topic?: string }) => {
-      const session = sessionMap.value[roomId]
+      // ✅ 使用 getSession 而不是直接访问 sessionMap，利用双重查找和自动修复
+      const session = getSession(roomId)
       if (session) {
         const patch: Partial<SessionItem> & { topic?: string } = {}
         if (info.name && info.name !== session.name) {

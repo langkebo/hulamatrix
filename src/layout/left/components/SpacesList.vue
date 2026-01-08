@@ -4,15 +4,11 @@
     <div
       v-for="space in spaces"
       :key="space.roomId"
-      :class="[
-        'space-item flex-col-center',
-        { active: selectedSpaceId === space.roomId },
-        'p-[6px_8px]'
-      ]"
+      :class="['space-item flex-col-center', { active: selectedSpaceId === space.roomId }, 'p-[6px_8px]']"
       :title="space.name"
       @click="handleSpaceClick(space)">
       <!-- Space avatar/icon -->
-      <n-avatar :size="showMode === ShowModeEnum.ICON ? 32 : 24" round :src="spaceAvatar(space)">
+      <n-avatar :size="showMode === ShowModeEnum.ICON ? 32 : 24" round :src="spaceAvatar(space)" color="#00BFA5">
         <template #fallback>
           <svg class="size-full">
             <use href="#space"></use>

@@ -60,7 +60,7 @@
           trigger="click"
           placement="right"
           :show-arrow="false"
-          style="padding: 0; background: var(--bg-info)">
+          class="message-info-popover">
           <template #trigger>
             <ContextMenu
               @select="$event.click(message, 'Main')"
@@ -788,4 +788,9 @@ const handleLongPress = (e: PointerEvent, _menu: unknown) => {
 </script>
 <style scoped lang="scss">
 @use '@/styles/scss/render-message';
+
+.message-info-popover {
+  padding: 0;
+  background: var(--bg-info);
+}
 </style>

@@ -114,7 +114,7 @@ export function extendMatrixClient(client: MatrixClientLike, privateChatApiBaseU
  * ```
  */
 export function isPrivateChatApiEnabled(client: MatrixClientLike): boolean {
-  return 'privateChatV2' in client && typeof (client as any).privateChatV2 === 'object'
+  return 'privateChatV2' in client && typeof client.privateChatV2 === 'object' && client.privateChatV2 !== null
 }
 
 /**
@@ -133,7 +133,7 @@ export function getPrivateChatApi(client: MatrixClientLike): PrivateChatExtensio
     throw new Error('PrivateChat API not enabled. Please call extendMatrixClient() first.')
   }
 
-  return (client as any).privateChatV2 as PrivateChatExtension
+  return client.privateChatV2 as PrivateChatExtension
 }
 
 /**

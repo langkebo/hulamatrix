@@ -476,7 +476,7 @@ watch(
     v-model:show="show"
     preset="card"
     title="Room Addresses"
-    :style="{ width: '700px' }"
+    class="modal-wide"
     :mask-closable="false"
     :segmented="{ content: 'soft' }">
     <template #header-extra>
@@ -491,18 +491,18 @@ watch(
     </template>
 
     <!-- Error Alert -->
-    <NAlert v-if="hasError" type="error" :title="error" closable @close="error = ''" style="margin-bottom: 16px" />
+    <NAlert v-if="hasError" type="error" :title="error" closable @close="error = ''" class="alert-spacing" />
 
     <!-- Loading State -->
-    <div v-if="isLoading" style="text-align: center; padding: 40px 0">
+    <div v-if="isLoading" class="loading-container">
       <NSpin size="large" />
-      <div style="margin-top: 16px; color: #999">Loading room addresses...</div>
+      <div class="loading-text">Loading room addresses...</div>
     </div>
 
     <!-- Empty State -->
-    <NEmpty v-else-if="aliases.length === 0" description="No addresses set for this room" style="padding: 40px 0">
+    <NEmpty v-else-if="aliases.length === 0" description="No addresses set for this room" class="empty-state">
       <template #extra>
-        <small style="color: #999">Add an address to make this room discoverable by its alias</small>
+        <small class="empty-description">Add an address to make this room discoverable by its alias</small>
       </template>
     </NEmpty>
 
@@ -510,8 +510,8 @@ watch(
     <template v-else>
       <NDataTable :columns="aliasColumns" :data="aliasData" :bordered="false" :single-line="false" size="small" />
 
-      <div style="margin-top: 16px">
-        <NAlert type="info" :bordered="false" style="font-size: 12px">
+      <div class="mt-16">
+        <NAlert type="info" :bordered="false" class="small-text">
           The main address (marked with ★) is shown in room directories and invite links.
         </NAlert>
       </div>
@@ -519,18 +519,18 @@ watch(
 
     <!-- Add New Alias -->
     <template #footer>
-      <NSpace vertical style="width: 100%">
-        <div style="font-weight: 500; margin-bottom: 8px">Add New Address</div>
+      <NSpace vertical class="width-full">
+        <div class="section-label">Add New Address</div>
 
-        <NSpace style="width: 100%">
+        <NSpace class="width-full">
           <NInput
             v-model:value="newAliasInput"
             placeholder="#room-name:server.com"
             :disabled="isLoading"
             @keyup.enter="handleAddKeyPress"
-            style="flex: 1">
+            class="flex-1">
             <template #prefix>
-              <span style="color: #999">#</span>
+              <span class="input-prefix">#</span>
             </template>
           </NInput>
 
@@ -546,13 +546,13 @@ watch(
           </NButton>
         </NSpace>
 
-        <div style="font-size: 12px; color: #999">
+        <div class="help-text">
           Format:
           <code>#room-name:server.com</code>
           (e.g., #my-room:cjystx.top)
         </div>
 
-        <NAlert type="warning" :bordered="false" style="font-size: 12px; margin-top: 8px">
+        <NAlert type="warning" :bordered="false" class="small-text mt-8">
           Aliases must follow the Matrix naming convention and only contain lowercase letters, numbers, and special
           characters (-_=./).
         </NAlert>
@@ -581,5 +581,66 @@ watch(
   background: var(--n-code-color);
   padding: 2px 6px;
   border-radius: 3px;
+}
+
+/* Inline style replacements */
+.modal-wide {
+  width: 700px;
+}
+
+.alert-spacing {
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #999;
+}
+
+.empty-state {
+  padding: 40px 0;
+}
+
+.empty-description {
+  color: #999;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.small-text {
+  font-size: 12px;
+}
+
+.width-full {
+  width: 100%;
+}
+
+.section-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.input-prefix {
+  color: #999;
+}
+
+.help-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.mt-8 {
+  margin-top: 8px;
 }
 </style>

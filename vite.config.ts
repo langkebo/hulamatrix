@@ -180,7 +180,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       })
     ],
     worker: {
-      format: 'es' as const
+      format: 'es' as const,
+      plugins: () => [vue(), VueSetupExtend()]
     },
     build: {
       // 设置兼容低版本浏览器的目标

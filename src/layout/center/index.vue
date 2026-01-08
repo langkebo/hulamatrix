@@ -15,10 +15,7 @@
       <div
         class="drag-icon transition-all duration-300 ease-in-out"
         :class="{ 'opacity-100': isDragging || isHandleHovered, 'opacity-0': !(isDragging || isHandleHovered) }">
-        <div
-          style="border-radius: 8px 0 0 8px"
-          class="bg-#c8c8c833 hover:bg-#c8c8c866 h-60px w-14px absolute top-40% right--18px pointer-events-auto z-10 transition-colors duration-200 cursor-col-resize"
-          @mousedown="initDrag">
+        <div class="drag-handle-inner" @mousedown="initDrag">
           <svg
             class="size-16px absolute top-1/2 right--2px transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
             <use href="#sliding"></use>
@@ -43,8 +40,7 @@
           @focus="() => handleSearchFocus()"
           @blur="resetSearchPlaceholder"
           @update:value="handleSearchInputChange"
-          class="rounded-6px w-full relative text-12px"
-          style="background: var(--search-bg-color)"
+          class="rounded-6px w-full relative text-12px search-input-bg"
           :maxlength="20"
           clearable
           spellCheck="false"
@@ -59,13 +55,9 @@
         </n-input>
 
         <!-- 添加面板 -->
-        <n-popover
-          v-model:show="addPanels.show"
-          style="padding: 0; background: transparent; user-select: none"
-          :show-arrow="false"
-          trigger="click">
+        <n-popover v-model:show="addPanels.show" class="popover-add-panel" :show-arrow="false" trigger="click">
           <template #trigger>
-            <n-button size="small" secondary style="padding: 0 5px">
+            <n-button size="small" secondary class="btn-add-panel">
               <template #icon>
                 <svg class="w-24px h-24px"><use href="#plus"></use></svg>
               </template>
@@ -74,7 +66,7 @@
 
           <div @click.stop="addPanels.show = false" class="add-item">
             <div class="menu-list">
-              <div v-for="(item, index) in addPanels.list" :key="index">
+              <div v-for="item in addPanels.list" :key="item.icon">
                 <div class="menu-item" @click="() => item.click()">
                   <svg><use :href="`#${item.icon}`"></use></svg>
                   {{ t(item.label) }}

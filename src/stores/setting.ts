@@ -84,7 +84,7 @@ export const useSettingStore = defineStore('setting', {
       sendKey: 'Enter',
       isDouble: true,
       translate: 'youdao',
-      layoutMode: 'default',
+      layoutMode: 'standard',
       compactLayout: false,
       imageSizeLimit: 'auto'
     },

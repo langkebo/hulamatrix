@@ -43,6 +43,23 @@ class AudioManager {
     try {
       await audio.play()
     } catch (error) {
+      // 检查是否是浏览器的自动播放策略限制
+      const errorLike = error as { name?: string; message?: string }
+      const isNotAllowedError =
+        errorLike.name === 'NotAllowedError' ||
+        (errorLike.message && errorLike.message.includes("user didn't interact with the document first"))
+
+      if (isNotAllowedError) {
+        // 浏览器自动播放策略限制，记录警告而不是错误
+        logger.debug('[AudioManager] 音频播放被浏览器策略阻止，等待用户交互后播放', {
+          audioId,
+          error: toError(error)
+        })
+        // 不抛出异常，静默失败
+        return
+      }
+
+      // 其他错误仍然记录并抛出
       logger.error('音频播放失败:', toError(error))
       this.currentAudio = null
       this.currentAudioId = null

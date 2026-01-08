@@ -30,13 +30,16 @@ export function createPinMenuItem(): SessionMenuItem {
     click: async (item: SessionItem) => {
       const chatStore = useChatStore()
       try {
+        // 先尝试调用 Matrix API
         await sdkSetSessionTop(item.roomId, !item.top)
-        chatStore.updateSession(item.roomId, { top: !item.top })
-        msg.success(item.top ? '取消置顶成功' : '置顶成功')
       } catch (error) {
-        msg.error('操作失败，请重试')
-        logger.error('Failed to toggle pin:', error)
+        // 如果 Matrix 客户端未初始化或失败，只更新本地状态
+        logger.warn('[createPinMenuItem] Matrix API failed, using local state only:', error)
       }
+
+      // 无论 Matrix API 是否成功，都更新本地状态
+      chatStore.updateSession(item.roomId, { top: !item.top })
+      msg.success(item.top ? '取消置顶成功' : '置顶成功')
     }
   }
 }
@@ -98,9 +101,13 @@ export function createNotificationMenuItem(): SessionMenuItem {
           label: '允许通知',
           icon: !item.shield && item.muteNotification === NotificationTypeEnum.RECEPTION ? 'check-small' : '',
           action: async () => {
-            if (item.shield) {
-              await unmuteRoom(item.roomId)
-              chatStore.updateSession(item.roomId, { shield: false })
+            try {
+              if (item.shield) {
+                await unmuteRoom(item.roomId)
+                chatStore.updateSession(item.roomId, { shield: false })
+              }
+            } catch (error) {
+              logger.warn('[createNotificationMenuItem] Failed to unmute room:', error)
             }
             await handleNotificationChange(item, NotificationTypeEnum.RECEPTION)
           }
@@ -109,9 +116,13 @@ export function createNotificationMenuItem(): SessionMenuItem {
           label: '静默接收',
           icon: !item.shield && item.muteNotification === NotificationTypeEnum.NOT_DISTURB ? 'check-small' : '',
           action: async () => {
-            if (item.shield) {
-              await unmuteRoom(item.roomId)
-              chatStore.updateSession(item.roomId, { shield: false })
+            try {
+              if (item.shield) {
+                await unmuteRoom(item.roomId)
+                chatStore.updateSession(item.roomId, { shield: false })
+              }
+            } catch (error) {
+              logger.warn('[createNotificationMenuItem] Failed to unmute room:', error)
             }
             await handleNotificationChange(item, NotificationTypeEnum.NOT_DISTURB)
           }
@@ -120,10 +131,14 @@ export function createNotificationMenuItem(): SessionMenuItem {
           label: '屏蔽群消息',
           icon: item.shield ? 'check-small' : '',
           action: async () => {
-            if (!item.shield) {
-              await muteRoom(item.roomId)
-            } else {
-              await unmuteRoom(item.roomId)
+            try {
+              if (!item.shield) {
+                await muteRoom(item.roomId)
+              } else {
+                await unmuteRoom(item.roomId)
+              }
+            } catch (error) {
+              logger.warn('[createNotificationMenuItem] Failed to toggle mute:', error)
             }
             chatStore.updateSession(item.roomId, { shield: !item.shield })
             msg.success(item.shield ? '已解除屏蔽' : '已屏蔽')
@@ -149,14 +164,19 @@ export function createNotificationMenuItem(): SessionMenuItem {
 async function handleNotificationChange(item: SessionItem, newType: NotificationTypeEnum) {
   const chatStore = useChatStore()
 
-  await requestWithFallback({
-    url: 'notification',
-    body: {
-      roomId: item.roomId,
-      type: newType
-    }
-  })
+  try {
+    await requestWithFallback({
+      url: 'notification',
+      body: {
+        roomId: item.roomId,
+        type: newType
+      }
+    })
+  } catch (error) {
+    logger.warn('[handleNotificationChange] Failed to update notification on server:', error)
+  }
 
+  // 无论服务器是否成功，都更新本地状态
   chatStore.updateSession(item.roomId, {
     muteNotification: newType
   })
@@ -182,11 +202,17 @@ export function createBlockUserMenuItem(): SessionMenuItem {
     visible: (item: SessionItem) => item.type === RoomTypeEnum.SINGLE,
     click: async (item: SessionItem) => {
       const chatStore = useChatStore()
-      if (!item.shield) {
-        await muteRoom(item.roomId)
-      } else {
-        await unmuteRoom(item.roomId)
+      try {
+        if (!item.shield) {
+          await muteRoom(item.roomId)
+        } else {
+          await unmuteRoom(item.roomId)
+        }
+      } catch (error) {
+        logger.warn('[createBlockUserMenuItem] Matrix API failed, using local state only:', error)
       }
+
+      // 无论 API 是否成功，都更新本地状态
       chatStore.updateSession(item.roomId, { shield: !item.shield })
       msg.success(item.shield ? '已解除屏蔽' : '已屏蔽')
     }
@@ -240,15 +266,34 @@ async function handleMsgDelete(roomId: string) {
   const currentIndex = currentSessions.findIndex((session) => session.roomId === roomId)
   const targetSession = chatStore.getSession(roomId)
 
+  logger.info('[handleMsgDelete] Starting delete:', {
+    roomId,
+    currentIndex,
+    totalSessions: currentSessions.length,
+    targetSession: targetSession ? 'found' : 'not found'
+  })
+
   if (targetSession?.type === RoomTypeEnum.SINGLE) {
     try {
       const { deletePrivateSession } = await import('@/integrations/synapse/friends')
       await deletePrivateSession(roomId)
-    } catch {}
+      logger.info('[handleMsgDelete] Private session deleted from server')
+    } catch (error) {
+      logger.warn('[handleMsgDelete] Failed to delete private session from server:', error)
+    }
   }
 
-  await chatStore.removeSession(roomId, { clearMessages: true, leaveRoom: true })
-  hiddenSessions.add(roomId)
+  try {
+    await chatStore.removeSession(roomId, { clearMessages: true, leaveRoom: true })
+    hiddenSessions.add(roomId)
+    logger.info('[handleMsgDelete] Session removed from store:', {
+      remainingSessions: chatStore.sessionList.length
+    })
+  } catch (error) {
+    logger.error('[handleMsgDelete] Failed to remove session:', error)
+    msg.error('删除会话失败')
+    return
+  }
 
   // Select next session if needed
   const isCurrentSession = roomId === useGlobalStore().currentSessionRoomId
@@ -258,8 +303,13 @@ async function handleMsgDelete(roomId: string) {
     const nextSession = updatedSessions[nextIndex]
     if (nextSession) {
       useGlobalStore().updateCurrentSessionRoomId(nextSession.roomId)
+      logger.info('[handleMsgDelete] Switched to next session:', nextSession.roomId)
+    } else {
+      logger.info('[handleMsgDelete] No next session available')
     }
   }
+
+  msg.success('已删除会话')
 }
 
 /**
@@ -350,11 +400,38 @@ export function filterVisibleMenuItems(items: SessionMenuItem[], item: SessionIt
  * Convert SessionMenuItem to MenuItem (legacy format)
  */
 export function toLegacyMenuItem(sessionMenuItem: SessionMenuItem): RightMenu {
+  // Wrap the click function to preserve the SessionItem parameter
+  const wrappedClick = sessionMenuItem.click
+    ? (content: unknown) => {
+        logger.debug('[toLegacyMenuItem wrappedClick] Called with:', {
+          content,
+          hasRoomId: content && typeof content === 'object' && 'roomId' in content,
+          originalClick: sessionMenuItem.click?.name || 'anonymous'
+        })
+
+        // Validate that content is a valid SessionItem before calling the handler
+        if (content && typeof content === 'object' && 'roomId' in content) {
+          logger.debug('[toLegacyMenuItem wrappedClick] Calling original click handler')
+          sessionMenuItem.click!(content as SessionItem)
+        } else {
+          logger.warn('[toLegacyMenuItem] Invalid SessionItem passed to click handler:', { content })
+        }
+      }
+    : undefined
+
+  // Preserve the visible function or boolean value
+  const convertedVisible =
+    typeof sessionMenuItem.visible === 'function' ? sessionMenuItem.visible : sessionMenuItem.visible
+
+  // Preserve label and icon whether they are strings or functions
+  const convertedLabel = sessionMenuItem.label
+  const convertedIcon = sessionMenuItem.icon
+
   return {
-    label: typeof sessionMenuItem.label === 'string' ? sessionMenuItem.label : () => '',
-    icon: typeof sessionMenuItem.icon === 'string' ? sessionMenuItem.icon : undefined,
-    click: sessionMenuItem.click as (() => void) | undefined,
-    visible: typeof sessionMenuItem.visible === 'boolean' ? sessionMenuItem.visible : undefined,
+    label: convertedLabel,
+    icon: convertedIcon,
+    click: wrappedClick,
+    visible: convertedVisible,
     action: sessionMenuItem.action as (() => void) | undefined,
     children:
       typeof sessionMenuItem.children === 'function' || Array.isArray(sessionMenuItem.children)

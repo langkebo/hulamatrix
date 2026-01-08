@@ -228,6 +228,16 @@ class UnifiedMessageReceiver {
 
   private async handleMemberNameChange(_event: MatrixEventLike, member: MatrixMemberLike): Promise<void> {
     try {
+      // Validate member object has required properties
+      if (!member?.roomId || !member?.userId) {
+        logger.warn('[UnifiedMessageReceiver] Skipping member name change - missing required properties:', {
+          hasRoomId: !!member?.roomId,
+          hasUserId: !!member?.userId,
+          member
+        })
+        return
+      }
+
       const chatStore = useChatStore() as unknown as ChatStoreLike
       const info: { name?: string; displayName?: string } = {}
       if (member.name !== undefined) info.name = member.name
@@ -240,8 +250,8 @@ class UnifiedMessageReceiver {
       })
     } catch (error) {
       logger.error('[UnifiedMessageReceiver] Failed to handle member name change:', {
-        roomId: member.roomId,
-        userId: member.userId,
+        roomId: member?.roomId,
+        userId: member?.userId,
         error
       })
     }

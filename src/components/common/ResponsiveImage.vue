@@ -7,6 +7,7 @@
  */
 
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { logger } from '@/utils/logger'
 import { matrixThumbnailService } from '@/services/matrixThumbnailService'
 import type { ResponsiveImageOptions } from '@/services/matrixThumbnailService'
 
@@ -127,7 +128,7 @@ async function loadImage() {
     currentUrl.value = url
     isLoading.value = false
   } catch (error) {
-    console.error('[ResponsiveImage] Failed to load image:', error)
+    logger.error('[ResponsiveImage] Failed to load image:', error)
     hasError.value = true
     isLoading.value = false
     emit('error', error as Event)
@@ -228,8 +229,7 @@ defineExpose({
     :style="{
       maxWidth: maxWidth ? `${maxWidth}px` : undefined,
       maxHeight: maxHeight ? `${maxHeight}px` : undefined
-    }"
-  >
+    }">
     <!-- Loading state -->
     <div v-if="isLoading && !currentUrl" class="responsive-image-loading">
       <slot name="loading">
@@ -255,8 +255,7 @@ defineExpose({
       :loading="loading"
       class="responsive-image"
       @load="handleImageLoad"
-      @error="handleImageError"
-    />
+      @error="handleImageError" />
   </div>
 </template>
 

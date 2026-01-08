@@ -186,6 +186,7 @@ interface ImportMeta {
 class MatrixClientService implements IMatrixClientService {
   private client: MatrixClientLike | null = null
   private initialized = false
+  private ready = false // Track if client is fully ready (store initialized, sync started)
   private currentBaseUrl: string | null = null
   private syncState: 'PREPARED' | 'SYNCING' | 'ERROR' | 'STOPPED' | 'RECONNECTING' = 'STOPPED'
   private settingsHistory: Array<Record<string, unknown>> = []
@@ -269,26 +270,18 @@ class MatrixClientService implements IMatrixClientService {
             // workerScript: 'matrix-sdk-worker.js' // Optional: use web worker for better performance
           }) as IndexedDBStore
 
-          // Initialize the store before passing to client
-          const store = this.indexedDBStore as unknown as Record<string, unknown>
-          if (typeof store.startup === 'function') {
-            await (store.startup as () => Promise<void>)()
-          } else if (typeof store.start === 'function') {
-            await (store.start as () => Promise<void>)()
-          }
-
-          logger.info('[MatrixClientService] IndexedDB storage initialized', {
+          logger.info('[MatrixClientService] IndexedDB store created, will assign to client first', {
             dbName: 'hula-matrix-sdk'
           })
 
-          // Pass store to client options
+          // Pass store to client options (IMPORTANT: must be assigned BEFORE startup)
           opts.store = this.indexedDBStore
         }
       }
     } catch (e) {
       // If IndexedDB fails to initialize, log warning but continue without it
       // The SDK will fall back to MemoryStore
-      logger.warn('[MatrixClientService] Failed to initialize IndexedDB, falling back to memory store', {
+      logger.warn('[MatrixClientService] Failed to create IndexedDB store, falling back to memory store', {
         error: e
       })
       this.indexedDBStore = null
@@ -302,10 +295,38 @@ class MatrixClientService implements IMatrixClientService {
       } catch {}
     }
     this.client = (await factory(opts)) as MatrixClientLike
+
+    // Initialize IndexedDB store AFTER assigning to client (SDK requirement)
+    if (this.indexedDBStore) {
+      try {
+        const store = this.indexedDBStore as unknown as Record<string, unknown>
+        if (typeof store.startup === 'function') {
+          await (store.startup as () => Promise<void>)()
+          logger.info('[MatrixClientService] IndexedDB storage initialized successfully')
+        } else if (typeof store.start === 'function') {
+          await (store.start as () => Promise<void>)()
+          logger.info('[MatrixClientService] IndexedDB storage started successfully')
+        }
+
+        // Verify store is attached to client
+        const clientLike = this.client as unknown as Record<string, unknown>
+        if (!clientLike.store && this.indexedDBStore) {
+          logger.warn('[MatrixClientService] Store not automatically attached, setting manually')
+          clientLike.store = this.indexedDBStore
+        }
+      } catch (e) {
+        // If startup fails, log warning but continue with memory store fallback
+        logger.warn('[MatrixClientService] Failed to start IndexedDB store, falling back to memory store', {
+          error: e
+        })
+        this.indexedDBStore = null
+      }
+    }
     if (typeof this.client.getHomeserverUrl !== 'function') {
       this.client.getHomeserverUrl = () => credentials.baseUrl
     }
     this.initialized = true
+    this.ready = true // Client is now fully ready
     this.currentBaseUrl = credentials.baseUrl
     try {
       const origGetTurnServers = this.client.getTurnServers?.bind(this.client)
@@ -363,6 +384,28 @@ class MatrixClientService implements IMatrixClientService {
       } catch {}
     }
     return this.client
+  }
+
+  /**
+   * Check if client is fully ready (store initialized and sync started)
+   */
+  isReady(): boolean {
+    return this.initialized && this.ready && !!this.client
+  }
+
+  /**
+   * Wait for client to be ready (with timeout)
+   */
+  async waitForReady(timeoutMs = 10000): Promise<boolean> {
+    const startTime = Date.now()
+    while (!this.isReady()) {
+      if (Date.now() - startTime > timeoutMs) {
+        logger.warn('[MatrixClientService] Timeout waiting for client to be ready')
+        return false
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    return true
   }
 
   /**
@@ -506,6 +549,7 @@ class MatrixClientService implements IMatrixClientService {
 
     this.client = null
     this.initialized = false
+    this.ready = false // Reset ready state
     this.currentBaseUrl = null
     this.syncState = 'STOPPED'
     this.reconnectAttempts = 0
@@ -1357,7 +1401,7 @@ export function initializeMatrixBridges() {
  * const { friends } = await client.friends.list();
  * ```
  */
-export async function getEnhancedMatrixClient(): Promise<any> {
+export async function getEnhancedMatrixClient(): Promise<MatrixClientLike> {
   const client = matrixClientService.getClient()
 
   if (!client) {

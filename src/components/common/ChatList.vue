@@ -54,25 +54,49 @@
           </div>
         </template>
 
+        <!-- Desktop: Virtual Scroll or Normal Scroll based on props -->
         <template v-else-if="!isMobile && filteredSessions.length > 0">
-          <n-scrollbar ref="scrollbarRef" style="max-height: calc(100vh / var(--page-scale, 1) - 120px)">
-            <div class="chat-list-items desktop">
-              <ContextMenu
-                v-for="(item, index) in filteredSessions"
-                :key="item.roomId"
-                :class="getItemClasses(item)"
-                :menu="getVisibleMenu(item)"
-                :special-menu="getVisibleSpecialMenu(item)"
-                :content="item"
-                @click="handleClick(item, $event)"
-                @dblclick="handleDblClick(item)"
-                @select="handleMenuSelect(item, $event)">
-                <slot name="item" :item="item" :index="index">
-                  <ChatListItem :session="item" :is-mobile="false" />
-                </slot>
-              </ContextMenu>
-            </div>
-          </n-scrollbar>
+          <!-- Virtual Scroll Mode (recommended for 100+ sessions) -->
+          <template v-if="virtualScroll">
+            <ChatListVirtualList :sessions="filteredSessions" :estimated-item-height="80" :buffer-size="5">
+              <template #default="{ item, index }">
+                <ContextMenu
+                  :class="getItemClasses(item)"
+                  :menu="getVisibleMenu(item)"
+                  :special-menu="getVisibleSpecialMenu(item)"
+                  :content="item"
+                  @click="handleClick(item, $event)"
+                  @dblclick="handleDblClick(item)"
+                  @select="handleMenuSelect(item, $event)">
+                  <slot name="item" :item="item" :index="index">
+                    <ChatListItem :session="item" :is-mobile="false" />
+                  </slot>
+                </ContextMenu>
+              </template>
+            </ChatListVirtualList>
+          </template>
+
+          <!-- Normal Scroll Mode (fallback for compatibility) -->
+          <template v-else>
+            <n-scrollbar ref="scrollbarRef" style="max-height: calc(100vh / var(--page-scale, 1) - 120px)">
+              <div class="chat-list-items desktop">
+                <ContextMenu
+                  v-for="(item, index) in filteredSessions"
+                  :key="item.roomId"
+                  :class="getItemClasses(item)"
+                  :menu="getVisibleMenu(item)"
+                  :special-menu="getVisibleSpecialMenu(item)"
+                  :content="item"
+                  @click="handleClick(item, $event)"
+                  @dblclick="handleDblClick(item)"
+                  @select="handleMenuSelect(item, $event)">
+                  <slot name="item" :item="item" :index="index">
+                    <ChatListItem :session="item" :is-mobile="false" />
+                  </slot>
+                </ContextMenu>
+              </div>
+            </n-scrollbar>
+          </template>
         </template>
 
         <!-- Empty Slot -->
@@ -108,16 +132,18 @@
 </template>
 
 <script setup lang="ts" generic="T extends SessionItem">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { vOnLongPress } from '@vueuse/components'
 import ChatListEnhancer from './ChatListEnhancer.vue'
 import ContextMenu, { type MenuItem } from './ContextMenu.vue'
 import ChatListItem from './ChatListItem.vue'
+import ChatListVirtualList from './ChatListVirtualList.vue'
 import type { SessionItem } from '@/services/types'
 import type { ChatListFilter, SessionCategory } from '@/types/chat'
 import { RoomTypeEnum, NotificationTypeEnum, UserType } from '@/enums'
 import { usePlatform } from '@/composables'
+import { logger } from '@/utils/logger'
 import {
   getDefaultMenuItems,
   getSpecialMenuItems,
@@ -161,7 +187,7 @@ const props = withDefaults(
   {
     showSearch: false,
     showCategories: false,
-    virtualScroll: true,
+    virtualScroll: false,
     loading: false,
     error: false,
     errorMessage: '',
@@ -295,9 +321,19 @@ const handleContextMenu = (item: SessionItem, event: MouseEvent) => {
   emit('contextmenu', item, event)
 }
 
-const handleMenuSelect = (item: SessionItem, menuItem: MenuItem) => {
+const handleMenuSelect = async (item: SessionItem, menuItem: MenuItem) => {
+  logger.debug('[ChatList handleMenuSelect] Called with:', {
+    itemRoomId: item.roomId,
+    menuItemLabel: typeof menuItem.label === 'function' ? menuItem.label(item) : menuItem.label,
+    hasClick: !!menuItem.click
+  })
+
   if (menuItem.click) {
-    menuItem.click(item)
+    logger.debug('[ChatList handleMenuSelect] Calling menuItem.click with item:', item)
+    await menuItem.click(item)
+    logger.debug('[ChatList handleMenuSelect] Click handler completed')
+  } else {
+    logger.warn('[ChatList handleMenuSelect] Menu item has no click handler!')
   }
 }
 

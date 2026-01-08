@@ -9,6 +9,11 @@ export async function sdkSetSessionTop(roomId: string, top: boolean): Promise<vo
   const client = matrixClientService.getClient()
   if (!client) throw new Error('Matrix client not initialized')
 
+  // ✅ 检查 client.credentials 是否存在（setRoomTag 内部会使用）
+  if (!client.credentials) {
+    throw new Error('Matrix client not authenticated (no credentials)')
+  }
+
   // 使用 m.tag 事件设置置顶
   // m.favourite 标签通常用于表示置顶
   const tag = 'm.favourite'

@@ -73,11 +73,13 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
   // 方法
   const setupEventListeners = async () => {
     if (!isTauri) return
+    const newListeners: UnlistenFn[] = []
+
     // 监听进度更新
     const progressListener = await listen<DirectoryScanProgress>('directory-scan-progress', (event) => {
       scanProgress.value = event.payload
     })
-    listeners.value.push(progressListener)
+    newListeners.push(progressListener)
 
     // 监听扫描完成
     const completeListener = await listen<DirectoryScanProgress>('directory-scan-complete', (event) => {
@@ -90,7 +92,7 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
         showDiskUsage.value = true
       }, 300)
     })
-    listeners.value.push(completeListener)
+    newListeners.push(completeListener)
 
     // 监听扫描取消
     const cancelListener = await listen('directory-scan-cancelled', () => {
@@ -99,7 +101,10 @@ export const useScannerStore = defineStore(StoresEnum.SCANNER, () => {
       scanComplete.value = false
       showDiskUsage.value = false
     })
-    listeners.value.push(cancelListener)
+    newListeners.push(cancelListener)
+
+    // 创建新数组以强制触发 Vue 响应式更新
+    listeners.value = [...listeners.value, ...newListeners]
   }
 
   const initializeScanner = async () => {

@@ -418,11 +418,7 @@ onMounted(() => {
       <div class="power-level-editor__header">
         <h3>{{ t('matrix.powerLevels.title', 'Power Levels') }}</h3>
         <NSpace v-if="!readonly" :size="8">
-          <NButton
-            v-for="preset in PRESETS"
-            :key="preset.name"
-            size="small"
-            @click="applyPreset(preset)">
+          <NButton v-for="preset in PRESETS" :key="preset.name" size="small" @click="applyPreset(preset)">
             {{ preset.name }}
           </NButton>
         </NSpace>
@@ -441,7 +437,7 @@ onMounted(() => {
             :min="0"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -451,7 +447,7 @@ onMounted(() => {
             :min="0"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -461,7 +457,7 @@ onMounted(() => {
             :min="0"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -471,7 +467,7 @@ onMounted(() => {
             :min="0"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -481,7 +477,7 @@ onMounted(() => {
             :min="-10"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -491,7 +487,7 @@ onMounted(() => {
             :min="-10"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
 
         <div class="permission-row">
@@ -501,7 +497,7 @@ onMounted(() => {
             :min="-10"
             :max="100"
             :disabled="readonly"
-            style="width: 120px" />
+            class="input-number-width" />
         </div>
       </NCard>
 
@@ -518,9 +514,7 @@ onMounted(() => {
           size="small"
           :max-height="300" />
 
-        <NAlert v-if="roomMembers.length === 0" type="info" style="margin-top: 12px">
-          No members in this room
-        </NAlert>
+        <NAlert v-if="roomMembers.length === 0" type="info" class="mt-12">No members in this room</NAlert>
       </NCard>
 
       <!-- Event Power Levels -->
@@ -529,19 +523,13 @@ onMounted(() => {
           <span>Event Permissions</span>
         </template>
 
-        <n-data-table
-          :columns="eventsTableColumns"
-          :data="EVENT_TYPES"
-          :bordered="false"
-          size="small" />
+        <n-data-table :columns="eventsTableColumns" :data="EVENT_TYPES" :bordered="false" size="small" />
       </NCard>
 
       <!-- Actions -->
       <div v-if="!readonly" class="power-level-editor__actions">
         <NSpace justify="end">
-          <NButton :disabled="!hasChanges" @click="showResetConfirm = true">
-            Reset Changes
-          </NButton>
+          <NButton :disabled="!hasChanges" @click="showResetConfirm = true">Reset Changes</NButton>
           <NButton type="primary" :disabled="!hasChanges" :loading="saving" @click="savePowerLevels">
             Save Changes
           </NButton>
@@ -638,6 +626,15 @@ onMounted(() => {
   justify-content: flex-end;
   padding-top: 16px;
   border-top: 1px solid #e0e0e0;
+}
+
+/* Inline style replacements */
+.input-number-width {
+  width: 120px;
+}
+
+.mt-12 {
+  margin-top: 12px;
 }
 
 /* Dark mode support */

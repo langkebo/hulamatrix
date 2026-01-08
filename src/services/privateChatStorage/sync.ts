@@ -6,6 +6,7 @@
  */
 
 import type { PrivateChatSession } from '@/sdk/matrix-private-chat/types'
+import { logger } from '@/utils/logger'
 import type { PrivateChatStorageApi } from '@/sdk/matrix-private-chat/types'
 
 /**
@@ -240,7 +241,7 @@ export class StorageSyncManager {
 
     if (this.options.autoStart) {
       this.startAutoSync().catch((error) => {
-        console.error('[StorageSyncManager] Failed to start auto sync:', error)
+        logger.error('[StorageSyncManager] Failed to start auto sync:', error)
       })
     }
   }
@@ -308,7 +309,7 @@ export class StorageSyncManager {
           }
           serverSessions = data.sessions || []
         } catch (error) {
-          console.warn('[StorageSyncManager] Failed to fetch from server:', error)
+          logger.warn('[StorageSyncManager] Failed to fetch from server:', error)
         }
       }
 
@@ -360,7 +361,7 @@ export class StorageSyncManager {
       if (this.state.failureCount <= this.options.retryAttempts) {
         setTimeout(() => {
           this.sync().catch((err) => {
-            console.error('[StorageSyncManager] Retry failed:', err)
+            logger.error('[StorageSyncManager] Retry failed:', err)
           })
         }, this.options.retryDelay * this.state.failureCount)
       }
@@ -521,7 +522,7 @@ export class StorageSyncManager {
       try {
         listener(event)
       } catch (error) {
-        console.error('[StorageSyncManager] Listener error:', error)
+        logger.error('[StorageSyncManager] Listener error:', error)
       }
     }
   }

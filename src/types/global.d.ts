@@ -29,6 +29,19 @@ declare global {
   }
 
   /**
+   * Matrix Client global object
+   * Stores the global Matrix client instance for easy access
+   */
+  interface Window {
+    __MATRIX_CLIENT__?: {
+      getUserId?(): string
+      getAccessToken?(): string
+      getHomeserverUrl?(): string
+      [key: string]: unknown
+    }
+  }
+
+  /**
    * Capacitor Plugins
    */
   interface Window {

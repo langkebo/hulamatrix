@@ -3,7 +3,7 @@
  * 合并了 notice 和 feedNotification 的功能
  */
 import { defineStore } from 'pinia'
-import { ref, readonly } from 'vue'
+import { ref } from 'vue'
 
 // 通知类型
 export type NotificationType =
@@ -360,9 +360,9 @@ export const useNotificationStore = defineStore('notifications', () => {
 
   return {
     // 状态
-    settings: readonly(settings),
-    notifications: readonly(notifications),
-    currentNotification: readonly(currentNotification),
+    settings,
+    notifications,
+    currentNotification,
 
     // 设置管理
     updateSettings,

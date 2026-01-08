@@ -4,6 +4,7 @@
  */
 
 import type { BaseResponse } from './types.js'
+import { logger } from '@/utils/logger'
 import { PrivateChatError, NetworkError } from './types.js'
 
 /**
@@ -227,13 +228,13 @@ export function createDebugLogger(component: string) {
       }
     },
     info: (message: string, data?: unknown) => {
-      console.info(`[${component}] ${message}`, data ? safeStringify(data) : '')
+      logger.info(`[${component}] ${message}`, data ? safeStringify(data) : '')
     },
     warn: (message: string, data?: unknown) => {
-      console.warn(`[${component}] ${message}`, data ? safeStringify(data) : '')
+      logger.warn(`[${component}] ${message}`, data ? safeStringify(data) : '')
     },
     error: (message: string, error?: unknown) => {
-      console.error(`[${component}] ${message}`, error)
+      logger.error(`[${component}] ${message}`, error)
     }
   }
 }

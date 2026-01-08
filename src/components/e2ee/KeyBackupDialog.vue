@@ -1,7 +1,7 @@
 <template>
   <n-modal :show="show" :mask-closable="false" @update:show="handleClose">
     <n-card
-      style="width: 600px; max-width: 90vw"
+      class="modal-card"
       :title="t('setting.e2ee.key_backup.title')"
       :bordered="false"
       size="huge"
@@ -66,7 +66,7 @@
         <!-- 创建新备份 -->
         <n-tab-pane name="create" :tab="t('setting.e2ee.key_backup.create_new')">
           <div class="backup-create">
-            <n-alert type="info" style="margin-bottom: 16px">
+            <n-alert type="info" class="alert-spacing">
               {{ t('setting.e2ee.key_backup.create_warning') }}
             </n-alert>
 
@@ -83,13 +83,13 @@
                     </n-icon>
                   </template>
                   <template #footer>
-                    <n-space vertical style="width: 100%">
+                    <n-space vertical class="width-full">
                       <n-input
                         :value="recoveryKey"
                         type="textarea"
                         readonly
                         :autosize="{ minRows: 3, maxRows: 5 }"
-                        style="font-family: monospace; font-size: 14px" />
+                        class="monospace-input" />
 
                       <n-alert type="warning">
                         {{ t('setting.e2ee.key_backup.save_warning') }}
@@ -129,7 +129,7 @@
         <!-- 恢复备份 -->
         <n-tab-pane name="restore" :tab="t('setting.e2ee.key_backup.restore_backup')">
           <div class="backup-restore">
-            <n-alert type="info" style="margin-bottom: 16px">
+            <n-alert type="info" class="alert-spacing">
               {{ t('setting.e2ee.key_backup.restore_desc') }}
             </n-alert>
 
@@ -140,7 +140,7 @@
                   type="textarea"
                   :placeholder="t('setting.e2ee.key_backup.enter_recovery_key')"
                   :autosize="{ minRows: 3, maxRows: 5 }"
-                  style="font-family: monospace" />
+                  class="monospace-textarea" />
 
                 <n-result v-if="restoreResult" status="success" :title="t('setting.e2ee.key_backup.restored')">
                   <template #footer>
@@ -342,5 +342,28 @@ function handleClose() {
 .backup-create,
 .backup-restore {
   min-height: 300px;
+}
+
+/* Inline style replacements */
+.modal-card {
+  width: 600px;
+  max-width: 90vw;
+}
+
+.alert-spacing {
+  margin-bottom: 16px;
+}
+
+.width-full {
+  width: 100%;
+}
+
+.monospace-input {
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.monospace-textarea {
+  font-family: monospace;
 }
 </style>

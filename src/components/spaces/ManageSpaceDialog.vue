@@ -4,9 +4,8 @@
     :mask-closable="false"
     preset="dialog"
     :title="space ? `管理工作区 - ${space.name}` : '管理工作区'"
-    style="width: 800px; max-height: 90vh; overflow: hidden;"
-    :style="{ width: isMobile() ? '100%' : '800px' }"
-  >
+    class="modal-large"
+    :style="{ width: isMobile() ? '100%' : '800px' }">
     <div v-if="space" class="manage-space-dialog" :class="{ 'is-mobile': isMobile() }">
       <!-- 空间信息概览 -->
       <div class="space-overview">
@@ -52,18 +51,11 @@
                 label-placement="left"
                 label-width="120px">
                 <n-form-item label="空间名称" path="name">
-                  <n-input
-                    v-model:value="basicForm.name"
-                    placeholder="输入空间名称"
-                    maxlength="50"
-                    show-count />
+                  <n-input v-model:value="basicForm.name" placeholder="输入空间名称" maxlength="50" show-count />
                 </n-form-item>
 
                 <n-form-item label="空间主题" path="topic">
-                  <n-input
-                    v-model:value="basicForm.topic"
-                    placeholder="简短的空间主题（可选）"
-                    maxlength="100" />
+                  <n-input v-model:value="basicForm.topic" placeholder="简短的空间主题（可选）" maxlength="100" />
                 </n-form-item>
 
                 <n-form-item label="空间描述" path="description">
@@ -77,10 +69,7 @@
                 </n-form-item>
 
                 <n-form-item label="空间标签" path="tags">
-                  <n-dynamic-tags
-                    v-model:value="basicForm.tags"
-                    :max="5"
-                    placeholder="按回车添加标签" />
+                  <n-dynamic-tags v-model:value="basicForm.tags" :max="5" placeholder="按回车添加标签" />
                 </n-form-item>
               </n-form>
             </div>
@@ -89,10 +78,7 @@
           <!-- 隐私设置 -->
           <n-tab-pane name="privacy" tab="隐私设置">
             <div class="tab-content">
-              <n-form
-                :model="privacyForm"
-                label-placement="left"
-                label-width="120px">
+              <n-form :model="privacyForm" label-placement="left" label-width="120px">
                 <n-form-item label="空间可见性">
                   <n-radio-group v-model:value="privacyForm.visibility">
                     <n-radio value="public">
@@ -117,9 +103,7 @@
                 </n-form-item>
 
                 <n-form-item label="加入方式">
-                  <n-radio-group
-                    v-model:value="privacyForm.joinRule"
-                    :disabled="privacyForm.visibility === 'public'">
+                  <n-radio-group v-model:value="privacyForm.joinRule" :disabled="privacyForm.visibility === 'public'">
                     <n-radio value="open">
                       <div class="radio-content">
                         <span>自由加入</span>
@@ -167,29 +151,18 @@
                 <h4>默认权限</h4>
                 <p class="section-desc">新成员的默认权限设置</p>
 
-                <n-form
-                  :model="permissionsForm.defaultPermissions"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="permissionsForm.defaultPermissions" label-placement="left" label-width="200px">
                   <n-form-item>
-                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canRead">
-                      查看消息和文件
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canRead">查看消息和文件</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canPost">
-                      发送消息
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canPost">发送消息</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canUpload">
-                      上传文件
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canUpload">上传文件</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canInvite">
-                      邀请其他成员
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canInvite">邀请其他成员</n-checkbox>
                   </n-form-item>
                   <n-form-item>
                     <n-checkbox v-model:checked="permissionsForm.defaultPermissions.canCreateRoom">
@@ -203,10 +176,7 @@
                 <h4>高级权限</h4>
                 <p class="section-desc">危险操作权限，请谨慎分配</p>
 
-                <n-form
-                  :model="permissionsForm.advancedPermissions"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="permissionsForm.advancedPermissions" label-placement="left" label-width="200px">
                   <n-form-item>
                     <n-checkbox v-model:checked="permissionsForm.advancedPermissions.canModerate">
                       管理消息和成员
@@ -239,11 +209,7 @@
                       <span class="role-desc">{{ role.description }}</span>
                     </div>
                     <div class="role-permissions">
-                      <n-tag
-                        v-for="perm in role.permissions"
-                        :key="perm"
-                        size="small"
-                        round>
+                      <n-tag v-for="perm in role.permissions" :key="perm" size="small" round>
                         {{ getPermissionLabel(perm) }}
                       </n-tag>
                     </div>
@@ -258,11 +224,7 @@
             <div class="tab-content">
               <div class="members-header">
                 <div class="members-actions">
-                  <n-input
-                    v-model:value="memberSearchQuery"
-                    placeholder="搜索成员..."
-                    clearable
-                    style="width: 300px">
+                  <n-input v-model:value="memberSearchQuery" placeholder="搜索成员..." clearable class="search-input">
                     <template #prefix>
                       <n-icon><Search /></n-icon>
                     </template>
@@ -273,10 +235,7 @@
                     </template>
                     邀请成员
                   </n-button>
-                  <n-dropdown
-                    :options="bulkActions"
-                    @select="handleBulkAction"
-                    placement="bottom-end">
+                  <n-dropdown :options="bulkActions" @select="handleBulkAction" placement="bottom-end">
                     <n-button :disabled="selectedMembers.length === 0">
                       批量操作
                       <template #icon>
@@ -287,9 +246,7 @@
                 </div>
                 <div class="member-stats">
                   <span>共 {{ space.memberCount }} 位成员</span>
-                  <span v-if="selectedMembers.length > 0">
-                    已选择 {{ selectedMembers.length }} 位
-                  </span>
+                  <span v-if="selectedMembers.length > 0">已选择 {{ selectedMembers.length }} 位</span>
                 </div>
               </div>
 
@@ -311,10 +268,7 @@
                   <div class="member-info">
                     <div class="member-name">
                       {{ member.name }}
-                      <n-tag
-                        v-if="member.role"
-                        size="small"
-                        :type="getRoleType(member.role)">
+                      <n-tag v-if="member.role" size="small" :type="getRoleType(member.role)">
                         {{ getRoleLabel(member.role) }}
                       </n-tag>
                     </div>
@@ -323,10 +277,7 @@
                   </div>
 
                   <div class="member-actions">
-                    <n-dropdown
-                      :options="getMemberActions(member)"
-                      @select="handleMemberAction"
-                      placement="bottom-end">
+                    <n-dropdown :options="getMemberActions(member)" @select="handleMemberAction" placement="bottom-end">
                       <n-button quaternary circle size="small">
                         <template #icon>
                           <n-icon><MoreHorizontal /></n-icon>
@@ -344,19 +295,12 @@
             <div class="tab-content">
               <div class="notification-section">
                 <h4>空间通知</h4>
-                <n-form
-                  :model="notificationsForm.space"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="notificationsForm.space" label-placement="left" label-width="200px">
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.space.newMembers">
-                      新成员加入时通知管理员
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.space.newMembers">新成员加入时通知管理员</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.space.memberLeft">
-                      成员离开时通知管理员
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.space.memberLeft">成员离开时通知管理员</n-checkbox>
                   </n-form-item>
                   <n-form-item>
                     <n-checkbox v-model:checked="notificationsForm.space.spaceUpdated">
@@ -373,10 +317,7 @@
 
               <div class="notification-section">
                 <h4>消息通知</h4>
-                <n-form
-                  :model="notificationsForm.messages"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="notificationsForm.messages" label-placement="left" label-width="200px">
                   <n-form-item label="通知级别">
                     <n-select
                       v-model:value="notificationsForm.messages.level"
@@ -389,9 +330,7 @@
                     </n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.messages.keywords">
-                      关键词匹配时通知
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.messages.keywords">关键词匹配时通知</n-checkbox>
                   </n-form-item>
                 </n-form>
 
@@ -407,29 +346,18 @@
 
               <div class="notification-section">
                 <h4>通知方式</h4>
-                <n-form
-                  :model="notificationsForm.delivery"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="notificationsForm.delivery" label-placement="left" label-width="200px">
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.delivery.inApp">
-                      应用内通知
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.delivery.inApp">应用内通知</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.delivery.email">
-                      邮件通知
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.delivery.email">邮件通知</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.delivery.push">
-                      推送通知
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.delivery.push">推送通知</n-checkbox>
                   </n-form-item>
                   <n-form-item>
-                    <n-checkbox v-model:checked="notificationsForm.delivery.sound">
-                      声音提醒
-                    </n-checkbox>
+                    <n-checkbox v-model:checked="notificationsForm.delivery.sound">声音提醒</n-checkbox>
                   </n-form-item>
                 </n-form>
               </div>
@@ -441,10 +369,7 @@
             <div class="tab-content">
               <div class="advanced-section">
                 <h4>内容审核</h4>
-                <n-form
-                  :model="advancedForm.contentModeration"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="advancedForm.contentModeration" label-placement="left" label-width="200px">
                   <n-form-item>
                     <n-switch v-model:value="advancedForm.contentModeration.enabled">
                       <template #checked>启用审核</template>
@@ -475,10 +400,7 @@
 
               <div class="advanced-section">
                 <h4>数据管理</h4>
-                <n-form
-                  :model="advancedForm.dataManagement"
-                  label-placement="left"
-                  label-width="200px">
+                <n-form :model="advancedForm.dataManagement" label-placement="left" label-width="200px">
                   <n-form-item label="消息保留期限">
                     <n-select
                       v-model:value="advancedForm.dataManagement.messageRetention"
@@ -503,18 +425,13 @@
               <div class="advanced-section">
                 <h4>危险操作</h4>
                 <div class="danger-actions">
-                  <n-button
-                    type="warning"
-                    @click="handleArchiveSpace"
-                    :disabled="!!space.isArchived">
+                  <n-button type="warning" @click="handleArchiveSpace" :disabled="!!space.isArchived">
                     <template #icon>
                       <n-icon><Archive /></n-icon>
                     </template>
                     归档空间
                   </n-button>
-                  <n-button
-                    type="error"
-                    @click="showDeleteConfirm = true">
+                  <n-button type="error" @click="showDeleteConfirm = true">
                     <template #icon>
                       <n-icon><Trash /></n-icon>
                     </template>
@@ -531,30 +448,16 @@
     <template #action>
       <n-space>
         <n-button @click="handleCancel">取消</n-button>
-        <n-button type="primary" @click="handleSave" :loading="isSaving">
-          保存更改
-        </n-button>
+        <n-button type="primary" @click="handleSave" :loading="isSaving">保存更改</n-button>
       </n-space>
     </template>
   </n-modal>
 
   <!-- 邀请成员对话框 -->
-  <n-modal
-    v-model:show="showInviteDialog"
-    preset="dialog"
-    title="邀请成员"
-    style="width: 500px">
-    <n-form
-      ref="inviteFormRef"
-      :model="inviteForm"
-      :rules="inviteRules"
-      label-placement="left"
-      label-width="100px">
+  <n-modal v-model:show="showInviteDialog" preset="dialog" title="邀请成员" class="modal-medium">
+    <n-form ref="inviteFormRef" :model="inviteForm" :rules="inviteRules" label-placement="left" label-width="100px">
       <n-form-item label="用户邮箱" path="emails">
-        <n-dynamic-input
-          v-model:value="inviteForm.emails"
-          placeholder="输入邮箱地址"
-          :max="10" />
+        <n-dynamic-input v-model:value="inviteForm.emails" placeholder="输入邮箱地址" :max="10" />
       </n-form-item>
       <n-form-item label="邀请消息" path="message">
         <n-input
@@ -564,29 +467,19 @@
           :autosize="{ minRows: 2, maxRows: 4 }" />
       </n-form-item>
       <n-form-item label="初始权限" path="permissions">
-        <n-select
-          v-model:value="inviteForm.permissions"
-          :options="permissionPresets"
-          placeholder="选择初始权限" />
+        <n-select v-model:value="inviteForm.permissions" :options="permissionPresets" placeholder="选择初始权限" />
       </n-form-item>
     </n-form>
     <template #action>
       <n-space>
         <n-button @click="showInviteDialog = false">取消</n-button>
-        <n-button type="primary" @click="handleSendInvites" :loading="isInviting">
-          发送邀请
-        </n-button>
+        <n-button type="primary" @click="handleSendInvites" :loading="isInviting">发送邀请</n-button>
       </n-space>
     </template>
   </n-modal>
 
   <!-- 删除确认对话框 -->
-  <n-modal
-    v-model:show="showDeleteConfirm"
-    preset="dialog"
-    type="error"
-    title="删除空间确认"
-    style="width: 400px">
+  <n-modal v-model:show="showDeleteConfirm" preset="dialog" type="error" title="删除空间确认" class="modal-small">
     <div class="delete-confirmation">
       <n-alert type="error" :closable="false">
         <strong>⚠️ 警告：此操作不可恢复！</strong>
@@ -599,11 +492,9 @@
         :rules="deleteRules"
         label-placement="left"
         label-width="120px"
-        style="margin-top: 20px;">
+        class="mt-20">
         <n-form-item label="确认删除" path="confirm">
-          <n-input
-            v-model:value="deleteForm.confirm"
-            placeholder="请输入空间名称以确认删除" />
+          <n-input v-model:value="deleteForm.confirm" placeholder="请输入空间名称以确认删除" />
         </n-form-item>
       </n-form>
     </div>
@@ -1619,6 +1510,29 @@ const deleteRules = {
       flex-direction: column;
     }
   }
+}
+
+/* Inline style replacements */
+.modal-large {
+  width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.search-input {
+  width: 300px;
+}
+
+.modal-medium {
+  width: 500px;
+}
+
+.modal-small {
+  width: 400px;
+}
+
+.mt-20 {
+  margin-top: 20px;
 }
 
 // 响应式设计

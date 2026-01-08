@@ -19,7 +19,10 @@ export const usePluginsStore = defineStore(
      */
     const addPlugin = (newPlugin: PluginItem) => {
       const index = plugins.value.findIndex((i) => i.url === newPlugin.url)
-      index === -1 && plugins.value.push(newPlugin)
+      if (index === -1) {
+        // 创建新数组以强制触发 Vue 响应式更新
+        plugins.value = [...plugins.value, newPlugin]
+      }
     }
 
     /**
@@ -28,7 +31,12 @@ export const usePluginsStore = defineStore(
      */
     const removePlugin = (p: PluginItem) => {
       const index = plugins.value.findIndex((i) => i.url === p.url)
-      plugins.value.splice(index, 1)
+      if (index !== -1) {
+        // 创建新数组以强制触发 Vue 响应式更新
+        const newList = [...plugins.value]
+        newList.splice(index, 1)
+        plugins.value = newList
+      }
     }
 
     /**
@@ -37,7 +45,12 @@ export const usePluginsStore = defineStore(
      */
     const updatePlugin = (p: PluginItem) => {
       const index = plugins.value.findIndex((i) => i.url === p.url)
-      index !== -1 && (plugins.value[index] = p)
+      if (index !== -1) {
+        // 创建新数组以强制触发 Vue 响应式更新
+        const newList = [...plugins.value]
+        newList[index] = p
+        plugins.value = newList
+      }
     }
 
     const syncPluginsWithLocale = (latest: PluginItem[]) => {
@@ -60,9 +73,11 @@ export const usePluginsStore = defineStore(
     onBeforeMount(() => {
       // 读取本地存储的插件数据
       if (localStorage.getItem(StoresEnum.PLUGINS)) {
-        plugins.value = []
         const cachedData = JSON.parse(localStorage.getItem(StoresEnum.PLUGINS)!)
-        cachedData['plugins']?.forEach((item: PluginItem) => plugins.value.push(item))
+        const loadedPlugins: PluginItem[] = []
+        cachedData['plugins']?.forEach((item: PluginItem) => loadedPlugins.push(item))
+        // 创建新数组以强制触发 Vue 响应式更新
+        plugins.value = [...loadedPlugins]
         syncPluginsWithLocale(pluginsList.value)
         // 迁移：将历史的"动态/社区"插件改为房间管理入口
         let migrated = false

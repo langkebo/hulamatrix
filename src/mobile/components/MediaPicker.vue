@@ -7,6 +7,7 @@
  */
 
 import { ref, computed } from 'vue'
+import { logger } from '@/utils/logger'
 import type { ClientThumbnailOptions } from '@/services/matrixThumbnailService'
 
 interface Props {
@@ -162,7 +163,7 @@ async function compressImage(file: File): Promise<File> {
       lastModified: Date.now()
     })
   } catch (error) {
-    console.warn('[MediaPicker] Failed to compress image, using original:', error)
+    logger.warn('[MediaPicker] Failed to compress image, using original:', error)
     return file
   }
 }
@@ -206,7 +207,7 @@ async function handleFileSelect(files: FileList | File[]) {
 
       processedFiles.push(processedFile)
     } catch (err) {
-      console.error('[MediaPicker] Failed to process file:', err)
+      logger.error('[MediaPicker] Failed to process file:', err)
       error.value = `Failed to process ${file.name}`
     }
   }
@@ -333,26 +334,12 @@ defineExpose({
   <div class="mobile-media-picker">
     <!-- Selected files preview -->
     <div v-if="hasFiles" class="selected-files">
-      <div
-        v-for="(item, index) in selectedFiles"
-        :key="item.id"
-        class="file-preview"
-      >
+      <div v-for="(item, index) in selectedFiles" :key="item.id" class="file-preview">
         <!-- Image preview -->
-        <img
-          v-if="item.file.type.startsWith('image/')"
-          :src="item.preview || ''"
-          class="preview-image"
-          alt="Preview"
-        />
+        <img v-if="item.file.type.startsWith('image/')" :src="item.preview || ''" class="preview-image" alt="Preview" />
 
         <!-- Video preview -->
-        <video
-          v-else-if="item.file.type.startsWith('video/')"
-          :src="item.preview"
-          class="preview-video"
-          muted
-        />
+        <video v-else-if="item.file.type.startsWith('video/')" :src="item.preview" class="preview-video" muted />
 
         <!-- File icon -->
         <div v-else class="preview-file">
@@ -382,47 +369,29 @@ defineExpose({
 
     <!-- Action buttons -->
     <div class="action-buttons">
-      <button
-        v-if="enableCamera && canAddMore"
-        class="action-button camera"
-        @click="triggerCamera"
-      >
+      <button v-if="enableCamera && canAddMore" class="action-button camera" @click="triggerCamera">
         <span class="button-icon">📷</span>
         <span class="button-label">Camera</span>
       </button>
 
-      <button
-        v-if="enableVideo && canAddMore"
-        class="action-button video"
-        @click="triggerVideo"
-      >
+      <button v-if="enableVideo && canAddMore" class="action-button video" @click="triggerVideo">
         <span class="button-icon">🎥</span>
         <span class="button-label">Video</span>
       </button>
 
-      <button
-        v-if="canAddMore"
-        class="action-button gallery"
-        @click="triggerFileInput"
-      >
+      <button v-if="canAddMore" class="action-button gallery" @click="triggerFileInput">
         <span class="button-icon">🖼️</span>
         <span class="button-label">Gallery</span>
       </button>
 
-      <button
-        v-if="hasFiles"
-        class="action-button cancel"
-        @click="cancel"
-      >
+      <button v-if="hasFiles" class="action-button cancel" @click="cancel">
         <span class="button-icon">✕</span>
         <span class="button-label">Clear</span>
       </button>
     </div>
 
     <!-- Selection counter -->
-    <div v-if="hasFiles" class="selection-counter">
-      {{ selectedCount }} / {{ maxFiles }}
-    </div>
+    <div v-if="hasFiles" class="selection-counter">{{ selectedCount }} / {{ maxFiles }}</div>
 
     <!-- Processing overlay -->
     <Transition name="fade">
@@ -556,7 +525,9 @@ function formatFileSize(bytes: number): string {
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
 
   &:active {
     transform: scale(0.98);

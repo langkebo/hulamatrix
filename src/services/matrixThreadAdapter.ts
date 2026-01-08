@@ -131,6 +131,15 @@ class MatrixThreadAdapter {
    */
   getThreadRelation(eventId: string, room: MatrixRoomLike): ThreadRelation | null {
     try {
+      // Validate eventId parameter
+      if (!eventId) {
+        logger.warn('[MatrixThreadAdapter] Cannot get thread relation - eventId is undefined or empty', {
+          eventId,
+          roomId: room?.roomId
+        })
+        return null
+      }
+
       const client = matrixClientService.getClient()
       if (!client) return null
 
@@ -176,7 +185,11 @@ class MatrixThreadAdapter {
         participant: ''
       }
     } catch (error) {
-      logger.error('[MatrixThreadAdapter] Failed to get thread relation:', { eventId, error })
+      logger.error('[MatrixThreadAdapter] Failed to get thread relation:', {
+        eventId: eventId || 'undefined',
+        roomId: room?.roomId || 'undefined',
+        error
+      })
       return null
     }
   }

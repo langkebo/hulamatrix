@@ -1,3 +1,24 @@
+import { logger } from '@/utils/logger'
+
+/**
+ * 表情名称类型
+ */
+type EmojiName =
+  | 'alien-monster'
+  | 'bug'
+  | 'comet'
+  | 'fire'
+  | 'gear'
+  | 'hammer-and-wrench'
+  | 'lipstick'
+  | 'memo'
+  | 'package'
+  | 'party-popper'
+  | 'recycling-symbol'
+  | 'right-arrow-curving-left'
+  | 'rocket'
+  | 'test-tube'
+
 /**
  * Asset Loader - 统一资源加载工具
  * 提供头像、表情、文件图标等资源的统一加载和管理
@@ -86,13 +107,20 @@ export class EmojiLoader {
   static readonly EmojiType = this.EMOJI_LIST
 
   /**
+   * 检查是否是有效的表情名称
+   */
+  private static isValidEmojiName(name: string): name is EmojiName {
+    return EmojiLoader.EMOJI_LIST.includes(name as EmojiName)
+  }
+
+  /**
    * 获取表情URL
    * @param emojiName 表情名称
    * @returns 表情URL
    */
   static getEmojiUrl(emojiName: string): string {
     const normalizedName = emojiName.replace(/^[:\s]+|[:\s]+$/g, '').toLowerCase()
-    if (EmojiLoader.EMOJI_LIST.includes(normalizedName as any)) {
+    if (EmojiLoader.isValidEmojiName(normalizedName)) {
       return `/emoji/${normalizedName}.webp`
     }
     // 回退到通用的emoji表情（如果有）
@@ -106,7 +134,7 @@ export class EmojiLoader {
    */
   static hasEmoji(emojiName: string): boolean {
     const normalizedName = emojiName.replace(/^[:\s]+|[:\s]+$/g, '').toLowerCase()
-    return EmojiLoader.EMOJI_LIST.includes(normalizedName as any)
+    return EmojiLoader.isValidEmojiName(normalizedName)
   }
 
   /**
@@ -391,7 +419,7 @@ export class ThemeLoader {
         )
       )
     } catch (error) {
-      console.warn('Some assets failed to preload:', error)
+      logger.warn('Some assets failed to preload:', error)
     }
   }
 
@@ -437,7 +465,7 @@ export class AssetPreloader {
         await EmojiLoader.preloadEmojis()
         await SoundLoader.preloadSounds()
       } catch (error) {
-        console.warn('Asset preloading failed:', error)
+        logger.warn('Asset preloading failed:', error)
       } finally {
         AssetPreloader.isPreloading = false
       }

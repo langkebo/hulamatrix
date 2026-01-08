@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { logger } from '@/utils/logger'
 import { friendsServiceV2, privateChatServiceV2, useFriendsStoreV2, usePrivateChatStoreV2 } from '@/services/index-v2'
 
 // ==================== Store ====================
@@ -57,22 +58,22 @@ const friendsGroupedByCategory = computed(() => {
 // ==================== 生命周期 ====================
 
 onMounted(async () => {
-  console.log('[Example] Component mounted')
+  logger.debug('[Example] Component mounted')
 
   try {
     // 初始化服务
     await Promise.all([friendsStore.initialize(), privateChatStore.initialize()])
 
-    console.log('[Example] Services initialized')
-    console.log('[Example] Friends:', friendsStore.totalFriendsCount)
-    console.log('[Example] Sessions:', privateChatStore.totalSessionsCount)
+    logger.debug('[Example] Services initialized')
+    logger.debug('[Example] Friends:', friendsStore.totalFriendsCount)
+    logger.debug('[Example] Sessions:', privateChatStore.totalSessionsCount)
   } catch (error) {
-    console.error('[Example] Initialization failed:', error)
+    logger.error('[Example] Initialization failed:', error)
   }
 })
 
 onUnmounted(() => {
-  console.log('[Example] Component unmounted')
+  logger.debug('[Example] Component unmounted')
 
   // 清理私聊资源
   privateChatStore.dispose()
@@ -91,10 +92,10 @@ async function handleSendRequest(friendId: string) {
       1 // 默认分类
     )
 
-    console.log('[Example] Friend request sent:', requestId)
+    logger.debug('[Example] Friend request sent:', requestId)
     alert(`好友请求已发送！ID: ${requestId}`)
   } catch (error) {
-    console.error('[Example] Failed to send request:', error)
+    logger.error('[Example] Failed to send request:', error)
     alert(`发送失败: ${error}`)
   }
 }
@@ -110,14 +111,14 @@ async function handleStartChat(friendId: string) {
       ttl_seconds: 3600 // 1小时
     })
 
-    console.log('[Example] Session created:', session.session_id)
+    logger.debug('[Example] Session created:', session.session_id)
 
     // 选择会话
     await privateChatStore.selectSession(session.session_id)
 
     alert(`会话已创建！ID: ${session.session_id}`)
   } catch (error) {
-    console.error('[Example] Failed to create session:', error)
+    logger.error('[Example] Failed to create session:', error)
     alert(`创建会话失败: ${error}`)
   }
 }
@@ -133,9 +134,9 @@ async function handleSearch() {
 
   try {
     await friendsStore.searchUsers(searchQuery.value)
-    console.log('[Example] Search results:', friendsStore.searchResults)
+    logger.debug('[Example] Search results:', friendsStore.searchResults)
   } catch (error) {
-    console.error('[Example] Search failed:', error)
+    logger.error('[Example] Search failed:', error)
   }
 }
 
@@ -146,9 +147,9 @@ async function handleRefresh() {
   try {
     await friendsStore.refreshAll()
     await privateChatStore.refreshSessions()
-    console.log('[Example] Data refreshed')
+    logger.debug('[Example] Data refreshed')
   } catch (error) {
-    console.error('[Example] Refresh failed:', error)
+    logger.error('[Example] Refresh failed:', error)
   }
 }
 
@@ -158,7 +159,7 @@ async function handleRefresh() {
 function handleInvalidateCache() {
   friendsStore.invalidateCache()
   privateChatStore.invalidateCache()
-  console.log('[Example] Cache invalidated')
+  logger.debug('[Example] Cache invalidated')
   alert('缓存已清除')
 }
 
@@ -173,9 +174,9 @@ async function handleSendMessage() {
   try {
     await privateChatStore.sendMessage(messageInput.value)
     messageInput.value = ''
-    console.log('[Example] Message sent')
+    logger.debug('[Example] Message sent')
   } catch (error) {
-    console.error('[Example] Failed to send message:', error)
+    logger.error('[Example] Failed to send message:', error)
     alert(`发送失败: ${error}`)
   }
 }
@@ -323,9 +324,7 @@ async function handleSendMessage() {
     <!-- 当前会话消息 -->
     <div class="section" v-if="privateChatStore.currentSession">
       <h2>
-        当前会话: {{ privateChatStore.currentSession?.session_name }} ({{
-          privateChatStore.currentMessages.length
-        }}
+        当前会话: {{ privateChatStore.currentSession?.session_name }} ({{ privateChatStore.currentMessages.length }}
         条消息)
       </h2>
 

@@ -5,28 +5,21 @@
         trigger="click"
         placement="left"
         :show-arrow="false"
-        style="padding: 0; background: var(--bg-info)"
+        class="mention-popover"
         v-if="mentionTokenSet.has(item) && !props.historyMode">
         <template #trigger>
-          <span
-            :key="item"
-            style="-webkit-user-select: text !important; user-select: text !important"
-            class="text-#fbb990 cursor-pointer">
+          <span :key="item" class="mention-text" class="text-#fbb990 cursor-pointer">
             {{ item }}
           </span>
         </template>
         <InfoPopover v-if="mentionTokenToUid.get(item)" :uid="mentionTokenToUid.get(item)!" />
       </n-popover>
-      <span
-        v-else-if="mentionTokenSet.has(item)"
-        :key="item"
-        style="-webkit-user-select: text !important; user-select: text !important"
-        class="text-#fbb990 cursor-text">
+      <span v-else-if="mentionTokenSet.has(item)" :key="item" class="mention-text mention-text-static">
         {{ item }}
       </span>
       <template v-else-if="item.startsWith('http')">
         <n-flex align="center" :wrap="false">
-          <n-tooltip trigger="hover" style="flex-shrink: 0">
+          <n-tooltip trigger="hover" class="tooltip-flex-shrink">
             <template #trigger>
               <svg class="size-12px cursor-pointer pr-4px" @click="handleCopy(item)">
                 <use href="#copy"></use>
@@ -34,7 +27,7 @@
             </template>
             <span>复制网址</span>
           </n-tooltip>
-          <div style="flex: 1; word-wrap: break-word; overflow-wrap: anywhere">
+          <div class="link-content">
             <n-highlight
               v-if="props.searchKeyword"
               :text="item"
@@ -46,7 +39,7 @@
                 color: '#000',
                 background: '#13987f'
               }" />
-            <p v-else style="margin: 0">{{ item }}</p>
+            <p v-else class="link-paragraph">{{ item }}</p>
           </div>
         </n-flex>
       </template>
@@ -264,6 +257,35 @@ const onImageLoadError = (e: Event) => {
 </script>
 
 <style scoped>
+.mention-popover {
+  padding: 0;
+  background: var(--bg-info);
+}
+
+.mention-text {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+.mention-text-static {
+  color: #fbb990;
+  cursor: text;
+}
+
+.tooltip-flex-shrink {
+  flex-shrink: 0;
+}
+
+.link-content {
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.link-paragraph {
+  margin: 0;
+}
+
 .text-card {
   display: flex;
   margin: 8px 0;

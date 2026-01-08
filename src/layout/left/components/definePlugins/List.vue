@@ -95,7 +95,7 @@
           <n-popover
             v-if="plugin.state === PluginEnum.INSTALLED || index === isCurrently"
             :show="isCurrently === index"
-            style="padding: 0"
+            class="popover-no-padding"
             :show-arrow="false"
             trigger="click"
             placement="bottom">
@@ -246,6 +246,10 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/global/variable.scss' as *;
+
+.popover-no-padding {
+  padding: 0;
+}
 
 .box {
   @apply relative select-none cursor-pointer size-fit w-60px h-40px rounded-8px overflow-hidden;

@@ -6,6 +6,7 @@
  */
 
 import type { PrivateChatStorageApi, StoredPrivateChatSession, StoredPrivateChatMessage, SyncResult } from './types'
+import { logger } from '@/utils/logger'
 
 /**
  * 存储键前缀
@@ -49,7 +50,7 @@ export class PrivateChatStorageService implements PrivateChatStorageApi {
       this.initialized = true
     } catch (error) {
       // IndexedDB 不可用，使用 localStorage 作为后备
-      console.warn('IndexedDB not available, falling back to localStorage:', error)
+      logger.warn('IndexedDB not available, falling back to localStorage:', error)
       this.initialized = true
     }
   }

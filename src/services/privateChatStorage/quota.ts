@@ -6,6 +6,7 @@
  */
 
 import type { PrivateChatStorageApi } from '@/sdk/matrix-private-chat/types'
+import { logger } from '@/utils/logger'
 
 /**
  * 存储使用情况
@@ -281,7 +282,7 @@ export class StorageQuotaManager {
         duration
       }
     } catch (error) {
-      console.error('[StorageQuotaManager] Cleanup failed:', error)
+      logger.error('[StorageQuotaManager] Cleanup failed:', error)
       return {
         sessionsDeleted: 0,
         messagesDeleted: 0,
@@ -325,7 +326,7 @@ export class StorageQuotaManager {
 
       return toDelete.length
     } catch (error) {
-      console.error(`[StorageQuotaManager] Failed to cleanup messages for session ${sessionId}:`, error)
+      logger.error(`[StorageQuotaManager] Failed to cleanup messages for session ${sessionId}:`, error)
       return 0
     }
   }
@@ -355,7 +356,7 @@ export class StorageQuotaManager {
         duration: Date.now() - startTime
       }
     } catch (error) {
-      console.error('[StorageQuotaManager] Failed to cleanup old messages:', error)
+      logger.error('[StorageQuotaManager] Failed to cleanup old messages:', error)
       return {
         sessionsDeleted: 0,
         messagesDeleted: 0,

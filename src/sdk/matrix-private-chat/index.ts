@@ -30,7 +30,7 @@
  * const unsubscribe = client.privateChatV2.subscribeToMessages(
  *   session.session_id,
  *   (message) => {
- *     console.log('New message:', message.content);
+ *     logger.debug('New message:', message.content);
  *   }
  * );
  *

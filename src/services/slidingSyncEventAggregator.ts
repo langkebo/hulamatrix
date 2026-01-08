@@ -191,7 +191,7 @@ export class SlidingSyncEventAggregator extends EventEmitter {
       }
 
       for (const unifiedEvent of unifiedEvents) {
-        this.emit(unifiedEvent, eventData as any)
+        this.emit(unifiedEvent, eventData as unknown)
         this.stats.eventsEmitted++
 
         if (this.config.debug) {

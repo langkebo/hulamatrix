@@ -219,7 +219,7 @@ function renderReader(reader: ReadReceipt) {
   return h(
     NListItem,
     {
-      style: { padding: '8px 0' }
+      class: 'list-item-padding'
     },
     {
       prefix: () =>
@@ -243,7 +243,7 @@ function renderReader(reader: ReadReceipt) {
           h(
             'div',
             { class: 'reader-time' },
-            h('span', { style: { display: 'flex', alignItems: 'center', gap: '4px' } }, [
+            h('span', { class: 'time-row' }, [
               h(NIcon, { size: 12, color: '#999' }, { default: () => h(Clock) }),
               h('span', formatReadTime(reader.ts))
             ])
@@ -280,26 +280,16 @@ watch(
 </script>
 
 <template>
-  <NPopover
-    v-model:show="show"
-    :placement="placement"
-    trigger="click"
-    :style="{ maxWidth: '320px' }"
-    :show-arrow="true"
-  >
+  <NPopover v-model:show="show" :placement="placement" trigger="click" class="popover-max-width" :show-arrow="true">
     <template #trigger>
-      <NButton
-        text
-        size="tiny"
-        :style="{ display: 'inline-flex', alignItems: 'center', gap: '4px' }"
-      >
+      <NButton text size="tiny" class="trigger-button">
         <template #icon>
           <NIcon :size="16">
             <Eye />
           </NIcon>
         </template>
         <template v-if="readCount > 0">
-          <span :style="{ fontSize: '12px' }">{{ readCount }}</span>
+          <span class="read-count">{{ readCount }}</span>
         </template>
       </NButton>
     </template>
@@ -308,7 +298,7 @@ watch(
       <!-- Header -->
       <div class="panel-header">
         <div class="header-title">
-          <NIcon :size="18" :style="{ marginRight: '8px' }">
+          <NIcon :size="18" class="icon-spacing">
             <Checks />
           </NIcon>
           <span>Read by {{ readCount }} {{ readCount === 1 ? 'person' : 'people' }}</span>
@@ -317,7 +307,7 @@ watch(
 
       <!-- Error Alert -->
       <div v-if="hasError" class="panel-error">
-        <NText type="error" depth="3" style="font-size: 12px">
+        <NText type="error" depth="3" class="error-text">
           {{ error }}
         </NText>
       </div>
@@ -325,7 +315,7 @@ watch(
       <!-- Loading State -->
       <div v-if="isLoading" class="panel-loading">
         <NSpin size="small" />
-        <span style="margin-left: 8px; font-size: 12px; color: #999">Loading...</span>
+        <span class="loading-text">Loading...</span>
       </div>
 
       <!-- Empty State -->
@@ -334,7 +324,7 @@ watch(
       </div>
 
       <!-- Readers List -->
-      <NScrollbar v-else style="max-height: 300px">
+      <NScrollbar v-else class="scrollable-area">
         <NList :bordered="false" size="small">
           <template v-for="reader in receipts" :key="reader.userId">
             <component :is="renderReader(reader)" />
@@ -394,6 +384,49 @@ watch(
 .reader-time {
   font-size: 11px;
   color: var(--n-text-color-3);
+}
+
+/* Inline style replacements */
+.popover-max-width {
+  max-width: 320px;
+}
+
+.trigger-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.read-count {
+  font-size: 12px;
+}
+
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.error-text {
+  font-size: 12px;
+}
+
+.loading-text {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+.scrollable-area {
+  max-height: 300px;
+}
+
+.list-item-padding {
+  padding: 8px 0;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Popover trigger button hover effect */

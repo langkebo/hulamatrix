@@ -6,6 +6,7 @@
  */
 
 import type { StorageAdapter, StorageAdapterOptions } from './adapter'
+import { logger } from '@/utils/logger'
 
 /**
  * IndexedDB 适配器配置选项
@@ -434,7 +435,7 @@ export class IndexedDBAdapter implements StorageAdapter {
     if (this.onError) {
       this.onError(error)
     } else {
-      console.error('[IndexedDBAdapter]', error)
+      logger.error('[IndexedDBAdapter]', error)
     }
   }
 

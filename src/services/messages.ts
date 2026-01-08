@@ -140,9 +140,35 @@ export async function sdkPageMessagesWithCursor(
 ): Promise<{ data: unknown[]; nextCursor: string; hasMore: boolean }> {
   const client = matrixClientService.getClient()
   if (!client) throw new Error('Matrix client 未初始化')
+
+  // Wait for client to be fully ready (store initialized, sync started)
+  const isReady = (matrixClientService as unknown as { isReady?: () => boolean }).isReady?.()
+  if (!isReady) {
+    const waitForReady = (matrixClientService as unknown as { waitForReady?: (timeout?: number) => Promise<boolean> })
+      .waitForReady
+    if (waitForReady) {
+      const ready = await waitForReady(5000)
+      if (!ready) {
+        throw new Error('Matrix client 尚未准备好，请稍后重试')
+      }
+    }
+  }
+
+  // ✅ 检查 client.store 是否存在（getRoom 内部会使用）
+  if (!client.store) {
+    throw new Error('Matrix client store 未初始化，请等待同步完成')
+  }
+
+  // 检查 client 是否有 getRoom 方法
   const getRoomMethod = client.getRoom as ((roomId: string) => MatrixRoomLike | null) | undefined
-  const room = getRoomMethod?.(roomId)
-  if (!room) throw new Error(`未找到房间: ${roomId}`)
+  if (!getRoomMethod) {
+    throw new Error('Matrix client 不支持 getRoom 方法')
+  }
+
+  const room = getRoomMethod(roomId)
+  if (!room) {
+    throw new Error(`未找到房间: ${roomId}`)
+  }
   const roomLike = room as MatrixRoomLike
   const live = room.getLiveTimeline?.() ?? roomLike.timeline
   const liveLike = live as MatrixTimelineLike | undefined

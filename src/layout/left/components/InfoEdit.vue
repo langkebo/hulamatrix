@@ -29,7 +29,7 @@
           <n-popover trigger="hover" :delay="300" :duration="300" placement="bottom">
             <template #trigger>
               <div class="avatar-wrapper relative" @click="openAvatarCropper">
-                <n-avatar :size="80" :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)" round />
+                <n-avatar :size="80" :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)" round color="#00BFA5" />
                 <div class="avatar-hover absolute size-full rounded-50% flex-center">
                   <span class="text-12px color-#606060">{{ t('home.profile_edit.avatar.change') }}</span>
                 </div>
@@ -72,7 +72,7 @@
       </n-flex>
       <n-flex class="p-12px" align="center" justify="center">
         <n-button
-          style="color: #fff"
+          class="save-button"
           :disabled="editInfo.content.name === localUserInfo.name || !backendConnected"
           :color="'#13987f'"
           @click="saveEditInfo(localUserInfo as ModifyUserInfoType)">
@@ -196,6 +196,10 @@ onMounted(async () => {
   svg {
     display: block;
   }
+}
+
+.save-button {
+  color: #fff;
 }
 
 .avatar-wrapper {

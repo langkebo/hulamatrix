@@ -356,10 +356,9 @@ watch(
     v-model:show="show"
     preset="card"
     title="Notification Settings"
-    :style="{ width: '600px' }"
+    class="modal-small"
     :mask-closable="false"
-    :segmented="{ content: 'soft' }"
-  >
+    :segmented="{ content: 'soft' }">
     <template #header-extra>
       <NIcon v-if="settings.muted" size="20" color="#f0a020">
         <BellOff />
@@ -370,19 +369,12 @@ watch(
     </template>
 
     <!-- Error Alert -->
-    <NAlert
-      v-if="hasError"
-      type="error"
-      :title="error"
-      closable
-      @close="error = ''"
-      style="margin-bottom: 16px"
-    />
+    <NAlert v-if="hasError" type="error" :title="error" closable @close="error = ''" class="alert-spacing" />
 
     <!-- Loading State -->
-    <div v-if="isLoading" style="text-align: center; padding: 40px 0">
+    <div v-if="isLoading" class="loading-container">
       <NSpin size="large" />
-      <div style="margin-top: 16px; color: #999">Loading notification settings...</div>
+      <div class="loading-text">Loading notification settings...</div>
     </div>
 
     <!-- Settings Content -->
@@ -391,7 +383,7 @@ watch(
       <div class="setting-section">
         <div class="setting-header">
           <div class="setting-title">
-            <NIcon size="18" :style="{ marginRight: '8px' }">
+            <NIcon size="18" class="icon-spacing">
               <BellOff v-if="settings.muted" />
               <Bell v-else />
             </NIcon>
@@ -400,11 +392,15 @@ watch(
           <NSwitch v-model:value="settings.muted" :disabled="isSaving" />
         </div>
         <div class="setting-description">
-          {{ settings.muted ? 'This room is muted. You won\'t receive any notifications.' : 'Enable to mute all notifications from this room.' }}
+          {{
+            settings.muted
+              ? "This room is muted. You won't receive any notifications."
+              : 'Enable to mute all notifications from this room.'
+          }}
         </div>
       </div>
 
-      <NDivider style="margin: 20px 0" />
+      <NDivider class="divider-spacing" />
 
       <!-- Highlight Section -->
       <div class="setting-section">
@@ -414,21 +410,16 @@ watch(
           </div>
           <NSwitch v-model:value="settings.highlightEnabled" :disabled="settings.muted || isSaving" />
         </div>
-        <div class="setting-description">
-          Highlight messages that mention you or match specific keywords
-        </div>
+        <div class="setting-description">Highlight messages that mention you or match specific keywords</div>
 
         <div v-if="settings.highlightEnabled && !settings.muted" class="setting-content">
-          <div style="margin-top: 12px">
-            <label style="font-size: 13px; color: #666; display: block; margin-bottom: 8px">
-              Highlight Mode
-            </label>
+          <div class="input-container">
+            <label class="label-text">Highlight Mode</label>
             <NSelect
               v-model:value="settings.highlightMode"
               :options="highlightOptions"
               :disabled="isSaving"
-              style="margin-bottom: 12px"
-            />
+              class="select-spacing" />
 
             <!-- Keyword List (when highlightMode is 'keywords') -->
             <div v-if="settings.highlightMode === 'keywords'" class="keyword-list">
@@ -440,40 +431,36 @@ watch(
                   type="info"
                   size="small"
                   @close="removeKeyword(keyword)"
-                  style="margin: 4px"
-                >
+                  class="tag-spacing">
                   {{ keyword }}
                 </NTag>
               </div>
-              <div v-else style="color: #999; font-size: 12px; font-style: italic">
+              <div v-else class="keyword-placeholder">
                 No keywords set. Add keywords below to highlight messages containing them.
               </div>
 
-              <div style="margin-top: 12px; display: flex; gap: 8px">
+              <div class="keyword-input-row">
                 <NInput
                   v-model:value="newKeywordInput"
                   placeholder="Add keyword..."
                   :disabled="isSaving"
                   size="small"
                   @keyup.enter="addKeyword"
-                  style="flex: 1"
-                />
-                <NButton size="small" :disabled="isSaving || !newKeywordInput.trim()" @click="addKeyword">
-                  Add
-                </NButton>
+                  class="flex-1" />
+                <NButton size="small" :disabled="isSaving || !newKeywordInput.trim()" @click="addKeyword">Add</NButton>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <NDivider style="margin: 20px 0" />
+      <NDivider class="divider-spacing" />
 
       <!-- Sound Section -->
       <div class="setting-section">
         <div class="setting-header">
           <div class="setting-title">
-            <NIcon size="18" :style="{ marginRight: '8px' }">
+            <NIcon size="18" class="icon-spacing">
               <Volume3 v-if="!settings.soundEnabled || settings.soundType === 'silent'" />
               <Volume v-else />
             </NIcon>
@@ -481,21 +468,18 @@ watch(
           </div>
           <NSwitch v-model:value="settings.soundEnabled" :disabled="settings.muted || isSaving" />
         </div>
-        <div class="setting-description">
-          Play a sound when you receive a notification from this room
-        </div>
+        <div class="setting-description">Play a sound when you receive a notification from this room</div>
 
         <div v-if="settings.soundEnabled && !settings.muted" class="setting-content">
           <NSelect
             v-model:value="settings.soundType"
             :options="soundOptions"
             :disabled="isSaving"
-            style="margin-top: 12px; width: 200px"
-          />
+            class="select-narrow" />
         </div>
       </div>
 
-      <NDivider style="margin: 20px 0" />
+      <NDivider class="divider-spacing" />
 
       <!-- Desktop Notifications -->
       <div class="setting-section">
@@ -503,12 +487,10 @@ watch(
           <div class="setting-title">Desktop Notifications</div>
           <NSwitch v-model:value="settings.desktopEnabled" :disabled="settings.muted || isSaving" />
         </div>
-        <div class="setting-description">
-          Show desktop notifications for messages in this room
-        </div>
+        <div class="setting-description">Show desktop notifications for messages in this room</div>
       </div>
 
-      <NDivider style="margin: 20px 0" />
+      <NDivider class="divider-spacing" />
 
       <!-- Mobile Notifications -->
       <div class="setting-section">
@@ -516,26 +498,21 @@ watch(
           <div class="setting-title">Mobile Notifications</div>
           <NSwitch v-model:value="settings.mobileEnabled" :disabled="settings.muted || isSaving" />
         </div>
-        <div class="setting-description">
-          Show push notifications on mobile devices for this room
-        </div>
+        <div class="setting-description">Show push notifications on mobile devices for this room</div>
       </div>
     </template>
 
     <!-- Actions -->
     <template #footer>
-      <NSpace justify="end" style="width: 100%">
+      <NSpace justify="end" class="width-full">
         <NButton @click="show = false" :disabled="isSaving">Cancel</NButton>
         <NPopconfirm
           v-if="hasChanges"
           @positive-click="handleSaveAndClose"
           negative-text="Continue Editing"
-          positive-text="Save & Close"
-        >
+          positive-text="Save & Close">
           <template #trigger>
-            <NButton type="primary" :loading="isSaving" @click="handleSaveAndClose">
-              Save Changes
-            </NButton>
+            <NButton type="primary" :loading="isSaving" @click="handleSaveAndClose">Save Changes</NButton>
           </template>
           You have unsaved changes. Save and close?
         </NPopconfirm>
@@ -586,5 +563,76 @@ watch(
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+/* Inline style replacements */
+.modal-small {
+  width: 600px;
+}
+
+.alert-spacing {
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #999;
+}
+
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.divider-spacing {
+  margin: 20px 0;
+}
+
+.input-container {
+  margin-top: 12px;
+}
+
+.label-text {
+  font-size: 13px;
+  color: #666;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.select-spacing {
+  margin-bottom: 12px;
+}
+
+.tag-spacing {
+  margin: 4px;
+}
+
+.keyword-placeholder {
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.keyword-input-row {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.select-narrow {
+  margin-top: 12px;
+  width: 200px;
+}
+
+.width-full {
+  width: 100%;
 }
 </style>

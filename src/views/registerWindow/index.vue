@@ -148,8 +148,7 @@
           :loading="loading"
           :disabled="!protocol"
           tertiary
-          style="color: #fff"
-          class="w-full mt-8px gradient-button"
+          class="w-full mt-8px gradient-button register-button"
           @click="handleMatrixRegister">
           {{ loading ? '注册中...' : '注册' }}
         </n-button>
@@ -173,7 +172,7 @@ import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import { useMatrixAuth } from '@/hooks/useMatrixAuth'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
-import ActionBar from './ActionBar.vue'
+import ActionBar from '@/components/windows/ActionBar.vue'
 
 // 输入框类型定义
 type InputType = 'nickName' | 'password' | 'confirmPassword'
@@ -350,6 +349,10 @@ onMounted(() => {
   background: linear-gradient(145deg, #acd7da, #13987f);
   border: none;
   transition: all 0.3s ease;
+
+  &.register-button {
+    color: #fff;
+  }
 
   &:hover {
     transform: translateY(-1px);

@@ -133,7 +133,7 @@ export interface NotificationAdapter {
  *   title: '提示',
  *   content: '确定要执行此操作吗？',
  *   onConfirm: () => {
- *     console.log('确认')
+ *     logger.debug('确认')
  *   }
  * })
  * ```

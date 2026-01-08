@@ -1,0 +1,234 @@
+/**
+ * 内联样式替换类
+ * 用于替换组件中的静态内联样式
+ *
+ * @module styles/utilities/inline-style-replacements
+ */
+
+// ========== 文本颜色 ==========
+.text-white {
+  color: #fff !important;
+}
+
+.text-color-primary {
+  color: var(--color-primary, #1890ff) !important;
+}
+
+.text-color-secondary {
+  color: var(--color-text-secondary, #666) !important;
+}
+
+.text-color-tertiary {
+  color: var(--color-text-tertiary, #999) !important;
+}
+
+// ========== 背景颜色 ==========
+.bg-white {
+  background-color: #fff !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+// ========== 尺寸 ==========
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+// ========== 间距 ==========
+.mt-8px {
+  margin-top: 8px;
+}
+
+.mt-10px {
+  margin-top: 10px;
+}
+
+.mb-8px {
+  margin-bottom: 8px;
+}
+
+.ml-8px {
+  margin-left: 8px;
+}
+
+.mr-8px {
+  margin-right: 8px;
+}
+
+// ========== 边框 ==========
+.border-none {
+  border: none !important;
+}
+
+// ========== 定位 ==========
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.position-fixed {
+  position: fixed;
+}
+
+// ========== 显示 ==========
+.display-flex {
+  display: flex;
+}
+
+.display-inline-flex {
+  display: inline-flex;
+}
+
+.display-block {
+  display: block;
+}
+
+.display-inline-block {
+  display: inline-block;
+}
+
+.display-none {
+  display: none;
+}
+
+// ========== 对齐 ==========
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+// ========== 溢出 ==========
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+// ========== 光标 ==========
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-default {
+  cursor: default;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
+// ========== 用户选择 ==========
+.user-select-none {
+  user-select: none;
+}
+
+.user-select-text {
+  user-select: text;
+}
+
+// ========== 透明度 ==========
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+// ========== 过渡 ==========
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-colors {
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+// ========== 圆角 ==========
+.rounded-4px {
+  border-radius: 4px;
+}
+
+.rounded-8px {
+  border-radius: 8px;
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+// ========== 阴影 ==========
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+// ========== Z-index ==========
+.z-1 {
+  z-index: 1;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.z-100 {
+  z-index: 100;
+}
+
+.z-1000 {
+  z-index: 1000;
+}
+
+// ========== 特殊用途 ==========
+// 按钮白色文字
+.btn-white-text {
+  color: #fff !important;
+}
+
+// 渐变按钮白色文字
+.gradient-button-white {
+  color: #fff !important;
+}
+
+// 禁用状态
+.disabled-opacity {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// 加载中状态
+.loading-state {
+  pointer-events: none;
+  opacity: 0.7;
+}

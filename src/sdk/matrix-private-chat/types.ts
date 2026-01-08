@@ -176,6 +176,8 @@ export interface MatrixClientLike {
   getAccessToken?(): string
   getUserId?(): string
   getHomeserverUrl?(): string
+  // 动态扩展的 API
+  privateChatV2?: PrivateChatApi | Record<string, unknown>
 }
 
 /**

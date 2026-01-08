@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger'
+
 /* ==========================================================================
    VAPID (Voluntary Application Server Identification) Configuration
    For Web Push notification authentication
@@ -74,15 +76,15 @@ export function validateVapidConfig(config: VapidConfig): boolean {
   )
 
   if (!validPublicKey) {
-    console.error('[VAPID] Invalid public key - must be 87 characters of URL-safe base64')
+    logger.error('[VAPID] Invalid public key - must be 87 characters of URL-safe base64')
   }
 
   if (!validPrivateKey) {
-    console.error('[VAPID] Invalid private key - must be 43 characters of URL-safe base64')
+    logger.error('[VAPID] Invalid private key - must be 43 characters of URL-safe base64')
   }
 
   if (!validSubject) {
-    console.error('[VAPID] Invalid subject - must start with mailto: or https://')
+    logger.error('[VAPID] Invalid subject - must start with mailto: or https://')
   }
 
   return validPublicKey && validPrivateKey && validSubject
@@ -215,7 +217,7 @@ export function checkVapidConfiguration(): {
   }
 
   if (issues.length > 0) {
-    console.warn('[VAPID] Configuration issues:', issues)
+    logger.warn('[VAPID] Configuration issues:', issues)
   }
 
   return {
@@ -227,5 +229,5 @@ export function checkVapidConfiguration(): {
 // Log configuration status in development
 if (import.meta.env.DEV) {
   const vapidStatus = checkVapidConfiguration()
-  console.log('[VAPID] Configuration status:', vapidStatus)
+  logger.debug('[VAPID] Configuration status:', vapidStatus)
 }

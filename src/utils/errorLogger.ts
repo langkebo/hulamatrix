@@ -8,6 +8,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import { logger } from '@/utils/logger'
 import { isTauri } from '@/composables/usePlatformAdapters'
 
 interface LogEntry {
@@ -174,19 +175,21 @@ class ErrorLogger {
     })
 
     // 捕获 Vue 错误
-    window.addEventListener('vue:error', (event: any) => {
+    window.addEventListener('vue:error', (event: Event) => {
+      // Type assertion for Vue error event
+      const vueEvent = event as { message?: string; err?: unknown; stack?: string; componentName?: string }
       // Filter Vue 3.5+ strict mode warnings from third-party libraries (Naive UI compatibility)
-      const eventStr = String(event.err)
+      const eventStr = String(vueEvent.err)
       if (
-        event.message === 'No default value' ||
+        vueEvent.message === 'No default value' ||
         eventStr.includes('No default value') ||
         // Filter seemly color library warnings (Naive UI dependency)
-        event.message?.includes('[seemly/rgba]: Invalid color value') ||
+        vueEvent.message?.includes('[seemly/rgba]: Invalid color value') ||
         eventStr.includes('[seemly/rgba]: Invalid color value') ||
         // Filter Vue 3.5+ component lifecycle errors (internal Vue errors during unmount/update)
-        event.message?.includes('Right side of assignment cannot be destructured') ||
+        vueEvent.message?.includes('Right side of assignment cannot be destructured') ||
         eventStr.includes('Right side of assignment cannot be destructured') ||
-        (event.message?.includes('null is not an object') && event.message?.includes('parentNode')) ||
+        (vueEvent.message?.includes('null is not an object') && vueEvent.message?.includes('parentNode')) ||
         (eventStr.includes('null is not an object') && eventStr.includes('parentNode'))
       ) {
         return
@@ -194,9 +197,9 @@ class ErrorLogger {
       const logEntry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: 'error',
-        message: `Vue Error: ${event.message}`,
-        stack: event.stack,
-        url: event.componentName ? `Component: ${event.componentName}` : undefined
+        message: `Vue Error: ${vueEvent.message}`,
+        stack: vueEvent.stack,
+        url: vueEvent.componentName ? `Component: ${vueEvent.componentName}` : undefined
       }
       this.addLog(logEntry)
     })
@@ -241,7 +244,7 @@ class ErrorLogger {
     // 立即保存错误级别的日志
     if (logEntry.level === 'error') {
       this.flush().catch((err) => {
-        console.error('Failed to save error log:', err)
+        logger.error('Failed to save error log:', err)
       })
     }
   }
@@ -253,7 +256,7 @@ class ErrorLogger {
     if (isTauri) {
       this.flushTimer = setInterval(() => {
         this.flush().catch((err) => {
-          console.error('Failed to auto-flush logs:', err)
+          logger.error('Failed to auto-flush logs:', err)
         })
       }, this.flushInterval)
     }
@@ -287,7 +290,7 @@ class ErrorLogger {
     } catch (error) {
       // 保存失败，把日志放回去
       this.logs = [...logsToSave, ...this.logs]
-      console.error('Failed to save error log:', error)
+      logger.error('Failed to save error log:', error)
     }
   }
 

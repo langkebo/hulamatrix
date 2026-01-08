@@ -1,7 +1,6 @@
-import { TIME_INTERVALS } from '@/constants'
-import { msg } from '@/utils/SafeUI'
+import { TIME_INTERVALS } from '@/constants' import { msg } from '@/utils/SafeUI'
 <template>
-  <div class="video-player-container" :class="{ 'fullscreen': isFullscreen }">
+  <div class="video-player-container" :class="{ fullscreen: isFullscreen }">
     <!-- 视频播放器 -->
     <video
       ref="videoRef"
@@ -25,11 +24,10 @@ import { msg } from '@/utils/SafeUI'
       @volumechange="handleVolumeChange"
       @fullscreenchange="handleFullscreenChange"
       @webkitfullscreenchange="handleFullscreenChange"
-      @dblclick="toggleFullscreen">
-    </video>
+      @dblclick="toggleFullscreen"></video>
 
     <!-- 自定义控制栏 -->
-    <div v-if="!showControls" class="custom-controls" :class="{ 'show': showCustomControls }">
+    <div v-if="!showControls" class="custom-controls" :class="{ show: showCustomControls }">
       <div class="controls-left">
         <n-button text @click="togglePlay" class="control-btn">
           <template #icon>
@@ -37,20 +35,14 @@ import { msg } from '@/utils/SafeUI'
             <svg v-else class="size-24px"><use href="#pause"></use></svg>
           </template>
         </n-button>
-        <div class="time-display">
-          {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
-        </div>
+        <div class="time-display">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</div>
       </div>
 
       <div class="controls-center">
         <div class="progress-bar" @click="seekTo" ref="progressBarRef">
           <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
           <div class="progress-played" :style="{ width: playedPercent + '%' }"></div>
-          <div
-            class="progress-handle"
-            :style="{ left: playedPercent + '%' }"
-            @mousedown="startDragging">
-          </div>
+          <div class="progress-handle" :style="{ left: playedPercent + '%' }" @mousedown="startDragging"></div>
         </div>
       </div>
 
@@ -94,10 +86,7 @@ import { msg } from '@/utils/SafeUI'
     </div>
 
     <!-- 播放按钮（初始状态） -->
-    <div
-      v-if="!isPlaying && !loading && !error && !hasStarted"
-      class="play-button-overlay"
-      @click="togglePlay">
+    <div v-if="!isPlaying && !loading && !error && !hasStarted" class="play-button-overlay" @click="togglePlay">
       <n-button circle size="large" type="primary">
         <template #icon>
           <svg class="size-32px"><use href="#play"></use></svg>
@@ -409,6 +398,11 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', handleMouseMove)
   if (hideControlsTimer) {
     clearTimeout(hideControlsTimer)
+  }
+  // Clean up dragging event listeners in case component unmounts while dragging
+  if (isDragging.value) {
+    document.removeEventListener('mousemove', handleDragging)
+    document.removeEventListener('mouseup', stopDragging)
   }
 })
 
