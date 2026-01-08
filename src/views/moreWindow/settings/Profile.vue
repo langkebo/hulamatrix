@@ -110,7 +110,7 @@
   </n-flex>
 
   <!-- 修改密码对话框 -->
-  <n-modal v-model:show="showPasswordDialog" preset="card" title="修改密码" :style="{ width: '400px' }">
+  <n-modal v-model:show="showPasswordDialog" preset="card" title="修改密码" class="password-dialog-modal">
     <n-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-placement="left" label-width="100">
       <n-form-item label="当前密码" path="oldPassword">
         <n-input
@@ -294,6 +294,10 @@ const handlePasswordChange = async () => {
 </script>
 
 <style scoped lang="scss">
+.password-dialog-modal {
+  width: 400px;
+}
+
 .item {
   @apply bg-[--bg-setting-item] rounded-12px size-full box-border border-(solid 1px [--line-color]) custom-shadow;
   padding: var(--pad-container-x);
