@@ -62,9 +62,8 @@
               :loading="verifyLoading"
               :disabled="nextDisabled"
               tertiary
-              style="color: #fff"
-              @click="verifyEmail"
-              class="mt-10px w-full gradient-button">
+              class="white-text mt-10px w-full gradient-button"
+              @click="verifyEmail">
               下一步
             </n-button>
           </n-form>
@@ -136,9 +135,8 @@
               <n-button
                 :loading="submitLoading"
                 tertiary
-                style="color: #fff"
-                @click="submitNewPassword"
-                class="flex-1 gradient-button">
+                class="white-text flex-1 gradient-button"
+                @click="submitNewPassword">
                 提交
               </n-button>
             </n-flex>
@@ -469,4 +467,8 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/login';
+
+.white-text {
+  color: #fff;
+}
 </style>
