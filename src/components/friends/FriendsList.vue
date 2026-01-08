@@ -7,7 +7,7 @@
         size="small"
         :placeholder="t('friends.list.search_placeholder')"
         clearable
-        style="width: 200px"
+        class="search-input"
         @update:value="handleSearch">
         <template #prefix>
           <svg class="size-14px"><use href="#search"></use></svg>
@@ -465,6 +465,10 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+.search-input {
+  width: 200px;
+}
+
 .friends-list {
   width: 100%;
   height: 100%;
