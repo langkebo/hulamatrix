@@ -428,7 +428,7 @@ watch(
         v-model:value="searchQuery"
         placeholder="Search members..."
         clearable
-        style="flex: 1">
+        class="search-input">
         <template #prefix>
           <span class="icon">🔍</span>
         </template>
@@ -436,7 +436,7 @@ watch(
       <NSelect
         :value="filter"
         :options="filterOptions"
-        style="width: 180px"
+        class="filter-select"
         @update:value="handleFilterChange" />
     </div>
 
@@ -540,6 +540,14 @@ watch(
 .space-member-list__filters {
   display: flex;
   gap: 12px;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.filter-select {
+  width: 180px;
 }
 
 .members-card {
