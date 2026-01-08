@@ -27,9 +27,8 @@
           </div>
           <!-- 选中条 -->
           <div
-            style="border-radius: 24px 42px 4px 24px"
             :class="[
-              'z-10 absolute bottom--4px h-6px w-34px brand-bg transition-all duration-300 ease-out',
+              'z-10 absolute bottom--4px h-6px w-34px brand-bg transition-all duration-300 ease-out tab-indicator',
               activeTab === 'login' ? 'left-[33px]' : 'left-[133px]'
             ]"></div>
         </div>
@@ -86,10 +85,9 @@
 
         <!-- 账号选择框-->
         <div
-          style="border: 1px solid rgba(70, 70, 70, 0.1)"
           v-if="loginHistories.length > 0 && arrowStatus"
-          class="account-box absolute w-80% max-h-140px bg-#fdfdfd mt-45px z-99 rounded-8px p-8px box-border">
-          <n-scrollbar style="max-height: 120px" trigger="none">
+          class="account-box account-dropdown absolute w-80% max-h-140px bg-#fdfdfd mt-45px z-99 rounded-8px p-8px box-border">
+          <n-scrollbar class="account-scrollbar" trigger="none">
             <n-flex
               vertical
               v-for="item in loginHistories"
@@ -130,8 +128,7 @@
           :loading="loading"
           :disabled="loginDisabled"
           tertiary
-          style="color: #fff"
-          class="w-full mt-8px mb-50px gradient-button"
+          class="w-full mt-8px mb-50px gradient-button login-button"
           @click="normalLogin('MOBILE', true, false)">
           <span>{{ loginText }}</span>
         </n-button>
@@ -223,8 +220,7 @@
           :loading="registerLoading"
           :disabled="!isStep1Valid"
           tertiary
-          style="color: #fff"
-          class="w-full mt-8px mb-50px gradient-button"
+          class="w-full mt-8px mb-50px gradient-button login-button"
           @click="handleRegisterComplete">
           <span>注册</span>
         </n-button>
@@ -686,5 +682,25 @@ onUnmounted(() => {
 /* HuLa 品牌色背景 */
 .brand-bg {
   background: #13987f;
+}
+
+/* 选项卡指示器 */
+.tab-indicator {
+  border-radius: 24px 42px 4px 24px;
+}
+
+/* 账号下拉框 */
+.account-dropdown {
+  border: 1px solid rgba(70, 70, 70, 0.1);
+}
+
+/* 账号滚动条 */
+.account-scrollbar {
+  max-height: 120px;
+}
+
+/* 登录/注册按钮 */
+.login-button {
+  color: #fff;
 }
 </style>
