@@ -1,7 +1,7 @@
 <template>
   <n-image
     v-if="body?.url"
-    class="select-none cursor-pointer"
+    class="select-none cursor-pointer emoji-message-image"
     :img-props="{
       style: {
         maxWidth: '120px',
@@ -11,7 +11,6 @@
     }"
     show-toolbar-tooltip
     preview-disabled
-    style="border-radius: 8px; cursor: pointer !important"
     :src="displayEmojiSrc"
     @dblclick="handleOpenImageViewer"
     @error="handleImageError">
@@ -126,3 +125,10 @@ watch(
   }
 )
 </script>
+
+<style scoped>
+.emoji-message-image {
+  border-radius: 8px;
+  cursor: pointer !important;
+}
+</style>
