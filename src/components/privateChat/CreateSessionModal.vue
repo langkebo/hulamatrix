@@ -26,7 +26,7 @@
 
       <!-- 好友快捷选择 -->
       <n-form-item :label="t('privateChat.create_session.friends_label')">
-        <n-scrollbar style="max-height: 200px" class="friends-scrollbar">
+        <n-scrollbar class="friends-select-scrollbar">
           <n-space v-if="friends.length > 0" :size="8" vertical>
             <div
               v-for="friend in friends"
@@ -210,6 +210,10 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.friends-select-scrollbar {
+  max-height: 200px;
+}
+
 .friends-scrollbar {
   border: 1px solid var(--line-color);
   border-radius: 6px;
