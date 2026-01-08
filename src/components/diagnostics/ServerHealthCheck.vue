@@ -1,5 +1,5 @@
 <template>
-  <n-card style="max-width: 680px" title="服务器健康检查">
+  <n-card class="health-check-card" title="服务器健康检查">
     <n-flex :size="8" align="center">
       <n-button size="small" @click="runChecks" :loading="loading">开始检查</n-button>
       <span v-if="checkedAt" class="text-12px">{{ new Date(checkedAt).toLocaleString() }}</span>
@@ -79,3 +79,9 @@ const runChecks = async () => {
   }
 }
 </script>
+
+<style scoped>
+.health-check-card {
+  max-width: 680px;
+}
+</style>
