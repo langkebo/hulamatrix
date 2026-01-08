@@ -26,7 +26,7 @@
       <div v-else class="stats-grid">
         <!-- 总好友数 -->
         <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+          <div class="stat-icon stat-icon-purple">
             <svg class="size-24px text-white">
               <use href="#users"></use>
             </svg>
@@ -39,7 +39,7 @@
 
         <!-- 在线好友 -->
         <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+          <div class="stat-icon stat-icon-pink">
             <svg class="size-24px text-white">
               <use href="#circle"></use>
             </svg>
@@ -52,7 +52,7 @@
 
         <!-- 待处理请求 -->
         <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+          <div class="stat-icon stat-icon-blue">
             <svg class="size-24px text-white">
               <use href="#user-add"></use>
             </svg>
@@ -65,7 +65,7 @@
 
         <!-- 黑名单 -->
         <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+          <div class="stat-icon stat-icon-orange">
             <svg class="size-24px text-white">
               <use href="#block"></use>
             </svg>
@@ -79,7 +79,7 @@
 
       <!-- 详细统计（如果有） -->
       <div v-if="stats" class="stats-detail">
-        <n-divider style="margin: 12px 0" />
+        <n-divider class="stats-divider" />
         <div class="detail-grid">
           <!-- 分组数量 -->
           <div class="detail-item">
@@ -229,6 +229,22 @@ onMounted(async () => {
   justify-content: center;
   border-radius: 12px;
   flex-shrink: 0;
+
+  &.stat-icon-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  &.stat-icon-pink {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  &.stat-icon-blue {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  &.stat-icon-orange {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
 }
 
 .stat-info {
@@ -281,5 +297,9 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-color);
+}
+
+.stats-divider {
+  margin: 12px 0;
 }
 </style>
