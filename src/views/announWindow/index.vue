@@ -56,8 +56,7 @@
       <!--暂无数据-->
       <div v-if="!announList || announList.length === 0" class="flex-center">
         <n-empty
-          style="height: calc(100vh / var(--page-scale, 1) - 100px)"
-          class="flex-center"
+          class="empty-state"
           :description="t('announcement.list.empty')">
           <template #icon>
             <n-icon>
@@ -494,6 +493,10 @@ onMounted(async () => {
 })
 </script>
 <style scoped lang="scss">
+.empty-state {
+  height: calc(100vh / var(--page-scale, 1) - 100px);
+}
+
 [v-cloak] {
   display: none;
 }
