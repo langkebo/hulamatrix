@@ -32,15 +32,7 @@
             trigger="click"
             :show-arrow="false"
             placement="top-start"
-            style="
-              padding: 0;
-              background: var(--bg-emoji);
-              backdrop-filter: blur(10px);
-              -webkit-backdrop-filter: blur(10px);
-              box-shadow: 2px 2px 12px 2px var(--box-shadow-color);
-              border: 1px solid var(--box-shadow-color);
-              width: auto;
-            ">
+            class="emoji-popover">
             <template #trigger>
               <n-popover
                 v-model:show="recentlyTip"
@@ -78,19 +70,12 @@
               <use href="#screenshot"></use>
             </svg>
             <n-popover
-              style="
-                padding: 0;
-                background: var(--bg-emoji);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                box-shadow: 2px 2px 12px 2px var(--box-shadow-color);
-                border: 1px solid var(--box-shadow-color);
-              "
+              class="emoji-popover"
               trigger="hover"
               :show-arrow="false"
               placement="top">
               <template #trigger>
-                <svg class="dropdown-arrow" style="width: 14px; height: 14px">
+                <svg class="dropdown-arrow dropdown-icon">
                   <use href="#down"></use>
                 </svg>
               </template>
@@ -128,7 +113,7 @@
                 <svg @click="handleFileOpen">
                   <use href="#file2"></use>
                 </svg>
-                <svg style="width: 14px; height: 14px">
+                <svg class="dropdown-icon">
                   <use href="#down"></use>
                 </svg>
               </div>
@@ -765,6 +750,21 @@ onUnmounted(() => {
       transform: rotate(180deg);
     }
   }
+
+  .dropdown-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.emoji-popover {
+  padding: 0;
+  background: var(--bg-emoji);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 2px 2px 12px 2px var(--box-shadow-color);
+  border: 1px solid var(--box-shadow-color);
+  width: auto;
 }
 
 .resize-indicator {
