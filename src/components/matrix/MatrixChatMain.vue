@@ -172,7 +172,7 @@
     <n-modal
       v-model:show="showQuoteModal"
       preset="card"
-      style="width: 600px"
+      class="quote-modal"
       title="引用消息"
     >
       <MatrixMessageQuote
@@ -186,7 +186,7 @@
     <n-modal
       v-model:show="showMessageDetail"
       preset="card"
-      style="width: 500px"
+      class="message-detail-modal"
       title="消息详情"
     >
       <MessageDetail
@@ -1056,6 +1056,14 @@ onUnmounted(() => {
   right: 20px;
   z-index: 10;
   cursor: pointer;
+}
+
+.quote-modal {
+  width: 600px;
+}
+
+.message-detail-modal {
+  width: 500px;
 }
 
 .fade-enter-active,
