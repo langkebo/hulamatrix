@@ -2,13 +2,7 @@
   <n-flex vertical :size="16">
     <!-- Room Selection -->
     <n-flex align="center" :size="8">
-      <n-select
-        v-model:value="roomId"
-        :options="roomOptions"
-        placeholder="选择房间"
-        style="max-width: 320px"
-        filterable
-      />
+      <n-select v-model:value="roomId" :options="roomOptions" placeholder="选择房间" class="room-select" filterable />
       <n-button @click="loadPower" :loading="loading" type="primary">读取权限</n-button>
       <n-button @click="resetChanges" :disabled="!hasChanges">重置更改</n-button>
     </n-flex>
@@ -26,9 +20,8 @@
                 v-model:value="powerLevels.users_default"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -37,9 +30,8 @@
                 v-model:value="powerLevels.events_default"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -48,9 +40,8 @@
                 v-model:value="powerLevels.state_default"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -59,9 +50,8 @@
                 v-model:value="powerLevels.invite"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -70,9 +60,8 @@
                 v-model:value="powerLevels.kick"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -81,9 +70,8 @@
                 v-model:value="powerLevels.ban"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
           <n-gi>
@@ -92,9 +80,8 @@
                 v-model:value="powerLevels.redact"
                 :min="0"
                 :max="100"
-                style="width: 100%"
-                @update:value="markChanges"
-              />
+                class="full-width-input"
+                @update:value="markChanges" />
             </n-form-item>
           </n-gi>
         </n-grid>
@@ -115,20 +102,14 @@
           :data="eventPermissions"
           :max-height="300"
           size="small"
-          :bordered="false"
-        />
+          :bordered="false" />
       </n-card>
 
       <!-- User Permission Management -->
       <n-card title="成员权限管理" size="small">
         <template #header-extra>
           <n-flex :size="8">
-            <n-input
-              v-model:value="searchQuery"
-              placeholder="搜索成员"
-              clearable
-              style="width: 200px"
-            >
+            <n-input v-model:value="searchQuery" placeholder="搜索成员" clearable class="search-input">
               <template #prefix>🔍</template>
             </n-input>
             <n-dropdown trigger="click" :options="bulkPresetOptions" @select="applyBulkPreset">
@@ -147,24 +128,30 @@
           :row-key="(row: MemberPowerItem) => row.userId"
           :checked-row-keys="selectedUsers"
           @update:checked-row-keys="(keys: Array<string | number>) => handleCheck(keys as string[])"
-          :bordered="false"
-        />
+          :bordered="false" />
       </n-card>
 
       <!-- Action Buttons -->
       <n-flex justify="end">
-        <n-button @click="savePower" type="primary" :disabled="!hasChanges" size="large">
-          保存权限配置
-        </n-button>
+        <n-button @click="savePower" type="primary" :disabled="!hasChanges" size="large">保存权限配置</n-button>
       </n-flex>
     </template>
 
     <!-- Permission Info Alert -->
     <n-alert v-if="roomId" type="info" title="权限等级说明">
-      <ul style="margin: 8px 0 0 0; padding-left: 20px">
-        <li><strong>100</strong> - 管理员 (完全控制)</li>
-        <li><strong>50</strong> - 版主 (管理权限)</li>
-        <li><strong>0</strong> - 普通用户 (基本权限)</li>
+      <ul class="permission-info-list">
+        <li>
+          <strong>100</strong>
+          - 管理员 (完全控制)
+        </li>
+        <li>
+          <strong>50</strong>
+          - 版主 (管理权限)
+        </li>
+        <li>
+          <strong>0</strong>
+          - 普通用户 (基本权限)
+        </li>
         <li>数值越高，权限越大</li>
       </ul>
     </n-alert>
@@ -537,6 +524,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.room-select {
+  max-width: 320px;
+}
+
+.full-width-input {
+  width: 100%;
+}
+
+.search-input {
+  width: 200px;
+}
+
+.permission-info-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
 :deep(.n-form-item) {
   margin-bottom: 0;
 }
