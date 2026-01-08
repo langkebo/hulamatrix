@@ -116,7 +116,7 @@
     <n-empty v-else description="暂无待处理请求" />
 
     <!-- 添加好友对话框 -->
-    <n-modal v-model:show="showAddDialog" preset="card" title="添加好友" style="width: 90%; max-width: 400px">
+    <n-modal v-model:show="showAddDialog" preset="card" title="添加好友" class="add-friend-modal">
       <n-form label-placement="left" label-width="80">
         <n-form-item label="用户 ID">
           <n-input v-model:value="addUserId" placeholder="请输入完整用户 ID，如 @user:cjystx.top" />
@@ -240,5 +240,10 @@ onMounted(async () => {
 <style scoped>
 .font-600 {
   font-weight: 600;
+}
+
+.add-friend-modal {
+  width: 90%;
+  max-width: 400px;
 }
 </style>
