@@ -34,8 +34,7 @@
             <n-input
               :value="screenshotShortcutDisplay"
               :placeholder="screenshotShortcutDisplay"
-              style="width: 130px"
-              class="border-(1px solid #90909080)"
+              class="shortcut-input border-(1px solid #90909080)"
               readonly
               size="small"
               :disabled="!globalShortcutEnabled"
@@ -79,8 +78,7 @@
             <n-input
               :value="openMainPanelShortcutDisplay"
               :placeholder="openMainPanelShortcutDisplay"
-              style="width: 130px"
-              class="border-(1px solid #90909080)"
+              class="shortcut-input border-(1px solid #90909080)"
               readonly
               size="small"
               :disabled="!globalShortcutEnabled"
@@ -527,6 +525,10 @@ onMounted(async () => {
 <style scoped lang="scss">
 .item {
   @apply bg-[--bg-setting-item] rounded-12px size-full p-12px box-border border-(solid 1px [--line-color]) custom-shadow;
+}
+
+.shortcut-input {
+  width: 130px;
 }
 
 :deep(.n-input.n-input--focus) {
