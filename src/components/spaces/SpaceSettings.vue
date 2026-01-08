@@ -63,7 +63,7 @@
             <n-tag :type="getVisibilityTagType(spaceInfo.joinRule)">
               {{ getVisibilityLabel(spaceInfo.joinRule) }}
             </n-tag>
-            <n-button v-if="canEdit" text type="primary" style="margin-left: 8px" @click="showVisibilityDialog = true">
+            <n-button v-if="canEdit" text type="primary" class="change-button" @click="showVisibilityDialog = true">
               更改
             </n-button>
           </n-form-item>
@@ -671,6 +671,10 @@ watch(
       color: var(--text-color-3);
       margin-top: 2px;
     }
+  }
+
+  .change-button {
+    margin-left: 8px;
   }
 }
 </style>
