@@ -12,7 +12,7 @@
         </n-space>
         <n-space align="center" :size="8">
           <span>麦克风灵敏度</span>
-          <n-slider v-model:value="micLevel" :step="1" :min="0" :max="100" style="width: 240px" />
+          <n-slider v-model:value="micLevel" :step="1" :min="0" :max="100" class="mic-slider" />
         </n-space>
         <n-space>
           <n-button type="primary" @click="save">保存</n-button>
@@ -68,3 +68,9 @@ onMounted(async () => {
   micLevel.value = Number(localStorage.getItem('voice_audio_mic_level') || '50')
 })
 </script>
+
+<style scoped>
+.mic-slider {
+  width: 240px;
+}
+</style>
