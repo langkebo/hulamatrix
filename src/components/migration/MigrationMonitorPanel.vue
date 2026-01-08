@@ -147,7 +147,7 @@
         ref="fileInput"
         type="file"
         accept=".json"
-        style="display: none"
+        class="hidden-input"
         @change="importFile"
       />
       <button class="action-btn danger" @click="resetStats" :disabled="stats.totalMessages === 0">
@@ -667,5 +667,9 @@ onUnmounted(() => {
     background: #f5f5f5;
     color: #999;
   }
+}
+
+.hidden-input {
+  display: none;
 }
 </style>
