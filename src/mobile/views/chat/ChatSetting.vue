@@ -1,11 +1,7 @@
 <template>
   <AutoFixHeightPage :show-footer="false">
     <template #header>
-      <HeaderBar
-        :isOfficial="false"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
-        :hidden-right="true"
-        :room-name="title + '设置'" />
+      <HeaderBar :isOfficial="false" class="header-bar" :hidden-right="true" :room-name="title + '设置'" />
     </template>
 
     <template #container>
@@ -15,7 +11,7 @@
           <div class="flex shadow py-10px bg-white rounded-10px w-full items-center gap-10px" @click="clickInfo">
             <!-- 群头像 -->
             <div class="flex justify-center">
-              <div class="rounded-full relative bg-white w-38px h-38px overflow-hidden" style="margin-left: 10px">
+              <div class="rounded-full relative bg-white w-38px h-38px overflow-hidden avatar-container">
                 <n-avatar
                   class="absolute"
                   :size="38"
@@ -64,7 +60,9 @@
                   <div>
                     有
                     <span class="text-#398D7E">
-                      {{ formattedStats.hasData ? formattedStats.memberCount : (roomStore.currentRoom?.memberCount || 0) }}
+                      {{
+                        formattedStats.hasData ? formattedStats.memberCount : roomStore.currentRoom?.memberCount || 0
+                      }}
                     </span>
                     位成员
                   </div>
@@ -87,7 +85,12 @@
                   <div
                     v-if="i.activeStatus !== OnlineEnum.ONLINE"
                     class="w-36px h-36px absolute rounded-full bg-#707070 opacity-70 z-4"></div>
-                  <n-avatar class="absolute z-3" :size="36" :src="avatarSrc(i.avatar || '')" fallback-src="/logo.png" round />
+                  <n-avatar
+                    class="absolute z-3"
+                    :size="36"
+                    :src="avatarSrc(i.avatar || '')"
+                    fallback-src="/logo.png"
+                    round />
                 </div>
                 <div class="truncate max-w-full text-#707070">{{ i.name }}</div>
               </div>
@@ -123,9 +126,8 @@
             <div class="px-15px flex flex-col w-full">
               <!-- 群号 -->
               <div
-                style="border-bottom: 1px solid; border-color: #ebebeb"
-                @click="handleCopy(currentSession?.account || '')"
-                class="flex justify-between py-15px items-center">
+                class="divider-bottom flex justify-between py-15px items-center"
+                @click="handleCopy(currentSession?.account || '')">
                 <div class="text-14px">{{ isGroup ? '群号/二维码' : 'Hula号/二维码' }}</div>
                 <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
                   <div>{{ currentSession?.account || '' }}</div>
@@ -149,14 +151,7 @@
                 <div class="text-14px">本群昵称</div>
                 <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
                   <input
-                    style="
-                      height: 17px;
-                      border: none;
-                      text-align: right;
-                      outline: none;
-                      font-size: 14px;
-                      text-align: right;
-                    "
+                    class="name-input"
                     v-model="nameValue"
                     @blur="handleGroupInfoUpdate"
                     placeholder="请输入群昵称" />
@@ -167,14 +162,7 @@
                 <div class="text-14px">我的群昵称</div>
                 <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
                   <input
-                    style="
-                      height: 17px;
-                      border: none;
-                      text-align: right;
-                      outline: none;
-                      font-size: 14px;
-                      text-align: right;
-                    "
+                    class="name-input"
                     v-model="nicknameValue"
                     @blur="handleInfoUpdate"
                     placeholder="请输入我的群昵称" />
@@ -192,8 +180,7 @@
               <div class="w-full px-15px">
                 <input
                   v-model="remarkValue"
-                  class="h-50px w-full"
-                  style="border: none; outline: none; font-size: 14px"
+                  class="h-50px w-full remark-input"
                   :placeholder="'请输入' + title + '备注'"
                   @blur="handleInfoUpdate" />
               </div>
@@ -203,15 +190,11 @@
             <div class="px-15px flex flex-col w-full">
               <div class="pt-15px text-14px text-#6E6E6E">{{ title }}设置</div>
               <!-- 群号 -->
-              <div
-                style="border-bottom: 1px solid; border-color: #ebebeb"
-                class="flex justify-between py-12px items-center">
+              <div class="divider-bottom flex justify-between py-12px items-center">
                 <div class="text-14px">设置为置顶</div>
                 <n-switch :value="!!currentSession?.top" @update:value="handleTop" />
               </div>
-              <div
-                style="border-bottom: 1px solid; border-color: #ebebeb"
-                class="flex justify-between py-12px items-center">
+              <div class="divider-bottom flex justify-between py-12px items-center">
                 <div class="text-14px">消息免打扰</div>
                 <n-switch
                   @update:value="handleNotification"
@@ -666,4 +649,32 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.header-bar {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+
+.avatar-container {
+  margin-left: 10px;
+}
+
+.divider-bottom {
+  border-bottom: 1px solid;
+  border-color: #ebebeb;
+}
+
+.name-input {
+  height: 17px;
+  border: none;
+  text-align: right;
+  outline: none;
+  font-size: 14px;
+}
+
+.remark-input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+</style>
