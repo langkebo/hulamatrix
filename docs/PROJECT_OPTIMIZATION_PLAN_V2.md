@@ -563,7 +563,7 @@ src/
 - [x] 修复主要 v-for key 问题
 - [ ] 优化所有复杂 computed 属性
 - [ ] 减少不必要的 watch
-- [x] 清理部分内联样式 (36 个文件, 共 119 处)
+- [x] 清理部分内联样式 (49 个文件, 共 130 处)
 
 ### 第 3-4 周: 大文件重构
 - [ ] 拆分 2-3 个超大组件
@@ -626,11 +626,28 @@ src/
 
 ---
 
-**文档版本**: v3.1
+**文档版本**: v3.2
 **创建日期**: 2025-01-08
 **最后更新**: 2025-01-08
 **负责人**: Claude Code
 **更新说明**:
 - ✅ Phase 2: 内存泄漏修复 - 已验证完成
 - ✅ Phase 3 (部分): v-for key 问题 - 已修复 13 个关键文件
-- ✅ Phase 6 (部分): 内联样式清理 - 已清理 36 个文件 (共 119 处内联样式)
+- ✅ Phase 6 (部分): 内联样式清理 - 已清理 49 个文件 (共 130 处内联样式)
+
+**本次更新 (v3.2)**:
+- 新增清理 9 个文件的内联样式:
+  - src/views/onlineStatusWindow/index.vue (.main-container 动态渐变背景)
+  - src/views/moreWindow/settings/Profile.vue (.password-dialog-modal 宽度)
+  - src/views/LockScreen.vue (.avatar-border, .password-input 样式)
+  - src/views/announWindow/index.vue (.empty-state 高度)
+  - src/mobile/views/friends/AddFriends.vue (.tag-select 最小宽度)
+  - src/mobile/views/profile/MyAlbum.vue (.header-border 边框样式)
+  - src/mobile/views/profile/EditBio.vue (.header-border 边框样式)
+  - src/mobile/views/spaces/Index.vue (.helper-text 字体大小)
+  - src/mobile/views/settings/appearance/index.vue (.image-size-select 宽度)
+
+**进度统计**:
+- 内联样式清理完成度: 49/78 文件 (62.8%)
+- 已提取内联样式: 130 处
+- 剩余待清理: 约 29 个文件
