@@ -95,7 +95,7 @@
               </template>
             </van-cell>
           </van-cell-group>
-          <div style="margin: 16px">
+          <div class="form-actions">
             <van-button round block type="primary" native-type="submit">保存</van-button>
           </div>
         </van-form>
@@ -449,5 +449,9 @@ onMounted(() => {
 
 .user-detail {
   padding: 16px;
+}
+
+.form-actions {
+  margin: 16px;
 }
 </style>
