@@ -1,8 +1,8 @@
 <template>
   <n-flex vertical :size="12">
     <n-flex>
-      <n-select v-model:value="selectedUserId" :options="userOptions" placeholder="选择用户" style="max-width: 240px" />
-      <n-select v-model:value="selectedRoleId" :options="roleOptions" placeholder="选择角色" style="max-width: 240px" />
+      <n-select v-model:value="selectedUserId" :options="userOptions" placeholder="选择用户" class="select-input" />
+      <n-select v-model:value="selectedRoleId" :options="roleOptions" placeholder="选择角色" class="select-input" />
       <n-button @click="assignRole" type="primary">授予角色</n-button>
     </n-flex>
     <n-alert type="info">基于房间权限 `m.room.power_levels` 与管理员 API 的权限变更</n-alert>
@@ -30,3 +30,10 @@ const assignRole = async () => {
   msg.success?.('已授予角色')
 }
 </script>
+
+<style scoped>
+/* 选择器输入框 */
+.select-input {
+  max-width: 240px;
+}
+</style>
