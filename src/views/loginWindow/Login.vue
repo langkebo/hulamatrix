@@ -44,10 +44,9 @@
 
         <!-- 账号选择框-->
         <div
-          style="border: 1px solid rgba(70, 70, 70, 0.1)"
           v-if="loginHistories.length > 0 && arrowStatus"
-          class="account-box absolute w-260px max-h-140px bg-#fdfdfd98 dark:bg-#48484e98 backdrop-blur-sm mt-45px z-99 rounded-8px p-8px box-border">
-          <n-scrollbar style="max-height: 120px" trigger="none">
+          class="account-dropdown account-box absolute w-260px max-h-140px bg-#fdfdfd98 dark:bg-#48484e98 backdrop-blur-sm mt-45px z-99 rounded-8px p-8px box-border">
+          <n-scrollbar class="account-scrollbar" trigger="none">
             <n-flex
               vertical
               v-for="item in loginHistories"
@@ -134,8 +133,7 @@
           :loading="loading"
           :disabled="loginDisabled"
           tertiary
-          style="color: #fff"
-          class="gradient-button w-full mt-8px mb-50px"
+          class="gradient-button w-full mt-8px mb-50px login-button-manual"
           @click="normalLogin('PC', true, false)">
           <span>{{ loginText }}</span>
         </n-button>
@@ -159,7 +157,7 @@
         </n-flex>
 
         <n-flex justify="center">
-          <n-ellipsis style="max-width: 200px" class="text-(18px [--chat-text-color])">
+          <n-ellipsis class="user-name-ellipsis text-(18px [--chat-text-color])">
             {{ userStore.userInfo?.name || '' }}
           </n-ellipsis>
         </n-flex>
@@ -170,8 +168,7 @@
           :loading="loading"
           :disabled="loginDisabled"
           tertiary
-          style="color: #fff"
-          class="gradient-button w-200px mt-12px mb-40px"
+          class="gradient-button w-200px mt-12px mb-40px login-button-auto"
           @click="normalLogin('PC', true, true)">
           <span>{{ loginText }}</span>
         </n-button>
@@ -646,6 +643,23 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+.account-dropdown {
+  border: 1px solid rgba(70, 70, 70, 0.1);
+}
+
+.account-scrollbar {
+  max-height: 120px;
+}
+
+.login-button-manual,
+.login-button-auto {
+  color: #fff;
+}
+
+.user-name-ellipsis {
+  max-width: 200px;
+}
+
 @use '@/styles/scss/global/login-bg';
 @use '@/styles/scss/login';
 </style>

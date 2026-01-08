@@ -16,7 +16,7 @@
           v-model:value="searchValue"
           type="text"
           size="small"
-          style="border-radius: 8px; border: 1px solid #ccc"
+          class="search-input"
           :placeholder="getPlaceholder"
           :maxlength="20"
           round
@@ -45,7 +45,7 @@
           </template>
           <!-- 初始加载状态 -->
           <template v-if="initialLoading">
-            <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
+            <n-spin class="flex-center state-container" size="large" />
           </template>
           <!-- 搜索结果 -->
           <template v-else-if="searchResults.length">
@@ -100,21 +100,15 @@
           </template>
           <!-- 搜索中状态 -->
           <template v-else-if="loading">
-            <n-spin class="flex-center" style="height: calc(100vh / var(--page-scale, 1) - 200px)" size="large" />
+            <n-spin class="flex-center state-container" size="large" />
           </template>
           <!-- 搜索无结果状态 -->
           <template v-else-if="hasSearched">
-            <n-empty
-              class="flex-center"
-              style="height: calc(100vh / var(--page-scale, 1) - 200px)"
-              :description="t('home.search_window.empty.no_result')" />
+            <n-empty class="flex-center state-container" :description="t('home.search_window.empty.no_result')" />
           </template>
           <!-- 默认空状态 -->
           <template v-else>
-            <n-empty
-              style="height: calc(100vh / var(--page-scale, 1) - 200px)"
-              class="flex-center"
-              :description="t('home.search_window.empty.prompt')">
+            <n-empty class="flex-center state-container" :description="t('home.search_window.empty.prompt')">
               <template #icon>
                 <n-icon>
                   <svg><use href="#explosion"></use></svg>
@@ -677,6 +671,15 @@ onMounted(async () => {
 })
 </script>
 <style scoped lang="scss">
+.search-input {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.state-container {
+  height: calc(100vh / var(--page-scale, 1) - 200px);
+}
+
 .action-button {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.9;

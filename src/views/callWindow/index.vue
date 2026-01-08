@@ -385,7 +385,7 @@
     </div>
   </div>
 
-  <audio ref="remoteAudioRef" autoplay playsinline style="display: none"></audio>
+  <audio ref="remoteAudioRef" autoplay playsinline class="hidden-audio"></audio>
 
   <n-drawer v-model:show="showDeviceDrawer" placement="bottom" :height="280" to="body">
     <n-drawer-content title="设备选择">
@@ -397,7 +397,7 @@
             size="small"
             v-model:value="selectedAudioId"
             :options="audioOptions"
-            style="flex: 1" />
+            class="device-select" />
         </n-space>
         <n-space align="center" :size="8">
           <span class="text-12px">摄像头</span>
@@ -406,7 +406,7 @@
             size="small"
             v-model:value="selectedVideoId"
             :options="videoOptions"
-            style="flex: 1" />
+            class="device-select" />
         </n-space>
         <n-alert type="info" :show-icon="true">浏览器端输出设备选择受限，点击下方按钮将提示并记录切换意图</n-alert>
         <n-space>
@@ -443,7 +443,7 @@
             size="small"
             v-model:value="selectedAudioId"
             :options="audioOptions"
-            style="flex: 1" />
+            class="device-select" />
         </n-space>
         <n-space align="center" :size="8">
           <span class="text-12px">摄像头</span>
@@ -452,7 +452,7 @@
             size="small"
             v-model:value="selectedVideoId"
             :options="videoOptions"
-            style="flex: 1" />
+            class="device-select" />
         </n-space>
         <n-space>
           <n-button size="small" type="primary" data-test-id="perm-check" @click="onPermissionCheck">权限检测</n-button>
@@ -975,6 +975,14 @@ const toggleAudioOutput = () => {}
 </script>
 
 <style scoped>
+.hidden-audio {
+  display: none;
+}
+
+.device-select {
+  flex: 1;
+}
+
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
