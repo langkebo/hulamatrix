@@ -2,7 +2,7 @@
   <div class="presence-status" :class="presenceClass">
     <div v-if="showTooltip" class="presence-tooltip">
       <n-text>{{ statusText }}</n-text>
-      <n-text v-if="lastActive" depth="3" style="font-size: 11px">
+      <n-text v-if="lastActive" depth="3" class="last-active-text">
         {{ formatLastActive(lastActive) }}
       </n-text>
     </div>
@@ -141,6 +141,10 @@ function formatLastActive(timestamp: number): string {
 
   &:hover .presence-tooltip {
     opacity: 1;
+  }
+
+  .last-active-text {
+    font-size: 11px;
   }
 }
 </style>
