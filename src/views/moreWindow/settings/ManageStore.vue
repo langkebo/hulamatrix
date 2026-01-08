@@ -19,7 +19,7 @@
           "
           :processing="scanning"
           :offset-degree="180"
-          style="width: 160px; height: 160px"
+          class="progress-circle"
           :stroke-width="16">
           <n-flex vertical align="center" justify="center" :size="4" class="text-center">
             <span class="text-(18px [--text-color] center)">
@@ -221,5 +221,10 @@ watch(pathType, (newType: string) => {
 <style scoped lang="scss">
 .item {
   @apply bg-[--bg-setting-item] rounded-12px size-full p-12px box-border border-(solid 1px [--line-color]) custom-shadow;
+}
+
+.progress-circle {
+  width: 160px;
+  height: 160px;
 }
 </style>
