@@ -7,7 +7,7 @@
         <div id="computer" class="computer" v-once>
           <img class="w-224px h-158px relative" src="../../assets/img/win.png" alt="" />
           <div
-            style="background: rgba(111, 111, 111, 0.1)"
+            class="screen-overlay"
             class="w-170px h-113px absolute top-9% left-51% transform -translate-x-51% -translate-y-9%"></div>
           <picture class="drop-shadow-md absolute top-30% left-1/2 transform -translate-x-1/2 -translate-y-30%">
             <source
@@ -137,5 +137,9 @@ onMounted(async () => {
     position: relative;
     transition: all 0.2s;
   }
+}
+
+.screen-overlay {
+  background: rgba(111, 111, 111, 0.1);
 }
 </style>
