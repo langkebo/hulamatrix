@@ -9,7 +9,7 @@
     <!-- 主体内容区域 -->
     <div ref="contentRef" class="flex-1 overflow-auto">
       <!-- 图片展示区域 -->
-      <div ref="imgContainerRef" style="min-height: calc(100vh / var(--page-scale, 1) - 124px)" class="flex-center">
+      <div ref="imgContainerRef" class="image-container">
         <img
           ref="imageRef"
           :src="currentImage"
@@ -448,5 +448,12 @@ onUnmounted(() => {
   svg {
     color: #fff !important;
   }
+}
+
+.image-container {
+  min-height: calc(100vh / var(--page-scale, 1) - 124px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
