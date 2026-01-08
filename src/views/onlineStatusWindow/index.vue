@@ -16,7 +16,7 @@
 
       <!-- 状态 -->
       <n-flex vertical class="w-full h-100vh bg-#f1f1f1 rounded-6px box-border p-13px" data-tauri-drag-region>
-        <n-scrollbar style="max-height: 215px">
+        <n-scrollbar class="status-scrollbar">
           <n-flex align="center" :size="10">
             <n-flex @click="handleResetState" vertical justify="center" align="center" :size="8" class="status-item">
               <svg class="size-24px color-#d03553">
@@ -160,6 +160,11 @@ onMounted(async () => {
     color: #404040;
   }
 }
+
+.status-scrollbar {
+  max-height: 215px;
+}
+
 /** 隐藏naive UI的滚动条 */
 :deep(
   .n-scrollbar > .n-scrollbar-rail.n-scrollbar-rail--vertical > .n-scrollbar-rail__scrollbar,
