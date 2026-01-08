@@ -6,7 +6,7 @@
     <!-- 主体内容区域 -->
     <div class="flex-1 overflow-auto">
       <!-- 视频展示区域 -->
-      <div style="min-height: calc(100vh / var(--page-scale, 1) - 124px)" class="flex-center w-full h-full">
+      <div class="video-container">
         <video
           ref="videoRef"
           :src="currentVideo"
@@ -411,5 +411,14 @@ onMounted(async () => {
   svg {
     color: #fff !important;
   }
+}
+
+.video-container {
+  min-height: calc(100vh / var(--page-scale, 1) - 124px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 </style>
