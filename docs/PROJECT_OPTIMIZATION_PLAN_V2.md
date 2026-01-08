@@ -563,7 +563,7 @@ src/
 - [x] 修复主要 v-for key 问题
 - [ ] 优化所有复杂 computed 属性
 - [ ] 减少不必要的 watch
-- [x] 清理部分内联样式 (65 个文件, 共 152 处)
+- [x] 清理部分内联样式 (70 个文件, 共 159 处)
 
 ### 第 3-4 周: 大文件重构
 - [ ] 拆分 2-3 个超大组件
@@ -626,25 +626,24 @@ src/
 
 ---
 
-**文档版本**: v3.4
+**文档版本**: v3.5
 **创建日期**: 2025-01-08
 **最后更新**: 2025-01-08
 **负责人**: Claude Code
 **更新说明**:
 - ✅ Phase 2: 内存泄漏修复 - 已验证完成
 - ✅ Phase 3 (部分): v-for key 问题 - 已修复 13 个关键文件
-- ✅ Phase 6 (部分): 内联样式清理 - 已清理 65 个文件 (共 152 处内联样式)
+- ✅ Phase 6 (部分): 内联样式清理 - 已清理 70 个文件 (共 159 处内联样式)
 
-**本次更新 (v3.4)**:
-- 新增清理 6 个文件的内联样式:
-  - src/mobile/views/chat/notice/NoticeDetail.vue (.header-border, .announcement-header, .edit-button, 共3处)
-  - src/mobile/views/chat/MobileInviteGroupMember.vue (.member-scrollbar, .avatar-bordered, 共2处)
-  - src/mobile/views/friends/StartGroupChat.vue (.member-scrollbar, .avatar-bordered, 共2处)
-  - src/mobile/views/settings/privacy/index.vue (.target-id-input, .action-select, 共2处)
-  - src/views/imageViewerWindow/index.vue (.image-container, 1处)
-  - src/views/videoViewerWindow/index.vue (.video-container, 1处)
+**本次更新 (v3.5)**:
+- 新增清理 5 个文件的内联样式:
+  - src/views/e2ee/Devices.vue (.qr-code, 1处)
+  - src/views/e2ee/VerificationWizard.vue (.qr-image, 1处)
+  - src/views/moreWindow/settings/ManageStore.vue (.progress-circle, 1处)
+  - src/views/loginWindow/QRCode.vue (.qr-skeleton, .overlay-status 2处, 共2个类)
+  - src/views/homeWindow/SearchDetails.vue (.history-scrollbar, .results-scrollbar, .no-results-container, 共3处)
 
 **进度统计**:
-- 内联样式清理完成度: 65/78 文件 (83.3%)
-- 已提取内联样式: 152 处
-- 剩余待清理: 约 13 个文件
+- 内联样式清理完成度: 70/78 文件 (89.7%)
+- 已提取内联样式: 159 处
+- 剩余待清理: 约 8 个文件
