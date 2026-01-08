@@ -19,7 +19,7 @@
 
     <!-- 二维码 -->
     <n-flex justify="center" class="mt-25px">
-      <n-skeleton v-if="loading" style="border-radius: 12px" :width="204" :height="204" :sharp="false" size="medium" />
+      <n-skeleton v-if="loading" class="qr-skeleton" :width="204" :height="204" :sharp="false" size="medium" />
       <div v-else class="relative w-full max-w-360px">
         <n-qr-code
           :size="qrVisualSize"
@@ -40,8 +40,7 @@
           vertical
           :size="12"
           align="center"
-          class="w-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-          style="pointer-events: none">
+          class="w-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 overlay-status">
           <svg class="size-42px animate-pulse">
             <use :href="`#${scanStatus.icon}`"></use>
           </svg>
@@ -341,4 +340,12 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/global/login-bg';
+
+.qr-skeleton {
+  border-radius: 12px;
+}
+
+.overlay-status {
+  pointer-events: none;
+}
 </style>
