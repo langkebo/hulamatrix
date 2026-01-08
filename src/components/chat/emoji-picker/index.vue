@@ -1,6 +1,6 @@
 <template>
   <n-scrollbar
-    style="max-height: 290px"
+    class="emoji-scroller"
     :class="[isMobile() ? 'h-15rem w-auto' : 'h-290px w-460px']"
     class="p-[14px_14px_0_14px] box-border select-none"
     @scroll="activeMenuId = ''">
@@ -665,6 +665,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+.emoji-scroller {
+  max-height: 290px;
+}
+
 /**! 修改naive-ui滚动条的间距 */
 .n-scrollbar > .n-scrollbar-rail.n-scrollbar-rail--vertical,
 .n-scrollbar + .n-scrollbar-rail.n-scrollbar-rail--vertical {
