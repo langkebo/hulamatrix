@@ -121,7 +121,7 @@
           <n-virtual-list
             id="image-chat-ait"
             ref="virtualListInst-ait"
-            style="max-height: 180px"
+            class="ait-virtual-list"
             :item-size="36"
             :items="personList"
             v-model:selectedKey="selectedAitKey">
@@ -726,5 +726,9 @@ onUnmounted(() => {
   height: 6px;
   border-radius: 9999px;
   background-color: #1aaa55;
+}
+
+.ait-virtual-list {
+  max-height: 180px;
 }
 </style>
