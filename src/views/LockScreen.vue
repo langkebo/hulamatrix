@@ -35,7 +35,7 @@
         <n-flex vertical align="center" justify="center" :size="30" class="mt--75px">
           <n-avatar
             round
-            style="border: 2px solid #f1f1f1"
+            class="avatar-border"
             :size="120"
             :src="AvatarUtils.getAvatarUrl(userStore.userInfo!.avatar!)" />
           <p class="text-(24px [--chat-text-color]) font-500">{{ userStore.userInfo!.name }}</p>
@@ -44,13 +44,7 @@
             <n-input
               v-if="!isLogining && !isWrongPassword"
               ref="inputInstRef"
-              style="
-                width: 320px;
-                border: 2px solid rgba(255, 255, 255, 0.1);
-                border-bottom-color: rgba(19, 152, 127, 1);
-                background-color: #404040;
-                color: #fff;
-              "
+              class="password-input"
               spellCheck="false"
               autoComplete="off"
               autoCorrect="off"
@@ -252,6 +246,19 @@ onUnmounted(() => {
 </script>
 <style scoped lang="scss">
 @use '@/styles/scss/global/login-bg';
+
+.avatar-border {
+  border: 2px solid #f1f1f1;
+}
+
+.password-input {
+  width: 320px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom-color: rgba(19, 152, 127, 1);
+  background-color: #404040;
+  color: #fff;
+}
+
 .options {
   @apply w-320px;
   p {
