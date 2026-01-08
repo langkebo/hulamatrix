@@ -9,7 +9,7 @@
             <n-statistic :label="t('setting.cache.total_size', { default: '总大小' })">
               <n-number-animation :from="0" :to="stats.totalSize / (1024 * 1024)" :precision="2" />
               <template #suffix>
-                <span style="font-size: 14px">MB</span>
+                <span class="unit-suffix">MB</span>
               </template>
             </n-statistic>
           </n-card>
@@ -42,23 +42,19 @@
             :max="2048"
             :step="50"
             :precision="0"
-            style="width: 200px">
+            class="max-size-input">
             <template #suffix>
               <span>MB</span>
             </template>
           </n-input-number>
           <template #feedback>
-            <n-text depth="3" style="font-size: 12px">
+            <n-text depth="3" class="description-text">
               {{ t('setting.cache.limit_desc', { default: '建议 100-500MB，最大 2GB' }) }}
             </n-text>
           </template>
         </n-form-item>
-        <n-progress
-          type="line"
-          :percentage="usagePercentage"
-          :status="usageStatus"
-          :show-indicator="false" />
-        <n-text depth="3" style="font-size: 12px; margin-top: 8px; display: block">
+        <n-progress type="line" :percentage="usagePercentage" :status="usageStatus" :show-indicator="false" />
+        <n-text depth="3" class="usage-text">
           {{ usageText }}
         </n-text>
       </n-card>
@@ -290,6 +286,24 @@ onMounted(() => {
     font-weight: 600;
     margin: 0 0 16px 0;
     color: var(--text-color-1);
+  }
+
+  .unit-suffix {
+    font-size: 14px;
+  }
+
+  .max-size-input {
+    width: 200px;
+  }
+
+  .description-text {
+    font-size: 12px;
+  }
+
+  .usage-text {
+    font-size: 12px;
+    margin-top: 8px;
+    display: block;
   }
 
   .stats-section,
