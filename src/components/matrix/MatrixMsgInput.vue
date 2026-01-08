@@ -7,7 +7,7 @@
         v-model:show="showEmojiPicker"
         trigger="click"
         placement="top-start"
-        style="width: 320px"
+        class="emoji-picker-popover"
       >
         <template #trigger>
           <n-button quaternary circle size="small">
@@ -1124,6 +1124,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.emoji-picker-popover {
+  width: 320px;
 }
 
 .input-container {
