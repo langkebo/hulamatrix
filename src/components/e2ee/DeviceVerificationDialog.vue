@@ -1,7 +1,7 @@
 <template>
   <n-modal :show="show" :mask-closable="false" @update:show="handleClose">
     <n-card
-      style="width: 500px; max-width: 90vw"
+      class="verification-dialog-card"
       :title="t('setting.e2ee.devices.verify_title')"
       :bordered="false"
       size="huge"
@@ -93,7 +93,7 @@
               <n-text>{{ t('setting.e2ee.devices.key_instruction') }}</n-text>
 
               <n-card>
-                <n-text code style="font-size: 12px; word-break: break-all">
+                <n-text code class="device-key-text">
                   {{ deviceKey }}
                 </n-text>
               </n-card>
@@ -282,6 +282,11 @@ function handleClose() {
 </script>
 
 <style lang="scss" scoped>
+.verification-dialog-card {
+  width: 500px;
+  max-width: 90vw;
+}
+
 .emoji-item {
   text-align: center;
   padding: 8px;
@@ -296,5 +301,10 @@ function handleClose() {
     color: var(--text-color-3);
     margin-top: 4px;
   }
+}
+
+.device-key-text {
+  font-size: 12px;
+  word-break: break-all;
 }
 </style>
