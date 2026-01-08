@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         room-name="设置" />
     </template>
@@ -172,4 +171,9 @@ async function handleLogout() {
 // 你可以根据需要导出或操作 settings 数据
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+</style>
