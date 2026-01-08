@@ -46,7 +46,7 @@
         </div>
         <div v-if="qrDataUri">
           <div>请使用另一设备扫描二维码以完成验证：</div>
-          <img :src="qrDataUri" alt="QR" style="width: 200px; height: 200px" />
+          <img :src="qrDataUri" alt="QR" class="qr-code" />
           <n-space>
             <n-button size="small" type="primary" data-test="qr-confirm" @click="confirmQr">完成验证</n-button>
             <n-button size="small" type="error" ghost data-test="qr-cancel" @click="cancelQr">取消</n-button>
@@ -310,5 +310,10 @@ refresh()
 <style scoped>
 .wrap {
   padding: 16px;
+}
+
+.qr-code {
+  width: 200px;
+  height: 200px;
 }
 </style>
