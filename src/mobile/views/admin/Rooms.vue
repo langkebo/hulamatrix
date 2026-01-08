@@ -73,7 +73,7 @@
           <van-cell title="创建时间" :value="formatTimestamp(selectedRoom?.creationTs)" />
         </van-cell-group>
 
-        <van-space direction="vertical" style="padding: 16px; width: 100%">
+        <van-space direction="vertical" class="room-actions">
           <van-button v-if="!selectedRoom?.joined" type="primary" block @click="handleJoinRoom(selectedRoom)">
             加入房间
           </van-button>
@@ -444,5 +444,10 @@ onMounted(() => {
 
 .room-detail {
   padding: 16px;
+}
+
+.room-actions {
+  padding: 16px;
+  width: 100%;
 }
 </style>
