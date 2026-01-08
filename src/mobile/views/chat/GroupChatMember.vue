@@ -3,7 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="header-border"
         :hidden-right="true"
         room-name="群成员" />
     </template>
@@ -148,4 +148,9 @@ watch(memberList, () => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+</style>
