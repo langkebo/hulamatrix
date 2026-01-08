@@ -4,8 +4,7 @@
       <template #header>
         <HeaderBar
           :isOfficial="false"
-          class="bg-white"
-          style="border-bottom: 1px solid; border-color: #dfdfdf"
+          class="bg-white header-border"
           :hidden-right="true"
           room-name="我的相册" />
       </template>
@@ -128,5 +127,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 可以添加自定义样式 */
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
 </style>
