@@ -13,8 +13,7 @@
       :width="Math.round(Math.min(146, Math.max(96, win.innerWidth * 0.25)))"
       :height="Math.round(Math.min(146, Math.max(96, win.innerWidth * 0.25)))"
       sizes="(max-width: 600px) 25vw, 146px"
-      style="border: 2px solid #fff"
-      class="rounded-50% select-none cursor-pointer"
+      class="avatar-with-border rounded-50% select-none cursor-pointer"
       :src="AvatarUtils.getAvatarUrl(item.avatar ?? '')"
       @dblclick="openImageViewer"
       alt="" />
@@ -70,8 +69,7 @@
           :width="Math.round(Math.min(106, Math.max(80, win.innerWidth * 0.22)))"
           :height="Math.round(Math.min(106, Math.max(80, win.innerWidth * 0.22)))"
           sizes="(max-width: 600px) 22vw, 106px"
-          style="border: 2px solid #fff"
-          class="rounded-50% select-none cursor-pointer"
+          class="avatar-with-border rounded-50% select-none cursor-pointer"
           :src="AvatarUtils.getAvatarUrl(groupDetail.avatar ?? '')"
           @dblclick="openImageViewer"
           alt="" />
@@ -629,4 +627,8 @@ const openImageViewer = async () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.avatar-with-border {
+  border: 2px solid #fff;
+}
+</style>
