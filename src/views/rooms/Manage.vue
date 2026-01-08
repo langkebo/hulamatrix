@@ -3,20 +3,16 @@
     <n-space vertical :size="16">
       <n-alert type="info" :show-icon="true">房间管理</n-alert>
       <n-space wrap>
-        <n-select
-          v-model:value="roomId"
-          :options="roomOptions"
-          placeholder="选择房间"
-          style="min-width: clamp(220px, 40vw, 360px)" />
+        <n-select v-model:value="roomId" :options="roomOptions" placeholder="选择房间" class="room-select" />
         <n-button tertiary type="primary" @click="refreshRooms">刷新</n-button>
-        <n-input v-model:value="newRoomName" placeholder="新房间名称" style="min-width: clamp(180px, 30vw, 320px)" />
-        <n-input v-model:value="newRoomTopic" placeholder="新房间主题" style="min-width: clamp(180px, 30vw, 320px)" />
+        <n-input v-model:value="newRoomName" placeholder="新房间名称" class="room-name-input" />
+        <n-input v-model:value="newRoomTopic" placeholder="新房间主题" class="room-topic-input" />
         <n-switch v-model:value="newRoomPublic">公开</n-switch>
         <n-button type="primary" @click="onCreateRoom">创建房间</n-button>
       </n-space>
 
       <div v-if="loading" class="mt-8px">
-        <n-skeleton height="44px" style="border-radius: 8px" :repeat="10" />
+        <n-skeleton height="44px" class="skeleton-item" :repeat="10" />
       </div>
       <div v-else-if="loadError" class="mt-8px">
         <n-alert type="error" :show-icon="true">{{ loadError }}</n-alert>
@@ -120,10 +116,7 @@
         </n-tab-pane>
         <n-tab-pane name="members" tab="成员管理">
           <n-space>
-            <n-input
-              v-model:value="inviteUserId"
-              placeholder="@user:domain"
-              style="min-width: clamp(200px, 35vw, 360px)" />
+            <n-input v-model:value="inviteUserId" placeholder="@user:domain" class="invite-input" />
             <n-button type="primary" @click="onInvite">邀请</n-button>
           </n-space>
           <n-data-table :columns="memberCols" :data="members" class="mt-12px" />
@@ -694,6 +687,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.room-select {
+  min-width: clamp(220px, 40vw, 360px);
+}
+
+.room-name-input,
+.room-topic-input {
+  min-width: clamp(180px, 30vw, 320px);
+}
+
+.skeleton-item {
+  border-radius: 8px;
+}
+
+.invite-input {
+  min-width: clamp(200px, 35vw, 360px);
+}
+
 .rooms-manage-container {
   max-width: 1440px;
   width: 100%;
