@@ -22,7 +22,7 @@
       </n-form-item>
     </n-form>
 
-    <n-space justify="end" style="margin-top: 16px">
+    <n-space justify="end" class="form-actions">
       <n-button @click="$emit('cancel')">{{ t('common.cancel') }}</n-button>
       <n-button type="primary" @click="handleSubmit">{{ t('common.save') }}</n-button>
     </n-space>
@@ -107,5 +107,9 @@ async function handleSubmit() {
 <style lang="scss" scoped>
 .user-form {
   padding: 16px 0;
+
+  .form-actions {
+    margin-top: 16px;
+  }
 }
 </style>
