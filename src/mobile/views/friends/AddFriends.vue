@@ -13,7 +13,7 @@
         <n-radio-button value="name">按昵称</n-radio-button>
       </n-radio-group>
       <div class="sort-label ml-8px">标签：</div>
-      <n-select v-model:value="selectedTag" :options="tagOptions" clearable size="small" style="min-width: 140px" />
+      <n-select v-model:value="selectedTag" :options="tagOptions" clearable size="small" class="tag-select" />
     </n-space>
     <n-space align="center" :size="8" class="mb-10px">
       <n-input
@@ -307,6 +307,10 @@ const offlineItems = computed(() => sortByMode(items.value.filter((i) => (i.pres
 </script>
 
 <style scoped>
+.tag-select {
+  min-width: 140px;
+}
+
 .name {
   font-size: 14px;
   color: var(--text-color);
