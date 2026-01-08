@@ -38,7 +38,7 @@
             v-model:value="displayName"
             size="small"
             placeholder="输入显示名称"
-            style="width: 200px"
+            class="profile-input"
             @blur="handleSaveDisplayName" />
         </n-flex>
 
@@ -53,7 +53,7 @@
             size="small"
             placeholder="介绍一下自己"
             :autosize="{ minRows: 1, maxRows: 3 }"
-            style="width: 200px"
+            class="profile-input"
             @blur="handleSaveBio" />
         </n-flex>
       </n-flex>
@@ -298,6 +298,10 @@ const handlePasswordChange = async () => {
   @apply bg-[--bg-setting-item] rounded-12px size-full box-border border-(solid 1px [--line-color]) custom-shadow;
   padding: var(--pad-container-x);
   font-size: clamp(12px, 2vw, 14px);
+}
+
+.profile-input {
+  width: 200px;
 }
 
 .avatar-wrapper {
