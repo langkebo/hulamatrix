@@ -43,10 +43,10 @@
                 size="small"
                 v-model:value="selectedCategory"
                 :options="categoryOptions"
-                style="min-width: clamp(120px, 30vw, 220px)" />
+                class="category-select" />
               <n-switch v-model:value="showOnlineOnly">仅在线</n-switch>
             </n-space>
-            <n-scrollbar style="max-height: calc(100vh / var(--page-scale, 1) - 270px)">
+            <n-scrollbar class="friends-scrollbar">
               <div class="p-4px">
                 <div v-if="friendsStore.loading"><n-skeleton height="20px" :repeat="8" /></div>
                 <div v-else-if="friendsStore.error" class="px-8px py-6px">
@@ -423,6 +423,14 @@ onUnmounted(() => {
   .text {
     color: #fff;
   }
+}
+
+.category-select {
+  min-width: clamp(120px, 30vw, 220px);
+}
+
+.friends-scrollbar {
+  max-height: calc(100vh / var(--page-scale, 1) - 270px);
 }
 
 :deep(.n-collapse .n-collapse-item:not(:first-child)) {
