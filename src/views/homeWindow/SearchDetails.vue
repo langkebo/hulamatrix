@@ -25,7 +25,7 @@
         <p class="text-(12px [--chat-text-color]) flex-1 truncate">{{ t('home.search_guide') }}</p>
       </n-flex>
 
-      <n-scrollbar style="max-height: calc(100vh / var(--page-scale, 1) - 212px)">
+      <n-scrollbar class="history-scrollbar">
         <template v-for="(item, _index) in historyList" :key="_index">
           <n-flex
             align="center"
@@ -43,7 +43,7 @@
     <template v-else-if="searchResults.length > 0">
       <p class="text-(12px #909090) mb-6px">{{ t('home.search_result') }}</p>
 
-      <n-scrollbar style="max-height: calc(100vh / var(--page-scale, 1) - 118px)">
+      <n-scrollbar class="results-scrollbar">
         <template v-for="item in searchResults" :key="item.roomId">
           <n-flex
             align="center"
@@ -59,7 +59,7 @@
 
     <!-- 没有搜索结果时 -->
     <template v-else-if="searchQuery && searchResults.length === 0">
-      <div style="height: calc(100vh / var(--page-scale, 1) - 212px)" class="flex-col-center gap-12px">
+      <div class="no-results-container">
         <img class="size-64px" src="/msgAction/exploding-head.png" />
         <p class="text-(12px [--chat-text-color])">{{ t('home.no_search_results') }}</p>
       </div>
@@ -243,4 +243,22 @@ onMounted(() => {
   loadHistory()
 })
 </script>
-import { ref, onMounted, nextTick } from 'vue'
+
+<style scoped>
+.history-scrollbar {
+  max-height: calc(100vh / var(--page-scale, 1) - 212px);
+}
+
+.results-scrollbar {
+  max-height: calc(100vh / var(--page-scale, 1) - 118px);
+}
+
+.no-results-container {
+  height: calc(100vh / var(--page-scale, 1) - 212px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+</style>
