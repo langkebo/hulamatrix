@@ -19,7 +19,7 @@
         trigger="click"
         placement="right"
         :show-arrow="false"
-        style="padding: 0; background: var(--bg-info)">
+        class="user-info-popover">
         <template #trigger>
           <ContextMenu
             @select="$event.click(message, 'Main')"
@@ -503,6 +503,11 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 </script>
 
 <style lang="scss" scoped>
+.user-info-popover {
+  padding: 0;
+  background: var(--bg-info);
+}
+
 .translated-text {
   animation: fade-in 0.3s ease-in-out;
 }
