@@ -258,7 +258,7 @@
               v-if="unreadChatCount > 0"
               :value="unreadChatCount"
               :max="99"
-              style="position: absolute; top: -4px; right: -4px;"
+              class="chat-unread-badge"
             />
           </n-button>
 
@@ -1453,6 +1453,12 @@ onUnmounted(() => {
   font-size: 14px;
   font-weight: 600;
   z-index: 20;
+}
+
+.chat-unread-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
 }
 
 // 响应式设计
