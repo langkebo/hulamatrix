@@ -2,7 +2,7 @@
   <div>
     <n-image
       v-if="body?.url"
-      class="select-none cursor-pointer"
+      class="select-none cursor-pointer image-message-image"
       :img-props="{
         style: {
           ...imageStyle
@@ -11,7 +11,6 @@
       object-fit="cover"
       show-toolbar-tooltip
       preview-disabled
-      style="border-radius: 8px; cursor: pointer !important"
       :src="displayImageSrc"
       @dblclick="handleOpenImageViewer"
       @click="handleOpenImage"
@@ -340,4 +339,9 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.image-message-image {
+  border-radius: 8px;
+  cursor: pointer !important;
+}
+</style>
