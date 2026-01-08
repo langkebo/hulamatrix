@@ -144,7 +144,11 @@
           <div class="section-header">
             <h3>房间成员 ({{ members.length }})</h3>
             <div class="member-actions">
-              <n-input v-model:value="memberSearchQuery" placeholder="搜索成员..." clearable style="width: 200px">
+              <n-input
+                v-model:value="memberSearchQuery"
+                placeholder="搜索成员..."
+                clearable
+                class="member-search-input">
                 <template #prefix>
                   <n-icon :component="Search" />
                 </template>
@@ -309,7 +313,7 @@
         <strong>警告：</strong>
         删除房间是不可逆的，所有消息和历史记录将被永久删除。
       </p>
-      <n-input v-model:value="deleteConfirmText" placeholder="输入房间ID以确认删除" style="margin-top: 16px" />
+      <n-input v-model:value="deleteConfirmText" placeholder="输入房间ID以确认删除" class="delete-confirm-input" />
       <template #action>
         <n-button @click="showDeleteModal = false">取消</n-button>
         <n-button type="error" :disabled="deleteConfirmText !== roomId" :loading="deleting" @click="deleteRoom">
@@ -1383,5 +1387,15 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   color: var(--n-text-color-2);
+}
+
+/* 成员搜索输入框 */
+.member-search-input {
+  width: 200px;
+}
+
+/* 删除确认输入框 */
+.delete-confirm-input {
+  margin-top: 16px;
 }
 </style>
