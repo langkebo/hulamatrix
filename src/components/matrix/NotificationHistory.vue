@@ -181,7 +181,7 @@
       v-model:show="showSettings"
       preset="dialog"
       title="通知设置"
-      style="width: 500px"
+      class="notification-settings-modal"
     >
       <div class="notification-settings">
         <n-form :model="settings" label-placement="left">
@@ -215,7 +215,7 @@
               format="HH:mm"
               placeholder="开始时间"
             />
-            <span style="margin: 0 8px">至</span>
+            <span class="time-picker-separator">至</span>
             <n-time-picker
               v-model:value="settings.doNotDisturbEnd"
               format="HH:mm"
@@ -885,6 +885,14 @@ onUnmounted(() => {
   height: 56px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 100;
+}
+
+.notification-settings-modal {
+  width: 500px;
+}
+
+.time-picker-separator {
+  margin: 0 8px;
 }
 
 @media (max-width: 768px) {
