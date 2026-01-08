@@ -2,11 +2,7 @@
   <main class="size-full flex select-none">
     <!-- 移动端菜单遮罩 -->
     <Transition name="fade">
-      <div
-        v-if="showMobileMenu"
-        class="mobile-overlay"
-        @click="showMobileMenu = false">
-      </div>
+      <div v-if="showMobileMenu" class="mobile-overlay" @click="showMobileMenu = false"></div>
     </Transition>
 
     <!-- 移动端菜单按钮 -->
@@ -21,10 +17,7 @@
     </button>
 
     <!-- 侧边栏选项 -->
-    <section
-      class="left-bar"
-      :class="{ 'is-mobile-open': showMobileMenu && isMobile }"
-      data-tauri-drag-region>
+    <section class="left-bar" :class="{ 'is-mobile-open': showMobileMenu && isMobile }" data-tauri-drag-region>
       <div class="menu-list relative">
         <div v-for="(item, index) in sideOptions" :key="index">
           <div class="menu-item" :class="{ active: activeItem === item.url }" @click="pageJumps(item.url)">
@@ -63,14 +56,11 @@
         {{ title }}
       </header>
 
-      <n-scrollbar
-        style="max-height: calc(100vh / var(--page-scale, 1) - 70px)"
-        :class="{ 'shadow-inner': page.shadow }"
-        data-tauri-drag-region>
+      <n-scrollbar class="settings-scrollbar" :class="{ 'shadow-inner': page.shadow }" data-tauri-drag-region>
         <n-flex vertical class="p-16px md:p-24px" :space="12" justify="center" v-if="skeleton">
-          <n-skeleton class="rounded-8px" height="26px" text style="width: 30%" />
+          <n-skeleton class="rounded-8px skeleton-short" height="26px" text />
           <n-skeleton class="rounded-8px" height="26px" text :repeat="5" />
-          <n-skeleton class="rounded-8px" height="26px" text style="width: 60%" />
+          <n-skeleton class="rounded-8px skeleton-medium" height="26px" text />
         </n-flex>
         <template v-else>
           <div class="flex-1 p-16px md:p-24px"><router-view /></div>
@@ -175,6 +165,20 @@ onUnmounted(async () => {
 
 <style scoped lang="scss">
 @use '@/styles/scss/global/variable' as *;
+
+// 设置页面滚动条
+.settings-scrollbar {
+  max-height: calc(100vh / var(--page-scale, 1) - 70px);
+}
+
+// 骨架屏宽度
+.skeleton-short {
+  width: 30%;
+}
+
+.skeleton-medium {
+  width: 60%;
+}
 
 // 移动端菜单按钮
 .mobile-menu-button {
