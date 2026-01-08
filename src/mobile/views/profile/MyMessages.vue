@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         room-name="我的消息" />
     </template>
@@ -47,4 +46,9 @@ const tabOptions = reactive([
 ])
 </script>
 
-<style scoped></style>
+<style scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+</style>
