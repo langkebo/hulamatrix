@@ -368,7 +368,7 @@ watch(
             :min="0"
             :max="1"
             :step="0.1"
-            style="width: 150px" />
+            class="tag-order-input" />
           <NButton type="primary" :disabled="!newTagName.trim()" @click="createTag">
             Create
           </NButton>
@@ -465,6 +465,10 @@ watch(
 .tag-count {
   font-size: 12px;
   color: #999;
+}
+
+.tag-order-input {
+  width: 150px;
 }
 
 /* Dark mode support */
