@@ -3,8 +3,7 @@
     <template #header>
       <HeaderBar
         :isOfficial="false"
-        class="bg-white"
-        style="border-bottom: 1px solid; border-color: #dfdfdf"
+        class="bg-white header-border"
         :hidden-right="true"
         room-name="群公告" />
     </template>
@@ -26,8 +25,7 @@
                   </span>
                   <span
                     v-if="item.isTop"
-                    class="text-#13987F rounded-15px px-7px py-5px text-12px"
-                    style="border: 1px solid; border-color: #13987f">
+                    class="top-badge">
                     置顶
                   </span>
                 </div>
@@ -157,4 +155,18 @@ onActivated(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.header-border {
+  border-bottom: 1px solid;
+  border-color: #dfdfdf;
+}
+
+.top-badge {
+  color: #13987F;
+  border: 1px solid;
+  border-color: #13987f;
+  border-radius: 15px;
+  padding: 5px 7px;
+  font-size: 12px;
+}
+</style>
