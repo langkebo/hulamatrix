@@ -25,7 +25,7 @@
       </n-input>
 
       <!-- 搜索结果 -->
-      <n-scrollbar style="max-height: 400px">
+      <n-scrollbar class="search-results-scrollbar">
         <!-- 加载状态 -->
         <div v-if="searching" class="flex-center py-40px">
           <n-spin size="medium" />
@@ -352,6 +352,10 @@ const handleConfirmAdd = async () => {
 </script>
 
 <style scoped lang="scss">
+.search-results-scrollbar {
+  max-height: 400px;
+}
+
 .search-result-item {
   border: 1px solid var(--line-color);
   transition: all 0.2s;
