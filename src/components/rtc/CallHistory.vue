@@ -93,7 +93,7 @@
     </div>
 
     <!-- Call Detail Modal -->
-    <n-modal v-model:show="showDetailModal" preset="card" title="通话详情" style="width: 600px">
+    <n-modal v-model:show="showDetailModal" preset="card" title="通话详情" class="call-detail-modal">
       <div v-if="selectedCall" class="call-detail">
         <n-descriptions :column="2" bordered>
           <n-descriptions-item label="房间">
@@ -380,6 +380,10 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.call-detail-modal {
+  width: 600px;
+}
+
 .call-history {
   height: 100%;
   display: flex;
