@@ -9,7 +9,7 @@
               <div class="py-15px flex gap-10px w-full items-center justify-end">
                 <div class="bg-#E7EFE6 flex flex-wrap ps-2 items-center rounded-full gap-1 w-50px h-24px">
                   <span class="w-12px h-12px rounded-15px bg-#079669"></span>
-                  <span class="text-bold-style" style="font-size: 12px; color: #373838">在线</span>
+                  <span class="online-status-text">在线</span>
                 </div>
                 <svg @click="toSettings" class="iconpark-icon h-32px w-32px block"><use href="#wode-shezhi"></use></svg>
                 <svg @click="toScanQRCode" class="iconpark-icon h-32px w-32px block"><use href="#saoma"></use></svg>
@@ -141,5 +141,10 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-family: $font-family-system, $font-family-windows, $font-family-sans;
   color: #757775;
+}
+
+.online-status-text {
+  font-size: 12px;
+  color: #373838;
 }
 </style>
