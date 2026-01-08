@@ -22,8 +22,7 @@
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
-          style="width: 200px"
-          class="rounded-6px border-(solid 1px [--line-color])"
+          class="file-search-input rounded-6px border-(solid 1px [--line-color])"
           size="small">
           <template #prefix>
             <svg class="size-16px text-[--text-color] opacity-60">
@@ -404,6 +403,10 @@ const convertToFileBody = (file: unknown): FileBody => {
 </script>
 
 <style scoped lang="scss">
+.file-search-input {
+  width: 200px;
+}
+
 .time-group {
   @apply sticky top-10px z-10 flex items-center justify-between p-12px rounded-6px text-[--text-color] bg-#e3e3e380 dark:bg-#30303080 backdrop-blur-md;
 }
