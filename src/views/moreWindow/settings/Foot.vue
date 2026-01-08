@@ -3,7 +3,7 @@
     <div class="flex items-center justify-center gap-8px">
       <svg class="size-18px"><use href="#SmilingFace"></use></svg>
       <p class="text-(12px #777)">{{ t('setting.footer.like_product') }}</p>
-      <n-popover v-model:show="isStar" style="padding: 0" trigger="hover" placement="top">
+      <n-popover v-model:show="isStar" class="no-padding-popover" trigger="hover" placement="top">
         <template #trigger>
           <p class="text-(12px) text-brand cursor-pointer">{{ t('setting.footer.star_cta') }}</p>
         </template>
@@ -32,7 +32,7 @@
         </n-flex>
       </n-popover>
       <p class="text-(12px #777)">{{ t('setting.footer.share_joiner') }}</p>
-      <n-popover v-model:show="isIssue" style="padding: 0" trigger="hover" placement="top-end">
+      <n-popover v-model:show="isIssue" class="no-padding-popover" trigger="hover" placement="top-end">
         <template #trigger>
           <p class="text-(12px) text-brand cursor-pointer">{{ t('setting.footer.share_cta') }}</p>
         </template>
@@ -76,4 +76,9 @@ const isStar = ref(false)
 const isIssue = ref(false)
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss>
+/* 无内边距的 Popover */
+.no-padding-popover {
+  padding: 0;
+}
+</style>
