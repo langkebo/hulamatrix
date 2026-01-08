@@ -26,7 +26,7 @@
           size="small"
           :placeholder="t('setting.notice.input.search_group_placholder')"
           clearable
-          style="width: 200px">
+          class="search-input">
           <template #prefix>
             <svg class="size-14px"><use href="#search"></use></svg>
           </template>
@@ -97,9 +97,7 @@
 
         <span v-if="filteredGroupSessions.length > 0" class="w-full h-1px bg-[--line-color] block"></span>
 
-        <n-scrollbar
-          style="max-height: 420px; padding: 0 12px; box-sizing: border-box"
-          :style="{ pointerEvents: isDropdownShow ? 'none' : 'auto' }">
+        <n-scrollbar class="group-scrollbar" :style="{ pointerEvents: isDropdownShow ? 'none' : 'auto' }">
           <n-virtual-list v-if="filteredGroupSessions.length > 60" :items="filteredGroupSessions" :item-size="58">
             <template #default="{ item: session, index }">
               <n-flex align="center" justify="space-between" class="py-14px" data-test="group-item">
@@ -173,7 +171,7 @@
       <span class="pl-10px">{{ t('setting.notice.keywords') }}</span>
       <n-flex class="item p-12px" :size="12" vertical>
         <n-flex align="center" :size="12">
-          <n-input v-model:value="newKeyword" placeholder="关键字" size="small" style="max-width: 280px" />
+          <n-input v-model:value="newKeyword" placeholder="关键字" size="small" class="keyword-input" />
           <n-button size="small" type="primary" secondary @click="addKeyword">添加</n-button>
           <n-button size="small" @click="bulkImport">批量导入</n-button>
           <n-button size="small" @click="triggerFileImport">从文件导入</n-button>
@@ -189,7 +187,7 @@
             v-model:value="selectedPreset"
             :options="presetGroups.map((p) => ({ label: p.label, value: p.value }))"
             size="small"
-            style="width: 160px"
+            class="preset-select"
             placeholder="选择预设" />
           <n-button size="small" @click="applyPreset">应用预设</n-button>
           <n-button size="small" @click="exportPresetJson">导出预设JSON</n-button>
@@ -202,15 +200,15 @@
           <n-tag v-for="k in pagedKeywords" :key="k" closable @close="removeKeyword(k)" type="success" size="small">
             {{ k }}
           </n-tag>
-          <n-pagination v-model:page="page" :page-count="pageCount" size="small" style="margin-left: auto" />
-          <n-input-number v-model:value="page" :min="1" :max="pageCount" size="small" style="width: 90px" />
-          <n-select v-model:value="pageSize" :options="pageSizeOptions" size="small" style="width: 90px" />
-          <input ref="fileInput" type="file" accept=".txt,.csv" style="display: none" @change="onFileSelected" />
+          <n-pagination v-model:page="page" :page-count="pageCount" size="small" class="pagination" />
+          <n-input-number v-model:value="page" :min="1" :max="pageCount" size="small" class="page-control" />
+          <n-select v-model:value="pageSize" :options="pageSizeOptions" size="small" class="page-control" />
+          <input ref="fileInput" type="file" accept=".txt,.csv" class="hidden-input" @change="onFileSelected" />
           <input
             ref="presetFileInput"
             type="file"
             accept="application/json"
-            style="display: none"
+            class="hidden-input"
             @change="onPresetSelected" />
         </n-flex>
       </n-flex>
@@ -227,9 +225,9 @@
           </n-flex>
           <n-flex align="center" :size="10">
             <span>开始</span>
-            <n-time-picker v-model:value="quietStartMs" size="small" style="width: 120px" format="HH:mm" />
+            <n-time-picker v-model:value="quietStartMs" size="small" class="time-picker" format="HH:mm" />
             <span>结束</span>
-            <n-time-picker v-model:value="quietEndMs" size="small" style="width: 120px" format="HH:mm" />
+            <n-time-picker v-model:value="quietEndMs" size="small" class="time-picker" format="HH:mm" />
             <n-button size="small" @click="setPresetNight">夜间</n-button>
             <n-button size="small" @click="setPresetWork">工作时段</n-button>
           </n-flex>
@@ -253,9 +251,9 @@
           <n-flex :size="8" align="center">
             <n-checkbox v-model:checked="selectedPresetIndicesMap[idx]" />
             <span>名称</span>
-            <n-input v-model:value="g.label" size="small" style="width: 180px" />
+            <n-input v-model:value="g.label" size="small" class="preset-input" />
             <span>标识</span>
-            <n-input v-model:value="g.value" size="small" style="width: 180px" />
+            <n-input v-model:value="g.value" size="small" class="preset-input" />
             <n-button size="small" @click="movePresetUp(idx)">上移</n-button>
             <n-button size="small" @click="movePresetDown(idx)">下移</n-button>
             <n-button size="small" type="error" ghost @click="removePresetGroup(idx)">删除</n-button>
@@ -864,6 +862,44 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+.search-input {
+  width: 200px;
+}
+
+.group-scrollbar {
+  max-height: 420px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.keyword-input {
+  max-width: 280px;
+}
+
+.preset-select {
+  width: 160px;
+}
+
+.pagination {
+  margin-left: auto;
+}
+
+.page-control {
+  width: 90px;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.time-picker {
+  width: 120px;
+}
+
+.preset-input {
+  width: 180px;
+}
+
 .item {
   @apply bg-[--bg-setting-item] rounded-12px size-full box-border border-(solid 1px [--line-color]);
   box-shadow: var(--shadow-main);
