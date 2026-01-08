@@ -374,7 +374,7 @@
       v-model:show="showInviteModal"
       preset="dialog"
       title="邀请新成员"
-      style="width: 500px"
+      class="invite-modal"
     >
       <MatrixInviteMember
         :room-id="roomId"
@@ -401,7 +401,7 @@
       v-model:show="showPowerLevelEditor"
       preset="card"
       title="权限设置"
-      style="width: 700px; max-height: 80vh"
+      class="power-level-modal"
       :mask-closable="true"
       @close="showPowerLevelEditor = false"
     >
@@ -418,7 +418,7 @@
       v-model:show="showRoomSettingsModal"
       preset="card"
       title="房间设置"
-      style="width: 800px; max-height: 85vh"
+      class="room-settings-modal"
       :mask-closable="true"
       @close="showRoomSettingsModal = false"
     >
@@ -1283,6 +1283,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.invite-modal {
+  width: 500px;
+}
+
+.power-level-modal {
+  width: 700px;
+  max-height: 80vh;
+}
+
+.room-settings-modal {
+  width: 800px;
+  max-height: 85vh;
+}
+
 .matrix-chat-sidebar {
   display: flex;
   flex-direction: column;
