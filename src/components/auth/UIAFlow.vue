@@ -1,12 +1,6 @@
 <template>
   <n-modal :show="show" :mask-closable="false" :closable="false" @update:show="handleClose">
-    <n-card
-      style="width: 480px; max-width: 90vw"
-      :title="title"
-      :bordered="false"
-      size="huge"
-      role="dialog"
-      aria-modal="true">
+    <n-card class="uia-modal-card" :title="title" :bordered="false" size="huge" role="dialog" aria-modal="true">
       <!-- Progress Steps -->
       <n-steps :current="currentStepIndex" :status="stepStatus">
         <n-step v-for="(step, index) in steps" :key="step.type || index" :title="step.title" />
@@ -70,11 +64,11 @@
           <!-- Terms Step -->
           <template v-else-if="currentStep === 'terms'">
             <div class="terms-content">
-              <n-alert type="info" style="margin-bottom: 16px">
+              <n-alert type="info" class="terms-alert">
                 {{ t('auth.uia.terms.description') }}
               </n-alert>
 
-              <n-scrollbar style="max-height: 300px; margin-bottom: 16px">
+              <n-scrollbar class="terms-scrollbar">
                 <div class="terms-text">
                   {{ termsContent }}
                 </div>
@@ -108,7 +102,7 @@
       </div>
 
       <!-- Error Display -->
-      <n-alert v-if="error" type="error" :title="error" closable @close="error = ''" style="margin-top: 16px" />
+      <n-alert v-if="error" type="error" :title="error" closable @close="error = ''" class="error-alert" />
 
       <!-- Actions -->
       <template #footer>
@@ -116,7 +110,7 @@
           <n-button v-if="canGoBack" quaternary @click="handleBack">
             {{ t('common.back') }}
           </n-button>
-          <div style="flex: 1" />
+          <div class="flex-spacer" />
           <n-button quaternary @click="handleClose">
             {{ t('common.cancel') }}
           </n-button>
@@ -436,11 +430,25 @@ function handleClose() {
 </script>
 
 <style lang="scss" scoped>
+.uia-modal-card {
+  width: 480px;
+  max-width: 90vw;
+}
+
 .uia-content {
   min-height: 200px;
   padding: 16px 0;
 
   .terms-content {
+    .terms-alert {
+      margin-bottom: 16px;
+    }
+
+    .terms-scrollbar {
+      max-height: 300px;
+      margin-bottom: 16px;
+    }
+
     .terms-text {
       white-space: pre-wrap;
       line-height: 1.6;
@@ -458,5 +466,13 @@ function handleClose() {
       margin-top: 16px;
     }
   }
+}
+
+.error-alert {
+  margin-top: 16px;
+}
+
+.flex-spacer {
+  flex: 1;
 }
 </style>
