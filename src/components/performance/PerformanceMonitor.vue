@@ -90,8 +90,8 @@
     </n-card>
 
     <!-- 图表对话框 -->
-    <n-modal v-model:show="showChart" preset="card" style="width: 800px" title="性能趋势图">
-      <div ref="chartRef" style="height: 400px"></div>
+    <n-modal v-model:show="showChart" preset="card" class="chart-modal" title="性能趋势图">
+      <div ref="chartRef" class="chart-container"></div>
     </n-modal>
   </div>
 </template>
@@ -225,6 +225,14 @@ onUnmounted(() => {
     .n-descriptions-table-content {
       font-weight: 500;
     }
+  }
+
+  .chart-modal {
+    width: 800px;
+  }
+
+  .chart-container {
+    height: 400px;
   }
 }
 </style>
