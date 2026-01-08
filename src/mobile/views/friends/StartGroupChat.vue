@@ -32,7 +32,7 @@
 
       <!-- 联系人列表 -->
       <div ref="scrollArea" class="flex-1 overflow-y-auto px-16px mt-10px" :style="{ height: scrollHeight + 'px' }">
-        <n-scrollbar style="max-height: calc(100vh - 150px)">
+        <n-scrollbar class="member-scrollbar">
           <n-checkbox-group v-model:value="selectedList" class="flex flex-col gap-2">
             <div
               v-for="item in filteredContacts"
@@ -54,7 +54,7 @@
                       :size="44"
                       :src="AvatarUtils.getAvatarUrl(item.avatar!)"
                       fallback-src="/logo.png"
-                      style="border: 1px solid var(--avatar-border-color)" />
+                      class="avatar-bordered" />
                     <!-- 文字信息 -->
                     <div class="flex flex-col leading-tight truncate">
                       <span class="text-14px font-medium truncate">
@@ -186,4 +186,12 @@ const resetCreateGroupState = () => {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.member-scrollbar {
+  max-height: calc(100vh - 150px);
+}
+
+.avatar-bordered {
+  border: 1px solid var(--avatar-border-color);
+}
+</style>
