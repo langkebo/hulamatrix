@@ -105,7 +105,7 @@
       v-model:show="showAddDialog"
       :title="editingNotification ? '编辑定时通知' : '添加定时通知'"
       preset="card"
-      style="width: 500px">
+      class="dialog-modal">
       <n-form ref="formRef" :model="formData" :rules="formRules" label-placement="top">
         <n-form-item label="标题" path="title">
           <n-input v-model:value="formData.title" placeholder="输入通知标题" />
@@ -448,6 +448,9 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .notification-scheduler {
+  .dialog-modal {
+    width: 500px;
+  }
   .section {
     margin-bottom: 32px;
     padding-bottom: 32px;
