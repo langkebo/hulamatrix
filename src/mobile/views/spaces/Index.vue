@@ -101,7 +101,7 @@
         <n-form-item label="公开">
           <n-switch v-model:value="createForm.isPublic" />
           <template #feedback>
-            <n-text depth="3" style="font-size: 12px">公开工作区可以被任何人发现和加入</n-text>
+            <n-text depth="3" class="helper-text">公开工作区可以被任何人发现和加入</n-text>
           </template>
         </n-form-item>
       </n-form>
@@ -382,6 +382,10 @@ onMounted(async () => {
     display: flex;
     justify-content: center;
   }
+}
+
+.helper-text {
+  font-size: 12px;
 }
 
 // Safe area for mobile
