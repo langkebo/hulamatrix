@@ -40,7 +40,7 @@
             <n-select
               v-bind="searchOptions.scope !== undefined ? { value: searchOptions.scope } : {}"
               :options="searchScopeOptions"
-              style="width: 120px" />
+              class="search-scope-select" />
           </n-form-item>
 
           <n-form-item label="消息类型">
@@ -48,7 +48,7 @@
               v-bind="searchOptions.messageTypes !== undefined ? { value: searchOptions.messageTypes } : {}"
               :options="messageTypeOptions"
               multiple
-              style="width: 150px"
+              class="message-type-select"
               placeholder="全部类型" />
           </n-form-item>
 
@@ -57,7 +57,7 @@
               v-bind="searchOptions.dateRange !== undefined ? { value: searchOptions.dateRange } : {}"
               type="daterange"
               clearable
-              style="width: 200px" />
+              class="date-range-picker" />
           </n-form-item>
 
           <n-form-item label="发送者">
@@ -67,7 +67,7 @@
               multiple
               filterable
               placeholder="选择发送者"
-              style="width: 150px" />
+              class="sender-select" />
           </n-form-item>
 
           <n-form-item>
@@ -605,6 +605,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.search-scope-select {
+  width: 120px;
+}
+
+.message-type-select {
+  width: 150px;
+}
+
+.date-range-picker {
+  width: 200px;
+}
+
+.sender-select {
+  width: 150px;
+}
+
 .matrix-search {
   display: flex;
   flex-direction: column;
