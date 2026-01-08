@@ -29,7 +29,7 @@
         <span class="text-14px font-500 text-[--text-color]">{{ getSectionTitle() }}</span>
       </div>
 
-      <n-scrollbar style="height: calc(100vh / var(--page-scale, 1) - 110px)">
+      <n-scrollbar class="file-list-scrollbar">
         <div class="pr-12px">
           <!-- 全部选项 -->
           <UserItem
@@ -372,4 +372,8 @@ watch(
 )
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.file-list-scrollbar {
+  height: calc(100vh / var(--page-scale, 1) - 110px);
+}
+</style>
