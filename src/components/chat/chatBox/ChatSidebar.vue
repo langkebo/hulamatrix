@@ -127,7 +127,7 @@ import { logger } from '@/utils/logger'
         @scroll="handleScroll($event)"
         :item-size="46"
         :items="displayedUserList">
-        <template var(--hula-gray-100)ult="{ item }">
+        <template #default="{ item }">
           <n-popover
             :ref="(el: unknown) => (infoPopoverRefs[item.uid] = el)"
             @update:show="handlePopoverUpdate(item.uid, $event)"

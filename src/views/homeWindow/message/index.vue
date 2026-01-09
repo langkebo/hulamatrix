@@ -7,7 +7,7 @@
     @retry="handleRetry"
     @refresh="handleRefresh"
     @start-chat="handleStartChat">
-    <template var(--hula-gray-100)ult>
+    <template #default>
       <n-alert v-if="devDegraded" type="warning" :show-icon="true" class="mx-8px my-6px">
         开发模式：后端未接入，界面使用本地缓存与降级操作
       </n-alert>

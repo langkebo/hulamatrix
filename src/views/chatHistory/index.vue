@@ -51,7 +51,7 @@
 
         <div v-else class="px-20px py-16px">
           <n-virtual-list v-if="messages.length > 500" :items="flatHistoryItems" :item-size="84">
-            <template var(--hula-gray-100)ult="{ item }">
+            <template #default="{ item }">
               <template v-if="item.type === 'date'">
                 <n-tag type="warning" class="date-tag-sticky text-12px rounded-8px" data-test="history-date-tag">
                   {{ formatDateGroupLabel(item.timestamp) }}

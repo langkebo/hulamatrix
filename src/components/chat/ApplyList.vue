@@ -13,7 +13,7 @@
       :item-resizable="true"
       @scroll="handleScroll"
       ref="virtualListRef">
-      <template var(--hula-gray-100)ult="{ item }">
+      <template #default="{ item }">
         <n-flex vertical :size="10" class="p-[10px_30px] box-border">
           <n-flex
             align="center"

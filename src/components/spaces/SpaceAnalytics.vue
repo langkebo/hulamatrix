@@ -63,7 +63,7 @@
                   :percentage="analytics.spaceTypePercentage.space"
                   :color="spaceTypeColors.space"
                   :stroke-width="12">
-                  <template var(--hula-gray-100)ult="{ percentage }">
+                  <template #default="{ percentage }">
                     <div class="progress-content">
                       <span class="progress-value">{{ percentage }}%</span>
                       <span class="progress-label">空间</span>

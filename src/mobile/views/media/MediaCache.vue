@@ -36,7 +36,7 @@
                 :percentage="storagePercentage"
                 :stroke-width="8"
                 :color="getProgressColor(storagePercentage)">
-                <template var(--hula-gray-100)ult="{ percentage }">
+                <template #default="{ percentage }">
                   <span class="percentage-text">{{ percentage }}%</span>
                 </template>
               </n-progress>

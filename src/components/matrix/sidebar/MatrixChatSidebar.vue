@@ -34,7 +34,7 @@
           :show-scrollbar="true"
           class="members-virtual-list"
           @scroll="handleMemberScroll">
-          <template var(--hula-gray-100)ult="{ item }">
+          <template #default="{ item }">
             <template :key="item.id">
               <!-- Group header -->
               <div v-if="item.type === 'header'" class="member-group-header">

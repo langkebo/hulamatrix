@@ -36,7 +36,7 @@
       @retry="handleRetry"
       @refresh="handleRefresh"
       @start-chat="handleStartChat">
-      <template var(--hula-gray-100)ult>
+      <template #default>
         <!-- Virtual Scroll for PC, Normal Scroll for Mobile -->
         <template v-if="isMobile && filteredSessions.length > 0">
           <div class="chat-list-items mobile">
@@ -59,7 +59,7 @@
           <!-- Virtual Scroll Mode (recommended for 100+ sessions) -->
           <template v-if="virtualScroll">
             <ChatListVirtualList :sessions="filteredSessions" :estimated-item-height="80" :buffer-size="5">
-              <template var(--hula-gray-100)ult="{ item, index }">
+              <template #default="{ item, index }">
                 <ContextMenu
                   :class="getItemClasses(item)"
                   :menu="getVisibleMenu(item)"

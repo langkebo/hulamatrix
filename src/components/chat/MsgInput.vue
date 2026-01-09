@@ -131,7 +131,7 @@
             :item-size="36"
             :items="personList"
             v-model:selectedKey="selectedAitKey">
-            <template var(--hula-gray-100)ult="{ item }">
+            <template #default="{ item }">
               <n-flex
                 @mouseover="() => (selectedAitKey = item.uid)"
                 :class="{ active: selectedAitKey === item.uid }"

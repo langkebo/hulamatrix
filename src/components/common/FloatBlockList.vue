@@ -8,7 +8,7 @@
       :item-resize-observer="true"
       :key-field="itemKey || 'index'"
       @scroll="handleScroll">
-      <template var(--hula-gray-100)ult="{ item, index }">
+      <template #default="{ item, index }">
         <div
           class="float-block"
           :data-index="index"

@@ -18,7 +18,7 @@
       </aside>
       <section class="settings-panel-content">
         <Suspense>
-          <template var(--hula-gray-100)ult>
+          <template #default>
             <router-view />
           </template>
           <template #fallback>

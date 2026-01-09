@@ -13,7 +13,7 @@
     <template #icon>
       <slot />
     </template>
-    <template v-if="$slots.default" var(--hula-gray-100)ult>
+    <template v-if="$slots.default" #default>
       <slot />
     </template>
   </BaseButton>

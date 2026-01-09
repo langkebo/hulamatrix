@@ -1,0 +1,6 @@
+
+> hula@3.0.5 typecheck /Users/ljf/Desktop/back/foxchat/HuLamatrix
+> vue-tsc -p tsconfig.json --noEmit
+
+src/mobile/components/e2ee/MobileDeviceList.vue(449,9): error TS2353: Object literal may only specify known properties, and 'theme' does not exist in type 'DialogAdapterOptions'.
+ ELIFECYCLE  Command failed with exit code 2.

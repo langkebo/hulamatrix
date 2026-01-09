@@ -1,97 +1,124 @@
 #!/usr/bin/env node
 
-/**
- * 图片优化脚本
- *
- * 功能:
- * - 压缩图片文件大小
- * - 转换为现代格式 (WebP/AVIF)
- * - 生成多种尺寸的响应式图片
- * - 分析图片优化潜力
- */
-
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
-// 配置
 const CONFIG = {
   publicDir: path.join(process.cwd(), 'public'),
-  targets: {
-    emoji: {
-      dir: 'emoji',
-      maxSize: 50 * 1024, // 50KB
-      formats: ['webp'],
-      sizes: [] // 表情包不需要多尺寸
-    },
-    avatar: {
-      dir: 'avatar',
-      maxSize: 30 * 1024, // 30KB
-      formats: ['webp'],
-      sizes: [32, 64, 128, 256]
-    },
-    file: {
-      dir: 'file',
-      maxSize: 5 * 1024, // 5KB
-      formats: ['svg'], // 图标保持 SVG
-      sizes: []
-    }
-  },
   dryRun: false,
-  verbose: false
+  backup: true,
 };
 
-// 统计
 const stats = {
-  analyzed: 0,
+  processed: 0,
   optimized: 0,
-  skipped: 0,
+  originalSize: 0,
+  optimizedSize: 0,
+  saved: 0,
   errors: 0,
-  totalOriginalSize: 0,
-  totalOptimizedSize: 0,
-  saved: 0
 };
 
-/**
- * 检查是否安装了图片优化工具
- */
-function checkTools() {
-  const tools = [];
-
-  try {
-    execSync('which ffmpeg', { stdio: 'ignore' });
-    tools.push('ffmpeg');
-  } catch (e) {}
-
-  try {
-    execSync('which optipng', { stdio: 'ignore' });
-    tools.push('optipng');
-  } catch (e) {}
-
-  try {
-    execSync('which jpegoptim', { stdio: 'ignore' });
-    tools.push('jpegoptim');
-  } catch (e) {}
-
-  try {
-    execSync('which cwebp', { stdio: 'ignore' });
-    tools.push('cwebp');
-  } catch (e) {}
-
-  return tools;
+function getImageFiles(dir) {
+  const files = [];
+  function traverse(currentDir) {
+    try {
+      const items = fs.readdirSync(currentDir);
+      for (const item of items) {
+        const fullPath = path.join(currentDir, item);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          traverse(fullPath);
+        } else if (/\.(png|jpg|jpeg|webp|gif)$/i.test(item)) {
+          files.push(fullPath);
+        }
+      }
+    } catch (error) {
+      // Skip
+    }
+  }
+  traverse(dir);
+  return files;
 }
 
-/**
- * 获取文件大小
- */
-function getFileSize(filePath) {
-  const stats = fs.statSync(filePath);
-  return stats.size;
+async function optimizeImage(filePath) {
+  const relativePath = path.relative(process.cwd(), filePath);
+  const originalSize = fs.statSync(filePath).size;
+  stats.originalSize += originalSize;
+
+  try {
+    const sharp = require('sharp');
+    const image = sharp(filePath);
+    const metadata = await image.metadata();
+
+    let optimized;
+
+    if (metadata.format === 'png') {
+      optimized = await image.png({
+        quality: 80,
+        compressionLevel: 9,
+        adaptiveFiltering: true,
+        palette: true,
+      }).toBuffer();
+    } else if (metadata.format === 'jpeg' || metadata.format === 'jpg') {
+      optimized = await image.jpeg({
+        quality: 85,
+        progressive: true,
+        mozjpeg: true,
+      }).toBuffer();
+    } else if (metadata.format === 'webp') {
+      optimized = await image.webp({
+        quality: 85,
+        nearLossless: true,
+      }).toBuffer();
+    } else {
+      return false;
+    }
+
+    const optimizedSize = optimized.length;
+    const saved = originalSize - optimizedSize;
+    const savedPercent = ((saved / originalSize) * 100).toFixed(2);
+
+    if (saved > 0) {
+      if (CONFIG.backup) {
+        fs.copyFileSync(filePath, filePath + '.bak');
+      }
+
+      if (CONFIG.dryRun) {
+        console.log('\n📝 ' + relativePath);
+        console.log('   原始: ' + formatBytes(originalSize));
+        console.log('   优化后: ' + formatBytes(optimizedSize));
+        console.log('   节省: ' + formatBytes(saved) + ' (' + savedPercent + '%)');
+        console.log('   [DRY-RUN] 将进行修改');
+      } else {
+        fs.writeFileSync(filePath, optimized);
+        console.log('\n📝 ' + relativePath);
+        console.log('   原始: ' + formatBytes(originalSize));
+        console.log('   优化后: ' + formatBytes(optimizedSize));
+        console.log('   节省: ' + formatBytes(saved) + ' (' + savedPercent + '%)');
+        console.log('   ✅ 已优化');
+      }
+
+      stats.optimized++;
+      stats.optimizedSize += optimizedSize;
+      stats.saved += saved;
+
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      console.error('\n❌ 错误: sharp 库未安装');
+      console.error('   请运行: pnpm add -D sharp');
+      process.exit(1);
+    }
+    console.error('\n✗ 错误: ' + relativePath);
+    console.error('   ' + error.message);
+    stats.errors++;
+    return false;
+  }
 }
 
-/**
- * 格式化文件大小
- */
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -100,236 +127,90 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-/**
- * 分析图片文件
- */
-function analyzeImage(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const size = getFileSize(filePath);
-  const relativePath = path.relative(process.cwd(), filePath);
+async function main() {
+  console.log('🖼️  HuLa 图片优化工具\n');
 
-  return {
-    path: relativePath,
-    ext,
-    size,
-    formattedSize: formatBytes(size),
-    needsOptimization: false,
-    recommendedAction: 'none'
-  };
-}
-
-/**
- * 使用 ffmpeg 压缩 WebP 图片
- */
-function optimizeWebP(inputPath, outputPath, quality = 85) {
-  try {
-    const cmd = `ffmpeg -i "${inputPath}" -c:v libwebp -quality ${quality} -quiet "${outputPath}"`;
-    if (CONFIG.verbose) {
-      console.log(`执行: ${cmd}`);
-    }
-    if (!CONFIG.dryRun) {
-      execSync(cmd, { stdio: CONFIG.verbose ? 'inherit' : 'ignore' });
-    }
-    return true;
-  } catch (error) {
-    console.error(`压缩失败: ${error.message}`);
-    return false;
-  }
-}
-
-/**
- * 优化图片目录
- */
-function optimizeDirectory(targetKey) {
-  const target = CONFIG.targets[targetKey];
-  const dirPath = path.join(CONFIG.publicDir, target.dir);
-
-  if (!fs.existsSync(dirPath)) {
-    console.log(`⊘ 跳过: ${target.dir}/ (目录不存在)`);
-    return;
-  }
-
-  console.log(`\n📁 分析 ${target.dir}/ 目录...\n`);
-
-  const files = fs.readdirSync(dirPath)
-    .filter(f => /\.(webp|png|jpg|jpeg|gif)$/i.test(f))
-    .map(f => path.join(dirPath, f));
-
-  console.log(`找到 ${files.length} 个图片文件\n`);
-  console.log('─'.repeat(80) + '\n');
-
-  files.forEach(filePath => {
-    const originalSize = getFileSize(filePath);
-    const relativePath = path.relative(process.cwd(), filePath);
-    const ext = path.extname(filePath).toLowerCase();
-
-    stats.analyzed++;
-    stats.totalOriginalSize += originalSize;
-
-    // 判断是否需要优化
-    let needsOptimization = false;
-    let action = 'skip';
-    let potentialSaving = 0;
-
-    if (ext === '.webp' && originalSize > target.maxSize) {
-      needsOptimization = true;
-      action = 'compress';
-      potentialSaving = originalSize - target.maxSize;
-    }
-
-    // 显示分析结果
-    if (needsOptimization || CONFIG.verbose) {
-      console.log(`📊 ${relativePath}`);
-      console.log(`   当前大小: ${formatBytes(originalSize)}`);
-
-      if (needsOptimization) {
-        console.log(`   目标大小: ${formatBytes(target.maxSize)}`);
-        console.log(`   预计节省: ${formatBytes(potentialSaving)} (${Math.round(potentialSaving / originalSize * 100)}%)`);
-        console.log(`   操作: ${action}`);
-
-        // 执行优化
-        if (action === 'compress') {
-          const tempPath = filePath + '.tmp.webp';
-
-          if (optimizeWebP(filePath, tempPath, 80)) {
-            const newSize = getFileSize(tempPath);
-            stats.totalOptimizedSize += newSize;
-            stats.saved += (originalSize - newSize);
-
-            if (!CONFIG.dryRun) {
-              fs.unlinkSync(filePath);
-              fs.renameSync(tempPath, filePath);
-            } else {
-              fs.unlinkSync(tempPath);
-            }
-
-            console.log(`   ✅ 已优化: ${formatBytes(originalSize)} → ${formatBytes(newSize)}`);
-            stats.optimized++;
-          } else {
-            stats.errors++;
-          }
-        }
-      } else {
-        console.log(`   ⊘ 无需优化`);
-        stats.skipped++;
-      }
-
-      console.log('');
-    } else {
-      stats.skipped++;
-    }
-  });
-}
-
-/**
- * 生成优化报告
- */
-function generateReport() {
-  console.log('─'.repeat(80));
-  console.log('\n📊 优化报告\n');
-
-  console.log(`分析文件数: ${stats.analyzed}`);
-  console.log(`已优化:     ${stats.optimized}`);
-  console.log(`跳过:       ${stats.skipped}`);
-  if (stats.errors > 0) {
-    console.log(`错误:       ${stats.errors}`);
-  }
-
-  console.log('\n' + '─'.repeat(80) + '\n');
-
-  console.log(`原始总大小: ${formatBytes(stats.totalOriginalSize)}`);
-  if (stats.totalOptimizedSize > 0) {
-    console.log(`优化后大小: ${formatBytes(stats.totalOptimizedSize)}`);
-    console.log(`节省空间:   ${formatBytes(stats.saved)} (${Math.round(stats.saved / stats.totalOriginalSize * 100)}%)`);
-  }
-
-  console.log('\n' + '─'.repeat(80) + '\n');
-
-  if (stats.saved > 0) {
-    console.log('💡 优化建议:\n');
-    console.log('1. 考虑为不同设备生成多种尺寸的响应式图片');
-    console.log('2. 实施图片懒加载以减少初始加载时间');
-    console.log('3. 使用 CDN 加速图片交付');
-    console.log('4. 考虑使用 AVIF 格式以获得更好的压缩率');
-  }
-
-  console.log('');
-}
-
-/**
- * 主函数
- */
-function main() {
-  console.log('🖼️  图片优化工具\n');
-
-  // 解析命令行参数
   const args = process.argv.slice(2);
   if (args.includes('--dry-run')) {
     CONFIG.dryRun = true;
+    console.log('🔍 Dry-run 模式: 不会实际修改文件\n');
   }
-  if (args.includes('--verbose') || args.includes('-v')) {
-    CONFIG.verbose = true;
+
+  if (args.includes('--no-backup')) {
+    CONFIG.backup = false;
+    console.log('⚠️  不备份原文件\n');
   }
+
   if (args.includes('--help') || args.includes('-h')) {
-    console.log(`
-用法: node scripts/optimize-images.cjs [选项]
-
-选项:
-  --dry-run       预览模式，不实际修改文件
-  --verbose, -v   显示详细输出
-  --help, -h      显示此帮助信息
-
-示例:
-  node scripts/optimize-images.cjs              # 优化所有图片
-  node scripts/optimize-images.cjs --dry-run    # 预览优化结果
-  node scripts/optimize-images.cjs --verbose    # 显示详细输出
-
-依赖工具 (可选):
-  - ffmpeg    # 用于 WebP 压缩
-  - cwebp     # 用于 WebP 编码
-  - optipng   # 用于 PNG 优化
-  - jpegoptim # 用于 JPEG 优化
-
-安装依赖:
-  brew install ffmpeg optipng jpegoptim  # macOS
-  apt install ffmpeg optipng jpegoptim   # Ubuntu
-    `);
+    console.log('用法: node scripts/optimize-images.cjs [选项]\n');
+    console.log('选项:');
+    console.log('  --dry-run     仅查看会进行哪些优化，不实际修改文件');
+    console.log('  --no-backup   不备份原文件（默认会备份）');
+    console.log('  --help, -h    显示此帮助信息\n');
+    console.log('优化策略:');
+    console.log('  - PNG: quality=80, compressionLevel=9');
+    console.log('  - JPEG: quality=85, progressive');
+    console.log('  - WebP: quality=85\n');
     process.exit(0);
   }
 
-  if (CONFIG.dryRun) {
-    console.log('🔍 Dry-run 模式: 不会实际修改文件\n\n');
+  console.log('🔧 配置:\n');
+  console.log('   备份原文件: ' + (CONFIG.backup ? '是' : '否'));
+  console.log('   目标目录: public/\n');
+
+  const files = getImageFiles(CONFIG.publicDir);
+  console.log('📁 找到 ' + files.length + ' 个图片文件\n');
+
+  if (files.length === 0) {
+    console.log('✅ 没有需要优化的图片');
+    process.exit(0);
   }
 
-  // 检查工具
-  const tools = checkTools();
-  if (tools.length === 0) {
-    console.log('⚠️  警告: 未检测到图片优化工具');
-    console.log('   仅进行分析，不会执行实际优化\n');
-    console.log('   安装推荐: brew install ffmpeg optipng jpegoptim\n');
-  } else {
-    console.log(`✓ 已安装工具: ${tools.join(', ')}\n`);
+  console.log('开始处理...\n');
+  console.log('─'.repeat(80) + '\n');
+
+  for (const file of files) {
+    try {
+      await optimizeImage(file);
+      stats.processed++;
+    } catch (error) {
+      console.error('✗ 错误: ' + file);
+      console.error('  ' + error.message + '\n');
+      stats.errors++;
+    }
   }
 
-  console.log('开始优化...\n');
+  console.log('\n' + '='.repeat(80));
+  console.log('📊 优化统计\n');
 
-  // 优化各个目标目录
-  Object.keys(CONFIG.targets).forEach(key => {
-    optimizeDirectory(key);
-  });
-
-  // 生成报告
-  generateReport();
+  console.log('处理文件:     ' + stats.processed);
+  console.log('优化文件:     ' + stats.optimized);
+  console.log('原始大小:     ' + formatBytes(stats.originalSize));
+  console.log('优化后大小:   ' + formatBytes(stats.optimizedSize));
+  console.log('节省空间:     ' + formatBytes(stats.saved) + ' (' + ((stats.saved / stats.originalSize) * 100).toFixed(2) + '%)');
+  console.log('错误:         ' + stats.errors);
 
   if (CONFIG.dryRun) {
-    console.log('💡 这是 dry-run 模式。运行不带 --dry-run 的命令来实际应用优化。');
+    console.log('\n💡 这是 dry-run 模式。运行不带 --dry-run 的命令来实际应用修改。');
   } else {
-    console.log('✅ 优化完成!\n');
-    console.log('💡 提示: 运行 `git add .` 添加优化的图片。');
+    if (CONFIG.backup) {
+      console.log('\n💡 备份文件已保存为 *.bak');
+      console.log('   确认无误后，可运行: find public -name "*.bak" -delete');
+    }
+    console.log('\n💡 提示: 运行 git diff 查看修改，git add . 添加更改。');
+  }
+
+  console.log('\n✅ 完成!\n');
+
+  if (!CONFIG.dryRun && stats.optimized > 0) {
+    console.log('📌 下一步:');
+    console.log('   1. 测试应用: pnpm run dev');
+    console.log('   2. 确认图片显示正常');
+    console.log('   3. 删除备份: find public -name "*.bak" -delete');
+    console.log('   4. 提交修改: git add . && git commit -m "chore(images): optimize images"');
   }
 
   process.exit(stats.errors > 0 ? 1 : 0);
 }
 
-// 运行
 main();

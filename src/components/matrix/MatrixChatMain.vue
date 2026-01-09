@@ -12,7 +12,7 @@
 
       <!-- 消息项 -->
       <n-virtual-list v-if="messages.length > 200" :items="messages" :item-size="72">
-        <template var(--hula-gray-100)ult="{ item: message }">
+        <template #default="{ item: message }">
           <div
             :key="message.eventId"
             class="message-item"

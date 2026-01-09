@@ -446,7 +446,6 @@ const handleDeviceAction = async (key: string) => {
       await dialog.confirm({
         title: '删除设备',
         content: '确定要删除此设备吗？此操作不可撤销。',
-        theme: 'round-button',
       })
       await handleDeleteDevice(device.deviceId)
       break

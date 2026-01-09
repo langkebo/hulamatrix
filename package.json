@@ -177,6 +177,7 @@
     "prettier": "^3.6.2",
     "release-it": "^17.11.0",
     "sass": "1.94.2",
+    "sharp": "^0.34.5",
     "typescript": "5.9.0-beta",
     "unplugin-auto-import": "^20.2.0",
     "unplugin-vue-components": "^30.0.0",
@@ -191,7 +192,13 @@
     }
   },
   "pnpm": {
-    "ignoredBuiltDependencies": ["@parcel/watcher", "esbuild", "sharp", "tlbs-map-vue", "vue-demi"],
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "sharp",
+      "tlbs-map-vue",
+      "vue-demi"
+    ],
     "overrides": {
       "@octokit/request-error@>=1.0.0 <5.1.1": ">=5.1.1",
       "@octokit/endpoint@>=9.0.5 <9.0.6": ">=9.0.6",
