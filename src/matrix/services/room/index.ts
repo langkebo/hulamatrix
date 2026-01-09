@@ -1,7 +1,8 @@
 /**
  * Matrix Room Services Module
  *
- * Room management and operations
+ * Room management, spaces, and related operations
  */
 
 export * from './manager'
+export * from './spaces'
