@@ -155,7 +155,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useScannerStore } from '@/stores/scanner'
-import { formatBytes } from '@/utils/Formatting'
+import { formatBytes } from '@/utils/formatUtils'
 
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'

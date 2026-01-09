@@ -68,7 +68,7 @@ import { appDataDir, join, resourceDir } from '@tauri-apps/api/path'
 import { isMobile } from '@/utils/PlatformConstants'
 import { useFileStore } from '@/stores/file'
 import { useMitt } from '@/hooks/useMitt'
-import { extractFileName } from '@/utils/Formatting'
+import { extractFileName } from '@/utils/formatUtils'
 import type { MsgType } from '@/services/types'
 
 import { msg } from '@/utils/SafeUI'

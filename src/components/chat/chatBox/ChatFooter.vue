@@ -213,7 +213,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useHistoryStore } from '@/stores/history'
 import { useSettingStore } from '@/stores/setting'
 import FileUtil from '@/utils/FileUtil'
-import { extractFileName, getMimeTypeFromExtension } from '@/utils/Formatting'
+import { extractFileName, getMimeTypeFromExtension } from '@/utils/formatUtils'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
 
 import { msg } from '@/utils/SafeUI'

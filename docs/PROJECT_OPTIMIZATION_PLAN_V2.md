@@ -1,9 +1,9 @@
-# HuLa 项目优化方案 V3.5
+# HuLa 项目优化方案 V3.6
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 16 完成)
-**版本**: v3.5
-**总体进度**: 92%
+**最后更新**: 2026-01-09 (Phase 17 完成)
+**版本**: v3.6
+**总体进度**: 93%
 
 ---
 
@@ -97,7 +97,18 @@
   - Strategy: ImageMessageStrategy.ts, TextMessageStrategy.ts
   - Utils: FileUtil.ts, CreateDom.ts
 - ✅ formatUtils.ts 成为所有格式化工具的单一入口点
-- ✅ 为剩余 58 个文件迁移奠定基础
+- ✅ 为剩余文件迁移奠定基础
+
+**Phase 17**: 完成格式化工具迁移 ✅
+- ✅ 完成剩余 6 个文件的迁移
+- ✅ 添加 formatBottomText 到 formatUtils.ts 重新导出
+- ✅ 更新文件:
+  - Views: Login.vue, ManageStore.vue
+  - Mobile: ImagePreview.vue
+  - Components: ChatFooter.vue
+  - Tests: FileUtil.spec.ts (src 和 tests)
+- ✅ 项目中所有文件已迁移到 formatUtils.ts
+- ✅ Formatting.ts 现在仅作为内部实现模块
 
 ### 待处理的优化任务
 
@@ -321,7 +332,8 @@ src/components/matrix/
 | Phase 14 | ~22 行 | 通用格式化工具模块 |
 | Phase 15 | ~17 行 | 统一格式化工具入口 |
 | Phase 16 | ~13 行 | 迁移到统一格式化入口 |
-| **总计** | **~11,850** | **~98%** |
+| Phase 17 | ~8 行 | 完成格式化工具迁移 |
+| **总计** | **~11,858** | **~99%** |
 
 ---
 
@@ -382,6 +394,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v3.6 (2026-01-09): Phase 17 - 完成格式化工具迁移
 - v3.5 (2026-01-09): Phase 16 - 迁移到统一格式化工具入口完成
 - v3.4 (2026-01-09): Phase 15 - 统一格式化工具入口完成
 - v3.3 (2026-01-09): Phase 14 - 通用格式化工具模块完成

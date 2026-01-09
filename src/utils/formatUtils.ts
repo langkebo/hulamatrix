@@ -8,7 +8,14 @@
  */
 
 // Re-export commonly used functions from Formatting.ts
-export { formatBytes, getFileSuffix, extractFileName, removeTag, getMimeTypeFromExtension } from './Formatting'
+export {
+  formatBytes,
+  getFileSuffix,
+  extractFileName,
+  removeTag,
+  getMimeTypeFromExtension,
+  formatBottomText
+} from './Formatting'
 
 /**
  * Format file size from bytes to human-readable string
