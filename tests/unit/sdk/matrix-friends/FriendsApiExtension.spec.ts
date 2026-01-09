@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { MatrixFriendsApiExtension } from '../FriendsApiExtension'
-import { FriendsApiError } from '../types'
+import { MatrixFriendsApiExtension } from '@/sdk/matrix-friends/FriendsApiExtension'
+import { FriendsApiError } from '@/sdk/matrix-friends/types'
 
 // Mock fetch
 global.fetch = vi.fn()

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createEnhancedMatrixClient, extendMatrixClient, isFriendsApiEnabled } from '../factory'
-import type { EnhancedMatrixClient } from '../factory'
+import { createEnhancedMatrixClient, extendMatrixClient, isFriendsApiEnabled } from '@/sdk/matrix-friends/factory'
+import type { EnhancedMatrixClient } from '@/sdk/matrix-friends/factory'
 
 describe('Matrix Friends SDK 集成测试', () => {
   // Mock matrix-js-sdk

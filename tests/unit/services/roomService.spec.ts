@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { RoomService, POWER_LEVELS } from '../roomService'
+import { RoomService, POWER_LEVELS } from '@/services/roomService'
 
 // Mock logger
 vi.mock('@/utils/logger', () => ({

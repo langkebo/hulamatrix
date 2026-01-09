@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useCursorManager } from '../useMsgInput/composables/useCursorManager'
-import type { SelectionRange } from '../useCommon'
+import { useCursorManager } from '@/hooks/useMsgInput/composables/useCursorManager'
+import type { SelectionRange } from '@/hooks/useCommon'
 
 describe('useCursorManager', () => {
   let cursorManager: ReturnType<typeof useCursorManager>

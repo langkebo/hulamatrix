@@ -1,6 +1,6 @@
 import { FILE_SIZE_LIMITS } from '@/constants'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useInputValidation } from '../useMsgInput/composables/useInputValidation'
+import { useInputValidation } from '@/hooks/useMsgInput/composables/useInputValidation'
 
 // Mock i18n
 vi.mock('vue-i18n', () => ({
