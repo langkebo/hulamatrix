@@ -42,7 +42,7 @@
               <n-avatar round :size="36" :src="space.avatar || ''" :fallback-src="fallbackAvatar" />
               <div class="flex-1 truncate">
                 <div class="text-14px truncate">{{ space.name }}</div>
-                <div class="text-12px text-#909090 truncate">{{ space.topic || '' }}</div>
+                <div class="text-12px text-var(--hula-brand-primary) truncate">{{ space.topic || '' }}</div>
               </div>
               <n-badge :value="getUnread(space.id).highlight + getUnread(space.id).notification" :max="99" />
             </n-flex>

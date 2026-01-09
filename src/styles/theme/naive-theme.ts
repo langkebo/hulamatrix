@@ -16,33 +16,33 @@ export const hulaThemeOverrides = {
   // ==================== 通用配置 ====================
   common: {
     // 主色 - 使用实际颜色值以支持 Naive UI 的颜色计算
-    primaryColor: '#13987f',
-    primaryColorHover: '#0f7d69',
-    primaryColorPressed: '#0c6354',
-    primaryColorSuppl: '#64a29c',
+    primaryColor: 'var(--hula-brand-primary)',
+    primaryColorHover: 'var(--hula-brand-primary)',
+    primaryColorPressed: 'var(--hula-brand-primary)',
+    primaryColorSuppl: 'var(--hula-brand-primary)',
 
     // 功能色
-    successColor: '#13987f',
-    warningColor: '#ff976a',
-    errorColor: '#ee0a24',
-    infoColor: '#1989fa',
+    successColor: 'var(--hula-brand-primary)',
+    warningColor: 'var(--hula-brand-primary)',
+    errorColor: 'var(--hula-brand-primary)',
+    infoColor: 'var(--hula-brand-primary)',
 
     // 文字颜色
-    textColorBase: '#18212c',
-    textColor1: '#18212c',
-    textColor2: '#576b95',
-    textColor3: '#9fa1a9',
-    textColorDisabled: '#c8c9cc',
+    textColorBase: 'var(--hula-brand-primary)',
+    textColor1: 'var(--hula-brand-primary)',
+    textColor2: 'var(--hula-brand-primary)',
+    textColor3: 'var(--hula-brand-primary)',
+    textColorDisabled: 'var(--hula-brand-primary)',
 
     // 背景颜色 - 使用实际颜色值以支持透明度计算
-    bodyColor: '#f7f8fa',
-    cardColor: '#ffffff',
-    modalColor: '#ffffff',
-    popoverColor: '#ffffff',
+    bodyColor: 'var(--hula-brand-primary)',
+    cardColor: 'var(--hula-brand-primary)',
+    modalColor: 'var(--hula-brand-primary)',
+    popoverColor: 'var(--hula-brand-primary)',
 
     // 边框颜色
-    borderColor: '#ebedf0',
-    dividerColor: '#dcdee0',
+    borderColor: 'var(--hula-brand-primary)',
+    dividerColor: 'var(--hula-brand-primary)',
 
     // 圆角
     borderRadius: '8px',
@@ -62,39 +62,39 @@ export const hulaThemeOverrides = {
   // ==================== 输入框组件 ====================
   Input: {
     borderRadius: '8px',
-    borderFocus: '1px solid #13987f',
-    borderHover: '1px solid #64a29c',
+    borderFocus: '1px solid var(--hula-brand-primary)',
+    borderHover: '1px solid var(--hula-brand-primary)',
     boxShadowFocus: '0 0 0 2px rgba(19, 152, 127, 0.2)'
   },
 
   // ==================== 对话框组件 ====================
   Dialog: {
     borderRadius: '12px',
-    iconColor: '#13987f'
+    iconColor: 'var(--hula-brand-primary)'
   },
 
   // ==================== 消息提示 ====================
   Message: {
-    iconColor: '#13987f'
+    iconColor: 'var(--hula-brand-primary)'
   },
 
   // ==================== 标签 ====================
   Tag: {
     borderRadius: '6px',
-    colorDefault: '#13987f',
-    colorChecked: '#13987f'
+    colorDefault: 'var(--hula-brand-primary)',
+    colorChecked: 'var(--hula-brand-primary)'
   },
 
   // ==================== 开关 ====================
   Switch: {
-    railColorActive: '#13987f',
-    buttonColor: '#13987f'
+    railColorActive: 'var(--hula-brand-primary)',
+    buttonColor: 'var(--hula-brand-primary)'
   },
 
   // ==================== 滚动条 ====================
   Scrollbar: {
-    color: '#64a29c',
-    colorHover: '#4d8b85'
+    color: 'var(--hula-brand-primary)',
+    colorHover: 'var(--hula-brand-primary)'
   }
 } as GlobalThemeOverrides
 
@@ -104,44 +104,44 @@ export const hulaThemeOverrides = {
 export function createHulaDarkTheme(): GlobalTheme {
   const themeOverrides: GlobalThemeOverrides = {
     common: {
-      primaryColor: '#1ec29f',
-      primaryColorHover: '#4dd6b5',
-      primaryColorPressed: '#13987f',
-      primaryColorSuppl: '#82b2ac',
+      primaryColor: 'var(--hula-brand-primary)',
+      primaryColorHover: 'var(--hula-brand-primary)',
+      primaryColorPressed: 'var(--hula-brand-primary)',
+      primaryColorSuppl: 'var(--hula-brand-primary)',
 
-      successColor: '#1ec29f',
-      successColorHover: '#4dd6b5',
-      successColorPressed: '#13987f',
-      successColorSuppl: '#82b2ac',
+      successColor: 'var(--hula-brand-primary)',
+      successColorHover: 'var(--hula-brand-primary)',
+      successColorPressed: 'var(--hula-brand-primary)',
+      successColorSuppl: 'var(--hula-brand-primary)',
 
-      warningColor: '#ffb88a',
-      warningColorHover: '#ffc9a3',
-      warningColorPressed: '#ffa770',
-      warningColorSuppl: '#ffdcb8',
+      warningColor: 'var(--hula-brand-primary)',
+      warningColorHover: 'var(--hula-brand-primary)',
+      warningColorPressed: 'var(--hula-brand-primary)',
+      warningColorSuppl: 'var(--hula-brand-primary)',
 
-      errorColor: '#f54a5f',
-      errorColorHover: '#f76b7f',
-      errorColorPressed: '#e83e55',
-      errorColorSuppl: '#f87a8d',
+      errorColor: 'var(--hula-brand-primary)',
+      errorColorHover: 'var(--hula-brand-primary)',
+      errorColorPressed: 'var(--hula-brand-primary)',
+      errorColorSuppl: 'var(--hula-brand-primary)',
 
-      infoColor: '#6cbfff',
-      infoColorHover: '#7fccff',
-      infoColorPressed: '#4da8ff',
-      infoColorSuppl: '#82b2ac',
+      infoColor: 'var(--hula-brand-primary)',
+      infoColorHover: 'var(--hula-brand-primary)',
+      infoColorPressed: 'var(--hula-brand-primary)',
+      infoColorSuppl: 'var(--hula-brand-primary)',
 
-      textColorBase: '#ffffff',
-      textColor1: '#ffffff',
+      textColorBase: 'var(--hula-brand-primary)',
+      textColor1: 'var(--hula-brand-primary)',
       textColor2: 'rgba(255, 255, 255, 0.75)',
       textColor3: 'rgba(255, 255, 255, 0.55)',
       textColorDisabled: 'rgba(255, 255, 255, 0.35)',
 
-      bodyColor: '#1a1a1a',
-      cardColor: '#242424',
-      modalColor: '#242424',
-      popoverColor: '#242424',
+      bodyColor: 'var(--hula-brand-primary)',
+      cardColor: 'var(--hula-brand-primary)',
+      modalColor: 'var(--hula-brand-primary)',
+      popoverColor: 'var(--hula-brand-primary)',
 
-      borderColor: '#3a3a3a',
-      dividerColor: '#4a4a4a'
+      borderColor: 'var(--hula-brand-primary)',
+      dividerColor: 'var(--hula-brand-primary)'
     }
   }
 

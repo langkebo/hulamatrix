@@ -5,31 +5,31 @@
 // 基础变量定义
 [data-theme-content="dark"] {
   // 背景色
-  --bg-color: #1a1a1a;
-  --bg-color-secondary: #242424;
-  --bg-color-tertiary: #2e2e2e;
-  --bg-color-elevated: #2a2a2a;
-  --bg-color-surface: #333333;
+  --bg-color: var(--hula-brand-primary);
+  --bg-color-secondary: var(--hula-brand-primary);
+  --bg-color-tertiary: var(--hula-brand-primary);
+  --bg-color-elevated: var(--hula-brand-primary);
+  --bg-color-surface: var(--hula-brand-primary);
   --bg-color-overlay: rgba(0, 0, 0, 0.8);
 
   // 文本色
-  --text-color: #ffffff;
-  --text-color-secondary: #b3b3b3;
-  --text-color-tertiary: #808080;
-  --text-color-disabled: #4d4d4d;
-  --text-color-inverse: #000000;
+  --text-color: var(--hula-brand-primary);
+  --text-color-secondary: var(--hula-brand-primary);
+  --text-color-tertiary: var(--hula-brand-primary);
+  --text-color-disabled: var(--hula-brand-primary);
+  --text-color-inverse: var(--hula-brand-primary);
 
   // 边框色
-  --border-color: #404040;
-  --border-color-light: #333333;
-  --border-color-dark: #4d4d4d;
+  --border-color: var(--hula-brand-primary);
+  --border-color-light: var(--hula-brand-primary);
+  --border-color-dark: var(--hula-brand-primary);
 
   // 输入框
-  --input-bg: #2e2e2e;
-  --input-border: #404040;
-  --input-border-hover: #4d4d4d;
+  --input-bg: var(--hula-brand-primary);
+  --input-border: var(--hula-brand-primary);
+  --input-border-hover: var(--hula-brand-primary);
   --input-border-focus: var(--primary-color);
-  --input-placeholder: #666666;
+  --input-placeholder: var(--hula-brand-primary);
 
   // 阴影
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -39,11 +39,11 @@
 
   // 滚动条
   --scrollbar-bg: transparent;
-  --scrollbar-color: #666666;
+  --scrollbar-color: var(--hula-brand-primary);
 
   // 选择文本
   --selection-bg: rgba(255, 255, 255, 0.2);
-  --selection-text: #ffffff;
+  --selection-text: var(--hula-brand-primary);
 
   // 焦点环
   --focus-ring-color: rgba(255, 255, 255, 0.3);
@@ -60,44 +60,44 @@
   --active-bg: rgba(255, 255, 255, 0.1);
 
   // 侧边栏
-  --sidebar-bg: #242424;
-  --sidebar-border-color: #404040;
-  --sidebar-text-color: #ffffff;
-  --sidebar-text-color-secondary: #b3b3b3;
-  --sidebar-text-color-hover: #ffffff;
+  --sidebar-bg: var(--hula-brand-primary);
+  --sidebar-border-color: var(--hula-brand-primary);
+  --sidebar-text-color: var(--hula-brand-primary);
+  --sidebar-text-color-secondary: var(--hula-brand-primary);
+  --sidebar-text-color-hover: var(--hula-brand-primary);
   --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
-  --sidebar-footer-bg: #1a1a1a;
+  --sidebar-footer-bg: var(--hula-brand-primary);
 
   // 聊天
-  --chat-input-bg: #2e2e2e;
-  --chat-input-inner-bg: #333333;
-  --chat-bubble-bg: #2e2e2e;
-  --chat-bubble-bg-dark: #333333;
-  --chat-text-color: #ffffff;
-  --chat-text-color-dark: #ffffff;
+  --chat-input-bg: var(--hula-brand-primary);
+  --chat-input-inner-bg: var(--hula-brand-primary);
+  --chat-bubble-bg: var(--hula-brand-primary);
+  --chat-bubble-bg-dark: var(--hula-brand-primary);
+  --chat-text-color: var(--hula-brand-primary);
+  --chat-text-color-dark: var(--hula-brand-primary);
 
   // 消息气泡
-  --message-bubble-bg: #333333;
-  --message-text-color: #ffffff;
-  --message-border-color: #404040;
+  --message-bubble-bg: var(--hula-brand-primary);
+  --message-text-color: var(--hula-brand-primary);
+  --message-border-color: var(--hula-brand-primary);
   --message-selected-bg: rgba(19, 152, 127, 0.1);
   --reply-bg: rgba(255, 255, 255, 0.05);
   --reply-hover-bg: rgba(255, 255, 255, 0.08);
 
   // 弹出层
-  --popover-bg: #333333;
+  --popover-bg: var(--hula-brand-primary);
   --tooltip-bg: rgba(0, 0, 0, 0.9);
-  --tooltip-text: #ffffff;
+  --tooltip-text: var(--hula-brand-primary);
 
   // 按钮增强
-  --button-bg-dark: #404040;
-  --button-border-dark: #4d4d4d;
-  --button-text-dark: #ffffff;
-  --button-bg-hover-dark: #4d4d4d;
+  --button-bg-dark: var(--hula-brand-primary);
+  --button-border-dark: var(--hula-brand-primary);
+  --button-text-dark: var(--hula-brand-primary);
+  --button-bg-hover-dark: var(--hula-brand-primary);
 
   // 增强的对比度和可读性
-  --enhanced-border-color: #4a4a4a;
-  --enhanced-text-color: #f0f0f0;
+  --enhanced-border-color: var(--hula-brand-primary);
+  --enhanced-text-color: var(--hula-brand-primary);
   --enhanced-bg-hover: rgba(255, 255, 255, 0.08);
 }
 
@@ -180,11 +180,11 @@
     border-radius: 4px;
 
     &:hover {
-      background: #808080;
+      background: var(--hula-brand-primary);
     }
 
     &:active {
-      background: #999999;
+      background: var(--hula-brand-primary);
     }
   }
 
@@ -330,7 +330,7 @@
   // 徽章
   .badge {
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   // 分页
@@ -347,7 +347,7 @@
       &.active {
         background: var(--primary-color);
         border-color: var(--primary-color);
-        color: #ffffff;
+        color: var(--hula-brand-primary);
       }
     }
   }
@@ -378,13 +378,13 @@
         &.active {
           background: var(--primary-color);
           border-color: var(--primary-color);
-          color: #ffffff;
+          color: var(--hula-brand-primary);
         }
 
         &.completed {
           background: var(--success-color);
           border-color: var(--success-color);
-          color: #ffffff;
+          color: var(--hula-brand-primary);
         }
       }
     }
@@ -430,7 +430,7 @@
     }
 
     .switch-handle {
-      background: #ffffff;
+      background: var(--hula-brand-primary);
     }
   }
 
@@ -445,7 +445,7 @@
     }
 
     .slider-thumb {
-      background: #ffffff;
+      background: var(--hula-brand-primary);
       box-shadow: var(--shadow-md);
     }
   }
@@ -474,7 +474,7 @@
 
       &.selected {
         background: var(--primary-color);
-        color: #ffffff;
+        color: var(--hula-brand-primary);
       }
     }
   }

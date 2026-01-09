@@ -173,12 +173,12 @@ const categories = ref([
 ])
 
 const skinTones = ref([
-  { value: 'default', color: '#FDBCB4', preview: '👋' },
-  { value: 'light', color: '#FFDDA1', preview: '👋🏻' },
-  { value: 'medium-light', color: '#F5DEB3', preview: '👋🏼' },
-  { value: 'medium', color: '#F4C2A1', preview: '👋🏽' },
-  { value: 'medium-dark', color: '#E5B887', preview: '👋🏾' },
-  { value: 'dark', color: '#C88B5A', preview: '👋🏿' }
+  { value: 'default', color: 'var(--hula-brand-primary)', preview: '👋' },
+  { value: 'light', color: 'var(--hula-brand-primary)', preview: '👋🏻' },
+  { value: 'medium-light', color: 'var(--hula-brand-primary)', preview: '👋🏼' },
+  { value: 'medium', color: 'var(--hula-brand-primary)', preview: '👋🏽' },
+  { value: 'medium-dark', color: 'var(--hula-brand-primary)', preview: '👋🏾' },
+  { value: 'dark', color: 'var(--hula-brand-primary)', preview: '👋🏿' }
 ])
 
 const allEmojis = ref<Emoji[]>([])

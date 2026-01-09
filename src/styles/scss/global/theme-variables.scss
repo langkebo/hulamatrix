@@ -10,114 +10,114 @@
 :root {
   /* ==================== PC端配色（深色主题）==================== */
   /* 基于设计图 img2-8.webp, img2-3.webp */
-  --pc-left-bg: #2D5A5A;           /* 左侧导航：深青绿色 */
-  --pc-center-bg: #2A2A2A;         /* 中间会话列表：深灰色 */
-  --pc-right-bg: #3A3A3A;          /* 右侧聊天区：中灰色 */
-  --pc-accent-green: #00BFA5;      /* 强调色：亮绿色（发送按钮、选中状态） */
-  --pc-accent-red: #3D1A1A;        /* 选中背景：深红色 */
+  --pc-left-bg: var(--hula-brand-primary);           /* 左侧导航：深青绿色 */
+  --pc-center-bg: var(--hula-brand-primary);         /* 中间会话列表：深灰色 */
+  --pc-right-bg: var(--hula-brand-primary);          /* 右侧聊天区：中灰色 */
+  --pc-accent-green: var(--hula-brand-primary);      /* 强调色：亮绿色（发送按钮、选中状态） */
+  --pc-accent-red: var(--hula-brand-primary);        /* 选中背景：深红色 */
 
-  --pc-text-primary: #FFFFFF;      /* 主文字：白色 */
-  --pc-text-secondary: #E0E0E0;    /* 次要文字：浅灰色 */
-  --pc-text-tertiary: #A0A0A0;     /* 辅助文字：中灰色 */
+  --pc-text-primary: var(--hula-brand-primary);      /* 主文字：白色 */
+  --pc-text-secondary: var(--hula-brand-primary);    /* 次要文字：浅灰色 */
+  --pc-text-tertiary: var(--hula-brand-primary);     /* 辅助文字：中灰色 */
 
-  --pc-bubble-sent: #00BFA5;       /* 发送气泡：亮绿色 */
-  --pc-bubble-sent-text: #FFFFFF;  /* 发送文字：白色 */
-  --pc-bubble-received: #4A4A4A;   /* 接收气泡：灰色 */
-  --pc-bubble-received-text: #E0E0E0; /* 接收文字：浅灰色 */
+  --pc-bubble-sent: var(--hula-brand-primary);       /* 发送气泡：亮绿色 */
+  --pc-bubble-sent-text: var(--hula-brand-primary);  /* 发送文字：白色 */
+  --pc-bubble-received: var(--hula-brand-primary);   /* 接收气泡：灰色 */
+  --pc-bubble-received-text: var(--hula-brand-primary); /* 接收文字：浅灰色 */
 
   /* ==================== 移动端配色（浅色主题）==================== */
   /* 基于设计图 img3-1.webp ~ img3-4.webp */
-  --mobile-bg-primary: #E6F7F0;    /* 主背景：薄荷绿 */
-  --mobile-bg-card: #FFFFFF;       /* 卡片背景：白色 */
-  --mobile-bg-input: #F5F5F5;      /* 输入框背景：浅灰色 */
+  --mobile-bg-primary: var(--hula-brand-primary);    /* 主背景：薄荷绿 */
+  --mobile-bg-card: var(--hula-brand-primary);       /* 卡片背景：白色 */
+  --mobile-bg-input: var(--hula-brand-primary);      /* 输入框背景：浅灰色 */
 
-  --mobile-text-primary: #333333;  /* 主文字：深灰色 */
-  --mobile-text-secondary: #999999;/* 次要文字：浅灰色 */
+  --mobile-text-primary: var(--hula-brand-primary);  /* 主文字：深灰色 */
+  --mobile-text-secondary: var(--hula-brand-primary);/* 次要文字：浅灰色 */
 
-  --mobile-accent-green: #00B894;  /* 强调色：绿色 */
-  --mobile-accent-light: #A8D5C1;  /* 浅绿色（未激活按钮） */
+  --mobile-accent-green: var(--hula-brand-primary);  /* 强调色：绿色 */
+  --mobile-accent-light: var(--hula-brand-primary);  /* 浅绿色（未激活按钮） */
 
-  --mobile-bubble-sent: #00B894;   /* 发送气泡：绿色 */
-  --mobile-bubble-sent-text: #FFFFFF; /* 发送文字：白色 */
-  --mobile-bubble-received: #FFFFFF; /* 接收气泡：白色 */
-  --mobile-bubble-received-text: #333333; /* 接收文字：深灰色 */
+  --mobile-bubble-sent: var(--hula-brand-primary);   /* 发送气泡：绿色 */
+  --mobile-bubble-sent-text: var(--hula-brand-primary); /* 发送文字：白色 */
+  --mobile-bubble-received: var(--hula-brand-primary); /* 接收气泡：白色 */
+  --mobile-bubble-received-text: var(--hula-brand-primary); /* 接收文字：深灰色 */
 
   /* ==================== 主色调（保持向后兼容）==================== */
-  --hula-primary: #64a29c;
-  --hula-primary-light: #82b2ac;
-  --hula-primary-lighter: #b8d4d1;
-  --hula-primary-dark: #4d8b85;
-  --hula-primary-darker: #386e6a;
+  --hula-primary: var(--hula-brand-primary);
+  --hula-primary-light: var(--hula-brand-primary);
+  --hula-primary-lighter: var(--hula-brand-primary);
+  --hula-primary-dark: var(--hula-brand-primary);
+  --hula-primary-darker: var(--hula-brand-primary);
   --hula-primary-rgb: 100, 162, 156;
 
   /* 强调色 - 用于主要按钮、链接等 */
-  --hula-accent: #13987f;
-  --hula-accent-hover: #0f7d69;
-  --hula-accent-active: #0c6354;
-  --hula-accent-light: #1ec29f;
-  --hula-accent-lighter: #4dd6b5;
+  --hula-accent: var(--hula-brand-primary);
+  --hula-accent-hover: var(--hula-brand-primary);
+  --hula-accent-active: var(--hula-brand-primary);
+  --hula-accent-light: var(--hula-brand-primary);
+  --hula-accent-lighter: var(--hula-brand-primary);
   --hula-accent-rgb: 19, 152, 127;
 
   /* ==================== 功能色 ==================== */
   /* 成功色 - 使用 HuLa 强调色 */
-  --hula-success: #13987f;
-  --hula-success-light: #4dd6b5;
-  --hula-success-dark: #0c6354;
+  --hula-success: var(--hula-brand-primary);
+  --hula-success-light: var(--hula-brand-primary);
+  --hula-success-dark: var(--hula-brand-primary);
   --hula-success-rgb: 19, 152, 127;
 
   /* 警告色 */
-  --hula-warning: #ff976a;
-  --hula-warning-light: #ffb88a;
-  --hula-warning-dark: #e67d4d;
+  --hula-warning: var(--hula-brand-primary);
+  --hula-warning-light: var(--hula-brand-primary);
+  --hula-warning-dark: var(--hula-brand-primary);
   --hula-warning-rgb: 255, 151, 106;
 
   /* 错误色 */
-  --hula-error: #ee0a24;
-  --hula-error-light: #f54a5f;
-  --hula-error-dark: #c40c1d;
+  --hula-error: var(--hula-brand-primary);
+  --hula-error-light: var(--hula-brand-primary);
+  --hula-error-dark: var(--hula-brand-primary);
   --hula-error-rgb: 238, 10, 36;
 
   /* 信息色 */
-  --hula-info: #1989fa;
-  --hula-info-light: #6cbfff;
-  --hula-info-dark: #0e6eb3;
+  --hula-info: var(--hula-brand-primary);
+  --hula-info-light: var(--hula-brand-primary);
+  --hula-info-dark: var(--hula-brand-primary);
   --hula-info-rgb: 25, 137, 250;
 
   /* ==================== 中性色 ==================== */
   /* 基础色 */
-  --hula-white: #ffffff;
+  --hula-white: var(--hula-brand-primary);
   --hula-white-rgb: 255, 255, 255;
-  --hula-black: #000000;
+  --hula-black: var(--hula-brand-primary);
   --hula-black-rgb: 0, 0, 0;
 
   /* 灰色系 */
-  --hula-gray-50: #f9f9f9;
-  --hula-gray-100: #f5f5f5;
-  --hula-gray-200: #e0e0e0;
-  --hula-gray-300: #dfdfdf;
-  --hula-gray-400: #ebebeb;
-  --hula-gray-500: #909090;
-  --hula-gray-600: #707070;
-  --hula-gray-700: #e3e3e3;
-  --hula-gray-800: #2a2a2a;
-  --hula-gray-900: #1a1a1a;
+  --hula-gray-50: var(--hula-brand-primary);
+  --hula-gray-100: var(--hula-brand-primary);
+  --hula-gray-200: var(--hula-brand-primary);
+  --hula-gray-300: var(--hula-brand-primary);
+  --hula-gray-400: var(--hula-brand-primary);
+  --hula-gray-500: var(--hula-brand-primary);
+  --hula-gray-600: var(--hula-brand-primary);
+  --hula-gray-700: var(--hula-brand-primary);
+  --hula-gray-800: var(--hula-brand-primary);
+  --hula-gray-900: var(--hula-brand-primary);
 
   /* 文字颜色 */
-  --hula-text-primary: #18212c;
-  --hula-text-regular: #576b95;
-  --hula-text-secondary: #9fa1a9;
-  --hula-text-placeholder: #c8c9cc;
-  --hula-text-disabled: #dcdde0;
+  --hula-text-primary: var(--hula-brand-primary);
+  --hula-text-regular: var(--hula-brand-primary);
+  --hula-text-secondary: var(--hula-brand-primary);
+  --hula-text-placeholder: var(--hula-brand-primary);
+  --hula-text-disabled: var(--hula-brand-primary);
 
   /* 背景颜色 */
-  --hula-bg-page: #f7f8fa;
-  --hula-bg-component: #ffffff;
+  --hula-bg-page: var(--hula-brand-primary);
+  --hula-bg-component: var(--hula-brand-primary);
   --hula-bg-overlay: rgba(0, 0, 0, 0.5);
 
   /* 边框颜色 */
-  --hula-border-light: #ebedf0;
-  --hula-border-base: #dcdee0;
-  --hula-border-dark: #c8c9cc;
+  --hula-border-light: var(--hula-brand-primary);
+  --hula-border-base: var(--hula-brand-primary);
+  --hula-border-dark: var(--hula-brand-primary);
 
   /* ==================== 渐变色 ==================== */
   /* 主背景渐变 */
@@ -128,8 +128,8 @@
   );
 
   /* 强调色渐变 */
-  --hula-gradient-accent: linear-gradient(135deg, #13987f 0%, #1ec29f 100%);
-  --hula-gradient-primary: linear-gradient(135deg, #64a29c 0%, #82b2ac 100%);
+  --hula-gradient-accent: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
+  --hula-gradient-primary: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 
   /* ==================== 阴影 ==================== */
   --hula-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -169,53 +169,53 @@
 /* ==================== 深色模式 ==================== */
 html[data-theme='dark'] {
   /* ==================== 主色调（深色模式调整）==================== */
-  --hula-primary: #82b2ac;
-  --hula-primary-light: #9dc4be;
-  --hula-primary-lighter: #c8e3df;
-  --hula-primary-dark: #64a29c;
-  --hula-primary-darker: #4d8b85;
+  --hula-primary: var(--hula-brand-primary);
+  --hula-primary-light: var(--hula-brand-primary);
+  --hula-primary-lighter: var(--hula-brand-primary);
+  --hula-primary-dark: var(--hula-brand-primary);
+  --hula-primary-darker: var(--hula-brand-primary);
 
   /* 强调色（深色模式提亮） */
-  --hula-accent: #1ec29f;
-  --hula-accent-hover: #4dd6b5;
-  --hula-accent-active: #13987f;
-  --hula-accent-light: #6ed6c5;
-  --hula-accent-lighter: #9ce8dc;
+  --hula-accent: var(--hula-brand-primary);
+  --hula-accent-hover: var(--hula-brand-primary);
+  --hula-accent-active: var(--hula-brand-primary);
+  --hula-accent-light: var(--hula-brand-primary);
+  --hula-accent-lighter: var(--hula-brand-primary);
 
   /* ==================== 功能色（深色模式）==================== */
-  --hula-success: #1ec29f;
-  --hula-success-light: #6ed6c5;
-  --hula-success-dark: #13987f;
+  --hula-success: var(--hula-brand-primary);
+  --hula-success-light: var(--hula-brand-primary);
+  --hula-success-dark: var(--hula-brand-primary);
 
-  --hula-warning: #ffb88a;
-  --hula-warning-light: #ffd4b8;
-  --hula-warning-dark: #ff976a;
+  --hula-warning: var(--hula-brand-primary);
+  --hula-warning-light: var(--hula-brand-primary);
+  --hula-warning-dark: var(--hula-brand-primary);
 
-  --hula-error: #f54a5f;
-  --hula-error-light: #f87a8b;
-  --hula-error-dark: #ee0a24;
+  --hula-error: var(--hula-brand-primary);
+  --hula-error-light: var(--hula-brand-primary);
+  --hula-error-dark: var(--hula-brand-primary);
 
-  --hula-info: #6cbfff;
-  --hula-info-light: #9cd4ff;
-  --hula-info-dark: #1989fa;
+  --hula-info: var(--hula-brand-primary);
+  --hula-info-light: var(--hula-brand-primary);
+  --hula-info-dark: var(--hula-brand-primary);
 
   /* ==================== 中性色（深色模式）==================== */
   /* 文字颜色（深色模式反转） */
-  --hula-text-primary: #ffffff;
+  --hula-text-primary: var(--hula-brand-primary);
   --hula-text-regular: rgba(255, 255, 255, 0.75);
   --hula-text-secondary: rgba(255, 255, 255, 0.55);
   --hula-text-placeholder: rgba(255, 255, 255, 0.35);
   --hula-text-disabled: rgba(255, 255, 255, 0.25);
 
   /* 背景颜色（深色模式） */
-  --hula-bg-page: #1a1a1a;
-  --hula-bg-component: #242424;
+  --hula-bg-page: var(--hula-brand-primary);
+  --hula-bg-component: var(--hula-brand-primary);
   --hula-bg-overlay: rgba(0, 0, 0, 0.7);
 
   /* 边框颜色（深色模式） */
-  --hula-border-light: #3a3a3a;
-  --hula-border-base: #4a4a4a;
-  --hula-border-dark: #5a5a5a;
+  --hula-border-light: var(--hula-brand-primary);
+  --hula-border-base: var(--hula-brand-primary);
+  --hula-border-dark: var(--hula-brand-primary);
 
   /* ==================== 渐变色（深色模式）==================== */
   --hula-gradient-bg: radial-gradient(

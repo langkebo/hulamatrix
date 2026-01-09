@@ -9,7 +9,7 @@
         <n-flex align="center" justify="space-between">
           <n-flex vertical :size="8">
             <span>{{ t('setting.notice.message_sound') }}</span>
-            <span class="text-(12px #909090)">{{ t('setting.notice.message_sound_descript') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.notice.message_sound_descript') }}</span>
           </n-flex>
 
           <n-switch size="small" v-model:value="messageSound" />
@@ -34,7 +34,7 @@
       </n-flex>
 
       <n-flex class="item" :size="0" vertical>
-        <div v-if="filteredGroupSessions.length === 0" class="text-(12px #909090) text-center py-20px">
+        <div v-if="filteredGroupSessions.length === 0" class="text-(12px var(--hula-brand-primary)) text-center py-20px">
           {{ searchKeyword ? '未找到匹配的群聊' : '暂无群聊' }}
         </div>
 
@@ -50,7 +50,7 @@
           </n-flex>
 
           <n-flex v-if="selectedSessions.length > 0" align="center" :size="8">
-            <span class="text-(12px #909090)">{{ t('setting.notice.batch_set') }}:</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.notice.batch_set') }}:</span>
             <n-button
               size="small"
               type="primary"
@@ -83,13 +83,13 @@
         <!-- 进度条显示 -->
         <n-flex v-if="isProcessing" vertical :size="12" class="p-12px">
           <n-flex align="center" justify="space-between">
-            <span class="text-(12px #909090)">正在处理：{{ processedCount }}/{{ totalCount }}</span>
-            <span class="text-(12px #909090)">{{ progress }}%</span>
+            <span class="text-(12px var(--hula-brand-primary))">正在处理：{{ processedCount }}/{{ totalCount }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ progress }}%</span>
           </n-flex>
           <n-progress
             id="batch-progress"
             type="line"
-            :color="'#13987f'"
+            :color="'var(--hula-brand-primary)'"
             :rail-color="'rgba(19, 152, 127, 0.19)'"
             :percentage="progress"
             :show-indicator="false" />
@@ -120,7 +120,7 @@
                   trigger="click"
                   :scrollable="false"
                   @update:show="(show: boolean) => (isDropdownShow = show)">
-                  <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
+                  <n-button size="small" :color="'var(--hula-brand-primary)'" text class="text-(12px [--text-color])">
                     {{ getNotificationStatusText(session) }}
                   </n-button>
                 </n-dropdown>
@@ -152,7 +152,7 @@
                 trigger="click"
                 :scrollable="false"
                 @update:show="(show: boolean) => (isDropdownShow = show)">
-                <n-button size="small" :color="'#13987f'" text class="text-(12px [--text-color])">
+                <n-button size="small" :color="'var(--hula-brand-primary)'" text class="text-(12px [--text-color])">
                   {{ getNotificationStatusText(session) }}
                 </n-button>
               </n-dropdown>
@@ -243,7 +243,7 @@
         <div
           v-for="(g, idx) in presetEditing"
           :key="g.value"
-          class="p-8px border-(solid 1px #e5e7eb) rounded-8px"
+          class="p-8px border-(solid 1px var(--hula-brand-primary)) rounded-8px"
           draggable="true"
           @dragstart="onPresetDragStart(idx, $event)"
           @dragover="onPresetDragOver(idx, $event)"

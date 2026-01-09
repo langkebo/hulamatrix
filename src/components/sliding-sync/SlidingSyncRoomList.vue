@@ -12,7 +12,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <n-icon :component="AlertCircle" size="48" color="#ff4d4f" />
+      <n-icon :component="AlertCircle" size="48" color="var(--hula-brand-primary)" />
       <p>{{ error }}</p>
       <n-button @click="handleRetry">重试</n-button>
     </div>

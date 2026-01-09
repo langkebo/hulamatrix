@@ -26,7 +26,7 @@
               登录，如非本人登录，请尽快修改密码，建议联系管理员
             </div>
           </n-flex>
-          <n-button class="confirm-button w-full" :color="'#13987f'" @click="handleConfirm">知道了</n-button>
+          <n-button class="confirm-button w-full" :color="'var(--hula-brand-primary)'" @click="handleConfirm">知道了</n-button>
         </div>
       </div>
     </div>

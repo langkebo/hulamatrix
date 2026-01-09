@@ -623,9 +623,9 @@ const getSpecialMenuItemKey = (item: MenuItem, index: number): string | number =
       }
     }
     .menu-item-danger {
-      color: #d03553;
+      color: var(--hula-brand-primary);
       svg {
-        color: #d03553;
+        color: var(--hula-brand-primary);
       }
     }
   }
@@ -643,9 +643,9 @@ const getSpecialMenuItemKey = (item: MenuItem, index: number): string | number =
       }
     }
     .menu-item-danger {
-      color: #d03553;
+      color: var(--hula-brand-primary);
       svg {
-        color: #d03553;
+        color: var(--hula-brand-primary);
       }
     }
   }
@@ -660,9 +660,9 @@ const getSpecialMenuItemKey = (item: MenuItem, index: number): string | number =
     @include menu-list();
     min-width: 120px;
     .menu-item-danger {
-      color: #d03553;
+      color: var(--hula-brand-primary);
       svg {
-        color: #d03553;
+        color: var(--hula-brand-primary);
       }
     }
   }

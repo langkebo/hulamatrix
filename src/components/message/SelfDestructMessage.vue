@@ -160,7 +160,7 @@ onUnmounted(() => {
     color: var(--text-color-2);
 
     .timer-icon {
-      color: #ef4444;
+      color: var(--hula-brand-primary);
     }
 
     .timer-text {
@@ -172,7 +172,7 @@ onUnmounted(() => {
       bottom: 0;
       left: 0;
       height: 2px;
-      background: #ef4444;
+      background: var(--hula-brand-primary);
       border-radius: 0 0 6px 6px;
       transition: width 1s linear;
     }
@@ -187,7 +187,7 @@ onUnmounted(() => {
     background: rgba(239, 68, 68, 0.1);
     border-radius: 6px;
     font-size: 12px;
-    color: #ef4444;
+    color: var(--hula-brand-primary);
     animation: blink 1s infinite;
   }
 }

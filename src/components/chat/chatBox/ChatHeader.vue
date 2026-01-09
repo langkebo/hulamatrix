@@ -13,7 +13,7 @@
               { grayscale: currentSession?.type === RoomTypeEnum.SINGLE && !isOnline }
             ]"
             :size="28"
-            :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
             :src="currentUserAvatar" />
           <label class="flex-y-center gap-6px">
@@ -23,13 +23,13 @@
                 currentSession?.type === RoomTypeEnum.GROUP &&
                 (formattedStats.hasData || roomStore.currentRoom?.memberCount)
               "
-              class="text-(11px #808080)">
+              class="text-(11px var(--hula-brand-primary))">
               [{{ formattedStats.hasData ? formattedStats.memberCount : roomStore.currentRoom?.memberCount || 0 }}]
             </p>
             <!-- bot用户标签 -->
             <div
               v-if="false"
-              class="dark:bg-[#13987f40] bg-[#e8f4f1] dark:border-(1px solid #13987f) border-(1px solid #13987f) flex-center px-8px py-4px rounded-6px">
+              class="dark:bg-[var(--hula-brand-primary)40] bg-[var(--hula-brand-primary)] dark:border-(1px solid var(--hula-brand-primary)) border-(1px solid var(--hula-brand-primary)) flex-center px-8px py-4px rounded-6px">
               <p class="text-(11px) text-brand">{{ t('home.chat_header.bot_tag') }}</p>
             </div>
           </label>
@@ -43,7 +43,7 @@
               <n-flex align="center" :size="6">
                 <!-- 状态图标 -->
                 <img v-if="hasCustomState && statusIcon" :src="statusIcon" class="size-18px rounded-50%" alt="" />
-                <n-badge v-else :color="isOnline ? '#1ab292' : '#909090'" dot />
+                <n-badge v-else :color="isOnline ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
 
                 <!-- 状态文本 -->
                 <p class="text-(12px [--text-color])">
@@ -54,7 +54,7 @@
 
             <template v-else>
               <n-flex align="center" :size="4">
-                <svg class="size-16px color-#d03553">
+                <svg class="size-16px color-var(--hula-brand-primary)">
                   <use href="#close"></use>
                 </svg>
                 <p class="text-(12px [--text-color])">{{ t('home.chat_header.status_abnormal') }}</p>
@@ -170,7 +170,7 @@
             </div>
 
             <div class="box-item flex-x-center cursor-pointer" @click="handleDelete(RoomActEnum.DELETE_FRIEND)">
-              <p class="color-#d03553">{{ t('home.chat_header.sidebar.single.delete_friend') }}</p>
+              <p class="color-var(--hula-brand-primary)">{{ t('home.chat_header.sidebar.single.delete_friend') }}</p>
             </div>
 
             <p class="m-[0_auto] text-(12px) text-brand center mt-20px cursor-pointer">
@@ -191,7 +191,7 @@
                   <div v-if="isGroupOwner" class="avatar-wrapper relative" @click="handleUploadAvatar">
                     <n-avatar round :size="40" :src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
                     <div class="avatar-hover absolute size-full rounded-50% flex-center">
-                      <svg class="size-14px color-#fefefe">
+                      <svg class="size-14px color-var(--hula-brand-primary)">
                         <use href="#Export"></use>
                       </svg>
                     </div>
@@ -210,13 +210,12 @@
                         @blur.stop="handleGroupNameChange"
                         @keydown.enter.stop="handleGroupNameChange"
                         size="tiny"
-                        class="group-name-input"
+                        class="group-name-input border-(solid 1px [--line-color])"
                         maxlength="12"
                         spellCheck="false"
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="off"
-                        class="border-(solid 1px [--line-color])"
                         :placeholder="t('home.chat_header.sidebar.group.name_placeholder')" />
                     </div>
                     <div
@@ -246,14 +245,14 @@
                   <n-flex align="center" :size="8">
                     <!-- hula号 -->
                     <p
-                      class="text-(12px center [--chat-text-color]) rounded-4px w-100px py-2px bg-[#e3e3e3] dark:bg-[#505050]">
+                      class="text-(12px center [--chat-text-color]) rounded-4px w-100px py-2px bg-[var(--hula-brand-primary)] dark:bg-[var(--hula-brand-primary)]">
                       {{ currentSession?.account }}
                     </p>
 
                     <n-tooltip trigger="hover">
                       <template #trigger>
                         <svg
-                          class="size-12px cursor-pointer hover:color-#909090 hover:transition-colors"
+                          class="size-12px cursor-pointer hover:color-var(--hula-brand-primary) hover:transition-colors"
                           @click="handleCopy">
                           <use href="#copy"></use>
                         </svg>
@@ -265,7 +264,7 @@
 
                 <div
                   v-if="allowScanEnter"
-                  class="flex-center cursor-pointer bg-#e3e3e380 dark:bg-#303030 border-(1px solid #90909080) gap-6px px-4px py-6px rounded-6px"
+                  class="flex-center cursor-pointer bg-var(--hula-brand-primary)80 dark:bg-var(--hula-brand-primary) border-(1px solid var(--hula-brand-primary)80) gap-6px px-4px py-6px rounded-6px"
                   @click="showQRCodeModal = true">
                   <svg class="size-16px"><use href="#pay-code-one"></use></svg>
                   <p class="text-(12px [--chat-text-color])">{{ t('home.chat_header.sidebar.group.qr') }}</p>
@@ -313,7 +312,7 @@
             <!-- 群备注 -->
             <p class="flex-start-center gap-10px text-(12px [--chat-text-color]) mt-20px mb-10px">
               {{ t('home.chat_header.sidebar.group.remark') }}
-              <span class="text-(10px #909090)">{{ t('home.chat_header.sidebar.group.remark_desc') }}</span>
+              <span class="text-(10px var(--hula-brand-primary))">{{ t('home.chat_header.sidebar.group.remark_desc') }}</span>
             </p>
             <n-input
               class="border-(solid 1px [--line-color]) custom-shadow"
@@ -328,7 +327,7 @@
             <!-- 群设置选项 -->
             <div class="box-item cursor-default">
               <n-flex vertical justify="center" :size="4">
-                <p class="text-(12px #909090) pb-14px">{{ t('home.chat_header.sidebar.group.settings.title') }}</p>
+                <p class="text-(12px var(--hula-brand-primary)) pb-14px">{{ t('home.chat_header.sidebar.group.settings.title') }}</p>
 
                 <div class="flex-between-center">
                   <p>{{ t('home.chat_header.sidebar.group.settings.pin') }}</p>
@@ -360,7 +359,7 @@
               v-if="currentSession?.muteNotification === NotificationTypeEnum.NOT_DISTURB"
               class="box-item cursor-default">
               <n-flex vertical justify="center" :size="4">
-                <p class="text-(12px #909090) pb-14px">
+                <p class="text-(12px var(--hula-brand-primary)) pb-14px">
                   {{ t('home.chat_header.sidebar.group.message_settings.title') }}
                 </p>
 
@@ -395,7 +394,7 @@
                     : RoomActEnum.EXIT_GROUP
                 )
               ">
-              <p class="color-#d03553">
+              <p class="color-var(--hula-brand-primary)">
                 {{
                   currentSession?.operate === SessionOperateEnum.DISSOLUTION_GROUP
                     ? t('home.chat_header.sidebar.group.dissolve')
@@ -421,7 +420,7 @@
       <div
         v-if="isMac()"
         @click="modalShow = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -434,7 +433,7 @@
         <span class="text-14px">{{ tips }}</span>
 
         <n-flex justify="end">
-          <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">
+          <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-brand-primary)'">
             {{ t('home.chat_header.modal.confirm') }}
           </n-button>
           <n-button @click="handleCancel" class="w-78px" secondary>{{ t('home.chat_header.modal.cancel') }}</n-button>
@@ -449,7 +448,7 @@
       <div
         v-if="isMac()"
         @click="showQRCodeModal = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -465,8 +464,8 @@
             class="qr-code"
             :value="JSON.stringify({ type: 'scanEnterGroup', roomId: currentSession?.roomId })"
             :size="200"
-            :color="themes.content === ThemeEnum.DARK ? '#202020' : '#000000'"
-            :background-color="themes.content === ThemeEnum.DARK ? '#e3e3e3' : '#e3e3e382'"
+            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
+            :background-color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)82'"
             :icon-src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
 
           <div class="text-center">
@@ -484,7 +483,7 @@
       <div
         v-if="isMac()"
         @click="showManageGroupMemberModal = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -1146,7 +1145,7 @@ onUnmounted(() => {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background-color: #1aaa55;
+  background-color: var(--hula-brand-primary);
 }
 
 .private-chat-icon {
@@ -1154,7 +1153,7 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 
   &:hover {
-    color: #13987f;
+    color: var(--hula-brand-primary);
     transform: scale(1.1);
   }
 }
@@ -1166,7 +1165,7 @@ onUnmounted(() => {
     color: var(--icon-color);
 
     &:hover {
-      color: #13987f;
+      color: var(--hula-brand-primary);
     }
   }
 }

@@ -26,7 +26,7 @@
 
           <n-form-item label="允许紧急通知">
             <n-switch v-model:value="quietHours.allowEmergency" @update:value="handleQuietHoursUpdate" />
-            <template #feedback>在免打扰时段内仍允许紧急警报通知</template>
+            <template var(--hula-brand-primary)ck>在免打扰时段内仍允许紧急警报通知</template>
           </n-form-item>
 
           <div class="quiet-hours-preview">
@@ -501,17 +501,17 @@ onUnmounted(() => {
 
       &.type-reminder {
         background: rgba(24, 160, 88, 0.1);
-        color: #18a058;
+        color: var(--hula-brand-primary);
       }
 
       &.type-alert {
         background: rgba(208, 48, 80, 0.1);
-        color: #d03050;
+        color: var(--hula-brand-primary);
       }
 
       &.type-message {
         background: rgba(51, 136, 255, 0.1);
-        color: #3388ff;
+        color: var(--hula-brand-primary);
       }
     }
 

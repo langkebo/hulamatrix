@@ -1,110 +1,110 @@
 /* ==========================================================================
-   全局通用工具类 - HuLa 主题
+   全局通用工具类 - HuLa 主题（使用统一色彩系统）
    提供常用的品牌色和功能色 CSS 类，减少重复代码
    ========================================================================== */
 
 /* ==================== 品牌色文字 ==================== */
 .text-brand {
-  color: #13987f !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 .text-brand-hover {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   transition: color 0.3s ease;
   cursor: pointer;
 
   &:hover {
-    color: #0f7d69;
+    color: var(--hula-brand-hover);
   }
 
   &:active {
-    color: #0c6354;
+    color: var(--hula-brand-active);
   }
 }
 
 .text-primary {
-  color: #64a29c !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 /* ==================== 品牌色背景 ==================== */
 .bg-brand {
-  background: #13987f !important;
+  background: var(--hula-brand-primary) !important;
 }
 
 .bg-brand-light {
-  background: #b8d4d1 !important;
+  background: var(--hula-brand-primary) !important;
 }
 
 .bg-primary {
-  background: #64a29c !important;
+  background: var(--hula-brand-primary) !important;
 }
 
 .bg-primary-light {
-  background: #82b2ac !important;
+  background: var(--hula-brand-primary) !important;
 }
 
 /* ==================== 功能色文字 ==================== */
 .text-success {
-  color: #13987f !important;
+  color: var(--hula-success) !important;
 }
 
 .text-warning {
-  color: #ff976a !important;
+  color: var(--hula-warning) !important;
 }
 
 .text-error {
-  color: #ee0a24 !important;
+  color: var(--hula-error) !important;
 }
 
 .text-info {
-  color: #1989fa !important;
+  color: var(--hula-info) !important;
 }
 
 /* ==================== 功能色背景 ==================== */
 .bg-success {
-  background: #13987f !important;
+  background: var(--hula-success) !important;
   color: #fff !important;
 }
 
 .bg-warning {
-  background: #ff976a !important;
+  background: var(--hula-warning) !important;
   color: #fff !important;
 }
 
 .bg-error {
-  background: #ee0a24 !important;
+  background: var(--hula-error) !important;
   color: #fff !important;
 }
 
 .bg-info {
-  background: #1989fa !important;
+  background: var(--hula-info) !important;
   color: #fff !important;
 }
 
 /* ==================== 文字颜色变体 ==================== */
 .text-primary-color {
-  color: #18212c !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 .text-regular {
-  color: #576b95 !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 .text-secondary {
-  color: #9fa1a9 !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 .text-placeholder {
-  color: #c8c9cc !important;
+  color: var(--hula-brand-primary) !important;
 }
 
 /* ==================== 背景颜色变体 ==================== */
 .bg-page {
-  background: var(--hula-bg-page, #f7f8fa) !important;
+  background: var(--hula-bg-page, var(--hula-brand-primary)) !important;
 }
 
 .bg-component {
-  background: var(--hula-bg-component, #ffffff) !important;
+  background: var(--hula-bg-component, var(--hula-brand-primary)) !important;
 }
 
 /* ==================== 品牌色按钮 ==================== */
@@ -112,7 +112,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #13987f;
+  background: var(--hula-brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -124,13 +124,13 @@
   user-select: none;
 
   &:hover {
-    background: #0f7d69;
+    background: var(--hula-brand-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(19, 152, 127, 0.3);
+    box-shadow: var(--hula-shadow-brand);
   }
 
   &:active {
-    background: #0c6354;
+    background: var(--hula-brand-active);
     transform: translateY(0);
   }
 
@@ -147,8 +147,8 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: #13987f;
-  border: 1px solid #13987f;
+  color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
@@ -158,15 +158,15 @@
   user-select: none;
 
   &:hover {
-    background: #13987f;
+    background: var(--hula-brand-primary);
     color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(19, 152, 127, 0.3);
+    box-shadow: var(--hula-shadow-brand);
   }
 
   &:active {
-    background: #0f7d69;
-    border-color: #0f7d69;
+    background: var(--hula-brand-active);
+    border-color: var(--hula-brand-active);
   }
 
   &:disabled {
@@ -182,7 +182,7 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: #13987f;
+  color: var(--hula-brand-primary);
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -193,12 +193,12 @@
   user-select: none;
 
   &:hover {
-    background: #13987f;
+    background: var(--hula-brand-primary);
     color: #fff;
   }
 
   &:active {
-    background: #0f7d69;
+    background: var(--hula-brand-active);
   }
 
   &:disabled {
@@ -209,74 +209,74 @@
 
 /* ==================== 品牌色边框 ==================== */
 .border-brand {
-  border-color: #13987f !important;
+  border-color: var(--hula-brand-primary) !important;
 }
 
 .border-brand-focus {
-  border-color: #13987f;
+  border-color: var(--hula-brand-primary);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 
   &:focus {
-    border-color: #0f7d69;
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+    border-color: var(--hula-brand-active);
+    box-shadow: 0 0 0 2px var(--hula-brand-subtle);
     outline: none;
   }
 }
 
 .border-primary {
-  border-color: #64a29c !important;
+  border-color: var(--hula-brand-primary) !important;
 }
 
 /* ==================== 光标样式 ==================== */
 .cursor-pointer-brand {
   cursor: pointer;
-  color: #13987f;
+  color: var(--hula-brand-primary);
   transition: color 0.3s ease;
 
   &:hover {
-    color: #0f7d69;
+    color: var(--hula-brand-hover);
   }
 }
 
 /* ==================== 选中状态 ==================== */
 .selected-brand {
-  color: #13987f !important;
-  border-color: #13987f !important;
+  color: var(--hula-brand-primary) !important;
+  border-color: var(--hula-brand-primary) !important;
 }
 
 .active-brand {
-  color: #13987f !important;
-  background: rgba(19, 152, 127, 0.1) !important;
+  color: var(--hula-brand-primary) !important;
+  background: var(--hula-brand-subtle) !important;
 }
 
 /* ==================== 链接样式 ==================== */
 a.link-brand,
 .link-brand {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   text-decoration: none;
   transition: color 0.3s ease;
 
   &:hover {
-    color: #0f7d69;
+    color: var(--hula-brand-hover);
   }
 
   &:active {
-    color: #0c6354;
+    color: var(--hula-brand-active);
   }
 }
 
 /* ==================== 图标样式 ==================== */
 .icon-brand {
-  color: #13987f;
+  color: var(--hula-brand-primary);
 }
 
 .icon-brand-hover {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   transition: color 0.3s ease, transform 0.3s ease;
   cursor: pointer;
 
   &:hover {
-    color: #0f7d69;
+    color: var(--hula-brand-hover);
     transform: scale(1.1);
   }
 }
@@ -286,7 +286,7 @@ a.link-brand,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #13987f;
+  background: var(--hula-brand-primary);
   color: #fff;
   border-radius: 9999px;
   padding: 2px 8px;
@@ -296,26 +296,26 @@ a.link-brand,
 
 .badge-success {
   @extend .badge-brand;
-  background: #13987f;
+  background: var(--hula-success);
 }
 
 .badge-warning {
   @extend .badge-brand;
-  background: #ff976a;
+  background: var(--hula-warning);
 }
 
 .badge-error {
   @extend .badge-brand;
-  background: #ee0a24;
+  background: var(--hula-error);
 }
 
 /* ==================== 标签样式 ==================== */
 .tag-brand {
   display: inline-flex;
   align-items: center;
-  background: rgba(19, 152, 127, 0.1);
-  color: #13987f;
-  border: 1px solid #13987f;
+  background: var(--hula-brand-subtle);
+  color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 12px;
@@ -324,48 +324,48 @@ a.link-brand,
 
 /* ==================== 分割线 ==================== */
 .divider-brand {
-  border-color: #13987f !important;
+  border-color: var(--hula-brand-primary) !important;
 }
 
 /* ==================== 阴影效果 ==================== */
 .shadow-brand {
-  box-shadow: 0 4px 12px rgba(19, 152, 127, 0.2);
+  box-shadow: var(--hula-shadow-brand);
 }
 
 .shadow-brand-lg {
-  box-shadow: 0 8px 24px rgba(19, 152, 127, 0.3);
+  box-shadow: var(--hula-shadow-brand-lg);
 }
 
 /* ==================== 渐变背景 ==================== */
 .gradient-brand {
-  background: linear-gradient(135deg, #13987f 0%, #64a29c 100%);
+  background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 }
 
 .gradient-brand-vertical {
-  background: linear-gradient(180deg, #13987f 0%, #64a29c 100%);
+  background: linear-gradient(180deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 }
 
 /* ==================== 输入框焦点样式 ==================== */
 .input-brand-focus {
-  border: 1px solid #ebedf0;
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 8px;
   transition: all 0.3s ease;
 
   &:focus {
-    border-color: #13987f;
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+    border-color: var(--hula-brand-primary);
+    box-shadow: 0 0 0 2px var(--hula-brand-subtle);
     outline: none;
   }
 }
 
 /* ==================== 进度条样式 ==================== */
 .progress-brand {
-  background: #f7f8fa;
+  background: var(--hula-brand-primary);
   border-radius: 9999px;
   overflow: hidden;
 
   &-bar {
-    background: #13987f;
+    background: var(--hula-brand-primary);
     height: 100%;
     transition: width 0.3s ease;
   }
@@ -377,7 +377,7 @@ a.link-brand,
   display: inline-block;
   width: 44px;
   height: 24px;
-  background: #dcdee0;
+  background: var(--hula-brand-primary);
   border-radius: 9999px;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -396,7 +396,7 @@ a.link-brand,
   }
 
   &.active {
-    background: #13987f;
+    background: var(--hula-brand-primary);
 
     &::after {
       transform: translateX(20px);
@@ -428,7 +428,7 @@ a.link-brand,
     justify-content: center;
     width: 18px;
     height: 18px;
-    border: 2px solid #dcdee0;
+    border: 2px solid var(--hula-brand-primary);
     border-radius: 4px;
     background: #fff;
     transition: all 0.3s ease;
@@ -440,13 +440,13 @@ a.link-brand,
       display: none;
       width: 10px;
       height: 10px;
-      background: #13987f;
+      background: var(--hula-brand-primary);
       border-radius: 2px;
     }
   }
 
   input:checked ~ &-indicator {
-    border-color: #13987f;
+    border-color: var(--hula-brand-primary);
 
     &::after {
       display: block;
@@ -465,21 +465,21 @@ a.link-brand,
 }
 
 /* ==================== 深色模式适配 ==================== */
-html[data-theme='dark'] {
+[data-theme='dark'] {
   .text-primary-color {
-    color: var(--hula-text-primary, #ffffff) !important;
+    color: var(--hula-white, var(--hula-brand-primary)) !important;
   }
 
   .bg-component {
-    background: var(--hula-bg-component, #242424) !important;
+    background: var(--hula-bg-component, var(--hula-brand-primary)) !important;
   }
 
   .btn-brand-ghost:hover {
-    background: rgba(19, 152, 127, 0.15);
+    background: rgba(var(--hula-brand-rgb), 0.15);
   }
 
   .active-brand {
-    background: rgba(19, 152, 127, 0.2) !important;
+    background: rgba(var(--hula-brand-rgb), 0.2) !important;
   }
 }
 
@@ -520,167 +520,166 @@ html[data-theme='dark'] {
 
 /* ==================== 中性色文字 ==================== */
 .text-white {
-  color: var(--hula-white, #ffffff) !important;
+  color: var(--hula-white, var(--hula-brand-primary)) !important;
 }
 
 .text-black {
-  color: var(--hula-black, #000000) !important;
+  color: var(--hula-black, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-50 {
-  color: var(--hula-gray-50, #f9f9f9) !important;
+  color: var(--hula-gray-50, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-100 {
-  color: var(--hula-gray-100, #f5f5f5) !important;
+  color: var(--hula-gray-100, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-200 {
-  color: var(--hula-gray-200, #e0e0e0) !important;
+  color: var(--hula-gray-200, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-500 {
-  color: var(--hula-gray-500, #909090) !important;
+  color: var(--hula-gray-500, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-600 {
-  color: var(--hula-gray-600, #707070) !important;
+  color: var(--hula-gray-600, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-800 {
-  color: var(--hula-gray-800, #2a2a2a) !important;
+  color: var(--hula-gray-800, var(--hula-brand-primary)) !important;
 }
 
 .text-gray-900 {
-  color: var(--hula-gray-900, #1a1a1a) !important;
+  color: var(--hula-gray-900, var(--hula-brand-primary)) !important;
 }
 
 /* ==================== 中性色背景 ==================== */
 .bg-white {
-  background-color: var(--hula-white, #ffffff) !important;
+  background-color: var(--hula-white, var(--hula-brand-primary)) !important;
 }
 
 .bg-black {
-  background-color: var(--hula-black, #000000) !important;
+  background-color: var(--hula-black, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-50 {
-  background-color: var(--hula-gray-50, #f9f9f9) !important;
+  background-color: var(--hula-gray-50, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-100 {
-  background-color: var(--hula-gray-100, #f5f5f5) !important;
+  background-color: var(--hula-gray-100, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-200 {
-  background-color: var(--hula-gray-200, #e0e0e0) !important;
+  background-color: var(--hula-gray-200, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-500 {
-  background-color: var(--hula-gray-500, #909090) !important;
+  background-color: var(--hula-gray-500, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-800 {
-  background-color: var(--hula-gray-800, #2a2a2a) !important;
+  background-color: var(--hula-gray-800, var(--hula-brand-primary)) !important;
 }
 
 .bg-gray-900 {
-  background-color: var(--hula-gray-900, #1a1a1a) !important;
+  background-color: var(--hula-gray-900, var(--hula-brand-primary)) !important;
 }
 
 /* ==================== 中性色边框 ==================== */
 .border-white {
-  border-color: var(--hula-white, #ffffff) !important;
+  border-color: var(--hula-white, var(--hula-brand-primary)) !important;
 }
 
 .border-black {
-  border-color: var(--hula-black, #000000) !important;
+  border-color: var(--hula-black, var(--hula-brand-primary)) !important;
 }
 
 .border-gray-200 {
-  border-color: var(--hula-gray-200, #e0e0e0) !important;
+  border-color: var(--hula-gray-200, var(--hula-brand-primary)) !important;
 }
 
 .border-gray-500 {
-  border-color: var(--hula-gray-500, #909090) !important;
+  border-color: var(--hula-gray-500, var(--hula-brand-primary)) !important;
 }
 
 .border-gray-800 {
-  border-color: var(--hula-gray-800, #2a2a2a) !important;
+  border-color: var(--hula-gray-800, var(--hula-brand-primary)) !important;
 }
 
 /* ==================== 功能色边框 ==================== */
 .border-success {
-  border-color: var(--hula-success, #13987f) !important;
+  border-color: var(--hula-success, var(--hula-brand-primary)) !important;
 }
 
 .border-warning {
-  border-color: var(--hula-warning, #ff976a) !important;
+  border-color: var(--hula-warning, var(--hula-brand-primary)) !important;
 }
 
 .border-error {
-  border-color: var(--hula-error, #ee0a24) !important;
+  border-color: var(--hula-error, var(--hula-brand-primary)) !important;
 }
 
 .border-info {
-  border-color: var(--hula-info, #1989fa) !important;
+  border-color: var(--hula-info, var(--hula-brand-primary)) !important;
 }
 
-/* ==================== rgba 颜色支持 ==================== */
+/* ==================== rgba 颜色支持（使用统一变量） ==================== */
 .bg-brand-rgba {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 1) !important;
+  background-color: rgba(var(--hula-brand-rgb), 1) !important;
 }
 
 .bg-brand-rgba-10 {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.1) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.1) !important;
 }
 
 .bg-brand-rgba-20 {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.2) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.2) !important;
 }
 
 .bg-brand-rgba-30 {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.3) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.3) !important;
 }
 
 .bg-brand-rgba-40 {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.4) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.4) !important;
 }
 
 .bg-brand-rgba-50 {
-  background-color: rgba(var(--hula-accent-rgb, 19, 152, 127), 0.5) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.5) !important;
 }
 
 .bg-white-rgba-50 {
-  background-color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.5) !important;
+  background-color: rgba(var(--hula-white-rgb), 0.5) !important;
 }
 
 .bg-black-rgba-30 {
-  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.3) !important;
+  background-color: rgba(var(--hula-black-rgb), 0.3) !important;
 }
 
 .bg-black-rgba-50 {
-  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.5) !important;
+  background-color: rgba(var(--hula-black-rgb), 0.5) !important;
 }
 
 .bg-black-rgba-70 {
-  background-color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.7) !important;
+  background-color: rgba(var(--hula-black-rgb), 0.7) !important;
 }
 
 /* ==================== 文字透明度 ==================== */
 .text-white-50 {
-  color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.5) !important;
+  color: rgba(var(--hula-white-rgb), 0.5) !important;
 }
 
 .text-white-70 {
-  color: rgba(var(--hula-white-rgb, 255, 255, 255), 0.7) !important;
+  color: rgba(var(--hula-white-rgb), 0.7) !important;
 }
 
 .text-black-30 {
-  color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.3) !important;
+  color: rgba(var(--hula-black-rgb), 0.3) !important;
 }
 
 .text-black-50 {
-  color: rgba(var(--hula-black-rgb, 0, 0, 0), 0.5) !important;
+  color: rgba(var(--hula-black-rgb), 0.5) !important;
 }
-

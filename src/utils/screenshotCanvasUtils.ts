@@ -18,7 +18,7 @@ export function drawRectangle(
   borderRadius: number = 0,
   screenScaleX: number = 1
 ): void {
-  context.strokeStyle = '#13987f'
+  context.strokeStyle = 'var(--hula-brand-primary)'
   context.lineWidth = lineWidth
 
   // If border radius is set, draw rounded rectangle

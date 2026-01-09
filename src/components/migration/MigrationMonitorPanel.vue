@@ -361,18 +361,18 @@ onUnmounted(() => {
   font-weight: 500;
 
   &.completed {
-    background: #e6f7e6;
-    color: #52c41a;
+    background: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
   }
 
   &.in-progress {
-    background: #e6f7ff;
-    color: #1890ff;
+    background: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
   }
 
   &.early {
-    background: #fff7e6;
-    color: #fa8c16;
+    background: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
   }
 }
 
@@ -388,7 +388,7 @@ onUnmounted(() => {
 }
 
 .progress-card {
-  background: var(--bg-color-soft, #f5f5f5);
+  background: var(--bg-color-soft, var(--hula-brand-primary));
   border-radius: 8px;
   padding: 16px;
 }
@@ -403,14 +403,14 @@ onUnmounted(() => {
 .progress-bar {
   flex: 1;
   height: 8px;
-  background: #e0e0e0;
+  background: var(--hula-brand-primary);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1890ff, #52c41a);
+  background: linear-gradient(90deg, var(--hula-brand-primary), var(--hula-brand-primary));
   transition: width 0.3s ease;
 }
 
@@ -440,7 +440,7 @@ onUnmounted(() => {
   font-weight: 600;
 
   &.error {
-    color: #ff4d4f;
+    color: var(--hula-brand-primary);
   }
 }
 
@@ -451,7 +451,7 @@ onUnmounted(() => {
 }
 
 .route-item {
-  background: var(--bg-color-soft, #f5f5f5);
+  background: var(--bg-color-soft, var(--hula-brand-primary));
   border-radius: 8px;
   padding: 12px;
 }
@@ -465,7 +465,7 @@ onUnmounted(() => {
 
 .route-bar {
   height: 6px;
-  background: #e0e0e0;
+  background: var(--hula-brand-primary);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -475,15 +475,15 @@ onUnmounted(() => {
   transition: width 0.3s ease;
 
   &.matrix {
-    background: #52c41a;
+    background: var(--hula-brand-primary);
   }
 
   &.websocket {
-    background: #1890ff;
+    background: var(--hula-brand-primary);
   }
 
   &.hybrid {
-    background: #fa8c16;
+    background: var(--hula-brand-primary);
   }
 }
 
@@ -494,7 +494,7 @@ onUnmounted(() => {
 }
 
 .perf-card {
-  background: var(--bg-color-soft, #f5f5f5);
+  background: var(--bg-color-soft, var(--hula-brand-primary));
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -514,7 +514,7 @@ onUnmounted(() => {
 }
 
 .detailed-report {
-  background: var(--bg-color-soft, #f5f5f5);
+  background: var(--bg-color-soft, var(--hula-brand-primary));
   border-radius: 8px;
   padding: 16px;
 }
@@ -579,7 +579,7 @@ onUnmounted(() => {
 
 .action-btn {
   padding: 8px 16px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 4px;
   background: #fff;
   cursor: pointer;
@@ -587,8 +587,8 @@ onUnmounted(() => {
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    border-color: #1890ff;
-    color: #1890ff;
+    border-color: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
   }
 
   &:disabled {
@@ -597,23 +597,23 @@ onUnmounted(() => {
   }
 
   &.primary {
-    background: #1890ff;
-    border-color: #1890ff;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     color: #fff;
 
     &:hover:not(:disabled) {
-      background: #40a9ff;
-      border-color: #40a9ff;
+      background: var(--hula-brand-primary);
+      border-color: var(--hula-brand-primary);
       color: #fff;
     }
   }
 
   &.danger {
-    border-color: #ff4d4f;
-    color: #ff4d4f;
+    border-color: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
-      background: #ff4d4f;
+      background: var(--hula-brand-primary);
       color: #fff;
     }
   }
@@ -630,7 +630,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: var(--bg-color-soft, #f5f5f5);
+  background: var(--bg-color-soft, var(--hula-brand-primary));
   border-radius: 8px;
 
   label {
@@ -659,12 +659,12 @@ onUnmounted(() => {
   font-weight: 500;
 
   &.enabled {
-    background: #e6f7e6;
-    color: #52c41a;
+    background: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
   }
 
   &:not(.enabled) {
-    background: #f5f5f5;
+    background: var(--hula-brand-primary);
     color: #999;
   }
 }

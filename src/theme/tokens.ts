@@ -19,18 +19,18 @@ function getCssVar(name: string): string {
  */
 const lightVars: Record<string, string> = {
   // 背景色 - 使用 HuLa 主题变量
-  '--bg-setting-item': 'var(--hula-bg-component, #ffffff)',
-  '--line-color': 'var(--hula-border-light, #e5e7eb)',
-  '--hover-color': 'var(--hula-bg-page, #f7f7f7)',
+  '--bg-setting-item': 'var(--hula-bg-component, var(--hula-brand-primary))',
+  '--line-color': 'var(--hula-border-light, var(--hula-brand-primary))',
+  '--hover-color': 'var(--hula-bg-page, var(--hula-brand-primary))',
 
   // 品牌色 - 使用 HuLa 强调色
-  '--border-active-color': '#13987f',
+  '--border-active-color': 'var(--hula-brand-primary)',
 
   // 滚动条 - 使用 HuLa 主色
-  '--scrollbar-thumb-color': 'var(--hula-primary-light, #c7c7c7)',
+  '--scrollbar-thumb-color': 'var(--hula-primary-light, var(--hula-brand-primary))',
 
   // 文字色 - 使用 HuLa 文字颜色
-  '--text-color': 'var(--hula-text-primary, #1f2937)',
+  '--text-color': 'var(--hula-text-primary, var(--hula-brand-primary))',
 
   // 字体大小
   '--font-size-12': '12px',
@@ -50,18 +50,18 @@ const lightVars: Record<string, string> = {
  */
 const darkVars: Record<string, string> = {
   // 背景色 - 使用 HuLa 主题变量（深色）
-  '--bg-setting-item': 'var(--hula-bg-component, #151515)',
-  '--line-color': 'var(--hula-border-light, #2a2a2a)',
-  '--hover-color': 'var(--hula-bg-page, #1f1f1f)',
+  '--bg-setting-item': 'var(--hula-bg-component, var(--hula-brand-primary))',
+  '--line-color': 'var(--hula-border-light, var(--hula-brand-primary))',
+  '--hover-color': 'var(--hula-bg-page, var(--hula-brand-primary))',
 
   // 品牌色 - 使用 HuLa 强调色（深色模式提亮）
-  '--border-active-color': 'var(--hula-accent, #1ec29f)',
+  '--border-active-color': 'var(--hula-accent, var(--hula-brand-primary))',
 
   // 滚动条 - 使用 HuLa 主色（深色）
-  '--scrollbar-thumb-color': 'var(--hula-primary-light, #3a3a3a)',
+  '--scrollbar-thumb-color': 'var(--hula-primary-light, var(--hula-brand-primary))',
 
   // 文字色 - 使用 HuLa 文字颜色（深色）
-  '--text-color': 'var(--hula-text-primary, #e5e7eb)',
+  '--text-color': 'var(--hula-text-primary, var(--hula-brand-primary))',
 
   // 字体大小
   '--font-size-12': '12px',

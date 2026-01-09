@@ -77,7 +77,7 @@ export function useScreenshotCanvas(options: UseScreenshotCanvasOptions) {
     width: number,
     height: number,
     borderSize: number = 2,
-    borderColor: string = '#00ff00'
+    borderColor: string = 'var(--hula-brand-primary)'
   ) => {
     context.strokeStyle = borderColor
     context.lineWidth = borderSize

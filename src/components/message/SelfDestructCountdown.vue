@@ -194,7 +194,7 @@ watch(isDestroyed, (destroyed) => {
   background: rgba(239, 68, 68, 0.1);
   border-radius: 4px;
   font-size: 10px;
-  color: #ef4444;
+  color: var(--hula-brand-primary);
   
   .warning-icon {
     font-size: 12px;
@@ -213,7 +213,7 @@ watch(isDestroyed, (destroyed) => {
   
   .destroyed-icon {
     font-size: 14px;
-    color: #9ca3af;
+    color: var(--hula-brand-primary);
   }
 }
 

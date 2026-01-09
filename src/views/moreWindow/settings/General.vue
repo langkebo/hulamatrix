@@ -32,16 +32,16 @@
         <n-flex v-if="isWindows()" align="center" justify="space-between">
           <span>关闭主面板</span>
 
-          <label class="text-(14px #707070) flex gap-6px lh-16px items-center">
+          <label class="text-(14px var(--hula-brand-primary)) flex gap-6px lh-16px items-center">
             <n-radio :value="CloseBxEnum.HIDE" />
             <span>最小化到系统托盘</span>
           </label>
-          <label class="text-(14px #707070) flex gap-6px lh-16px items-center">
+          <label class="text-(14px var(--hula-brand-primary)) flex gap-6px lh-16px items-center">
             <n-radio :value="CloseBxEnum.CLOSE" />
             <span>直接退出程序</span>
           </label>
 
-          <label class="text-(12px #909090) flex gap-6px justify-end items-center">
+          <label class="text-(12px var(--hula-brand-primary)) flex gap-6px justify-end items-center">
             <n-checkbox size="small" v-model:checked="tips.notTips" />
             <span>是否关闭提示</span>
           </label>

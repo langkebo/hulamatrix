@@ -340,10 +340,10 @@ const fileFilterOptions: { label: string; value: FileFilter }[] = [
 ]
 
 const getFileIconColor = (mimeType = ''): string => {
-  if (mimeType.startsWith('image/')) return '#4CAF50'
-  if (mimeType.startsWith('video/')) return '#2196F3'
-  if (mimeType.startsWith('audio/')) return '#FF9800'
-  return '#607D8B'
+  if (mimeType.startsWith('image/')) return 'var(--hula-brand-primary)'
+  if (mimeType.startsWith('video/')) return 'var(--hula-brand-primary)'
+  if (mimeType.startsWith('audio/')) return 'var(--hula-brand-primary)'
+  return 'var(--hula-brand-primary)'
 }
 
 const getSidebarTitle = () => {

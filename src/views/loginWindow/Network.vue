@@ -4,7 +4,7 @@
     <ActionBar :max-w="false" :shrink="false" proxy data-tauri-drag-region />
 
     <n-flex vertical :size="12" align="center" class="pt-10px">
-      <span class="text-(16px #70938c) textFont">{{ t('login.network.title') }}</span>
+      <span class="text-(16px var(--hula-brand-primary)) textFont">{{ t('login.network.title') }}</span>
 
       <n-tabs type="line" animated justify-content="center" @update:value="handleTab">
         <n-tab-pane name="api" :tab="t('login.network.tabs.api')">
@@ -99,7 +99,7 @@
 
       <n-flex align="center" justify="center" :size="40" class="pt-10px">
         <p @click="handleSave" class="text-(14px) text-brand cursor-pointer">{{ t('login.network.actions.save') }}</p>
-        <p @click="router.push('/login')" class="text-(14px #707070) cursor-pointer">
+        <p @click="router.push('/login')" class="text-(14px var(--hula-brand-primary)) cursor-pointer">
           {{ t('login.network.actions.back') }}
         </p>
       </n-flex>

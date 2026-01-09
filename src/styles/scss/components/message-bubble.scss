@@ -1,5 +1,5 @@
 /* ==========================================================================
-   消息气泡组件样式优化
+   消息气泡组件样式优化 - 使用统一色彩系统
    ========================================================================== */
 
 /* 基础气泡样式 */
@@ -19,13 +19,13 @@
 
   /* 防止选中文本时触发点击 */
   &::selection {
-    background: var(--selection-bg);
+    background: var(--selection-bg, rgba(0, 191, 165, 0.3));
   }
 
   /* 悬停效果 */
   &:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
   }
 
   /* 点击涟漪效果 */
@@ -51,10 +51,10 @@
 
 /* 左侧消息（他人消息） */
 .h-message-bubble--left {
-  background: var(--chat-left-bg);
-  color: var(--chat-text-color);
-  border-top-left-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
+  background: var(--hula-bubble-received, var(--chat-left-bg, var(--hula-brand-primary)));
+  color: var(--hula-bubble-received-text, var(--chat-text-color, var(--hula-brand-primary)));
+  border-top-left-radius: var(--radius-sm, 4px);
+  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
 
   /* 小尾巴 */
   &::before {
@@ -66,17 +66,26 @@
     height: 0;
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
-    border-right: 8px solid var(--chat-left-bg);
+    border-right: 8px solid var(--hula-bubble-received, var(--chat-left-bg, var(--hula-brand-primary)));
     filter: drop-shadow(-2px 2px 2px rgba(0, 0, 0, 0.08));
+  }
+
+  /* 悬停优化 */
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--hula-bubble-received, var(--hula-brand-primary)) 90%,
+      black 10%
+    );
   }
 }
 
 /* 右侧消息（自己的消息） */
 .h-message-bubble--right {
-  background: var(--primary-color);
-  color: #fff;
-  border-top-right-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
+  background: var(--hula-bubble-sent, var(--hula-brand-primary, var(--hula-brand-primary)));
+  color: var(--hula-bubble-sent-text, var(--hula-brand-primary));
+  border-top-right-radius: var(--radius-sm, 4px);
+  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
 
   /* 小尾巴 */
   &::before {
@@ -88,7 +97,7 @@
     height: 0;
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
-    border-left: 8px solid var(--primary-color);
+    border-left: 8px solid var(--hula-bubble-sent, var(--hula-brand-primary, var(--hula-brand-primary)));
     filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.08));
   }
 
@@ -96,6 +105,48 @@
   &::selection,
   *::selection {
     background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* 悬停优化 */
+  &:hover {
+    background: var(--hula-brand-hover, var(--hula-brand-primary));
+  }
+
+  /* 激活状态 */
+  &:active {
+    background: var(--hula-brand-active, var(--hula-brand-primary));
+  }
+}
+
+/* 选中状态 */
+.h-message-bubble--selected {
+  border: 2px solid var(--hula-brand-primary, var(--hula-brand-primary));
+  box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(0, 191, 165, 0.2));
+}
+
+/* 加载状态 */
+.h-message-bubble--loading {
+  opacity: 0.7;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -105,50 +156,52 @@
   align-items: center;
   gap: 4px;
   margin-top: 4px;
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
+  font-size: var(--font-size-xs, 12px);
+  color: var(--hula-gray-600, var(--hula-brand-primary));
 
   &.sending {
-    color: var(--warning-color);
+    color: var(--hula-warning, var(--hula-brand-primary));
   }
 
   &.failed {
-    color: var(--danger-color);
+    color: var(--hula-error, var(--hula-brand-primary));
   }
 
-  &.read {
-    color: var(--primary-color);
+  &.read,
+  &.delivered {
+    color: var(--hula-success, var(--hula-brand-primary));
   }
 }
 
 /* 回复消息样式 */
 .h-message-reply {
-  background: var(--bg-reply);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  border-left: 3px solid var(--primary-color);
+  background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-sm, 8px);
+  border-left: 3px solid var(--hula-brand-primary, var(--hula-brand-primary));
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
-    background: var(--bg-hover);
+    background: var(--hula-brand-rgba-20, rgba(0, 191, 165, 0.2));
+    transform: translateX(2px);
   }
 
   &__content {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-sm, 8px);
 
     .reply-icon {
-      color: var(--primary-color);
-      font-size: var(--font-size-lg);
+      color: var(--hula-brand-primary, var(--hula-brand-primary));
+      font-size: var(--font-size-lg, 18px);
     }
 
     .reply-text {
       flex: 1;
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
+      color: var(--hula-text-secondary, var(--hula-gray-600, var(--hula-brand-primary)));
+      font-size: var(--font-size-sm, 14px);
 
       /* 单行省略 */
       overflow: hidden;
@@ -158,16 +211,77 @@
   }
 }
 
+/* 消息操作栏 */
+.h-message-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity var(--transition-fast, 0.3s ease);
+
+  .h-message-bubble:hover & {
+    opacity: 1;
+  }
+
+  .h-message-action {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 8px;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    background: var(--hula-bg-component, var(--hula-brand-primary));
+    color: var(--hula-text-primary, var(--hula-gray-800, var(--hula-brand-primary)));
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.3s ease);
+
+    &:hover:not(:disabled) {
+      background: var(--hula-brand-primary, var(--hula-brand-primary));
+      color: var(--hula-brand-primary);
+      transform: scale(1.1);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* 消息时间戳 */
+.h-message-timestamp {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 4px;
+  padding: 2px 6px;
+  background: var(--hula-bg-elevated, rgba(0, 0, 0, 0.8));
+  color: var(--hula-brand-primary);
+  font-size: 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast, 0.3s ease);
+
+  .h-message-bubble:hover & {
+    opacity: 1;
+  }
+}
+
 /* 图片消息样式 */
 .h-message-image {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 12px);
   overflow: hidden;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.15));
   }
 
   img {
@@ -180,15 +294,15 @@
 /* 视频消息样式 */
 .h-message-video {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 12px);
   overflow: hidden;
   background: #000;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.15));
 
     .play-icon {
       transform: scale(1.1);
@@ -213,7 +327,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform var(--transition-fast);
+    transition: transform var(--transition-fast, 0.3s ease);
 
     &::before {
       content: '';
@@ -229,31 +343,32 @@
 
 /* 文件消息样式 */
 .h-message-file {
-  background: var(--bg-info);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  background: var(--hula-bg-component, var(--hula-brand-primary));
+  border: 1px solid var(--hula-border, var(--hula-gray-200, var(--hula-brand-primary)));
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-md, 16px);
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-md, 16px);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
-    background: var(--bg-hover);
-    border-color: var(--primary-color);
+    background: var(--hula-bg-hover, var(--hula-gray-50, var(--hula-brand-primary)));
+    border-color: var(--hula-brand-primary, var(--hula-brand-primary));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
   }
 
   .file-icon {
     width: 48px;
     height: 48px;
-    background: var(--primary-color);
-    border-radius: var(--radius-md);
+    background: var(--hula-brand-primary, var(--hula-brand-primary));
+    border-radius: var(--radius-md, 8px);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-xl, 24px);
   }
 
   .file-info {
@@ -261,57 +376,61 @@
 
     .file-name {
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--hula-text-primary, var(--hula-gray-800, var(--hula-brand-primary)));
       margin-bottom: 4px;
       word-break: break-all;
     }
 
     .file-size {
-      font-size: var(--font-size-xs);
-      color: var(--text-tertiary);
+      font-size: var(--font-size-xs, 12px);
+      color: var(--hula-text-tertiary, var(--hula-gray-500, var(--hula-brand-primary)));
     }
   }
 }
 
 /* 语音消息样式 */
 .h-message-voice {
-  background: var(--bg-info);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  background: var(--hula-bg-component, var(--hula-brand-primary));
+  border: 1px solid var(--hula-border, var(--hula-gray-200, var(--hula-brand-primary)));
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-md, 16px);
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-md, 16px);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.3s ease);
   min-width: 120px;
 
   &:hover {
-    background: var(--bg-hover);
-    border-color: var(--primary-color);
+    background: var(--hula-bg-hover, var(--hula-gray-50, var(--hula-brand-primary)));
+    border-color: var(--hula-brand-primary, var(--hula-brand-primary));
   }
 
   &.playing {
     .voice-icon {
       animation: voice-wave 1s ease-in-out infinite;
     }
+
+    .voice-waves .wave {
+      animation: wave-animation 1s ease-in-out infinite;
+    }
   }
 
   .voice-icon {
     width: 32px;
     height: 32px;
-    background: var(--primary-color);
+    background: var(--hula-brand-primary, var(--hula-brand-primary));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-lg, 18px);
   }
 
   .voice-duration {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
+    font-size: var(--font-size-sm, 14px);
+    color: var(--hula-text-secondary, var(--hula-gray-600, var(--hula-brand-primary)));
   }
 
   .voice-waves {
@@ -323,9 +442,9 @@
 
     .wave {
       flex: 1;
-      background: var(--primary-color);
+      background: var(--hula-brand-primary, var(--hula-brand-primary));
       border-radius: 1px;
-      transition: all var(--transition-fast);
+      transition: all var(--transition-fast, 0.3s ease);
 
       &:nth-child(1) { height: 40%; }
       &:nth-child(2) { height: 60%; }
@@ -333,108 +452,9 @@
       &:nth-child(4) { height: 60%; }
       &:nth-child(5) { height: 40%; }
     }
-
-    &.playing .wave {
-      animation: wave-animation 1s ease-in-out infinite;
-    }
   }
 }
 
-/* 位置消息样式 */
-.h-message-location {
-  background: var(--bg-info);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-
-  &:hover {
-    box-shadow: var(--shadow-md);
-  }
-
-  .location-map {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-
-  .location-info {
-    padding: var(--spacing-md);
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-
-    .location-name {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    .location-address {
-      font-size: var(--font-size-sm);
-      opacity: 0.9;
-    }
-  }
-}
-
-/* 表情消息样式 */
-.h-message-emoji {
-  font-size: 48px;
-  line-height: 1;
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-
-  &:hover {
-    transform: scale(1.2);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-/* 系统消息样式 */
-.h-message-system {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: var(--spacing-md) 0;
-
-  .system-content {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--text-tertiary);
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--radius-2xl);
-    max-width: 80%;
-    text-align: center;
-  }
-}
-
-/* 暗色模式适配 */
-html[data-theme='dark'] {
-  .h-message-bubble--left {
-    background: var(--chat-left-bg);
-    color: var(--text-secondary);
-  }
-
-  .h-message-reply {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .h-message-file {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .h-message-voice {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .h-message-system .system-content {
-    background: rgba(255, 255, 255, 0.1);
-  }
-}
-
-/* 动画定义 */
 @keyframes voice-wave {
   0%, 100% {
     transform: scale(1);
@@ -459,6 +479,138 @@ html[data-theme='dark'] {
   }
 }
 
+/* 位置消息样式 */
+.h-message-location {
+  background: var(--hula-bg-component, var(--hula-brand-primary));
+  border: 1px solid var(--hula-border, var(--hula-gray-200, var(--hula-brand-primary)));
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.3s ease);
+
+  &:hover {
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+  }
+
+  .location-map {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .location-info {
+    padding: var(--spacing-md, 16px);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+
+    .location-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .location-address {
+      font-size: var(--font-size-sm, 14px);
+      opacity: 0.9;
+    }
+  }
+}
+
+/* 表情消息样式 */
+.h-message-emoji {
+  font-size: 48px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--transition-fast, 0.3s ease);
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 系统消息样式 */
+.h-message-system {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--spacing-md, 16px) 0;
+
+  .system-content {
+    background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+    color: var(--hula-text-tertiary, var(--hula-gray-500, var(--hula-brand-primary)));
+    font-size: var(--font-size-sm, 14px);
+    padding: var(--spacing-xs, 4px) var(--spacing-md, 16px);
+    border-radius: var(--radius-2xl, 9999px);
+    max-width: 80%;
+    text-align: center;
+  }
+}
+
+/* 涟漪效果 */
+.h-message-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.h-message-ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple-animation 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 暗色模式适配 */
+[data-theme='dark'] {
+  .h-message-bubble--left {
+    background: var(--hula-pc-bg-secondary, var(--hula-brand-primary));
+    color: var(--hula-pc-text-secondary, var(--hula-brand-primary));
+  }
+
+  .h-message-reply {
+    background: rgba(var(--hula-brand-rgb, 0, 191, 165), 0.15);
+  }
+
+  .h-message-file {
+    background: var(--hula-pc-bg-elevated, var(--hula-brand-primary));
+    border-color: var(--hula-pc-border, var(--hula-brand-primary));
+
+    &:hover {
+      background: var(--hula-pc-bg-hover, var(--hula-brand-primary));
+    }
+  }
+
+  .h-message-voice {
+    background: var(--hula-pc-bg-elevated, var(--hula-brand-primary));
+    border-color: var(--hula-pc-border, var(--hula-brand-primary));
+
+    &:hover {
+      background: var(--hula-pc-bg-hover, var(--hula-brand-primary));
+    }
+  }
+
+  .h-message-system .system-content {
+    background: rgba(var(--hula-brand-rgb, 0, 191, 165), 0.2);
+  }
+}
+
 /* 响应式适配 */
 @media (max-width: 768px) {
   .h-message-bubble {
@@ -471,5 +623,33 @@ html[data-theme='dark'] {
 
   .h-message-location .location-map {
     height: 150px;
+  }
+
+  /* 移动端优化：增大触摸目标 */
+  .h-message-action {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* 无障碍优化 */
+.h-message-bubble:focus-visible {
+  outline: 2px solid var(--hula-brand-primary, var(--hula-brand-primary));
+  outline-offset: 2px;
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .h-message-bubble,
+  .h-message-file,
+  .h-message-voice,
+  .h-message-image,
+  .h-message-video {
+    transition: none;
+  }
+
+  .h-message-voice.playing .voice-icon,
+  .h-message-voice.playing .voice-waves .wave {
+    animation: none;
   }
 }

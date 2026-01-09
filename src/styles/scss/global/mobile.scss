@@ -25,24 +25,24 @@
   -webkit-touch-callout: none !important;
 
   /* 移动端配色 - 薄荷绿主题 (基于设计图img3-1~img3-4) */
-  --mobile-bg-primary: #E6F7F0;
-  --mobile-bg-card: #FFFFFF;
-  --mobile-bg-input: #F5F5F5;
-  --mobile-text-primary: #333333;
-  --mobile-text-secondary: #999999;
-  --mobile-text-hint: #CCCCCC;
-  --mobile-accent-green: #00B894;
-  --mobile-accent-light: #A8D5C1;
-  --mobile-bubble-sent: #00B894;
-  --mobile-bubble-received: #FFFFFF;
-  --tab-active-color: #00B894;
-  --tab-inactive-color: #999999;
+  --mobile-bg-primary: var(--hula-brand-primary);
+  --mobile-bg-card: var(--hula-brand-primary);
+  --mobile-bg-input: var(--hula-brand-primary);
+  --mobile-text-primary: var(--hula-brand-primary);
+  --mobile-text-secondary: var(--hula-brand-primary);
+  --mobile-text-hint: var(--hula-brand-primary);
+  --mobile-accent-green: var(--hula-brand-primary);
+  --mobile-accent-light: var(--hula-brand-primary);
+  --mobile-bubble-sent: var(--hula-brand-primary);
+  --mobile-bubble-received: var(--hula-brand-primary);
+  --tab-active-color: var(--hula-brand-primary);
+  --tab-inactive-color: var(--hula-brand-primary);
 
   /* 向后兼容 */
-  --chat-text-color: #333333;
-  --chat-bg-color: #E6F7F0;
-  --btn-primary-bg: #00B894;
-  --btn-primary-text: #ffffff;
+  --chat-text-color: var(--hula-brand-primary);
+  --chat-bg-color: var(--hula-brand-primary);
+  --btn-primary-bg: var(--hula-brand-primary);
+  --btn-primary-text: var(--hula-brand-primary);
 }
 
 /* 移动端特定样式 */
@@ -55,24 +55,24 @@
 [data-theme='DARK'],
 [data-theme='dark'] {
   /* 移动端深色模式 - 深色配色 */
-  --mobile-bg-primary: #1A1A1A;
-  --mobile-bg-card: #2A2A2A;
-  --mobile-bg-input: #3A3A3A;
-  --mobile-text-primary: #E0E0E0;
-  --mobile-text-secondary: #A0A0A0;
-  --mobile-text-hint: #707070;
-  --mobile-accent-green: #00BFA5;
-  --mobile-accent-light: #4D8075;
-  --mobile-bubble-sent: #00BFA5;
-  --mobile-bubble-received: #3A3A3A;
-  --tab-active-color: #00BFA5;
-  --tab-inactive-color: #707070;
+  --mobile-bg-primary: var(--hula-brand-primary);
+  --mobile-bg-card: var(--hula-brand-primary);
+  --mobile-bg-input: var(--hula-brand-primary);
+  --mobile-text-primary: var(--hula-brand-primary);
+  --mobile-text-secondary: var(--hula-brand-primary);
+  --mobile-text-hint: var(--hula-brand-primary);
+  --mobile-accent-green: var(--hula-brand-primary);
+  --mobile-accent-light: var(--hula-brand-primary);
+  --mobile-bubble-sent: var(--hula-brand-primary);
+  --mobile-bubble-received: var(--hula-brand-primary);
+  --tab-active-color: var(--hula-brand-primary);
+  --tab-inactive-color: var(--hula-brand-primary);
 
   /* 向后兼容 */
-  --chat-text-color: #E0E0E0;
-  --chat-bg-color: #1A1A1A;
-  --btn-primary-bg: #00BFA5;
-  --btn-primary-text: #ffffff;
+  --chat-text-color: var(--hula-brand-primary);
+  --chat-bg-color: var(--hula-brand-primary);
+  --btn-primary-bg: var(--hula-brand-primary);
+  --btn-primary-text: var(--hula-brand-primary);
 }
 
 .mobile-page-bg {
@@ -100,7 +100,7 @@
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background-color: #1aaa55;
+  background-color: var(--hula-brand-primary);
 }
 .mobile-action-footer {
   position: sticky;

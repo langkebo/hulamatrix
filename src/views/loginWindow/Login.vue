@@ -9,8 +9,8 @@
       <!-- 头像 -->
       <n-flex justify="center" class="w-full pt-35px" data-tauri-drag-region>
         <n-avatar
-          class="welcome size-80px rounded-50% border-(2px solid #fff) dark:border-(2px solid #606060)"
-          :color="themes.content === ThemeEnum.DARK ? '#282828' : '#fff'"
+          class="welcome size-80px rounded-50% border-(2px solid #fff) dark:border-(2px solid var(--hula-brand-primary))"
+          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="AvatarUtils.getAvatarUrl(info.avatar)" />
       </n-flex>
@@ -32,10 +32,10 @@
           clearable>
           <template #suffix>
             <n-flex v-if="loginHistories.length > 0" @click="arrowStatus = !arrowStatus">
-              <svg v-if="!arrowStatus" class="down w-18px h-18px color-#505050 dark:color-#909090 cursor-pointer">
+              <svg v-if="!arrowStatus" class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
                 <use href="#down"></use>
               </svg>
-              <svg v-else class="down w-18px h-18px color-#505050 dark:color-#909090 cursor-pointer">
+              <svg v-else class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
                 <use href="#up"></use>
               </svg>
             </n-flex>
@@ -45,18 +45,18 @@
         <!-- 账号选择框-->
         <div
           v-if="loginHistories.length > 0 && arrowStatus"
-          class="account-dropdown account-box absolute w-260px max-h-140px bg-#fdfdfd98 dark:bg-#48484e98 backdrop-blur-sm mt-45px z-99 rounded-8px p-8px box-border">
+          class="account-dropdown account-box absolute w-260px max-h-140px bg-var(--hula-brand-primary)98 dark:bg-var(--hula-brand-primary)98 backdrop-blur-sm mt-45px z-99 rounded-8px p-8px box-border">
           <n-scrollbar class="account-scrollbar" trigger="none">
             <n-flex
               vertical
               v-for="item in loginHistories"
               :key="item.account"
               @click="giveAccount(item)"
-              class="p-8px cursor-pointer hover:bg-#90909020 dark:hover:bg-#90909030 hover:rounded-6px">
+              class="p-8px cursor-pointer hover:bg-var(--hula-brand-primary)20 dark:hover:bg-var(--hula-brand-primary)30 hover:rounded-6px">
               <div class="flex-between-center">
                 <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" color="#fff" class="size-28px rounded-50%" />
-                <p class="text-14px color-#505050 dark:color-#fefefe">{{ item.account }}</p>
-                <svg @click.stop="delAccount(item)" class="w-12px h-12px dark:color-#fefefe">
+                <p class="text-14px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary)">{{ item.account }}</p>
+                <svg @click.stop="delAccount(item)" class="w-12px h-12px dark:color-var(--hula-brand-primary)">
                   <use href="#close"></use>
                 </svg>
               </div>
@@ -89,18 +89,16 @@
           justify="center"
           class="text-12px px-8px py-4px rounded-4px"
           :class="{
-            'bg-#e8f4fd! dark:bg-#1a3a4a!': accountCheckStatus.suggestedAction === 'login',
-            'bg-#fff7e8! dark:bg-#4a3a1a!': accountCheckStatus.suggestedAction === 'register',
-            'bg-#f0f0f0! dark:bg-#3a3a3a!':
+            'bg-brand! dark:bg-brand!': accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
+            'bg-gray-100! dark:bg-gray-800!':
               !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
           }">
           <n-spin v-if="accountCheckStatus.checking" :size="12" />
           <span
             v-if="accountCheckStatus.reason"
             :class="{
-              'text-brand!': accountCheckStatus.suggestedAction === 'login',
-              'color-#d97706!': accountCheckStatus.suggestedAction === 'register',
-              'color-#909090!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
+              'text-brand!': accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
+              'text-gray-600! dark:text-gray-400!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
             }">
             {{ accountCheckStatus.reason }}
           </span>
@@ -117,7 +115,7 @@
         <!-- 协议 -->
         <n-flex align="center" justify="center" :size="6">
           <n-checkbox v-model:checked="protocol" />
-          <div class="text-12px color-#909090 cursor-default lh-14px agreement">
+          <div class="text-12px color-var(--hula-brand-primary) cursor-default lh-14px agreement">
             <span>{{ t('login.term.checkout.text1') }}</span>
             <span class="text-brand cursor-pointer" @click.stop="openServiceAgreement">
               {{ t('login.term.checkout.text2') }}
@@ -151,7 +149,7 @@
           <n-avatar
             round
             :size="110"
-            :color="themes.content === ThemeEnum.DARK ? '#282828' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
             :src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')" />
         </n-flex>
@@ -183,7 +181,7 @@
         @click="router.push('/qrCode')">
         {{ qrCodeLabel }}
       </div>
-      <div class="w-1px h-14px bg-#ccc dark:bg-#707070 justify-self-center"></div>
+      <div class="w-1px h-14px bg-#ccc dark:bg-var(--hula-brand-primary) justify-self-center"></div>
       <div
         v-if="uiState === 'auto'"
         class="text-brand cursor-pointer justify-self-start text-left"
@@ -195,7 +193,7 @@
         <n-popover
           trigger="click"
           id="moreShow"
-          class="bg-#fdfdfd98! dark:bg-#48484e98! backdrop-blur-sm"
+          class="bg-var(--hula-brand-primary)98! dark:bg-var(--hula-brand-primary)98! backdrop-blur-sm"
           v-model:show="moreShow"
           :show-checkmark="false"
           :show-arrow="false">
@@ -204,12 +202,12 @@
           </template>
           <n-flex vertical :size="2">
             <div
-              class="register text-14px cursor-pointer hover:bg-#90909030 hover:rounded-6px p-8px"
+              class="register text-14px cursor-pointer hover:bg-var(--hula-brand-primary)30 hover:rounded-6px p-8px"
               @click="createWebviewWindow('注册', 'register', 600, 600)">
               {{ t('login.register') }}
             </div>
             <div
-              class="text-14px cursor-pointer hover:bg-#90909030 hover:rounded-6px p-8px"
+              class="text-14px cursor-pointer hover:bg-var(--hula-brand-primary)30 hover:rounded-6px p-8px"
               @click="createWebviewWindow('忘记密码', 'forgetPassword', 600, 600)">
               {{ t('login.option.items.forget') }}
             </div>
@@ -217,7 +215,7 @@
               v-if="!isCompatibility()"
               @click="router.push('/network')"
               :class="{ network: isMac() }"
-              class="text-14px cursor-pointer hover:bg-#90909030 hover:rounded-6px p-8px">
+              class="text-14px cursor-pointer hover:bg-var(--hula-brand-primary)30 hover:rounded-6px p-8px">
               {{ t('login.option.items.network_setting') }}
             </div>
           </n-flex>
@@ -643,6 +641,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/scss/global/login-bg';
+@use '@/styles/scss/login';
+
 .account-dropdown {
   border: 1px solid rgba(70, 70, 70, 0.1);
 }
@@ -659,7 +660,4 @@ onUnmounted(() => {
 .user-name-ellipsis {
   max-width: 200px;
 }
-
-@use '@/styles/scss/global/login-bg';
-@use '@/styles/scss/login';
 </style>

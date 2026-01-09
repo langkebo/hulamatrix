@@ -124,16 +124,16 @@ const initials = computed(() => {
 
 const avatarColor = computed(() => {
   const colors = [
-    '#f56c6c',
-    '#e6a23c',
-    '#409eff',
-    '#67c23a',
-    '#909399',
-    '#c71585',
-    '#ff69b4',
-    '#cd5c5c',
-    '#ffa500',
-    '#8b4513'
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)',
+    'var(--hula-brand-primary)'
   ]
   const index = displayName.value.charCodeAt(0) % colors.length
   return colors[index]
@@ -250,7 +250,7 @@ const handleClick = () => {
     right: 0;
     width: 12px;
     height: 12px;
-    background-color: #52c41a;
+    background-color: var(--hula-brand-primary);
     border: 2px solid var(--n-color);
     border-radius: 50%;
   }

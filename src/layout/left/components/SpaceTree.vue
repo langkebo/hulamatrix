@@ -16,7 +16,7 @@
           </svg>
 
           <!-- Space avatar -->
-          <n-avatar :size="32" round :src="currentSpace.avatar" color="#00BFA5">
+          <n-avatar :size="32" round :src="currentSpace.avatar" color="var(--hula-brand-primary)">
             <template #fallback>
               <svg class="size-full">
                 <use href="#space"></use>

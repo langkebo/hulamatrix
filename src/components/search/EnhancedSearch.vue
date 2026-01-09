@@ -751,7 +751,7 @@ defineExpose({
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid var(--hula-gray-200, #e0e0e0);
+  border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
@@ -764,8 +764,8 @@ defineExpose({
   font-size: 12px;
   font-weight: 500;
   color: #666;
-  background: var(--hula-gray-100, #f5f5f5);
-  border-bottom: 1px solid var(--hula-gray-200, #e0e0e0);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
+  border-bottom: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
 
 .suggestion-item {
@@ -774,11 +774,11 @@ defineExpose({
   padding: 8px 12px;
   cursor: pointer;
   transition: background 0.2s ease;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-brand-primary);
 }
 
 .suggestion-item:hover {
-  background: #f9f9f9;
+  background: var(--hula-brand-primary);
 }
 
 .suggestion-item:last-child {
@@ -867,15 +867,15 @@ defineExpose({
   align-items: flex-start;
   padding: 12px;
   background: white;
-  border: 1px solid var(--hula-gray-200, #e0e0e0);
+  border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .result-item:hover {
-  background: #f9f9f9;
-  border-color: #1890ff;
+  background: var(--hula-brand-primary);
+  border-color: var(--hula-brand-primary);
 }
 
 .result-avatar {
@@ -887,7 +887,7 @@ defineExpose({
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #1890ff;
+  background: var(--hula-brand-primary);
   color: white;
   display: flex;
   align-items: center;
@@ -973,7 +973,7 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f9f9f9;
+  background: var(--hula-brand-primary);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -982,7 +982,7 @@ defineExpose({
 }
 
 .history-item:hover {
-  background: #f0f0f0;
+  background: var(--hula-brand-primary);
 }
 
 .history-count {
@@ -1011,7 +1011,7 @@ defineExpose({
 .stat-value {
   font-size: 18px;
   font-weight: 600;
-  color: #1890ff;
+  color: var(--hula-brand-primary);
 }
 
 .stat-label {
@@ -1022,12 +1022,12 @@ defineExpose({
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
   .search-suggestions {
-    background: #1f1f1f;
+    background: var(--hula-brand-primary);
     border-color: #333;
   }
 
   .suggestions-header {
-    background: var(--hula-gray-800, #2a2a2a);
+    background: var(--hula-gray-800, var(--hula-brand-primary));
     border-bottom-color: #333;
     color: #ccc;
   }
@@ -1037,17 +1037,17 @@ defineExpose({
   }
 
   .suggestion-item:hover {
-    background: #2a2a2a;
+    background: var(--hula-brand-primary);
   }
 
   .result-item {
-    background: #1f1f1f;
+    background: var(--hula-brand-primary);
     border-color: #333;
   }
 
   .result-item:hover {
-    background: #2a2a2a;
-    border-color: #1890ff;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
   }
 }
 </style>

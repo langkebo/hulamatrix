@@ -2,7 +2,7 @@
   <n-card v-if="showPrompt" class="migration-prompt" :bordered="false">
     <div class="prompt-content">
       <div class="prompt-header">
-        <n-icon size="24" color="#18a058">
+        <n-icon size="24" color="var(--hula-brand-primary)">
           <svg viewBox="0 0 24 24">
             <path
               fill="currentColor"
@@ -273,7 +273,7 @@ defineExpose({
 <style lang="scss" scoped>
 .migration-prompt {
   margin: 16px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 
   .prompt-content {
     padding: 8px;

@@ -314,7 +314,7 @@ if ((import.meta as unknown as ImportMetaLike)?.env?.DEV) {
     const appAuthorUrl = meta?.env?.VITE_APP_AUTHOR_URL || ''
     logger.debug(
       `%c 🍀 ${appName} ${appVersion}`,
-      'font-size:20px;border-left: 4px solid #13987f;background: #cef9ec;font-family: Comic Sans MS, cursive;color:#581845;padding:10px;border-radius:4px;',
+      'font-size:20px;border-left: 4px solid var(--hula-brand-primary);background: var(--hula-brand-primary);font-family: Comic Sans MS, cursive;color:var(--hula-brand-primary);padding:10px;border-radius:4px;',
       `${appAuthorUrl}`
     )
   })

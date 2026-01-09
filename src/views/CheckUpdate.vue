@@ -13,7 +13,7 @@
         <n-flex align="center">
           <n-flex align="center">
             <p class="text-[--text-color]">{{ t('message.check_update.current_version') }}:</p>
-            <p class="text-(20px #909090) font-500">{{ currentVersion }}</p>
+            <p class="text-(20px var(--hula-brand-primary)) font-500">{{ currentVersion }}</p>
           </n-flex>
 
           <n-flex v-if="newVersion" align="center" class="relative">
@@ -23,25 +23,25 @@
 
             <p class="relative text-(20px) text-brand font-500">{{ newVersion }}</p>
 
-            <span class="absolute top--10px right--44px p-[4px_8px] bg-#f6dfe3ff rounded-6px text-(12px #ce304f)">
+            <span class="absolute top--10px right--44px p-[4px_8px] bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
               {{ t('message.check_update.new_tag') }}
             </span>
           </n-flex>
         </n-flex>
         <n-flex align="center" size="medium">
           <div v-if="newVersionTime">
-            <span class="text-(12px #909090)">{{ t('message.check_update.new_release_date') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('message.check_update.new_release_date') }}</span>
             <span class="text-(12px) text-brand">{{ handRelativeTime(newVersionTime) }}</span>
           </div>
 
           <div v-else>
-            <span class="text-(12px #909090)">{{ t('message.check_update.release_date') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('message.check_update.release_date') }}</span>
             <span class="text-(12px) text-brand">{{ handRelativeTime(versionTime) }}</span>
           </div>
         </n-flex>
       </n-flex>
       <n-flex justify="space-between" align="center" class="mb-2px">
-        <p class="text-(14px #909090)">{{ t('message.check_update.log_title') }}</p>
+        <p class="text-(14px var(--hula-brand-primary))">{{ t('message.check_update.log_title') }}</p>
         <n-button text @click="toggleLogVisible">
           <n-flex align="center">
             <span class="text-(12px) text-brand">
@@ -61,7 +61,7 @@
         :class="logVisible ? 'h-460px' : 'h-0'">
         <n-scrollbar class="p-[0_10px] box-border">
           <div v-if="newCommitLog.length > 0">
-            <div class="p-[4px_8px] mt-4px w-fit bg-#f6dfe3ff rounded-6px text-(12px #ce304f)">
+            <div class="p-[4px_8px] mt-4px w-fit bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
               {{ newVersion }}
             </div>
 
@@ -81,7 +81,7 @@
                   <use href="#RightArrow"></use>
                 </svg>
 
-                <span class="p-[4px_8px] w-fit bg-#f1f1f1 rounded-6px text-(12px #999)">{{ currentVersion }}</span>
+                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px #999)">{{ currentVersion }}</span>
               </n-flex>
             </n-flex>
           </div>

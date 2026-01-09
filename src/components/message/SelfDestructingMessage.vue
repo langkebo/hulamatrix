@@ -326,7 +326,7 @@ defineExpose({
 
   .countdown-label {
     font-size: 10px;
-    color: #ef4444;
+    color: var(--hula-brand-primary);
     white-space: nowrap;
     font-weight: 500;
     background: rgba(255, 255, 255, 0.9);
@@ -389,7 +389,7 @@ defineExpose({
       position: absolute;
       width: 4px;
       height: 4px;
-      background: #ef4444;
+      background: var(--hula-brand-primary);
       border-radius: 50%;
       top: 50%;
       left: 50%;
@@ -405,7 +405,7 @@ defineExpose({
     transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
-    border: 2px solid #ef4444;
+    border: 2px solid var(--hula-brand-primary);
     border-radius: 8px;
     animation: shrink 0.3s ease-out forwards;
   }
@@ -519,7 +519,7 @@ defineExpose({
   
   .destroyed-icon {
     font-size: 16px;
-    color: #4ade80;
+    color: var(--hula-brand-primary);
   }
 }
 

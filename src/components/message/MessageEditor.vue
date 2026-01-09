@@ -266,7 +266,7 @@
                       src: user.avatar || null,
                       size: 24,
                       round: true,
-                      color: '#00BFA5'
+                      color: 'var(--hula-brand-primary)'
                     })
                   " />
                 <span>{{ user.name }}</span>
@@ -330,7 +330,7 @@
                 src: user.avatar || null,
                 size: 32,
                 round: true,
-                color: '#00BFA5'
+                color: 'var(--hula-brand-primary)'
               })
             " />
           <div class="mention-info">

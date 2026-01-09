@@ -46,7 +46,7 @@
             <!-- 时间分隔符 -->
             <span
               v-if="shouldShowTimeDivider(message, index)"
-              class="text-(12px #909090) select-none p-4px mx-auto">
+              class="text-(12px var(--hula-brand-primary)) select-none p-4px mx-auto">
               {{ formatMessageTime(message.created_at) }}
             </span>
 

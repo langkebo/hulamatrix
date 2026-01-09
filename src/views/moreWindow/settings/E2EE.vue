@@ -13,7 +13,7 @@
       <n-list hoverable clickable>
         <n-list-item>
           <template #prefix>
-            <n-icon size="24" :color="crossSigningReady ? 'var(--hula-success, #18a058)' : 'var(--hula-warning, #f0a020)'">
+            <n-icon size="24" :color="crossSigningReady ? 'var(--hula-success, var(--hula-brand-primary))' : 'var(--hula-warning, var(--hula-brand-primary))'">
               <CircleCheck v-if="crossSigningReady" />
               <AlertCircle v-else />
             </n-icon>
@@ -77,7 +77,7 @@
       <n-list hoverable clickable>
         <n-list-item>
           <template #prefix>
-            <n-icon size="24" :color="secretStorageReady ? '#18a058' : '#f0a020'">
+            <n-icon size="24" :color="secretStorageReady ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'">
               <Shield v-if="secretStorageReady" />
               <ShieldOff v-else />
             </n-icon>
@@ -479,7 +479,7 @@ onMounted(() => {
 
     &.verified {
       background: rgba(24, 160, 88, 0.1);
-      color: #18a058;
+      color: var(--hula-brand-primary);
     }
   }
 }

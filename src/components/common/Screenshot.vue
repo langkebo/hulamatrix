@@ -813,11 +813,11 @@ canvas {
     }
 
     &:hover svg {
-      color: #13987f;
+      color: var(--hula-brand-primary);
     }
 
     &.active svg {
-      color: #13987f;
+      color: var(--hula-brand-primary);
     }
 
     &.disabled {

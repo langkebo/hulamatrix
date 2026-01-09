@@ -30,7 +30,7 @@
       </div>
 
       <!-- 渐变背景 -->
-      <div class="space-gradient" :style="{ background: safeSpace.theme?.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }"></div>
+      <div class="space-gradient" :style="{ background: safeSpace.theme?.gradient || 'linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%)' }"></div>
     </div>
 
     <!-- 空间信息 -->
@@ -533,7 +533,7 @@ const handleArchiveSpace = async () => {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
       color: white;
 
       .placeholder-text {

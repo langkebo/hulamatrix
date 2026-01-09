@@ -3,7 +3,7 @@
   <main class="w-full flex-center">
     <template v-if="isGroup">
       <n-flex align="center" :size="6" v-if="fromUserUid === userUid">
-        <p class="text-(12px #909090) select-none cursor-default">{{ message.body.content }}</p>
+        <p class="text-(12px var(--hula-brand-primary)) select-none cursor-default">{{ message.body.content }}</p>
         <p
           v-if="canReEdit(message.id)"
           class="text-(12px) text-brand select-none cursor-pointer"
@@ -11,11 +11,11 @@
           重新编辑
         </p>
       </n-flex>
-      <span v-else class="text-12px color-#909090 select-none" v-html="recallText"></span>
+      <span v-else class="text-12px color-var(--hula-brand-primary) select-none" v-html="recallText"></span>
     </template>
     <template v-else>
       <n-flex align="center" :size="6">
-        <p class="text-(12px #909090) select-none cursor-default">
+        <p class="text-(12px var(--hula-brand-primary)) select-none cursor-default">
           {{ message.body.content }}
         </p>
         <p

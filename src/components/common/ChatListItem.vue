@@ -5,7 +5,7 @@
       <div class="chat-list-item-avatar">
         <n-badge
           :offset="[-6, 6]"
-          :color="item.muteNotification === NotificationTypeEnum.NOT_DISTURB ? 'grey' : '#d5304f'"
+          :color="item.muteNotification === NotificationTypeEnum.NOT_DISTURB ? 'grey' : 'var(--hula-brand-primary)'"
           :value="item.unreadCount"
           :max="99">
           <n-avatar
@@ -66,12 +66,12 @@
 
           <!-- Status indicators -->
           <template v-if="item.shield">
-            <svg class="size-14px color-#909090">
+            <svg class="size-14px color-var(--hula-brand-primary)">
               <use href="#forbid"></use>
             </svg>
           </template>
           <template v-else-if="item.muteNotification === NotificationTypeEnum.NOT_DISTURB && !item.unreadCount">
-            <svg class="size-14px color-#909090">
+            <svg class="size-14px color-var(--hula-brand-primary)">
               <use href="#close-remind"></use>
             </svg>
           </template>
@@ -193,7 +193,7 @@ const itemClasses = computed(() => ({
 
 .chat-list-item-time {
   font-size: 10px;
-  color: var(--text-color-secondary, #707070);
+  color: var(--text-color-secondary, var(--hula-brand-primary));
   white-space: nowrap;
   margin-left: 4px;
 
@@ -219,11 +219,11 @@ const itemClasses = computed(() => ({
   }
 
   &.text-bot {
-    color: var(--text-color-secondary, #707070);
+    color: var(--text-color-secondary, var(--hula-brand-primary));
   }
 
   &.shield {
-    color: var(--shield-color, #909090);
+    color: var(--shield-color, var(--hula-brand-primary));
   }
 }
 </style>

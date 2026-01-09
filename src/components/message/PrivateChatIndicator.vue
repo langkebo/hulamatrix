@@ -126,7 +126,7 @@ const formatDestructTime = (seconds: number): string => {
     gap: 8px;
 
     .lock-icon {
-      color: #13987f;
+      color: var(--hula-brand-primary);
       font-size: 16px;
     }
 
@@ -146,11 +146,11 @@ const formatDestructTime = (seconds: number): string => {
   }
 
   .self-destruct-hint {
-    color: #f59e0b;
+    color: var(--hula-brand-primary);
   }
 
   .participants-info {
-    color: #3b82f6;
+    color: var(--hula-brand-primary);
   }
 
   .security-tip {
@@ -163,17 +163,17 @@ const formatDestructTime = (seconds: number): string => {
 
     &.high {
       background: rgba(34, 197, 94, 0.1);
-      color: #22c55e;
+      color: var(--hula-brand-primary);
     }
 
     &.medium {
       background: rgba(59, 130, 246, 0.1);
-      color: #3b82f6;
+      color: var(--hula-brand-primary);
     }
 
     &.low {
       background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
+      color: var(--hula-brand-primary);
     }
   }
 }

@@ -148,12 +148,12 @@ const handleAvatarError = (event: Event) => {
   user-select: none;
 
   &:hover:not(&--selected) {
-    background-color: var(--hula-gray-100, #f5f5f5);
+    background-color: var(--hula-gray-100, var(--hula-brand-primary));
   }
 
   &--selected {
-    background-color: #e8f4f1;
-    box-shadow: inset 0 0 0 1px #13987f;
+    background-color: var(--hula-brand-primary);
+    box-shadow: inset 0 0 0 1px var(--hula-brand-primary);
   }
 }
 
@@ -177,7 +177,7 @@ const handleAvatarError = (event: Event) => {
   right: 2px;
   width: 8px;
   height: 8px;
-  background-color: #13987f;
+  background-color: var(--hula-brand-primary);
   border-radius: 50%;
   border: 2px solid var(--center-bg-color);
 }
@@ -210,12 +210,12 @@ const handleAvatarError = (event: Event) => {
 html[data-theme='dark'] {
   .user-item {
     &:hover:not(&--selected) {
-      background-color: #2d2d2d;
+      background-color: var(--hula-brand-primary);
     }
 
     &--selected {
       background-color: rgba(19, 152, 127, 0.2);
-      border-color: #13987f;
+      border-color: var(--hula-brand-primary);
     }
   }
 }

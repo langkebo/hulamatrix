@@ -37,11 +37,11 @@ export const createFileOrVideoDom = (file: File) => {
     loadSVG(`/file/${extension}.svg`)
       .then((svgImage: HTMLImageElement) => {
         // 圆角矩形的背景和边框，您可以根据需要调整样式
-        ctx.fillStyle = '#fdfdfd' // 背景颜色
+        ctx.fillStyle = 'var(--hula-brand-primary)' // 背景颜色
         ctx.strokeStyle = '#ccc' // 边框颜色
         ctx.lineWidth = 2 // 边框宽度
-        const selectedBgColor = '#e4e4e4' // 点击时的背景颜色
-        const unselectedBgColor = '#fdfdfd' // 未点击时的背景颜色
+        const selectedBgColor = 'var(--hula-brand-primary)' // 点击时的背景颜色
+        const unselectedBgColor = 'var(--hula-brand-primary)' // 未点击时的背景颜色
         let isImgSelected = false // 标记图片是否被选中
         const maxTextWidth = 160 // 文件名称的最大宽度
 
@@ -109,7 +109,7 @@ export const createFileOrVideoDom = (file: File) => {
           const truncatedFileName = truncateText(fileName, maxTextWidth)
           ctx.fillText(truncatedFileName, 15, 25)
 
-          ctx.fillStyle = '#909090' // 文本颜色
+          ctx.fillStyle = 'var(--hula-brand-primary)' // 文本颜色
           ctx.font = 'normal 12px Arial' // 文本样式
           ctx.fillText(fileSize, 15, actualHeight - 15)
 

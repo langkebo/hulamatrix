@@ -50,8 +50,8 @@
         :style="{
           left: `${waveformRenderer.scanLinePosition.value}px`,
           color: isCurrentUser ? '#fff' : isDarkMode ? '#fff' : '#000',
-          backgroundColor: isCurrentUser ? '#303030' : isDarkMode ? '#303030' : '#fff',
-          border: isCurrentUser ? 'none' : isDarkMode ? '1px solid #505050' : '1px solid #d0d0d0'
+          backgroundColor: isCurrentUser ? 'var(--hula-brand-primary)' : isDarkMode ? 'var(--hula-brand-primary)' : '#fff',
+          border: isCurrentUser ? 'none' : isDarkMode ? '1px solid var(--hula-brand-primary)' : '1px solid var(--hula-brand-primary)'
         }">
         {{ formatTime(dragControl.previewTime.value) }}
       </div>
@@ -164,7 +164,11 @@ const waveformRenderer = useWaveformRenderer(
 
 // 计算波形颜色状态
 const getWaveformColors = () => {
-  const baseColor = isCurrentUser.value ? '#ffffff' : isDarkMode.value ? '#ffffff' : '#000000'
+  const baseColor = isCurrentUser.value
+    ? 'var(--hula-brand-primary)'
+    : isDarkMode.value
+      ? 'var(--hula-brand-primary)'
+      : 'var(--hula-brand-primary)'
 
   // 已播放区域颜色（始终完全不透明）
   const playedColor = baseColor

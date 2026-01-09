@@ -74,7 +74,7 @@
                 @keydown="handleEditKeydown($event, category)" />
             </div>
             <template v-else>
-              <div class="category-icon" :style="{ backgroundColor: category.color || '#1890ff' }">
+              <div class="category-icon" :style="{ backgroundColor: category.color || 'var(--hula-brand-primary)' }">
                 <svg class="size-16px text-white">
                   <use href="#folder"></use>
                 </svg>
@@ -154,7 +154,7 @@ const categoryToDelete = ref<string | null>(null)
 // 创建分类表单
 const createForm = ref({
   name: '',
-  color: '#1890ff'
+  color: 'var(--hula-brand-primary)'
 })
 
 // 表单验证规则
@@ -243,7 +243,7 @@ const handleCreate = async () => {
     })
 
     // 重置表单并关闭对话框
-    createForm.value = { name: '', color: '#1890ff' }
+    createForm.value = { name: '', color: 'var(--hula-brand-primary)' }
     showCreateDialog.value = false
   } catch (error) {
     msg.error(t('friends.categories.create_failed'))
@@ -440,7 +440,7 @@ onMounted(async () => {
 
 .category-count {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
   flex-shrink: 0;
 }
 

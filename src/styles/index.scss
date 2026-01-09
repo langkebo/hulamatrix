@@ -5,6 +5,9 @@
 // 引入设计令牌系统（最优先）
 @use './tokens/index' as tokens;
 
+// 引入统一的色彩系统（在所有其他样式之前）
+@use './tokens/colors-unified';
+
 // 引入字体
 @use './scss/global/fonts';
 
@@ -32,6 +35,7 @@
 @use './scss/global/animations';
 @use './scss/global/dark-mode-enhancements';
 @use './scss/global/performance-optimizations';
+@use './scss/global/accessibility'; // 无障碍优化
 
 // 引入组件样式
 @use './scss/components/message-bubble';
@@ -50,3 +54,6 @@
 // 引入布局样式
 @use '../layout/left/style' as left-style;
 @use '../layout/center/style' as center-style;
+
+// 引入响应式工具类
+@use './utilities/responsive';

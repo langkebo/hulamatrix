@@ -39,7 +39,7 @@
                       {{ applyMsg(item) }}
                     </p>
 
-                    <p class="text-(10px [--hula-gray-500,#909090]) shrink-0 whitespace-nowrap">{{ formatTimestamp(item.createTime) }}</p>
+                    <p class="text-(10px [--hula-gray-500,var(--hula-brand-primary)]) shrink-0 whitespace-nowrap">{{ formatTimestamp(item.createTime) }}</p>
                   </div>
                 </n-flex>
                 <p
@@ -78,18 +78,18 @@
                   </n-icon>
                 </n-dropdown>
               </n-flex>
-              <span class="text-(12px #64a29c)" v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
+              <span class="text-(12px var(--hula-brand-primary))" v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
                 {{ t('home.apply_list.status.accepted') }}
               </span>
-              <span class="text-(12px #c14053)" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
+              <span class="text-(12px var(--hula-brand-primary))" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
                 {{ t('home.apply_list.status.rejected') }}
               </span>
-              <span class="text-(12px [--hula-gray-500,#909090])" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
+              <span class="text-(12px [--hula-gray-500,var(--hula-brand-primary)])" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
                 {{ t('home.apply_list.status.ignored') }}
               </span>
               <span
-                class="text-(12px #64a29c)"
-                :class="{ 'text-(12px #c14053)': item.status === RequestNoticeAgreeStatus.REJECTED }"
+                class="text-(12px var(--hula-brand-primary))"
+                :class="{ 'text-(12px var(--hula-brand-primary))': item.status === RequestNoticeAgreeStatus.REJECTED }"
                 v-else-if="isCurrentUser(item.senderId)">
                 {{
                   isAccepted(item)

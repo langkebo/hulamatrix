@@ -11,7 +11,7 @@
       <div class="warnings-header">安全警告</div>
       <div class="warnings-list">
         <div v-for="(warning, index) in warnings" :key="index" class="warning-item">
-          <n-icon :component="AlertTriangle" :size="16" color="#f5222d" />
+          <n-icon :component="AlertTriangle" :size="16" color="var(--hula-brand-primary)" />
           <span>{{ warning }}</span>
         </div>
       </div>
@@ -186,7 +186,7 @@ defineExpose({
   border: 1px solid var(--n-border-color);
 
   &.has-warnings {
-    border-color: #f5222d;
+    border-color: var(--hula-brand-primary);
     background-color: rgba(245, 34, 45, 0.05);
   }
 }
@@ -201,17 +201,17 @@ defineExpose({
 
   &.secure {
     background-color: rgba(82, 196, 26, 0.1);
-    color: #52c41a;
+    color: var(--hula-brand-primary);
   }
 
   &.insecure {
     background-color: rgba(245, 34, 45, 0.1);
-    color: #f5222d;
+    color: var(--hula-brand-primary);
   }
 
   &.warning {
     background-color: rgba(250, 173, 20, 0.1);
-    color: #faad14;
+    color: var(--hula-brand-primary);
   }
 }
 

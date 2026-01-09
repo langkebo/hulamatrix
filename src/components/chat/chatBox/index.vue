@@ -60,7 +60,7 @@ const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !c
     position: absolute;
     width: 40px;
     height: 3px;
-    background: #909090;
+    background: var(--hula-brand-primary);
     border-radius: 2px;
     opacity: 0;
     transition: all 0.2s ease;

@@ -7,100 +7,100 @@
 
 // PC端颜色 - 深色主题
 $pc-dark: (
-  bg-primary: #2D5A5A,      // 左侧导航背景
-  bg-secondary: #2A2A2A,    // 中间列表背景
-  bg-tertiary: #3A3A3A,     // 右侧聊天背景
-  bg-elevated: #4A4A4A,     // 卡片/弹窗背景
-  bg-hover: #5A5A5A,        // 悬停背景
-  bg-active: #1a4a4a,       // 激活背景
+  bg-primary: var(--hula-brand-primary),      // 左侧导航背景
+  bg-secondary: var(--hula-brand-primary),    // 中间列表背景
+  bg-tertiary: var(--hula-brand-primary),     // 右侧聊天背景
+  bg-elevated: var(--hula-brand-primary),     // 卡片/弹窗背景
+  bg-hover: var(--hula-brand-primary),        // 悬停背景
+  bg-active: var(--hula-brand-primary),       // 激活背景
 
-  text-primary: #FFFFFF,    // 主要文字
-  text-secondary: #E0E0E0,  // 次要文字
-  text-tertiary: #A0A0A0,   // 辅助文字
-  text-disabled: #707070,   // 禁用文字
-  text-hint: #505050,       // 提示文字
+  text-primary: var(--hula-brand-primary),    // 主要文字
+  text-secondary: var(--hula-brand-primary),  // 次要文字
+  text-tertiary: var(--hula-brand-primary),   // 辅助文字
+  text-disabled: var(--hula-brand-primary),   // 禁用文字
+  text-hint: var(--hula-brand-primary),       // 提示文字
 
-  accent-primary: #00BFA5,  // 主强调色(亮绿)
-  accent-hover: #00E6C8,    // 悬停状态
-  accent-active: #009A8A,   // 激活状态
-  accent-subtle: #1FDDD4,   // 柔和强调
+  accent-primary: var(--hula-brand-primary),  // 主强调色(亮绿)
+  accent-hover: var(--hula-brand-primary),    // 悬停状态
+  accent-active: var(--hula-brand-primary),   // 激活状态
+  accent-subtle: var(--hula-brand-primary),   // 柔和强调
 
-  success: #00BFA5,         // 成功
-  warning: #FFB84D,         // 警告
-  error: #FF6B6B,           // 错误
-  info: #4A90E2,            // 信息
+  success: var(--hula-brand-primary),         // 成功
+  warning: var(--hula-brand-primary),         // 警告
+  error: var(--hula-brand-primary),           // 错误
+  info: var(--hula-brand-primary),            // 信息
 
-  bubble-sent: #00BFA5,     // 发送气泡
-  bubble-sent-text: #FFFFFF,// 发送文字
-  bubble-received: #4A4A4A, // 接收气泡
-  bubble-received-text: #E0E0E0, // 接收文字
+  bubble-sent: var(--hula-brand-primary),     // 发送气泡
+  bubble-sent-text: var(--hula-brand-primary),// 发送文字
+  bubble-received: var(--hula-brand-primary), // 接收气泡
+  bubble-received-text: var(--hula-brand-primary), // 接收文字
 
-  border-color: #4A4A4A,    // 边框颜色
-  divider-color: #3A3A3A,   // 分割线颜色
+  border-color: var(--hula-brand-primary),    // 边框颜色
+  divider-color: var(--hula-brand-primary),   // 分割线颜色
 
   scrollbar-track: rgba(74, 74, 74, 0.3),
-  scrollbar-thumb: #00BFA5,
-  scrollbar-thumb-hover: #00E6C8,
+  scrollbar-thumb: var(--hula-brand-primary),
+  scrollbar-thumb-hover: var(--hula-brand-primary),
 );
 
 // 移动端颜色 - 浅色主题
 $mobile-light: (
-  bg-primary: #E6F7F0,      // 主背景(薄荷绿)
-  bg-secondary: #FFFFFF,    // 次级背景(白色)
-  bg-tertiary: #F5F5F5,     // 第三级背景
-  bg-elevated: #FFFFFF,     // 卡片背景
-  bg-hover: #E0F0EB,        // 悬停背景
-  bg-active: #D0EBE0,       // 激活背景
+  bg-primary: var(--hula-brand-primary),      // 主背景(薄荷绿)
+  bg-secondary: var(--hula-brand-primary),    // 次级背景(白色)
+  bg-tertiary: var(--hula-brand-primary),     // 第三级背景
+  bg-elevated: var(--hula-brand-primary),     // 卡片背景
+  bg-hover: var(--hula-brand-primary),        // 悬停背景
+  bg-active: var(--hula-brand-primary),       // 激活背景
 
-  text-primary: #333333,    // 主要文字
-  text-secondary: #666666,  // 次要文字
-  text-tertiary: #999999,   // 辅助文字
-  text-disabled: #CCCCCC,   // 禁用文字
-  text-hint: #BBBBBB,       // 提示文字
+  text-primary: var(--hula-brand-primary),    // 主要文字
+  text-secondary: var(--hula-brand-primary),  // 次要文字
+  text-tertiary: var(--hula-brand-primary),   // 辅助文字
+  text-disabled: var(--hula-brand-primary),   // 禁用文字
+  text-hint: var(--hula-brand-primary),       // 提示文字
 
-  accent-primary: #00B894,  // 主强调色(绿色)
-  accent-hover: #00A883,    // 悬停状态
-  accent-active: #00967B,   // 激活状态
-  accent-subtle: #A8D5C1,   // 柔和强调
+  accent-primary: var(--hula-brand-primary),  // 主强调色(绿色)
+  accent-hover: var(--hula-brand-primary),    // 悬停状态
+  accent-active: var(--hula-brand-primary),   // 激活状态
+  accent-subtle: var(--hula-brand-primary),   // 柔和强调
 
-  success: #00B894,         // 成功
-  warning: #FFB84D,         // 警告
-  error: #FF6B6B,           // 错误
-  info: #4A90E2,            // 信息
+  success: var(--hula-brand-primary),         // 成功
+  warning: var(--hula-brand-primary),         // 警告
+  error: var(--hula-brand-primary),           // 错误
+  info: var(--hula-brand-primary),            // 信息
 
-  bubble-sent: #00B894,     // 发送气泡
-  bubble-sent-text: #FFFFFF,// 发送文字
-  bubble-received: #FFFFFF, // 接收气泡
-  bubble-received-text: #333333, // 接收文字
+  bubble-sent: var(--hula-brand-primary),     // 发送气泡
+  bubble-sent-text: var(--hula-brand-primary),// 发送文字
+  bubble-received: var(--hula-brand-primary), // 接收气泡
+  bubble-received-text: var(--hula-brand-primary), // 接收文字
 
-  border-color: #E0E0E0,    // 边框颜色
-  divider-color: #EEEEEE,   // 分割线颜色
+  border-color: var(--hula-brand-primary),    // 边框颜色
+  divider-color: var(--hula-brand-primary),   // 分割线颜色
 
   scrollbar-track: rgba(0, 0, 0, 0.05),
-  scrollbar-thumb: #00B894,
-  scrollbar-thumb-hover: #00A883,
+  scrollbar-thumb: var(--hula-brand-primary),
+  scrollbar-thumb-hover: var(--hula-brand-primary),
 );
 
 // 浅色主题(备用)
 $light: (
-  bg-primary: #F5F5F5,
-  bg-secondary: #FFFFFF,
-  bg-tertiary: #EEEEEE,
-  bg-elevated: #FFFFFF,
+  bg-primary: var(--hula-brand-primary),
+  bg-secondary: var(--hula-brand-primary),
+  bg-tertiary: var(--hula-brand-primary),
+  bg-elevated: var(--hula-brand-primary),
 
-  text-primary: #18181C,
-  text-secondary: #5F5F5F,
-  text-tertiary: #999999,
-  text-disabled: #CCCCCC,
+  text-primary: var(--hula-brand-primary),
+  text-secondary: var(--hula-brand-primary),
+  text-tertiary: var(--hula-brand-primary),
+  text-disabled: var(--hula-brand-primary),
 
-  accent-primary: #13987F,
-  accent-hover: #0F7D69,
-  accent-active: #0C6354,
+  accent-primary: var(--hula-brand-primary),
+  accent-hover: var(--hula-brand-primary),
+  accent-active: var(--hula-brand-primary),
 
-  bubble-sent: #13987F,
-  bubble-sent-text: #FFFFFF,
-  bubble-received: #F1F1F1,
-  bubble-received-text: #18181C,
+  bubble-sent: var(--hula-brand-primary),
+  bubble-sent-text: var(--hula-brand-primary),
+  bubble-received: var(--hula-brand-primary),
+  bubble-received-text: var(--hula-brand-primary),
 );
 
 @mixin export($theme) {

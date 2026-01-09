@@ -588,7 +588,7 @@ defineExpose({
 }
 
 .toast-critical {
-  border-left-color: #d32f2f;
+  border-left-color: var(--hula-brand-primary);
 }
 
 .toast:hover {

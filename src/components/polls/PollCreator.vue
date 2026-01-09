@@ -31,7 +31,7 @@
                 :maxlength="100">
                 <template #suffix>
                   <n-button v-if="answers.length > 2" text size="small" @click="removeAnswer(index)">
-                    <svg class="size-14px color-#d5304f">
+                    <svg class="size-14px color-var(--hula-brand-primary)">
                       <use href="#close"></use>
                     </svg>
                   </n-button>

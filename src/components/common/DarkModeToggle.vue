@@ -136,7 +136,7 @@ const applyTheme = (dark: boolean) => {
   // 设置 meta theme-color
   const metaThemeColor = document.querySelector('meta[name="theme-color"]')
   if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', dark ? '#1a1a1a' : '#ffffff')
+    metaThemeColor.setAttribute('content', dark ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)')
   }
 
   // 触发自定义事件
@@ -315,11 +315,11 @@ onUnmounted(() => {
   }
 
   &--toggle {
-    background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
+    background: linear-gradient(145deg, var(--hula-brand-primary), var(--hula-brand-primary));
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 0.9);
 
     &--dark {
-      background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+      background: linear-gradient(145deg, var(--hula-brand-primary), var(--hula-brand-primary));
       box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(255, 255, 255, 0.1);
     }
   }

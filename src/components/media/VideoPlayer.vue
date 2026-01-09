@@ -496,7 +496,7 @@ watch(
   top: 0;
   left: 0;
   height: 100%;
-  background: #18a058;
+  background: var(--hula-brand-primary);
   border-radius: 3px;
 }
 

@@ -485,13 +485,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--hula-gray-100, #f5f5f5);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
 }
 
 .thread-detail__header {
   padding: 16px;
   background: var(--hula-white, #fff);
-  border-bottom: 1px solid var(--hula-gray-200, #e0e0e0);
+  border-bottom: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
 
 .header-content {
@@ -578,8 +578,8 @@ onMounted(() => {
   align-self: flex-start;
   margin-top: 8px;
   padding: 4px 8px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
   font-size: 11px;
   font-weight: 500;
   border-radius: 4px;
@@ -605,7 +605,7 @@ onMounted(() => {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--hula-gray-200, #e0e0e0);
+  background: var(--hula-gray-200, var(--hula-brand-primary));
 }
 
 .thread-divider__text {
@@ -623,7 +623,7 @@ onMounted(() => {
 .thread-detail__input {
   padding: 16px;
   background: #fff;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--hula-brand-primary);
 }
 
 .input-actions {
@@ -640,8 +640,8 @@ onMounted(() => {
 
 .hint kbd {
   padding: 2px 6px;
-  background: var(--hula-gray-100, #f5f5f5);
-  border: 1px solid var(--hula-gray-200, #e0e0e0);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
+  border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
   border-radius: 4px;
   font-family: monospace;
   font-size: 11px;
@@ -654,12 +654,12 @@ onMounted(() => {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .thread-detail {
-    background: var(--hula-gray-900, #1a1a1a);
+    background: var(--hula-gray-900, var(--hula-brand-primary));
   }
 
   .thread-detail__header,
   .thread-detail__input {
-    background: var(--hula-gray-800, #2a2a2a);
+    background: var(--hula-gray-800, var(--hula-brand-primary));
     border-color: #444;
   }
 
@@ -678,7 +678,7 @@ onMounted(() => {
   }
 
   .message__badge {
-    background: #1565c0;
+    background: var(--hula-brand-primary);
     color: #fff;
   }
 

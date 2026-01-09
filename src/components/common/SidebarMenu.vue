@@ -327,7 +327,7 @@ const toggleSubmenu = (key: string) => {
     height: 18px;
     padding: 0 6px;
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
     font-size: 10px;
     font-weight: 500;
     line-height: 18px;

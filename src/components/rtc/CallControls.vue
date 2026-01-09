@@ -514,7 +514,7 @@ watch(
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #52c41a;
+  background: var(--hula-brand-primary);
   animation: pulse 2s infinite;
 }
 
@@ -531,15 +531,15 @@ watch(
 }
 
 .status-indicator.connecting .pulse-dot {
-  background: #faad14;
+  background: var(--hula-brand-primary);
 }
 
 .status-indicator.ringing .pulse-dot {
-  background: #1890ff;
+  background: var(--hula-brand-primary);
 }
 
 .status-indicator.ended .pulse-dot {
-  background: #ff4d4f;
+  background: var(--hula-brand-primary);
   animation: none;
 }
 
@@ -636,12 +636,12 @@ watch(
 }
 
 .quality-bar.active {
-  background: #52c41a;
+  background: var(--hula-brand-primary);
 }
 
 .quality-bar.active:nth-child(4),
 .quality-bar.active:nth-child(5) {
-  background: #faad14;
+  background: var(--hula-brand-primary);
 }
 
 .quality-text {
@@ -680,7 +680,7 @@ watch(
 }
 
 .volume-bar.active {
-  background: #52c41a;
+  background: var(--hula-brand-primary);
 }
 
 /* 响应式设计 */

@@ -6,7 +6,7 @@
       height: 22px;
     }
     &:hover svg {
-      color: #13987f;
+      color: var(--hula-brand-primary);
       animation: twinkle 0.3s ease-in-out;
     }
   }

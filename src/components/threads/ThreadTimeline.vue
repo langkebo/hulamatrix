@@ -342,7 +342,7 @@ watch(
   flex-direction: column;
   gap: 12px;
   padding: 12px;
-  background: #f9f9f9;
+  background: var(--hula-brand-primary);
   border-radius: 8px;
 }
 
@@ -374,7 +374,7 @@ watch(
 
 .participant-avatar {
   margin-left: -8px;
-  border: 2px solid #f9f9f9;
+  border: 2px solid var(--hula-brand-primary);
   cursor: pointer;
 }
 
@@ -463,7 +463,7 @@ watch(
   display: flex;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--hula-brand-primary);
 }
 
 /* Inline mode */
@@ -475,7 +475,7 @@ watch(
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .thread-timeline {
-    background: #2a2a2a;
+    background: var(--hula-brand-primary);
   }
 
   .message__sender {
@@ -496,7 +496,7 @@ watch(
   }
 
   .participant-avatar {
-    border-color: #2a2a2a;
+    border-color: var(--hula-brand-primary);
   }
 
   .more-avatars {

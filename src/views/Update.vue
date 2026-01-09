@@ -9,8 +9,8 @@
         data-tauri-drag-region
         size="12"
         :border-radius="0"
-        :color="changeColor('#13987f', { alpha: 0.6 })"
-        :rail-color="changeColor('#13987f', { alpha: 0.2 })"
+        :color="changeColor('var(--hula-brand-primary)', { alpha: 0.6 })"
+        :rail-color="changeColor('var(--hula-brand-primary)', { alpha: 0.2 })"
         :percentage="percentage"
         :show-indicator="false" />
 
@@ -24,7 +24,7 @@
           data-tauri-drag-region
           v-for="(it, i) in list"
           :key="i"
-          class="whitespace-nowrap align-middle text-(12px ellipsis) max-w-full box-border color-#909090"
+          class="whitespace-nowrap align-middle text-(12px ellipsis) max-w-full box-border color-var(--hula-brand-primary)"
           :title="it">
           {{ it }}
         </NCarouselItem>

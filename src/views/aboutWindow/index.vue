@@ -7,8 +7,7 @@
         <div id="computer" class="computer" v-once>
           <img class="w-224px h-158px relative" src="../../assets/img/win.png" alt="" />
           <div
-            class="screen-overlay"
-            class="w-170px h-113px absolute top-9% left-51% transform -translate-x-51% -translate-y-9%"></div>
+            class="screen-overlay w-170px h-113px absolute top-9% left-51% transform -translate-x-51% -translate-y-9%"></div>
           <picture class="drop-shadow-md absolute top-30% left-1/2 transform -translate-x-1/2 -translate-y-30%">
             <source
               srcset="/hula.png 1x, /hula.png 2x"
@@ -20,13 +19,13 @@
       </div>
 
       <n-flex vertical align="center" :size="20" class="cursor-default" data-tauri-drag-region>
-        <span class="text-(15px #707070)">
+        <span class="text-(15px var(--hula-brand-primary))">
           {{ t('home.about.version', { version: _pkg.version, arch: osArch || '' }) }}
         </span>
-        <span class="text-(15px #707070)">
+        <span class="text-(15px var(--hula-brand-primary))">
           {{ t('home.about.device', { type: osType || '', version: osVersion || '' }) }}
         </span>
-        <n-flex vertical class="text-(12px #909090)" :size="8" align="center">
+        <n-flex vertical class="text-(12px var(--hula-brand-primary))" :size="8" align="center">
           <span>
             {{ t('home.about.copyright', { start: currentYear - 1, end: currentYear }) }}
           </span>
@@ -114,14 +113,14 @@ onMounted(async () => {
 <style scoped lang="scss">
 @use '@/styles/scss/global/login-bg';
 :deep(.hover-box) {
-  @apply w-28px h24px flex-center hover:bg-#e7e7e7;
+  @apply w-28px h24px flex-center hover:bg-var(--hula-brand-primary);
   svg {
-    color: #404040;
+    color: var(--hula-brand-primary);
   }
 }
 :deep(.action-close) {
   svg {
-    color: #404040;
+    color: var(--hula-brand-primary);
   }
 }
 

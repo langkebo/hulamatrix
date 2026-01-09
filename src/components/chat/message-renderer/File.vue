@@ -14,7 +14,7 @@
             padding: '0 4px',
             borderRadius: '6px',
             color: '#000',
-            background: '#13987f'
+            background: 'var(--hula-brand-primary)'
           }" />
         <template v-else>
           {{ truncateFileName(body?.fileName || fallbackFileName) }}
@@ -54,7 +54,7 @@
                 cy="12" />
               <circle
                 class="progress-ring-circle progress-ring-fill"
-                stroke="#13987f"
+                stroke="var(--hula-brand-primary)"
                 stroke-width="2"
                 fill="transparent"
                 r="10"
@@ -497,7 +497,7 @@ onMounted(async () => {
 
 .file-size {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -507,12 +507,12 @@ onMounted(async () => {
   font-size: 10px;
   padding: 2px 4px;
   border-radius: 4px;
-  @apply light:bg-#60606020 dark:bg-#444;
-  color: #909090;
+  @apply light:bg-var(--hula-brand-primary)20 dark:bg-#444;
+  color: var(--hula-brand-primary);
 
   &.downloaded {
     background: rgba(19, 152, 127, 0.3);
-    color: #13987f;
+    color: var(--hula-brand-primary);
   }
 }
 

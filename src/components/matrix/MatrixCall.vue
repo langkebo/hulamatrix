@@ -796,7 +796,7 @@ watch(currentCall, (newCall) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a1a1a;
+  background: var(--hula-brand-primary);
 }
 
 .remote-video {
@@ -883,17 +883,17 @@ watch(currentCall, (newCall) => {
 }
 
 .control-buttons .n-button--error-type {
-  background: #ff4757;
-  border-color: #ff4757;
+  background: var(--hula-brand-primary);
+  border-color: var(--hula-brand-primary);
 }
 
 .control-buttons .n-button--error-type:hover {
-  background: #ff3838;
+  background: var(--hula-brand-primary);
 }
 
 .control-buttons .n-button--primary-type {
-  background: #3498db;
-  border-color: #3498db;
+  background: var(--hula-brand-primary);
+  border-color: var(--hula-brand-primary);
 }
 
 .incoming-call-content {
@@ -934,15 +934,15 @@ watch(currentCall, (newCall) => {
 
 /* Call state styles */
 .call-setup .remote-media {
-  background: #2c3e50;
+  background: var(--hula-brand-primary);
 }
 
 .call-connected .remote-media {
-  background: #1a1a1a;
+  background: var(--hula-brand-primary);
 }
 
 .call-failed .remote-media {
-  background: #c0392b;
+  background: var(--hula-brand-primary);
 }
 
 @media (max-width: 768px) {

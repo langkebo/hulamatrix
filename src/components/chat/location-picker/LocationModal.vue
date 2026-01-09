@@ -6,7 +6,7 @@
         <div
           v-if="isMac()"
           @click="modalVisible = false"
-          class="mac-close size-13px shadow-inner bg-#ed6a5eff rounded-50% mt-6px select-none absolute left-6px">
+          class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
           <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
@@ -87,7 +87,7 @@
         </div>
 
         <!-- 位置信息显示 -->
-        <div v-if="selectedLocation" class="rounded-6px bg-#fefefe dark:bg-#303030 p-12px">
+        <div v-if="selectedLocation" class="rounded-6px bg-var(--hula-brand-primary) dark:bg-var(--hula-brand-primary) p-12px">
           <n-flex vertical :size="8">
             <span class="text-14px font-medium">{{ t('message.location.modal.info.current') }}</span>
             <div class="text-12px text-gray-500">

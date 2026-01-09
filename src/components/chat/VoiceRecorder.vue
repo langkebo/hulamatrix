@@ -7,7 +7,7 @@ import { logger } from '@/utils/logger'
       <!-- 录音状态文字 -->
       <div class="voice-status">
         <div v-if="!isRecording && !audioBlob && !isProcessing">
-          <span class="text-[--hula-gray-500,#909090] flex-y-center gap-6px select-none">
+          <span class="text-[--hula-gray-500,var(--hula-brand-primary)] flex-y-center gap-6px select-none">
             {{ t('message.voice_recorder.tap_prefix') }}
             <svg class="size-14px text-brand"><use href="#voice"></use></svg>
             {{ t('message.voice_recorder.tap_suffix') }}
@@ -368,19 +368,19 @@ onUnmounted(() => {
   }
 
   .record-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), #13987f);
+    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-brand-primary));
   }
 
   .stop-btn {
-    @include base-control-button(#e74c3c96, #e74c3c);
+    @include base-control-button(var(--hula-brand-primary)96, var(--hula-brand-primary));
   }
 
   .refresh-btn {
-    @include base-control-button(#f39c1280, #f39c12);
+    @include base-control-button(var(--hula-brand-primary)80, var(--hula-brand-primary));
   }
 
   .send-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), #13987f);
+    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-brand-primary));
 
     .loading-spinner {
       @apply size-16px rounded-full;
@@ -392,7 +392,7 @@ onUnmounted(() => {
 
   .cancel-btn,
   .cancel-record-btn {
-    @include base-control-button(#95a5a640, #95a5a690);
+    @include base-control-button(var(--hula-brand-primary)40, var(--hula-brand-primary)90);
   }
 }
 

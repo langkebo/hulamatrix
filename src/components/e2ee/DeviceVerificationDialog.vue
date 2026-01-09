@@ -24,7 +24,7 @@
             <n-card
               hoverable
               @click="verifyMethod = 'emoji'"
-              :style="{ borderColor: verifyMethod === 'emoji' ? '#18a058' : undefined }">
+              :style="{ borderColor: verifyMethod === 'emoji' ? 'var(--hula-brand-primary)' : undefined }">
               <template #header>
                 <n-space align="center">
                   <n-icon size="24">
@@ -41,7 +41,7 @@
             <n-card
               hoverable
               @click="verifyMethod = 'key'"
-              :style="{ borderColor: verifyMethod === 'key' ? '#18a058' : undefined }">
+              :style="{ borderColor: verifyMethod === 'key' ? 'var(--hula-brand-primary)' : undefined }">
               <template #header>
                 <n-space align="center">
                   <n-icon size="24">

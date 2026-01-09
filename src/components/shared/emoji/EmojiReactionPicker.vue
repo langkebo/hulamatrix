@@ -105,7 +105,7 @@ defineExpose({
   display: flex;
   gap: var(--space-xs, 4px);
   padding: var(--space-sm, 8px);
-  background: var(--pc-bg-elevated, #ffffff);
+  background: var(--pc-bg-elevated, var(--hula-brand-primary));
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-dark-md, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
@@ -128,7 +128,7 @@ defineExpose({
 }
 
 .reaction-item.active {
-  background: var(--pc-accent-primary, #00bfa5);
+  background: var(--pc-accent-primary, var(--hula-brand-primary));
 }
 
 .reaction-item img {
@@ -147,18 +147,18 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--pc-error, #f44336);
+  background: var(--pc-error, var(--hula-brand-primary));
   color: white;
   font-size: 10px;
   font-weight: var(--font-semibold, 600);
   border-radius: var(--radius-full, 9999px);
-  border: 2px solid var(--pc-bg-elevated, #ffffff);
+  border: 2px solid var(--pc-bg-elevated, var(--hula-brand-primary));
 }
 
 /* 移动端样式 */
 @media (max-width: 768px) {
   .emoji-reaction-picker {
-    background: var(--mobile-bg-secondary, #ffffff);
+    background: var(--mobile-bg-secondary, var(--hula-brand-primary));
     box-shadow: 0 2px 8px rgba(0, 184, 148, 0.1);
   }
 

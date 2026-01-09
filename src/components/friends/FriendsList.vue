@@ -73,7 +73,7 @@
               </n-avatar>
               <n-flex vertical :size="4">
                 <span class="text-14px font-600">{{ request.requester_display_name || request.requester_id }}</span>
-                <span v-if="request.message" class="text-(12px #909090)">{{ request.message }}</span>
+                <span v-if="request.message" class="text-(12px var(--hula-brand-primary))">{{ request.message }}</span>
               </n-flex>
             </n-flex>
             <n-space>
@@ -128,7 +128,7 @@
                   <n-flex align="center" :space="8">
                     <span class="text-14px font-600">{{ friend.display_name || friend.user_id }}</span>
                   </n-flex>
-                  <span class="text-(12px #909090)">{{ getPresenceText(friend.presence) }}</span>
+                  <span class="text-(12px var(--hula-brand-primary))">{{ getPresenceText(friend.presence) }}</span>
                 </n-flex>
 
                 <n-dropdown :options="getFriendActions(friend)" @select="(key) => handleFriendAction(key, friend)">
@@ -159,7 +159,7 @@
                 <n-flex align="center" :space="8">
                   <span class="text-14px font-600">{{ friend.display_name || friend.user_id }}</span>
                 </n-flex>
-                <span class="text-(12px #909090)">{{ getPresenceText(friend.presence) }}</span>
+                <span class="text-(12px var(--hula-brand-primary))">{{ getPresenceText(friend.presence) }}</span>
               </n-flex>
 
               <n-dropdown :options="getFriendActions(friend)" @select="(key) => handleFriendAction(key, friend)">
@@ -566,19 +566,19 @@ defineExpose({
   border: 2px solid var(--bg-setting-item);
 
   &.status-online {
-    background: #4caf50;
+    background: var(--hula-brand-primary);
   }
 
   &.status-offline {
-    background: #909090;
+    background: var(--hula-brand-primary);
   }
 
   &.status-away {
-    background: #ff9d00;
+    background: var(--hula-brand-primary);
   }
 
   &.status-unavailable {
-    background: #ff4d4f;
+    background: var(--hula-brand-primary);
   }
 }
 </style>

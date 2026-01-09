@@ -9,8 +9,8 @@
   flex-direction: column;
   width: var(--sidebar-width, 280px);
   height: 100%;
-  background: var(--sidebar-bg, #ffffff);
-  border-right: 1px solid var(--sidebar-border-color, #e5e5e5);
+  background: var(--sidebar-bg, var(--hula-brand-primary));
+  border-right: 1px solid var(--sidebar-border-color, var(--hula-brand-primary));
   transition: all var(--transition-base);
   overflow: hidden;
 
@@ -80,7 +80,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: var(--hula-brand-primary);
     font-weight: bold;
     font-size: 18px;
   }
@@ -293,7 +293,7 @@
     height: 18px;
     padding: 0 6px;
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
     font-size: 10px;
     font-weight: 500;
     line-height: 18px;

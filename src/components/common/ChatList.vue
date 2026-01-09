@@ -530,7 +530,7 @@ if (isMobile.value) {
   gap: 22px;
   white-space: nowrap;
   border-radius: 16px;
-  background: #4e4e4e;
+  background: var(--hula-brand-primary);
   pointer-events: auto;
 
   > div {
@@ -551,7 +551,7 @@ if (isMobile.value) {
     width: 35px;
     height: 13px;
     path {
-      fill: #4e4e4e;
+      fill: var(--hula-brand-primary);
     }
   }
 }

@@ -397,7 +397,7 @@
 
     <!-- 录制指示器 -->
     <div v-if="isRecording" class="recording-indicator">
-      <n-icon color="#f0a020"><Radio /></n-icon>
+      <n-icon color="var(--hula-brand-primary)"><Radio /></n-icon>
       <span>录制中</span>
     </div>
   </div>
@@ -982,7 +982,7 @@ onUnmounted(() => {
   display: grid;
   gap: 4px;
   padding: 4px;
-  background: #1a1a1a;
+  background: var(--hula-brand-primary);
 
   &.grid-1x1 {
     grid-template-columns: 1fr;
@@ -1012,7 +1012,7 @@ onUnmounted(() => {
 
 .video-participant {
   position: relative;
-  background: #2a2a2a;
+  background: var(--hula-brand-primary);
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -1043,7 +1043,7 @@ onUnmounted(() => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      background: #3a3a3a;
+      background: var(--hula-brand-primary);
     }
   }
 

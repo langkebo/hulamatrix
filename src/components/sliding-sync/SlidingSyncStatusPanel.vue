@@ -53,14 +53,14 @@
               <span class="label">初始化:</span>
               <n-icon
                 :component="isInitialized ? CircleCheck : CircleX"
-                :color="isInitialized ? '#52c41a' : '#ff4d4f'"
+                :color="isInitialized ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
               />
             </div>
             <div class="info-item">
               <span class="label">运行中:</span>
               <n-icon
                 :component="isRunning ? CircleCheck : CircleX"
-                :color="isRunning ? '#52c41a' : '#ff4d4f'"
+                :color="isRunning ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
               />
             </div>
           </div>

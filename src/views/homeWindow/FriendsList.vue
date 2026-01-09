@@ -12,7 +12,7 @@
     <div class="text-(14px [--text-color])">{{ t('home.friends_list.notice.friend') }}</div>
     <n-flex align="center" :size="4">
       <n-badge :value="globalStore.unReadMark.newFriendUnreadCount" :max="15" />
-      <!-- <n-badge v-if="globalStore.unReadMark.newFriendUnreadCount > 0" dot color="#d5304f" /> -->
+      <!-- <n-badge v-if="globalStore.unReadMark.newFriendUnreadCount > 0" dot color="var(--hula-brand-primary)" /> -->
       <svg class="size-16px rotate-270 color-[--text-color]"><use href="#down"></use></svg>
     </n-flex>
   </n-flex>
@@ -23,7 +23,7 @@
         <ContextMenu @contextmenu="showMenu($event)" @select="handleSelect($event.label)" :menu="menuList">
           <n-collapse-item :title="t('home.friends_list.collapse.friend')" name="1">
             <template #header-extra>
-              <span class="text-(10px #707070)">{{ onlineCount }}/{{ friendsStore.friends.length }}</span>
+              <span class="text-(10px var(--hula-brand-primary))">{{ onlineCount }}/{{ friendsStore.friends.length }}</span>
             </template>
             <n-space class="px-8px md:px-12px pb-8px" align="center" :size="8">
               <n-input size="small" v-model:value="searchQuery" placeholder="搜索用户ID" clearable />
@@ -51,7 +51,7 @@
                     v-if="friendsStore.friends.length === 0 && friendsStore.categories.length === 0"
                     description="暂无好友" />
                   <div v-for="group in filteredGroupedFriends" :key="group.cat.id" class="mb-10px">
-                    <div class="text-12px mb-6px" :style="{ color: group.cat.color || '#909090' }">
+                    <div class="text-12px mb-6px" :style="{ color: group.cat.color || 'var(--hula-brand-primary)' }">
                       {{ group.cat.name }}
                     </div>
                     <template v-if="group.items.length > 100">
@@ -87,8 +87,8 @@
                                   <n-badge
                                     :color="
                                       isOnline((slotProps.item as FriendVirtualListItem).user_id)
-                                        ? '#1ab292'
-                                        : '#909090'
+                                        ? 'var(--hula-brand-primary)'
+                                        : 'var(--hula-brand-primary)'
                                     "
                                     dot />
                                   {{
@@ -122,7 +122,7 @@
                             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                           <n-flex vertical justify="space-between" class="h-fit flex-1 truncate">
                             <span class="text-13px leading-tight flex-1 truncate">
-                              <n-badge :color="isOnline(item.user_id!) ? '#1ab292' : '#909090'" dot />
+                              <n-badge :color="isOnline(item.user_id!) ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
                               {{ item.display_name || item.name || item.user_id }}
                             </span>
                             <span class="text-10px text-gray-500 truncate">
@@ -398,7 +398,7 @@ onUnmounted(() => {
 .item-box {
   color: var(--text-color);
   .text {
-    color: #808080;
+    color: var(--hula-brand-primary);
   }
   &:not(.active):hover {
     background: var(--bg-msg-hover);

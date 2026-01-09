@@ -6,7 +6,7 @@
       <div class="text-(14px [--chat-text-color]) flex-start-center w-95% h-40px">{{ title }}</div>
       <div class="w-95%">
         <n-input
-          class="max-h-480px border-(1px solid #90909080) rounded-6px bg-[--center-bg-color]"
+          class="max-h-480px border-(1px solid var(--hula-brand-primary)80) rounded-6px bg-[--center-bg-color]"
           v-model:value="announContent"
           type="textarea"
           :placeholder="t('announcement.form.placeholder')"
@@ -82,20 +82,20 @@
                       round
                       :size="28"
                       :src="avatarSrc(announcement.uid)"
-                      :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+                      :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                     <n-flex vertical :size="4">
                       <div class="text-(12px [--chat-text-color])">
                         {{ groupStore.getUserInfo(announcement.uid)?.name }}
                       </div>
-                      <div class="text-(12px [#909090])">
+                      <div class="text-(12px [var(--hula-brand-primary)])">
                         {{ formatTimestamp(announcement?.createTime != null ? Number(announcement.createTime) : 0) }}
                       </div>
                     </n-flex>
                   </n-flex>
                   <div
                     v-if="announcement?.top"
-                    class="p-[3px_4px] bg-[#237265] c-#fff rounded-3px text-[10px] flex-center">
+                    class="p-[3px_4px] bg-[var(--hula-brand-primary)] c-#fff rounded-3px text-[10px] flex-center">
                     <span>{{ t('announcement.form.pinned') }}</span>
                   </div>
                 </n-flex>
@@ -179,7 +179,7 @@
         <div v-if="announList.length > 0" class="w-full h-40px flex-center mt-10px">
           <!-- <n-button v-if="!isLast" class="bg-[--button-bg]" @click="handleLoadMore">加载更多</n-button> -->
           <img v-if="isLoading" class="size-16px" src="@/assets/img/loading.svg" alt="" />
-          <span v-if="isLast && !isLoading" class="text-[12px] color-[#909090]">
+          <span v-if="isLast && !isLoading" class="text-[12px] color-[var(--hula-brand-primary)]">
             {{ t('announcement.list.noMore') }}
           </span>
         </div>
@@ -515,7 +515,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: flex-end;
   margin-top: 4px;
-  color: #13987f;
+  color: var(--hula-brand-primary);
   cursor: pointer;
   font-size: 12px;
   svg {
@@ -523,7 +523,7 @@ onMounted(async () => {
   }
 }
 .announcement-link {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   cursor: pointer;
   word-break: break-all;
   line-height: 2.1rem;

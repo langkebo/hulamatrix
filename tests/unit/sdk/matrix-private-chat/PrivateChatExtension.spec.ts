@@ -3,11 +3,17 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { PrivateChatExtension } from '../PrivateChatExtension.js'
-import type { PrivateChatSession, PrivateChatMessage, MatrixClientLike } from '../types.js'
+import { PrivateChatExtension } from '@/sdk/matrix-private-chat/PrivateChatExtension.js'
+import type { PrivateChatSession, PrivateChatMessage, MatrixClientLike } from '@/sdk/matrix-private-chat/types.js'
 
 // Mock fetch
 global.fetch = vi.fn()
+
+// Helper function to generate valid UUID-like session IDs
+function generateSessionId(suffix: string): string {
+  const hash = suffix.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return `00000000-0000-4000-8000-${hash.toString(16).padStart(12, '0')}`
+}
 
 describe('PrivateChatExtension', () => {
   let mockClient: MatrixClientLike
@@ -35,16 +41,18 @@ describe('PrivateChatExtension', () => {
 
   describe('会话管理', () => {
     it('应该成功获取会话列表', async () => {
+      const sessionId1 = generateSessionId('session-1')
+      const sessionId2 = generateSessionId('session-2')
       const mockSessions: PrivateChatSession[] = [
         {
-          session_id: 'session-1',
+          session_id: sessionId1,
           session_name: 'Chat 1',
           creator_id: '@test:server.com',
           participants: ['@user1:server.com'],
           created_at: '2024-01-01T00:00:00Z'
         },
         {
-          session_id: 'session-2',
+          session_id: sessionId2,
           creator_id: '@test:server.com',
           participants: ['@user2:server.com'],
           created_at: '2024-01-02T00:00:00Z'
@@ -64,12 +72,13 @@ describe('PrivateChatExtension', () => {
 
       expect(response.status).toBe('ok')
       expect(response.sessions).toHaveLength(2)
-      expect(response.sessions?.[0].session_id).toBe('session-1')
+      expect(response.sessions?.[0].session_id).toBe(sessionId1)
     })
 
     it('应该成功创建会话', async () => {
+      const newSessionId = generateSessionId('new-session')
       const mockSession: PrivateChatSession = {
-        session_id: 'new-session',
+        session_id: newSessionId,
         session_name: 'New Chat',
         creator_id: '@test:server.com',
         participants: ['@alice:server.com'],
@@ -80,13 +89,13 @@ describe('PrivateChatExtension', () => {
         ok: true,
         json: async () => ({
           status: 'ok',
-          session_id: 'new-session',
+          session_id: newSessionId,
           session: mockSession
         }),
         text: async () =>
           JSON.stringify({
             status: 'ok',
-            session_id: 'new-session',
+            session_id: newSessionId,
             session: mockSession
           })
       } as Response)
@@ -97,26 +106,28 @@ describe('PrivateChatExtension', () => {
       })
 
       expect(response.status).toBe('ok')
-      expect(response.session_id).toBe('new-session')
+      expect(response.session_id).toBe(newSessionId)
       expect(response.session?.session_name).toBe('New Chat')
     })
 
     it('应该成功删除会话', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ status: 'ok' }),
         text: async () => JSON.stringify({ status: 'ok' })
       } as Response)
 
-      const response = await extension.deleteSession('session-1')
+      const response = await extension.deleteSession(sessionId1)
 
       expect(response.status).toBe('ok')
     })
 
     it('应该正确检查会话存在', async () => {
       // 先添加会话到缓存
+      const cachedSessionId = generateSessionId('cached-session')
       const mockSession: PrivateChatSession = {
-        session_id: 'cached-session',
+        session_id: cachedSessionId,
         creator_id: '@test:server.com',
         participants: ['@user1:server.com'],
         created_at: '2024-01-01T00:00:00Z'
@@ -133,13 +144,14 @@ describe('PrivateChatExtension', () => {
 
       await extension.listSessions()
 
-      expect(extension.hasSession('cached-session')).toBe(true)
+      expect(extension.hasSession(cachedSessionId)).toBe(true)
       expect(extension.hasSession('non-existent')).toBe(false)
     })
 
     it('应该从缓存获取会话', async () => {
+      const cachedSessionId = generateSessionId('cached-session')
       const mockSession: PrivateChatSession = {
-        session_id: 'cached-session',
+        session_id: cachedSessionId,
         session_name: 'Cached Chat',
         creator_id: '@test:server.com',
         participants: ['@user1:server.com'],
@@ -157,7 +169,7 @@ describe('PrivateChatExtension', () => {
 
       await extension.listSessions()
 
-      const session = extension.getSession('cached-session')
+      const session = extension.getSession(cachedSessionId)
       expect(session).not.toBeNull()
       expect(session?.session_name).toBe('Cached Chat')
     })
@@ -173,6 +185,7 @@ describe('PrivateChatExtension', () => {
 
   describe('消息管理', () => {
     it('应该成功发送消息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -183,7 +196,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       const response = await extension.sendMessage({
-        session_id: 'session-1',
+        session_id: sessionId1,
         content: 'Hello',
         type: 'text'
       })
@@ -193,6 +206,7 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该成功发送文本消息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -202,16 +216,17 @@ describe('PrivateChatExtension', () => {
         text: async () => JSON.stringify({ status: 'ok', message_id: 'msg-2' })
       } as Response)
 
-      const messageId = await extension.sendText('session-1', 'Hello World')
+      const messageId = await extension.sendText(sessionId1, 'Hello World')
 
       expect(messageId).toBe('msg-2')
     })
 
     it('应该成功获取消息列表', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockMessages: PrivateChatMessage[] = [
         {
           message_id: 'msg-1',
-          session_id: 'session-1',
+          session_id: sessionId1,
           sender_id: '@user1:server.com',
           content: 'Hello',
           type: 'text',
@@ -219,7 +234,7 @@ describe('PrivateChatExtension', () => {
         },
         {
           message_id: 'msg-2',
-          session_id: 'session-1',
+          session_id: sessionId1,
           sender_id: '@user2:server.com',
           content: 'World',
           type: 'text',
@@ -237,7 +252,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       const response = await extension.getMessages({
-        session_id: 'session-1',
+        session_id: sessionId1,
         limit: 50
       })
 
@@ -247,6 +262,7 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该支持分页获取消息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -257,7 +273,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       await extension.getMessages({
-        session_id: 'session-1',
+        session_id: sessionId1,
         limit: 20,
         before: 'msg-100'
       })
@@ -276,9 +292,10 @@ describe('PrivateChatExtension', () => {
     })
 
     it('发送消息时应该验证内容', async () => {
+      const sessionId1 = generateSessionId('session-1')
       await expect(
         extension.sendMessage({
-          session_id: 'session-1',
+          session_id: sessionId1,
           content: ''
         })
       ).rejects.toThrow()
@@ -287,6 +304,7 @@ describe('PrivateChatExtension', () => {
 
   describe('统计信息', () => {
     it('应该成功获取统计信息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -309,7 +327,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       const response = await extension.getStats({
-        session_id: 'session-1'
+        session_id: sessionId1
       })
 
       expect(response.status).toBe('ok')
@@ -328,9 +346,10 @@ describe('PrivateChatExtension', () => {
 
   describe('缓存机制', () => {
     it('应该缓存会话列表', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockSessions: PrivateChatSession[] = [
         {
-          session_id: 'session-1',
+          session_id: sessionId1,
           creator_id: '@test:server.com',
           participants: ['@user1:server.com'],
           created_at: '2024-01-01T00:00:00Z'
@@ -357,9 +376,10 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该支持清除缓存', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockSessions: PrivateChatSession[] = [
         {
-          session_id: 'session-1',
+          session_id: sessionId1,
           creator_id: '@test:server.com',
           participants: ['@user1:server.com'],
           created_at: '2024-01-01T00:00:00Z'
@@ -391,10 +411,11 @@ describe('PrivateChatExtension', () => {
 
   describe('轮询机制', () => {
     it('应该自动轮询新消息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockMessages: PrivateChatMessage[] = [
         {
           message_id: 'msg-1',
-          session_id: 'session-1',
+          session_id: sessionId1,
           sender_id: '@other:server.com', // 其他用户发送
           content: 'New message',
           type: 'text',
@@ -412,7 +433,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       const handler = vi.fn()
-      extension.subscribeToMessages('session-1', handler)
+      extension.subscribeToMessages(sessionId1, handler)
 
       // 等待轮询触发
       await new Promise((resolve) => setTimeout(resolve, 3100))
@@ -421,10 +442,11 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该过滤自己的消息', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockMessages: PrivateChatMessage[] = [
         {
           message_id: 'msg-1',
-          session_id: 'session-1',
+          session_id: sessionId1,
           sender_id: '@test:server.com', // 当前用户发送
           content: 'My message',
           type: 'text',
@@ -442,7 +464,7 @@ describe('PrivateChatExtension', () => {
       } as Response)
 
       const handler = vi.fn()
-      extension.subscribeToMessages('session-1', handler)
+      extension.subscribeToMessages(sessionId1, handler)
 
       await new Promise((resolve) => setTimeout(resolve, 3100))
 
@@ -451,21 +473,23 @@ describe('PrivateChatExtension', () => {
     })
 
     it('取消订阅应该停止轮询', () => {
+      const sessionId1 = generateSessionId('session-1')
       const handler = vi.fn()
-      const unsubscribe = extension.subscribeToMessages('session-1', handler)
+      const unsubscribe = extension.subscribeToMessages(sessionId1, handler)
 
       // 取消订阅
       unsubscribe()
 
       // 验证轮询已停止（通过检查 pollTimers）
-      expect(extension['pollTimers'].has('session-1')).toBe(false)
+      expect(extension['pollTimers'].has(sessionId1)).toBe(false)
     })
   })
 
   describe('事件系统', () => {
     it('应该触发会话创建事件', async () => {
+      const newSessionId = generateSessionId('new-session')
       const mockSession: PrivateChatSession = {
-        session_id: 'new-session',
+        session_id: newSessionId,
         creator_id: '@test:server.com',
         participants: ['@alice:server.com'],
         created_at: '2024-01-01T00:00:00Z'
@@ -475,13 +499,13 @@ describe('PrivateChatExtension', () => {
         ok: true,
         json: async () => ({
           status: 'ok',
-          session_id: 'new-session',
+          session_id: newSessionId,
           session: mockSession
         }),
         text: async () =>
           JSON.stringify({
             status: 'ok',
-            session_id: 'new-session',
+            session_id: newSessionId,
             session: mockSession
           })
       } as Response)
@@ -497,6 +521,7 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该触发会话删除事件', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ status: 'ok' }),
@@ -506,18 +531,19 @@ describe('PrivateChatExtension', () => {
       const listener = vi.fn()
       extension.on('session.deleted', listener)
 
-      await extension.deleteSession('session-1')
+      await extension.deleteSession(sessionId1)
 
       expect(listener).toHaveBeenCalledWith({
-        sessionId: 'session-1',
+        sessionId: sessionId1,
         session: undefined
       })
     })
 
     it('应该触发消息接收事件', async () => {
+      const sessionId1 = generateSessionId('session-1')
       const mockMessage: PrivateChatMessage = {
         message_id: 'msg-1',
-        session_id: 'session-1',
+        session_id: sessionId1,
         sender_id: '@other:server.com',
         content: 'Hello',
         type: 'text',
@@ -536,7 +562,7 @@ describe('PrivateChatExtension', () => {
       const listener = vi.fn()
       extension.on('message.received', listener)
 
-      extension.subscribeToMessages('session-1', () => {})
+      extension.subscribeToMessages(sessionId1, () => {})
 
       await new Promise((resolve) => setTimeout(resolve, 3100))
 
@@ -544,6 +570,7 @@ describe('PrivateChatExtension', () => {
     })
 
     it('应该触发消息发送事件', async () => {
+      const sessionId1 = generateSessionId('session-1')
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -557,12 +584,12 @@ describe('PrivateChatExtension', () => {
       extension.on('message.sent', listener)
 
       await extension.sendMessage({
-        session_id: 'session-1',
+        session_id: sessionId1,
         content: 'Hello'
       })
 
       expect(listener).toHaveBeenCalledWith({
-        sessionId: 'session-1',
+        sessionId: sessionId1,
         messageId: 'msg-1'
       })
     })
@@ -594,9 +621,11 @@ describe('PrivateChatExtension', () => {
 
   describe('资源清理', () => {
     it('应该正确清理资源', () => {
+      const sessionId1 = generateSessionId('session-1')
+      const sessionId2 = generateSessionId('session-2')
       const handler = vi.fn()
-      extension.subscribeToMessages('session-1', handler)
-      extension.subscribeToMessages('session-2', handler)
+      extension.subscribeToMessages(sessionId1, handler)
+      extension.subscribeToMessages(sessionId2, handler)
 
       extension.dispose()
 

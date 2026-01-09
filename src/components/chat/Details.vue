@@ -21,9 +21,9 @@
     <span class="text-(20px [--text-color])">{{ item.name }}</span>
 
     <template v-if="!isBotUser">
-      <span class="text-(14px [--hula-gray-500,#909090])">{{ t('home.chat_details.single.empty_signature') }}</span>
+      <span class="text-(14px [--hula-gray-500,var(--hula-brand-primary)])">{{ t('home.chat_details.single.empty_signature') }}</span>
 
-      <n-flex align="center" justify="space-between" :size="30" class="text-#606060 select-none cursor-default">
+      <n-flex align="center" justify="space-between" :size="30" class="text-var(--hula-brand-primary) select-none cursor-default">
         <span>
           {{
             t('home.chat_details.single.region', {
@@ -41,7 +41,7 @@
           class="cursor-pointer"
           :size="32"
           :border-radius="10"
-          :color="'#13987f'">
+          :color="'var(--hula-brand-primary)'">
           <n-popover trigger="hover">
             <template #trigger>
               <n-icon :size="20">
@@ -87,7 +87,7 @@
             </n-popover>
           </n-flex>
           <n-flex align="center" :size="12">
-            <span class="text-(14px [--hula-gray-500,#909090])">
+            <span class="text-(14px [--hula-gray-500,var(--hula-brand-primary)])">
               {{ t('home.chat_details.group.id', { account: groupDetail.uid || groupDetail.roomId || '' }) }}
             </span>
             <n-tooltip trigger="hover">
@@ -109,7 +109,7 @@
         class="cursor-pointer"
         :size="40"
         :border-radius="10"
-        :color="'#13987f'">
+        :color="'var(--hula-brand-primary)'">
         <n-icon :size="22">
           <svg class="color-#fff"><use href="#message"></use></svg>
         </n-icon>
@@ -165,7 +165,7 @@
             @keydown.enter="handleNicknameUpdate" />
         </div>
         <span v-else class="flex items-center cursor-pointer" @click="startEditNickname">
-          <p class="text-[--hula-gray-500,#909090]">
+          <p class="text-[--hula-gray-500,var(--hula-brand-primary)]">
             {{ displayNickname || t('home.chat_details.group.nickname.empty') }}
           </p>
           <n-icon v-if="!groupDetail.myName" size="16" class="ml-1">
@@ -178,7 +178,7 @@
         <span>{{ t('home.chat_details.group.announcement.label') }}</span>
         <span class="flex items-center cursor-pointer gap-4px" @click="handleOpenAnnouncement">
           <p
-            class="text-[--hula-gray-500,#909090] max-w-[clamp(160px,40vw,320px)] truncate leading-tight"
+            class="text-[--hula-gray-500,var(--hula-brand-primary)] max-w-[clamp(160px,40vw,320px)] truncate leading-tight"
             :title="announcementContent || t('home.chat_details.group.announcement.empty')">
             {{ announcementContent || t('home.chat_details.group.announcement.empty') }}
           </p>

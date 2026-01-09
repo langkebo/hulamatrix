@@ -11,7 +11,7 @@
           </n-avatar>
           <n-flex vertical :size="4">
             <span class="text-14px font-600">{{ currentDevice.displayName }}</span>
-            <span class="text-(12px #909090)">{{ currentDevice.deviceId }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ currentDevice.deviceId }}</span>
           </n-flex>
           <n-tag v-if="currentDevice.verified" type="success" size="small">已验证</n-tag>
           <n-tag v-else type="warning" size="small">未验证</n-tag>
@@ -65,7 +65,7 @@
 
               <n-flex vertical :size="4" class="flex-1">
                 <span class="text-14px font-600">{{ device.displayName }}</span>
-                <span class="text-(12px #909090)">{{ device.deviceId.substring(0, 12) }}...</span>
+                <span class="text-(12px var(--hula-brand-primary))">{{ device.deviceId.substring(0, 12) }}...</span>
               </n-flex>
 
               <n-space>

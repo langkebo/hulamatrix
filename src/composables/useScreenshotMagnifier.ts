@@ -162,7 +162,7 @@ export function useScreenshotMagnifier(options: UseScreenshotMagnifierOptions): 
     )
 
     // 在放大镜中心绘制十字线
-    magnifierCtx.value.strokeStyle = '#13987f'
+    magnifierCtx.value.strokeStyle = 'var(--hula-brand-primary)'
     magnifierCtx.value.lineWidth = 1
     magnifierCtx.value.beginPath()
     magnifierCtx.value.moveTo(magnifierWidth / 2, 0)

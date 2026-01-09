@@ -336,7 +336,7 @@ export const usePrivateChatStore = defineStore(
 
     // 获取加密级别颜色
     const getEncryptionLevelColor = (level: 'standard' | 'high'): string => {
-      return level === 'high' ? '#4ade80' : '#60a5fa'
+      return level === 'high' ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'
     }
 
     return {

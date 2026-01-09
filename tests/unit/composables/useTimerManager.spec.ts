@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { useTimerManager } from '../useTimerManager'
+import { useTimerManager } from '@/composables/useTimerManager'
 
 describe('useTimerManager', () => {
   let timerManager: ReturnType<typeof useTimerManager>

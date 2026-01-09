@@ -14,11 +14,11 @@
       </n-flex>
 
       <!-- 状态 -->
-      <n-flex vertical class="w-full h-100vh bg-#f1f1f1 rounded-6px box-border p-13px" data-tauri-drag-region>
+      <n-flex vertical class="w-full h-100vh bg-var(--hula-brand-primary) rounded-6px box-border p-13px" data-tauri-drag-region>
         <n-scrollbar class="status-scrollbar">
           <n-flex align="center" :size="10">
             <n-flex @click="handleResetState" vertical justify="center" align="center" :size="8" class="status-item">
-              <svg class="size-24px color-#d03553">
+              <svg class="size-24px color-var(--hula-brand-primary)">
                 <use href="#forbid"></use>
               </svg>
               <span class="text-11px" :title="t('auth.onlineStatus.reset_title')">
@@ -119,7 +119,7 @@ onMounted(async () => {
 </script>
 <style scoped lang="scss">
 .main-container {
-  background: linear-gradient(to bottom, v-bind(RGBA) 0%, #f1f1f1 100%);
+  background: linear-gradient(to bottom, v-bind(RGBA) 0%, var(--hula-brand-primary) 100%);
 }
 
 .status-item {
@@ -160,7 +160,7 @@ onMounted(async () => {
 
 :deep(.action-close) {
   svg {
-    color: #404040;
+    color: var(--hula-brand-primary);
   }
 }
 

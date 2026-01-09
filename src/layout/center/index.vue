@@ -92,7 +92,7 @@
           <div class="text-(18px [--text-color]) mb-8px)">加载失败</div>
           <div class="text-(12px [--chat-text-color]) mb-16px)">{{ devBackendMsg }}</div>
           <n-flex :size="12" justify="center">
-            <n-button :color="'#13987f'" @click="handleRetry">重试</n-button>
+            <n-button :color="'var(--hula-brand-primary)'" @click="handleRetry">重试</n-button>
             <n-button secondary @click="handleRefresh">刷新</n-button>
           </n-flex>
         </div>
@@ -112,7 +112,7 @@
           <div
             v-if="isMac()"
             @click="resetCreateGroupState"
-            class="mac-close size-13px shadow-inner bg-#ed6a5eff rounded-50% mt-6px select-none absolute left-6px">
+            class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
             <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
               <use href="#close"></use>
             </svg>
@@ -147,7 +147,7 @@
             :render-target-label="renderLabel" />
 
           <n-flex align="center" justify="center" class="p-16px">
-            <n-button :disabled="selectedValue.length < 2" :color="'#13987f'" @click="handleCreateGroup">
+            <n-button :disabled="selectedValue.length < 2" :color="'var(--hula-brand-primary)'" @click="handleCreateGroup">
               {{ t('home.create_group.action') }}
             </n-button>
           </n-flex>

@@ -11,7 +11,7 @@
       <!-- 注册菜单 -->
       <n-flex class="ma text-center w-260px pointer-events-auto" vertical :size="16">
         <n-flex justify="center" align="center">
-          <span class="text-(24px #70938c) textFont">{{ t('auth.register.title') }}</span>
+          <span class="text-(24px var(--hula-brand-primary)) textFont">{{ t('auth.register.title') }}</span>
         </n-flex>
         <n-flex justify="center" class="mt-6px">
           <n-button text class="text-brand" @click="toggleServerInput()">自定义服务器</n-button>
@@ -129,7 +129,7 @@
             <!-- 协议 -->
             <n-flex align="center" justify="center" :size="6" class="mt-10px">
               <n-checkbox v-model:checked="protocol" />
-              <div class="text-12px color-#909090 cursor-default lh-14px">
+              <div class="text-12px color-var(--hula-brand-primary) cursor-default lh-14px">
                 <span>{{ t('login.term.checkout.text1') }}</span>
                 <span class="text-brand cursor-pointer" @click.stop="openServiceAgreement">
                   {{ t('login.term.checkout.text2') }}
@@ -153,7 +153,7 @@
           {{ loading ? '注册中...' : '注册' }}
         </n-button>
 
-        <n-button text size="small" @click="closeWindow" class="mt-10px color-#909090">返回登录</n-button>
+        <n-button text size="small" @click="closeWindow" class="mt-10px color-var(--hula-brand-primary)">返回登录</n-button>
       </n-flex>
     </n-flex>
   </n-config-provider>
@@ -346,7 +346,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .gradient-button {
-  background: linear-gradient(145deg, #acd7da, #13987f);
+  background: linear-gradient(145deg, var(--hula-brand-primary), var(--hula-brand-primary));
   border: none;
   transition: all 0.3s ease;
 

@@ -29,7 +29,7 @@
         :description="t('friends.requests.no_requests')"
         size="small">
         <template #icon>
-          <svg class="size-48px text-#cccccc">
+          <svg class="size-48px text-var(--hula-brand-primary)">
             <use href="#check-circle"></use>
           </svg>
         </template>
@@ -299,7 +299,7 @@ onMounted(async () => {
 
 .request-message {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -307,7 +307,7 @@ onMounted(async () => {
 
 .request-time {
   font-size: 11px;
-  color: #cccccc;
+  color: var(--hula-brand-primary);
 }
 
 .request-actions {

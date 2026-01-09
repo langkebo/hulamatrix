@@ -24,7 +24,7 @@
       <div
         v-if="isMac()"
         @click="showModal = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -36,7 +36,7 @@
       <div class="pt-8px flex flex-col select-none">
         <div class="flex flex-row">
           <!-- 搜索会话 -->
-          <div class="flex-1 h-64vh bg-#e3e3e360 dark:bg-#222 rounded-8px px-12px mt-6px flex flex-col">
+          <div class="flex-1 h-64vh bg-var(--hula-brand-primary)60 dark:bg-#222 rounded-8px px-12px mt-6px flex flex-col">
             <n-input
               id="search"
               v-model:value="searchText"
@@ -54,11 +54,11 @@
 
             <n-scrollbar class="flex-1">
               <template v-for="session in filteredSessionList" :key="session.roomId">
-                <n-flex align="center" :size="8" class="text-12px text-#303030 dark:text-#fefefe py-8px px-4px">
+                <n-flex align="center" :size="8" class="text-12px text-var(--hula-brand-primary) dark:text-var(--hula-brand-primary) py-8px px-4px">
                   <n-checkbox v-model:checked="session.isCheck" @click.stop />
                   <n-avatar class="rounded-8px" :size="30" :src="AvatarUtils.getAvatarUrl(session.avatar)" />
                   <p>{{ session.remark ? session.remark : session.name }}</p>
-                  <p class="text-(12px #909090)" v-if="session.type === RoomTypeEnum.GROUP">
+                  <p class="text-(12px var(--hula-brand-primary))" v-if="session.type === RoomTypeEnum.GROUP">
                     ({{ groupStore.getGroupDetailByRoomId(session.roomId)?.memberNum }})
                   </p>
                 </n-flex>
@@ -67,7 +67,7 @@
           </div>
           <!-- 已选择会话 -->
           <div class="flex-1 min-w-0 h-64vh px-12px pt-4px flex flex-col">
-            <p class="text-(12px #909090) pb-10px">{{ t('message.multi_choose.send_to_separately') }}</p>
+            <p class="text-(12px var(--hula-brand-primary)) pb-10px">{{ t('message.multi_choose.send_to_separately') }}</p>
             <n-scrollbar class="flex-1">
               <template v-for="session in selectedSessions" :key="session.roomId">
                 <n-flex align="center" class="p-8px">
@@ -113,7 +113,7 @@
       <div
         v-if="isMac()"
         @click="showDeleteConfirm = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -129,7 +129,7 @@
           <n-button class="w-78px" secondary @click="showDeleteConfirm = false">
             {{ t('message.multi_choose.cancel_button') }}
           </n-button>
-          <n-button class="w-78px" :color="'#13987f'" :loading="isDeleting" @click="handleBatchDelete">
+          <n-button class="w-78px" :color="'var(--hula-brand-primary)'" :loading="isDeleting" @click="handleBatchDelete">
             {{ t('message.multi_choose.delete_action') }}
           </n-button>
         </n-flex>

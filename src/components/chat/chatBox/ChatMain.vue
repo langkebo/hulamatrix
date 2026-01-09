@@ -58,7 +58,7 @@
           <div
             v-show="chatStore.shouldShowNoMoreMessage"
             class="flex-center gap-6px h-32px flex-shrink-0 cursor-default select-none">
-            <p class="text-(12px #909090)">{{ t('home.chat_main.no_more') }}</p>
+            <p class="text-(12px var(--hula-brand-primary))">{{ t('home.chat_main.no_more') }}</p>
           </div>
           <n-flex
             v-for="(item, index) in chatStore.chatMessageList"
@@ -68,7 +68,7 @@
             :data-message-id="item.message?.id"
             :data-message-index="index">
             <!-- 信息间隔时间 -->
-            <span class="text-(12px #909090) select-none p-4px" v-if="item.timeBlock" @click.stop>
+            <span class="text-(12px var(--hula-brand-primary)) select-none p-4px" v-if="item.timeBlock" @click.stop>
               {{ timeToStr(item.message?.sendTime) }}
             </span>
             <!-- 消息内容容器 -->
@@ -79,7 +79,7 @@
                 item.message?.type === MsgEnum.RECALL ? 'min-h-22px' : 'min-h-62px',
                 isGroup ? 'p-[14px_10px_14px_20px]' : 'chat-single p-[4px_10px_10px_20px]',
                 { 'active-reply': activeReply === item.message?.id },
-                { 'bg-#90909020': computeMsgHover(item) }
+                { 'bg-var(--hula-brand-primary)20': computeMsgHover(item) }
               ]"
               @click="
                 () => {
@@ -106,7 +106,7 @@
       v-if="shouldShowFloatFooter && currentNewMsgCount && !isMobileRef">
       <div class="float-box" :class="{ max: currentNewMsgCount?.count > 99 }" @click="handleFloatButtonClick">
         <n-flex justify="space-between" align="center">
-          <n-icon :color="currentNewMsgCount?.count > 99 ? '#ce304f' : '#13987f'">
+          <n-icon :color="currentNewMsgCount?.count > 99 ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'">
             <svg>
               <use href="#double-down"></use>
             </svg>
@@ -114,7 +114,7 @@
           <span
             v-if="currentNewMsgCount?.count && currentNewMsgCount.count > 0"
             class="text-12px"
-            :class="{ 'color-#ce304f': currentNewMsgCount?.count > 99 }">
+            :class="{ 'color-var(--hula-brand-primary)': currentNewMsgCount?.count > 99 }">
             {{ t('home.chat_main.new_messages', { count: newMsgCountLabel }) }}
           </span>
         </n-flex>
@@ -131,7 +131,7 @@
       <div
         v-if="isMac()"
         @click="modalShow = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -144,7 +144,7 @@
         <span class="text-14px">{{ tips }}</span>
 
         <n-flex justify="end">
-          <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">
+          <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-brand-primary)'">
             {{ t('home.chat_main.confirm') }}
           </n-button>
           <n-button @click="modalShow = false" class="w-78px" secondary>{{ t('home.chat_main.cancel') }}</n-button>
@@ -158,7 +158,7 @@
       <div
         v-if="isMac()"
         @click="groupNicknameModalVisible = false"
-        class="mac-close z-999 size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none absolute left-6px">
+        class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
         <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
@@ -176,16 +176,16 @@
           v-model:value="groupNicknameValue"
           :placeholder="t('home.chat_main.group_nickname.placeholder')"
           :maxlength="12"
-          class="border-(1px solid #90909080)"
+          class="border-(1px solid var(--hula-brand-primary)80)"
           :disabled="groupNicknameSubmitting"
           clearable
           @keydown.enter.prevent="handleGroupNicknameConfirm" />
-        <p v-if="groupNicknameError" class="text-(12px #d03553)">{{ groupNicknameError }}</p>
+        <p v-if="groupNicknameError" class="text-(12px var(--hula-brand-primary))">{{ groupNicknameError }}</p>
         <n-flex justify="end" :size="12">
           <n-button @click="groupNicknameModalVisible = false" :disabled="groupNicknameSubmitting" secondary>
             {{ t('home.chat_main.cancel') }}
           </n-button>
-          <n-button :color="'#13987f'" :loading="groupNicknameSubmitting" @click="handleGroupNicknameConfirm">
+          <n-button :color="'var(--hula-brand-primary)'" :loading="groupNicknameSubmitting" @click="handleGroupNicknameConfirm">
             {{ t('home.chat_main.confirm') }}
           </n-button>
         </n-flex>
@@ -829,7 +829,7 @@ onUnmounted(() => {
   z-index: 10;
   width: fit-content;
   user-select: none;
-  color: #13987f;
+  color: var(--hula-brand-primary);
   cursor: pointer;
 
   &.positioned-float-footer {

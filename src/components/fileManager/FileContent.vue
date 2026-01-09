@@ -75,7 +75,7 @@
             {{ t('fileManager.search.clear') }}
           </n-button>
 
-          <n-button v-if="selectedUser" @click="clearUserFilter" ghost :color="'#13987f'" size="small">
+          <n-button v-if="selectedUser" @click="clearUserFilter" ghost :color="'var(--hula-brand-primary)'" size="small">
             {{ t('fileManager.search.showAllUsers') }}
           </n-button>
         </template>
@@ -408,7 +408,7 @@ const convertToFileBody = (file: unknown): FileBody => {
 }
 
 .time-group {
-  @apply sticky top-10px z-10 flex items-center justify-between p-12px rounded-6px text-[--text-color] bg-#e3e3e380 dark:bg-#30303080 backdrop-blur-md;
+  @apply sticky top-10px z-10 flex items-center justify-between p-12px rounded-6px text-[--text-color] bg-var(--hula-brand-primary)80 dark:bg-var(--hula-brand-primary)80 backdrop-blur-md;
 }
 
 .file-meta-info {
@@ -417,11 +417,11 @@ const convertToFileBody = (file: unknown): FileBody => {
   align-items: center;
   padding: 0 4px;
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
 }
 
 .file-sender {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   cursor: pointer;
 
   &:hover {

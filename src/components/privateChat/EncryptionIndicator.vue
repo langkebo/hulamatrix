@@ -214,10 +214,10 @@ const statusText = computed(() => {
 // 加密强度颜色
 const strengthColor = computed(() => {
   const score = status.value.strengthScore
-  if (score >= 80) return '#52c41a' // green
-  if (score >= 60) return '#1890ff' // blue
-  if (score >= 40) return '#faad14' // orange
-  return '#f5222d' // red
+  if (score >= 80) return 'var(--hula-brand-primary)' // green
+  if (score >= 60) return 'var(--hula-brand-primary)' // blue
+  if (score >= 40) return 'var(--hula-brand-primary)' // orange
+  return 'var(--hula-brand-primary)' // red
 })
 
 // 截断密钥 ID
@@ -297,28 +297,28 @@ defineExpose({
 
   &.encrypted {
     background-color: rgba(82, 196, 26, 0.1);
-    color: #52c41a;
+    color: var(--hula-brand-primary);
 
     .encryption-icon {
-      color: #52c41a;
+      color: var(--hula-brand-primary);
     }
   }
 
   &.unencrypted {
     background-color: rgba(245, 34, 45, 0.1);
-    color: #f5222d;
+    color: var(--hula-brand-primary);
 
     .encryption-icon {
-      color: #f5222d;
+      color: var(--hula-brand-primary);
     }
   }
 
   &.expiring {
     background-color: rgba(250, 173, 20, 0.1);
-    color: #faad14;
+    color: var(--hula-brand-primary);
 
     .encryption-icon {
-      color: #faad14;
+      color: var(--hula-brand-primary);
     }
   }
 
@@ -373,7 +373,7 @@ defineExpose({
     }
 
     &.warning {
-      color: #f5222d;
+      color: var(--hula-brand-primary);
       font-weight: 500;
     }
   }
@@ -389,17 +389,17 @@ defineExpose({
   }
 
   .encrypted {
-    color: #52c41a;
+    color: var(--hula-brand-primary);
     font-weight: 500;
   }
 
   .unencrypted {
-    color: #f5222d;
+    color: var(--hula-brand-primary);
     font-weight: 700;
   }
 
   .expiring-soon {
-    color: #faad14;
+    color: var(--hula-brand-primary);
     font-weight: 500;
   }
 

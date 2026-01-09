@@ -280,14 +280,14 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-secondary, #f5f5f5);
+  background-color: var(--color-bg-secondary, var(--hula-brand-primary));
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-border, #e0e0e0);
-  border-top-color: var(--color-primary, #1890ff);
+  border: 3px solid var(--color-border, var(--hula-brand-primary));
+  border-top-color: var(--color-primary, var(--hula-brand-primary));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -305,7 +305,7 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-secondary, #f5f5f5);
+  background-color: var(--color-bg-secondary, var(--hula-brand-primary));
   color: var(--color-text-secondary, #666);
 }
 

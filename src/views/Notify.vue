@@ -24,7 +24,7 @@
             <span class="max-w-150px truncate text-(12px [--text-color])">
               <template v-if="group.isAtMe">
                 <span class="text flex-1 leading-tight text-12px truncate">
-                  <span class="text-#d5304f mr-4px">{{ t('message.message_list.mention_tag') }}</span>
+                  <span class="text-var(--hula-brand-primary) mr-4px">{{ t('message.message_list.mention_tag') }}</span>
                   <span>{{ group.latestContent.replace(':', '：') }}</span>
                 </span>
               </template>
@@ -36,7 +36,7 @@
             </span>
 
             <!-- 有多少条消息 -->
-            <div class="text-(10px #fff) rounded-full px-6px py-2px flex-center bg-#d5304f">
+            <div class="text-(10px #fff) rounded-full px-6px py-2px flex-center bg-var(--hula-brand-primary)">
               {{ group.messageCount > 99 ? '99+' : group.messageCount }}
             </div>
           </n-flex>

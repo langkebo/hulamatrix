@@ -183,11 +183,11 @@ interface MemberPowerItem {
 
 // Power level presets
 const POWER_PRESETS: Record<PowerLevelPreset, PowerLevelPresetConfig> = {
-  admin: { name: '管理员', description: '完全控制房间', level: 100, color: '#f56c6c' },
-  moderator: { name: '版主', description: '管理房间成员和内容', level: 50, color: '#e6a23c' },
-  user: { name: '普通用户', description: '基本权限', level: 0, color: '#67c23a' },
-  restricted: { name: '受限用户', description: '受限权限', level: 10, color: '#909399' },
-  custom: { name: '自定义', description: '自定义权限等级', level: -1, color: '#409eff' }
+  admin: { name: '管理员', description: '完全控制房间', level: 100, color: 'var(--hula-brand-primary)' },
+  moderator: { name: '版主', description: '管理房间成员和内容', level: 50, color: 'var(--hula-brand-primary)' },
+  user: { name: '普通用户', description: '基本权限', level: 0, color: 'var(--hula-brand-primary)' },
+  restricted: { name: '受限用户', description: '受限权限', level: 10, color: 'var(--hula-brand-primary)' },
+  custom: { name: '自定义', description: '自定义权限等级', level: -1, color: 'var(--hula-brand-primary)' }
 }
 
 // Common Matrix event permissions
@@ -287,7 +287,7 @@ const eventColumns = computed(() => [
         max: 100,
         value: row.level,
         class: 'n-input',
-        style: 'width: 80px; padding: 4px 8px; border: 1px solid #dcdee2; border-radius: 3px;',
+        style: 'width: 80px; padding: 4px 8px; border: 1px solid var(--hula-brand-primary); border-radius: 3px;',
         onChange: (e: Event) => {
           const target = e.target as HTMLInputElement
           const value = parseInt(target.value, 10) || 0
@@ -345,7 +345,7 @@ const userColumns = computed(() => [
         max: 100,
         value: row.powerLevel,
         class: 'n-input',
-        style: 'width: 80px; padding: 4px 8px; border: 1px solid #dcdee2; border-radius: 3px;',
+        style: 'width: 80px; padding: 4px 8px; border: 1px solid var(--hula-brand-primary); border-radius: 3px;',
         onChange: (e: Event) => {
           const target = e.target as HTMLInputElement
           const value = parseInt(target.value, 10) || 0

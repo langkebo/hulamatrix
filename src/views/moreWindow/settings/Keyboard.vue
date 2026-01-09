@@ -43,7 +43,7 @@
         <n-flex align="center" justify="space-between">
           <n-flex vertical :size="4">
             <span>启用全局快捷键</span>
-            <span class="text-(12px #909090)">关闭后全局快捷键将不可用</span>
+            <span class="text-(12px var(--hula-brand-primary))">关闭后全局快捷键将不可用</span>
           </n-flex>
           <n-switch size="small" v-model:value="globalEnabled" />
         </n-flex>
@@ -92,28 +92,28 @@
       <n-flex class="item" :size="12" vertical>
         <n-flex align="center" justify="space-between">
           <span>下一个房间</span>
-          <span class="text-(12px #909090)">Ctrl + Tab</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Tab</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>上一个房间</span>
-          <span class="text-(12px #909090)">Ctrl + Shift + Tab</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Shift + Tab</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>搜索</span>
-          <span class="text-(12px #909090)">Ctrl + F</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + F</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>撰写消息</span>
-          <span class="text-(12px #909090)">Ctrl + N</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + N</span>
         </n-flex>
       </n-flex>
     </n-flex>
@@ -125,21 +125,21 @@
       <n-flex class="item" :size="12" vertical>
         <n-flex align="center" justify="space-between">
           <span>房间设置</span>
-          <span class="text-(12px #909090)">Ctrl + ,</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + ,</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>归档房间</span>
-          <span class="text-(12px #909090)">Ctrl + Shift + A</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Shift + A</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>最小化房间</span>
-          <span class="text-(12px #909090)">Esc</span>
+          <span class="text-(12px var(--hula-brand-primary))">Esc</span>
         </n-flex>
       </n-flex>
     </n-flex>
@@ -151,28 +151,28 @@
       <n-flex class="item" :size="12" vertical>
         <n-flex align="center" justify="space-between">
           <span>回复消息</span>
-          <span class="text-(12px #909090)">Ctrl + R</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + R</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>编辑消息</span>
-          <span class="text-(12px #909090)">Ctrl + E</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + E</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>转发消息</span>
-          <span class="text-(12px #909090)">Ctrl + Shift + F</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Shift + F</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>表情反应</span>
-          <span class="text-(12px #909090)">Ctrl + Shift + R</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Shift + R</span>
         </n-flex>
       </n-flex>
     </n-flex>
@@ -184,21 +184,21 @@
       <n-flex class="item" :size="12" vertical>
         <n-flex align="center" justify="space-between">
           <span>打开设置</span>
-          <span class="text-(12px #909090)">Ctrl + ,</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + ,</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>新建聊天</span>
-          <span class="text-(12px #909090)">Ctrl + N</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + N</span>
         </n-flex>
 
         <span class="w-full h-1px bg-[--line-color]"></span>
 
         <n-flex align="center" justify="space-between">
           <span>退出应用</span>
-          <span class="text-(12px #909090)">Ctrl + Q</span>
+          <span class="text-(12px var(--hula-brand-primary))">Ctrl + Q</span>
         </n-flex>
       </n-flex>
     </n-flex>
@@ -440,13 +440,13 @@ const saveShortcut = () => {
   }
 
   &.is-recording {
-    border-color: #13987f;
+    border-color: var(--hula-brand-primary);
     background: rgba(19, 152, 127, 0.05);
   }
 
   &:focus {
     outline: none;
-    border-color: #13987f;
+    border-color: var(--hula-brand-primary);
   }
 }
 </style>

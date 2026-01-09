@@ -36,7 +36,7 @@
 
   /* 次要按钮 */
   &--default-type {
-    background: var(--button-bg, #f1f1f1);
+    background: var(--button-bg, var(--hula-brand-primary));
     border-color: var(--border-color);
     color: var(--text-primary);
 
@@ -322,7 +322,7 @@
 html[data-theme='dark'] {
   .n-button {
     &--default-type {
-      background: var(--button-bg, #3f3f3f);
+      background: var(--button-bg, var(--hula-brand-primary));
       color: var(--text-primary);
     }
   }

@@ -18,7 +18,7 @@
       <n-data-table class="mt-12px" :columns="cols" :data="devices" :loading="loading" />
     </n-card>
     <n-card title="未验证设备" size="small" class="mt-12px">
-      <div v-if="unverified.length === 0" class="text-(12px #909090)">暂无未验证设备</div>
+      <div v-if="unverified.length === 0" class="text-(12px var(--hula-brand-primary))">暂无未验证设备</div>
       <n-data-table v-else :columns="unverifiedCols" :data="unverified" />
       <n-alert v-if="lastVerifyError" type="error" class="mt-8px" :show-icon="true">{{ lastVerifyError }}</n-alert>
     </n-card>

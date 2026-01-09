@@ -242,7 +242,7 @@ const createRipple = (event: Event) => {
   // 主要按钮
   &--primary {
     background: var(--primary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
       background: var(--primary-hover);
@@ -258,7 +258,7 @@ const createRipple = (event: Event) => {
   // 次要按钮
   &--secondary {
     background: var(--secondary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
       background: var(--secondary-hover);
@@ -275,7 +275,7 @@ const createRipple = (event: Event) => {
 
     &:hover:not(:disabled) {
       background: var(--primary-color);
-      color: #ffffff;
+      color: var(--hula-brand-primary);
       transform: translateY(-1px);
     }
   }
@@ -294,7 +294,7 @@ const createRipple = (event: Event) => {
   // 危险按钮
   &--danger {
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
       background: var(--danger-hover);
@@ -306,7 +306,7 @@ const createRipple = (event: Event) => {
   // 警告按钮
   &--warning {
     background: var(--warning-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
       background: var(--warning-hover);
@@ -318,7 +318,7 @@ const createRipple = (event: Event) => {
   // 成功按钮
   &--success {
     background: var(--success-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
 
     &:hover:not(:disabled) {
       background: var(--success-hover);

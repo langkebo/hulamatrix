@@ -448,6 +448,11 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
         path: '/e2ee/backup',
         name: 'e2eeBackup',
         component: () => import('@/views/e2ee/BackupRecovery.vue')
+      },
+      {
+        path: '/design-system',
+        name: 'designSystem',
+        component: () => import('@/views/DesignSystemShowcase.vue')
       }
     ]
   },

@@ -59,7 +59,7 @@
                   <template #trigger>
                     <svg
                       @click.stop="unlock"
-                      class="size-16px color-#e3e3e3 mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:opacity-80">
+                      class="size-16px color-var(--hula-brand-primary) mr-6px p-[4px_6px] rounded-8px cursor-pointer transition-all duration-300 ease-in-out hover:opacity-80">
                       <use href="#arrow-right"></use>
                     </svg>
                   </template>
@@ -78,7 +78,7 @@
             <p class="text-(18px [--chat-text-color])">{{ t('message.lock_screen.wrong_password') }}</p>
             <p
               @click="init"
-              class="w-120px bg-[rgba(255,255,255,0.1)] backdrop-blur-xl cursor-pointer p-10px rounded-8px text-(14px #323232 center) font-500">
+              class="w-120px bg-[rgba(255,255,255,0.1)] backdrop-blur-xl cursor-pointer p-10px rounded-8px text-(14px var(--hula-brand-primary) center) font-500">
               {{ t('message.lock_screen.confirm_button') }}
             </p>
           </n-flex>
@@ -248,14 +248,14 @@ onUnmounted(() => {
 @use '@/styles/scss/global/login-bg';
 
 .avatar-border {
-  border: 2px solid #f1f1f1;
+  border: 2px solid var(--hula-brand-primary);
 }
 
 .password-input {
   width: 320px;
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-bottom-color: rgba(19, 152, 127, 1);
-  background-color: #404040;
+  background-color: var(--hula-brand-primary);
   color: #fff;
 }
 
@@ -268,7 +268,7 @@ onUnmounted(() => {
 .tips {
   @apply cursor-pointer w-240px p-12px rounded-8px transition-all duration-300 ease-in-out;
   svg {
-    @apply size-24px color-#f1f1f1 p-4px bg-#80808080 rounded-8px;
+    @apply size-24px color-var(--hula-brand-primary) p-4px bg-var(--hula-brand-primary)80 rounded-8px;
   }
 }
 :deep(.hover-box),
@@ -279,7 +279,7 @@ onUnmounted(() => {
 }
 :deep(.hover-box) {
   &:hover {
-    background-color: #464646;
+    background-color: var(--hula-brand-primary);
   }
 }
 :deep(.n-input .n-input__input-el, .n-input .n-input__textarea-el) {

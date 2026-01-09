@@ -241,7 +241,7 @@ watch(
 
 .message-edit-dialog__original .content {
   padding: 12px;
-  background: var(--hula-gray-100, #f5f5f5);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
   border-radius: 6px;
   font-size: 14px;
   color: #333;
@@ -278,7 +278,7 @@ watch(
   }
 
   .message-edit-dialog__original .content {
-    background: var(--hula-gray-800, #2a2a2a);
+    background: var(--hula-gray-800, var(--hula-brand-primary));
     color: #eee;
   }
 

@@ -1,0 +1,419 @@
+/* ==========================================================================
+   无障碍优化样式 - Accessibility Improvements
+   遵循 WCAG 2.1 AA 标准，提升应用的可访问性
+   ========================================================================== */
+
+/* ==================== 焦点可见性 ==================== */
+
+/* 增强焦点可见性（所有交互元素） */
+:focus-visible {
+  outline: 2px solid var(--hula-brand-primary, var(--hula-brand-primary));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 移除默认焦点样式，使用 focus-visible */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 焦点样式增强（特定元素） */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--hula-brand-primary, var(--hula-brand-primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--hula-brand-subtle, rgba(0, 191, 165, 0.2));
+}
+
+/* ==================== 跳过导航链接 ==================== */
+
+/* 跳到主内容链接（键盘导航时显示） */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  z-index: 99999;
+  padding: 8px 16px;
+  background: var(--hula-brand-primary, var(--hula-brand-primary));
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: top 0.3s ease;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+/* ==================== 屏幕阅读器专用内容 ==================== */
+
+/* 仅屏幕阅读器可见 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 焦点时可见（用于跳转链接） */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ==================== 颜色对比度 ==================== */
+
+/* 确保链接有足够的对比度 */
+a {
+  color: var(--hula-brand-primary, var(--hula-brand-primary));
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--hula-brand-hover, var(--hula-brand-primary));
+  }
+
+  &:active {
+    color: var(--hula-brand-active, var(--hula-brand-primary));
+  }
+}
+
+/* 禁用状态样式 */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================== 触摸目标尺寸 ==================== */
+
+/* 确保所有交互元素最小 44x44px（WCAG 2.5.5） */
+button,
+a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+}
+
+/* 图标按钮触摸目标 */
+.icon-button,
+.action-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+}
+
+/* ==================== 文本可读性 ==================== */
+
+/* 行高优化 */
+body,
+p,
+li,
+td,
+th {
+  line-height: 1.6;
+}
+
+/* 段落间距 */
+p {
+  margin-bottom: 1em;
+}
+
+/* 标题层级 */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.3;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+/* ==================== 表单无障碍 ==================== */
+
+/* 表单标签关联 */
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 必填字段指示 */
+.required {
+  color: var(--hula-error, var(--hula-brand-primary));
+  margin-left: 2px;
+}
+
+/* 错误状态 */
+.has-error {
+  border-color: var(--hula-error, var(--hula-brand-primary)) !important;
+  outline: 2px solid var(--hula-error, var(--hula-brand-primary));
+  outline-offset: -2px;
+}
+
+/* 错误消息 */
+.error-message {
+  display: block;
+  margin-top: 0.25em;
+  color: var(--hula-error, var(--hula-brand-primary));
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+/* ==================== 动画控制 ==================== */
+
+/* 尊重用户偏好（减少动画） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================== 高对比度模式 ==================== */
+
+@media (prefers-contrast: high) {
+  /* 增强边框和轮廓 */
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    border-width: 2px;
+  }
+
+  /* 增强焦点可见性 */
+  :focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+
+  /* 移除阴影（高对比度模式下可能降低可读性） */
+  * {
+    box-shadow: none !important;
+  }
+}
+
+/* ==================== 暗色模式优化 ==================== */
+
+@media (prefers-color-scheme: dark) {
+  /* 确保暗色模式下的对比度 */
+  :root {
+    --hula-text-primary: var(--hula-brand-primary);
+    --hula-text-secondary: var(--hula-brand-primary);
+    --hula-bg-primary: var(--hula-brand-primary);
+    --hula-bg-secondary: var(--hula-brand-primary);
+  }
+}
+
+/* ==================== 加载状态指示 ==================== */
+
+/* 屏幕阅读器专用的加载提示 */
+.sr-loading {
+  &::before {
+    content: '正在加载...';
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+}
+
+/* ==================== RTL（从右到左）支持 ==================== */
+
+[dir='rtl'] {
+  /* RTL 布局调整 */
+  .text-left {
+    text-align: right;
+  }
+
+  .text-right {
+    text-align: left;
+  }
+
+  .ml-auto {
+    margin-right: auto;
+    margin-left: 0;
+  }
+
+  .mr-auto {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  /* 间距镜像 */
+  * {
+    border-radius: inherit;
+  }
+}
+
+/* ==================== 键盘导航优化 ==================== */
+
+/* Tab 键顺序指示器 */
+.tab-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99998;
+  padding: 2px 6px;
+  background: var(--hula-brand-primary, var(--hula-brand-primary));
+  color: #fff;
+  font-size: 10px;
+  font-family: monospace;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  &:active {
+    opacity: 1;
+  }
+}
+
+/* ==================== 工具提示无障碍 ==================== */
+
+/* 工具提示应通过键盘访问 */
+[role='tooltip'],
+.tooltip {
+  position: absolute;
+  z-index: 10000;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+
+  /* 通过焦点触发 */
+  &[data-visible='true'] {
+    display: block;
+  }
+}
+
+/* ==================== 模态框无障碍 ==================== */
+
+/* 模态框打开时锁定焦点 */
+.modal-open {
+  *:not(.modal-container) {
+    visibility: hidden;
+  }
+
+  .modal-container {
+    visibility: visible;
+  }
+}
+
+/* 模态框焦点陷阱 */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+
+  &:focus-within {
+    outline: none;
+  }
+}
+
+/* ==================== ARIA 属性视觉指示 ==================== */
+
+/* 隐藏但保留在辅助技术中 */
+[aria-hidden='true'] {
+  &.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* 当前页面的导航项 */
+[aria-current='page'] {
+  font-weight: 600;
+  color: var(--hula-brand-primary, var(--hula-brand-primary));
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--hula-brand-primary, var(--hula-brand-primary));
+  }
+}
+
+/* 选中状态 */
+[aria-selected='true'] {
+  background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+  border-color: var(--hula-brand-primary, var(--hula-brand-primary));
+}
+
+/* 禁用状态 */
+[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 展开/折叠状态 */
+[aria-expanded='true'] .expand-icon {
+  transform: rotate(180deg);
+}
+
+[aria-expanded='false'] .expand-icon {
+  transform: rotate(0deg);
+}
+
+/* 忙碌状态（加载中） */
+[aria-busy='true'] {
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.5em;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

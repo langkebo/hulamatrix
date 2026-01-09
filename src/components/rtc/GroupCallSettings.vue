@@ -461,7 +461,7 @@ const backgroundPresets = ref([
   { id: 'blur', name: '背景虚化', type: 'blur' },
   { id: 'office', name: '办公室', type: 'image', url: '/backgrounds/office.jpg' },
   { id: 'nature', name: '自然风光', type: 'image', url: '/backgrounds/nature.jpg' },
-  { id: 'simple', name: '纯色背景', type: 'color', value: '#4A90E2' }
+  { id: 'simple', name: '纯色背景', type: 'color', value: 'var(--hula-brand-primary)' }
 ])
 
 // 当前统计数据
@@ -812,8 +812,8 @@ onMounted(() => {
         }
 
         .blur-preview {
-          background: linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%, #e0e0e0),
-                        linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%, #e0e0e0);
+          background: linear-gradient(45deg, var(--hula-brand-primary) 25%, transparent 25%, transparent 75%, var(--hula-brand-primary) 75%, var(--hula-brand-primary)),
+                        linear-gradient(45deg, var(--hula-brand-primary) 25%, transparent 25%, transparent 75%, var(--hula-brand-primary) 75%, var(--hula-brand-primary));
           background-size: 10px 10px;
           background-position: 0 0, 5px 5px;
           display: flex;

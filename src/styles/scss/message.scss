@@ -10,19 +10,19 @@
   @apply cursor-pointer transition-all duration-300 ease-in-out;
 
   &.context-menu-active {
-    box-shadow: inset 0 0 0 1px #13987f;
+    box-shadow: inset 0 0 0 1px var(--hula-brand-primary);
 
     &-shield {
-      box-shadow: inset 0 0 0 1px #d5304f;
+      box-shadow: inset 0 0 0 1px var(--hula-brand-primary);
     }
   }
 
   &.active-context-menu {
-    box-shadow: inset 0 0 0 1px #909090;
+    box-shadow: inset 0 0 0 1px var(--hula-brand-primary);
   }
 
   .text {
-    color: #808080;
+    color: var(--hula-brand-primary);
     transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -46,14 +46,14 @@
 
 /** 助手样式 */
 .active-bot {
-  @apply dark:bg-[#13987f40]! bg-[#e8f4f1]! text-[#13987f]!;
-  box-shadow: inset 0 0 0.8px 0.8px #13987f;
+  @apply dark:bg-[var(--hula-brand-primary)40]! bg-[var(--hula-brand-primary)]! text-[var(--hula-brand-primary)]!;
+  box-shadow: inset 0 0 0.8px 0.8px var(--hula-brand-primary);
 }
 
 /** 屏蔽会话样式 */
 .active-shield {
-  @apply dark:bg-[#d5304f40]! bg-[#f5e8e8]! text-[#d5304f]!;
-  box-shadow: inset 0 0 0.8px 0.8px #d5304f;
+  @apply dark:bg-[var(--hula-brand-primary)40]! bg-[var(--hula-brand-primary)]! text-[var(--hula-brand-primary)]!;
+  box-shadow: inset 0 0 0.8px 0.8px var(--hula-brand-primary);
 }
 
 :deep(.n-badge .n-badge-sup) {

@@ -282,7 +282,7 @@
 
     <!-- 录制指示器 -->
     <div v-if="isRecording" class="recording-indicator">
-      <n-icon color="#f0a020"><Radio /></n-icon>
+      <n-icon color="var(--hula-brand-primary)"><Radio /></n-icon>
       <span>录制中</span>
     </div>
 

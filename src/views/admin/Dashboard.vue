@@ -19,7 +19,7 @@
         <n-card :bordered="false" class="stat-card">
           <n-statistic :label="t('admin.stats.total_users')" :value="stats.totalUsers">
             <template #prefix>
-              <n-icon size="24" color="#18a058"><Users /></n-icon>
+              <n-icon size="24" color="var(--hula-brand-primary)"><Users /></n-icon>
             </template>
           </n-statistic>
         </n-card>
@@ -29,7 +29,7 @@
         <n-card :bordered="false" class="stat-card">
           <n-statistic :label="t('admin.stats.active_users')" :value="stats.activeUsers">
             <template #prefix>
-              <n-icon size="24" color="#2080f0"><User /></n-icon>
+              <n-icon size="24" color="var(--hula-brand-primary)"><User /></n-icon>
             </template>
           </n-statistic>
         </n-card>
@@ -39,7 +39,7 @@
         <n-card :bordered="false" class="stat-card">
           <n-statistic :label="t('admin.stats.total_rooms')" :value="stats.totalRooms">
             <template #prefix>
-              <n-icon size="24" color="#f0a020"><Home /></n-icon>
+              <n-icon size="24" color="var(--hula-brand-primary)"><Home /></n-icon>
             </template>
           </n-statistic>
         </n-card>
@@ -49,7 +49,7 @@
         <n-card :bordered="false" class="stat-card">
           <n-statistic :label="t('admin.stats.media_storage')" :value="formatBytes(stats.mediaStorage)">
             <template #prefix>
-              <n-icon size="24" color="var(--hula-error, #d03050)"><Database /></n-icon>
+              <n-icon size="24" color="var(--hula-error, var(--hula-brand-primary))"><Database /></n-icon>
             </template>
           </n-statistic>
         </n-card>

@@ -3,7 +3,7 @@
    ========================================================================== */
 
 :root {
-  --blue-primary: #3b82f6;
+  --blue-primary: var(--hula-brand-primary);
   --blue-primary-hover: rgba(59, 130, 246, 0.8);
   --blue-primary-active: rgba(59, 130, 246, 0.4);
 }
@@ -16,7 +16,7 @@
   --primary-active: var(--blue-primary-active);
 
   /* 左侧栏样式 */
-  --left-bg-color: #eff6ff;
+  --left-bg-color: var(--hula-brand-primary);
   --left-active-bg-color: rgba(59, 130, 246, 0.1);
   --left-text-color: var(--text-primary);
   --left-icon-color: var(--icon-color);
@@ -36,7 +36,7 @@
   );
 
   /* 聊天框样式 */
-  --chat-reply-color: #eff6ff;
+  --chat-reply-color: var(--hula-brand-primary);
   --chat-reply-active: rgba(59, 130, 246, 0.1);
   --chat-footer-border: rgba(59, 130, 246, 0.1);
 
@@ -44,7 +44,7 @@
   --msg-list-active: var(--blue-primary);
 
   /* 群公告 */
-  --group-notice-bg: #f8fafc;
+  --group-notice-bg: var(--hula-brand-primary);
 
   /* 列表hover */
   --list-hover: rgba(59, 130, 246, 0.05);
@@ -73,7 +73,7 @@ html[data-theme='dark'][data-theme-style="blue"] {
   );
 
   /* 聊天框样式 */
-  --chat-reply-color: #1e293b;
+  --chat-reply-color: var(--hula-brand-primary);
   --chat-reply-active: rgba(59, 130, 246, 0.15);
   --chat-footer-border: rgba(59, 130, 246, 0.15);
 

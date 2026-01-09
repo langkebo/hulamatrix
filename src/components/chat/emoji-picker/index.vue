@@ -1,8 +1,7 @@
 <template>
   <n-scrollbar
-    class="emoji-scroller"
+    class="emoji-scroller p-[14px_14px_0_14px] box-border select-none"
     :class="[isMobile() ? 'h-15rem w-auto' : 'h-290px w-460px']"
-    class="p-[14px_14px_0_14px] box-border select-none"
     @scroll="activeMenuId = ''">
     <transition name="fade" mode="out-in">
       <div :key="activeIndex" class="emoji-content">

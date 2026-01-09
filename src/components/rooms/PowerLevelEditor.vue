@@ -582,7 +582,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-brand-primary);
 }
 
 .permission-row:last-child {
@@ -616,7 +616,7 @@ onMounted(() => {
 .event-type {
   font-family: monospace;
   font-size: 13px;
-  background: var(--hula-gray-100, #f5f5f5);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -625,7 +625,7 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--hula-brand-primary);
 }
 
 /* Inline style replacements */
@@ -646,7 +646,7 @@ onMounted(() => {
   .permissions-card,
   .users-card,
   .events-card {
-    background: #2a2a2a;
+    background: var(--hula-brand-primary);
   }
 
   .permission-row {

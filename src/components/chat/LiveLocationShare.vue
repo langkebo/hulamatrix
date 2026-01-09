@@ -91,9 +91,9 @@ const progressPercentage = computed(() => {
 
 const progressColor = computed(() => {
   const percentage = progressPercentage.value
-  if (percentage > 70) return '#18a058' // 绿色
-  if (percentage > 30) return '#f0a020' // 橙色
-  return '#d03050' // 红色
+  if (percentage > 70) return 'var(--hula-brand-primary)' // 绿色
+  if (percentage > 30) return 'var(--hula-brand-primary)' // 橙色
+  return 'var(--hula-brand-primary)' // 红色
 })
 
 // 方法
@@ -218,7 +218,7 @@ onUnmounted(() => {
 .pulse-dot {
   width: 12px;
   height: 12px;
-  background-color: #18a058;
+  background-color: var(--hula-brand-primary);
   border-radius: 50%;
   position: relative;
 
@@ -232,7 +232,7 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background-color: #18a058;
+    background-color: var(--hula-brand-primary);
     opacity: 0.4;
     animation: pulse 2s ease-out infinite;
   }

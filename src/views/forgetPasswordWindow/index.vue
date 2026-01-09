@@ -1,7 +1,7 @@
 <template>
   <n-config-provider
     :theme="naiveTheme"
-    class="size-full bg-#fff dark:bg-#202020 rounded-8px select-none cursor-default">
+    class="size-full bg-#fff dark:bg-var(--hula-brand-primary) rounded-8px select-none cursor-default">
     <!--顶部操作栏-->
     <ActionBar :max-w="false" :shrink="false" />
     <n-flex vertical class="w-full size-full">
@@ -22,7 +22,7 @@
           <n-form-item path="email" :label="t('auth.forget.form.email_label')">
             <n-input
               :allow-input="noSideSpace"
-              class="border-(1px solid #90909080) no-indent-input w-300px!"
+              class="border-(1px solid var(--hula-brand-primary)80) no-indent-input w-300px!"
               v-model:value="formData.email"
               :placeholder="t('auth.forget.form.email_placeholder')"
               spellCheck="false"
@@ -36,7 +36,7 @@
             <n-flex :size="8">
               <n-input
                 :allow-input="noSideSpace"
-                class="border-(1px solid #90909080) no-indent-input w-300px!"
+                class="border-(1px solid var(--hula-brand-primary)80) no-indent-input w-300px!"
                 v-model:value="formData.emailCode"
                 :placeholder="t('auth.forget.form.code_placeholder')"
                 spellCheck="false"
@@ -45,7 +45,7 @@
                 autoCapitalize="off"
                 maxlength="6" />
               <n-button
-                :color="'#13987f'"
+                :color="'var(--hula-brand-primary)'"
                 ghost
                 :disabled="sendBtnDisabled"
                 :loading="sendingEmailCode"
@@ -73,7 +73,7 @@
             <n-flex vertical :size="8" class="w-full">
               <n-input
                 :allow-input="noSideSpace"
-                class="border-(1px solid #90909080) w-full no-indent-input"
+                class="border-(1px solid var(--hula-brand-primary)80) w-full no-indent-input"
                 v-model:value="passwordForm.password"
                 type="password"
                 show-password-on="click"
@@ -105,7 +105,7 @@
             <n-flex vertical :size="8" class="w-full">
               <n-input
                 :allow-input="noSideSpace"
-                class="border-(1px solid #90909080) w-full no-indent-input"
+                class="border-(1px solid var(--hula-brand-primary)80) w-full no-indent-input"
                 v-model:value="passwordForm.confirmPassword"
                 type="password"
                 show-password-on="click"
@@ -138,7 +138,7 @@
       </div>
       <!-- 第三步：完成 -->
       <div v-if="currentStep === 3" class="w-full max-w-300px mx-auto mt-100px text-center">
-        <!-- <n-icon size="64" class="text-#13987f">
+        <!-- <n-icon size="64" class="text-var(--hula-brand-primary)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" />
           </svg>

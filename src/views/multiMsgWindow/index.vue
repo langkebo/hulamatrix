@@ -16,8 +16,8 @@
               fallback-src="/default-avatar.png" />
 
             <div class="flex-y-center gap-12px h-fit">
-              <p class="text-(14px #909090)">{{ getUserDisplayName(item.fromUser.uid) }}</p>
-              <p class="text-(12px #909090)">{{ formatTimestamp(item.message.sendTime) }}</p>
+              <p class="text-(14px var(--hula-brand-primary))">{{ getUserDisplayName(item.fromUser.uid) }}</p>
+              <p class="text-(12px var(--hula-brand-primary))">{{ formatTimestamp(item.message.sendTime) }}</p>
             </div>
           </div>
 

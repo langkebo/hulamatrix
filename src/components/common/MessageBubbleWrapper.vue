@@ -31,7 +31,7 @@
               :size="34"
               @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
               class="select-none cursor-pointer"
-              :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
               :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
               :src="getAvatarSrc(message.fromUser.uid) || ''" />
           </ContextMenu>
@@ -81,7 +81,7 @@
           </span>
 
           <!-- 消息归属地 -->
-          <span v-if="senderLocPlace" class="text-(12px #909090)">({{ senderLocPlace }})</span>
+          <span v-if="senderLocPlace" class="text-(12px var(--hula-brand-primary))">({{ senderLocPlace }})</span>
         </n-flex>
       </ContextMenu>
 
@@ -90,14 +90,14 @@
         <!-- 群主 -->
         <div
           v-if="roomStore.getMember(globalStore.currentSessionRoomId, String(fromUser.uid))?.role === 'owner'"
-          class="flex px-4px py-3px rounded-4px bg-#d5304f30 size-fit select-none">
-          <span class="text-(9px #d5304f)">{{ t('home.chat_sidebar.roles.owner') }}</span>
+          class="flex px-4px py-3px rounded-4px bg-var(--hula-brand-primary)30 size-fit select-none">
+          <span class="text-(9px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.owner') }}</span>
         </div>
         <!-- 管理员 -->
         <div
           v-if="roomStore.getMember(globalStore.currentSessionRoomId, String(fromUser.uid))?.role === 'admin'"
-          class="flex px-4px py-3px rounded-4px bg-#1a7d6b30 size-fit select-none">
-          <span class="text-(9px #008080)">{{ t('home.chat_sidebar.roles.admin') }}</span>
+          class="flex px-4px py-3px rounded-4px bg-var(--hula-brand-primary)30 size-fit select-none">
+          <span class="text-(9px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.admin') }}</span>
         </div>
       </div>
     </template>
@@ -150,14 +150,14 @@
       <div class="translated-text cursor-default flex flex-col bg-[--right-chat-reply-color] p-8px rounded-8px mt-6px">
         <n-flex align="center" justify="space-between" class="mb-6px">
           <n-flex align="center" :size="4">
-            <span class="text-(12px #909090)">{{ message.message.body.translatedText.provider }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ message.message.body.translatedText.provider }}</span>
             <svg class="size-12px">
               <use href="#success"></use>
             </svg>
             <n-tooltip trigger="hover">
               <template #trigger>
                 <svg
-                  class="pl-6px size-10px cursor-pointer hover:color-#909090 hover:transition-colors"
+                  class="pl-6px size-10px cursor-pointer hover:color-var(--hula-brand-primary) hover:transition-colors"
                   @click="handleCopyTranslation(message.message.body.translatedText.text)">
                   <use href="#copy"></use>
                 </svg>
@@ -189,7 +189,7 @@
           class="reply-avatar"
           round
           :size="20"
-          :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="getAvatarSrc(message.message.body.reply.uid) || ''" />
         <span>{{ `${message.message.body.reply.username}: ` }}</span>
@@ -214,7 +214,7 @@
               @click.stop="message && emoji.value && cancelReplyEmoji(message, emoji.value)">
               <img :title="emoji.title || ''" class="size-18px" :src="emoji.url || ''" :alt="emoji.title || ''" />
               <span
-                :class="emoji.value && hasUserMarkedEmoji(message, emoji.value) ? 'text-#fbb160' : 'text-(12px #eee)'">
+                :class="emoji.value && hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'">
                 {{ message && emoji.value ? getEmojiCount(message, emoji.value) : 0 }}
               </span>
             </div>
@@ -538,7 +538,7 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 
   &--active {
     background: rgba(251, 177, 96, 0.2);
-    border: 1px solid #fbb160;
+    border: 1px solid var(--hula-brand-primary);
   }
 }
 
@@ -555,10 +555,10 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 
 /* 用户名悬停效果 - 使用 HuLa 主题色 */
 .username-hover {
-  color: #909090;
+  color: var(--hula-brand-primary);
 
   &:hover {
-    color: #13987f;
+    color: var(--hula-brand-primary);
   }
 }
 </style>

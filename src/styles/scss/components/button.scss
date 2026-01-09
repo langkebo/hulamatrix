@@ -202,15 +202,15 @@
   color: #fff;
 
   &:hover:not(:disabled) {
-    background: #d63447;
-    border-color: #d63447;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
 
   &:active:not(:disabled) {
-    background: #be2939;
-    border-color: #be2939;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(0);
   }
 }
@@ -222,15 +222,15 @@
   color: #fff;
 
   &:hover:not(:disabled) {
-    background: #f6a651;
-    border-color: #f6a651;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
 
   &:active:not(:disabled) {
-    background: #f59e0b;
-    border-color: #f59e0b;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(0);
   }
 }
@@ -242,15 +242,15 @@
   color: #fff;
 
   &:hover:not(:disabled) {
-    background: #218838;
-    border-color: #218838;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
   }
 
   &:active:not(:disabled) {
-    background: #1e7e34;
-    border-color: #1e7e34;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     transform: translateY(0);
   }
 }

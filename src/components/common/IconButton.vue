@@ -87,7 +87,7 @@ const handleClick = (event: Event) => {
       height: 16px;
       padding: 0 4px;
       background: var(--danger-color);
-      color: #ffffff;
+      color: var(--hula-brand-primary);
       font-size: 10px;
       font-weight: 500;
       line-height: 16px;

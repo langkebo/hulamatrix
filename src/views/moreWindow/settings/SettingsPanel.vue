@@ -168,7 +168,7 @@ const onSelect = async (key: string) => {
 .settings-panel-sidebar {
   width: 200px;
   padding-right: 12px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--hula-brand-primary);
 }
 
 .settings-panel-content {

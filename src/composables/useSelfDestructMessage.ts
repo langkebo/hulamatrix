@@ -190,9 +190,9 @@ export function useSelfDestructMessage(options: UseSelfDestructMessageOptions) {
    */
   const countdownColor = computed(() => {
     const progress = countdownProgress.value
-    if (progress > 30) return '#4ade80' // 绿色
-    if (progress > 10) return '#fbbf24' // 黄色
-    return '#ef4444' // 红色
+    if (progress > 30) return 'var(--hula-brand-primary)' // 绿色
+    if (progress > 10) return 'var(--hula-brand-primary)' // 黄色
+    return 'var(--hula-brand-primary)' // 红色
   })
 
   /**

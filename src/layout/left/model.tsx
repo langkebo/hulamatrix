@@ -57,7 +57,7 @@ export const LockScreen = defineComponent(() => {
         {isMac() ? (
           <div
             onClick={() => (modalShow.value = false)}
-            class="mac-close relative size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none">
+            class="mac-close relative size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none">
             <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
               <use href="#close"></use>
             </svg>
@@ -92,7 +92,11 @@ export const LockScreen = defineComponent(() => {
             </NFormItem>
           </NForm>
 
-          <NButton loading={lock.value.loading} onClick={lock.value.handleLock} class="w-full" color="#13987f">
+          <NButton
+            loading={lock.value.loading}
+            onClick={lock.value.handleLock}
+            class="w-full"
+            color="var(--hula-brand-primary)">
             {t('message.lock_screen.confirm_button')}
           </NButton>
         </div>

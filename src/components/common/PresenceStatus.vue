@@ -85,16 +85,16 @@ function formatLastActive(timestamp: number): string {
     transition: all 0.2s ease;
 
     &.status-online {
-      background: #18a058;
+      background: var(--hula-brand-primary);
       box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
     }
 
     &.status-offline {
-      background: #909399;
+      background: var(--hula-brand-primary);
     }
 
     &.status-unavailable {
-      background: #f0a020;
+      background: var(--hula-brand-primary);
       box-shadow: 0 0 0 2px rgba(240, 160, 32, 0.2);
     }
   }

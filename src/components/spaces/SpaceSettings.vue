@@ -31,15 +31,15 @@
         <h3>隐私设置</h3>
         <n-form-item label="公开空间" path="isPublic">
           <n-switch v-model:value="formData.privacy.isPublic" />
-          <template #feedback>公开空间可以被任何人搜索和查看</template>
+          <template var(--hula-brand-primary)ck>公开空间可以被任何人搜索和查看</template>
         </n-form-item>
         <n-form-item label="允许访客" path="guestAllowed">
           <n-switch v-model:value="formData.privacy.guestAllowed" />
-          <template #feedback>允许未注册用户作为访客访问</template>
+          <template var(--hula-brand-primary)ck>允许未注册用户作为访客访问</template>
         </n-form-item>
         <n-form-item label="历史记录可见" path="historyVisible">
           <n-switch v-model:value="formData.privacy.historyVisible" />
-          <template #feedback>新成员可以查看加入前的消息历史</template>
+          <template var(--hula-brand-primary)ck>新成员可以查看加入前的消息历史</template>
         </n-form-item>
       </div>
 
@@ -48,15 +48,15 @@
         <h3>通知设置</h3>
         <n-form-item label="所有房间" path="allRooms">
           <n-switch v-model:value="formData.notification.allRooms" />
-          <template #feedback>接收空间内所有房间的通知</template>
+          <template var(--hula-brand-primary)ck>接收空间内所有房间的通知</template>
         </n-form-item>
         <n-form-item label="忽略提及" path="ignoreMentions">
           <n-switch v-model:value="formData.notification.ignoreMentions" />
-          <template #feedback>不接收 @mention 的通知</template>
+          <template var(--hula-brand-primary)ck>不接收 @mention 的通知</template>
         </n-form-item>
         <n-form-item label="关键词" path="keywords">
           <n-dynamic-tags v-model:value="formData.notification.keywords" />
-          <template #feedback>当消息包含这些关键词时通知我</template>
+          <template var(--hula-brand-primary)ck>当消息包含这些关键词时通知我</template>
         </n-form-item>
       </div>
 

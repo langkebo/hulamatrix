@@ -346,19 +346,19 @@ onUnmounted(() => {
 }
 
 .health-card .card-value.health-excellent {
-  color: #52c41a;
+  color: var(--hula-brand-primary);
 }
 
 .health-card .card-value.health-good {
-  color: #1890ff;
+  color: var(--hula-brand-primary);
 }
 
 .health-card .card-value.health-warning {
-  color: #faad14;
+  color: var(--hula-brand-primary);
 }
 
 .health-card .card-value.health-critical {
-  color: #f5222d;
+  color: var(--hula-brand-primary);
 }
 
 .performance-sections {
@@ -425,21 +425,21 @@ onUnmounted(() => {
 }
 
 .metric-status.success {
-  background: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #b7eb8f;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
 }
 
 .metric-status.warning {
-  background: #fffbe6;
-  color: #faad14;
-  border: 1px solid #ffe58f;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
 }
 
 .metric-status.error {
-  background: #fff2f0;
-  color: #f5222d;
-  border: 1px solid #ffccc7;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
 }
 
 .alerts-section {
@@ -463,13 +463,13 @@ onUnmounted(() => {
 }
 
 .alert-item.alert-warning {
-  border-left-color: #faad14;
-  background: #fffbe6;
+  border-left-color: var(--hula-brand-primary);
+  background: var(--hula-brand-primary);
 }
 
 .alert-item.alert-error {
-  border-left-color: #f5222d;
-  background: #fff2f0;
+  border-left-color: var(--hula-brand-primary);
+  background: var(--hula-brand-primary);
 }
 
 .alert-content {

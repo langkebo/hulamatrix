@@ -128,9 +128,9 @@ const syncStatusIcon = computed(() => {
     case 'syncing':
       return h(RefreshAlert, { class: 'spin' })
     case 'success':
-      return h(Check, { style: { color: '#18a058' } })
+      return h(Check, { style: { color: 'var(--hula-brand-primary)' } })
     case 'error':
-      return h(AlertCircle, { style: { color: '#d03050' } })
+      return h(AlertCircle, { style: { color: 'var(--hula-brand-primary)' } })
     default:
       return h(Refresh)
   }

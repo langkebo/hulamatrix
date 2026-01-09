@@ -360,10 +360,10 @@ watch(
     :mask-closable="false"
     :segmented="{ content: 'soft' }">
     <template #header-extra>
-      <NIcon v-if="settings.muted" size="20" color="#f0a020">
+      <NIcon v-if="settings.muted" size="20" color="var(--hula-brand-primary)">
         <BellOff />
       </NIcon>
-      <NIcon v-else size="20" color="#18a058">
+      <NIcon v-else size="20" color="var(--hula-brand-primary)">
         <Bell />
       </NIcon>
     </template>

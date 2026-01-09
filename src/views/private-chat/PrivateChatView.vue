@@ -265,7 +265,7 @@
 
             <!-- 空状态 -->
             <div v-else-if="privateChatStore.currentMessages.length === 0" class="empty-messages">
-              <span class="text-(12px #909090)">{{ t('privateChat.chat.empty_state') }}</span>
+              <span class="text-(12px var(--hula-brand-primary))">{{ t('privateChat.chat.empty_state') }}</span>
             </div>
 
             <!-- 消息列表 -->
@@ -785,7 +785,7 @@ defineExpose({
 
 .session-preview {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -793,7 +793,7 @@ defineExpose({
 
 .session-time {
   font-size: 11px;
-  color: #909090;
+  color: var(--hula-brand-primary);
 }
 
 .chat-area {
@@ -817,7 +817,7 @@ defineExpose({
 
 .chat-status {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
 }
 
 .messages-container {
@@ -887,11 +887,11 @@ defineExpose({
 }
 
 .destroyed-badge {
-  color: #ff4d4f;
+  color: var(--hula-brand-primary);
 }
 
 .status-text {
-  color: #52c41a;
+  color: var(--hula-brand-primary);
 }
 
 .chat-input {
@@ -922,7 +922,7 @@ defineExpose({
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--mobile-bg-secondary, #ffffff);
+  background: var(--mobile-bg-secondary, var(--hula-brand-primary));
 }
 
 .mobile-header {
@@ -930,8 +930,8 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: var(--mobile-bg-primary, #e6f7f0);
-  border-bottom: 1px solid var(--mobile-border, #e0e0e0);
+  background: var(--mobile-bg-primary, var(--hula-brand-primary));
+  border-bottom: 1px solid var(--mobile-border, var(--hula-brand-primary));
 
   h3 {
     margin: 0;
@@ -1009,7 +1009,7 @@ defineExpose({
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--mobile-bg-secondary, #ffffff);
+  background: var(--mobile-bg-secondary, var(--hula-brand-primary));
 }
 
 .mobile-chat-header {
@@ -1017,8 +1017,8 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--mobile-bg-primary, #e6f7f0);
-  border-bottom: 1px solid var(--mobile-border, #e0e0e0);
+  background: var(--mobile-bg-primary, var(--hula-brand-primary));
+  border-bottom: 1px solid var(--mobile-border, var(--hula-brand-primary));
 
   .header-info {
     flex: 1;
@@ -1043,7 +1043,7 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: var(--mobile-bg-secondary, #ffffff);
+  background: var(--mobile-bg-secondary, var(--hula-brand-primary));
 }
 
 .mobile-messages-list {
@@ -1068,11 +1068,11 @@ defineExpose({
 .mobile-message-item .message-bubble {
   padding: 12px 16px;
   border-radius: 18px;
-  background: var(--mobile-bg-tertiary, #f5f5f5);
+  background: var(--mobile-bg-tertiary, var(--hula-brand-primary));
   position: relative;
 
   .mobile-message-item.is-self & {
-    background: var(--mobile-accent-primary, #00b894);
+    background: var(--mobile-accent-primary, var(--hula-brand-primary));
     color: white;
     border-bottom-right-radius: 4px;
   }
@@ -1085,8 +1085,8 @@ defineExpose({
 .mobile-chat-input {
   padding: 12px 16px;
   padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
-  background: var(--mobile-bg-secondary, #ffffff);
-  border-top: 1px solid var(--mobile-border, #e0e0e0);
+  background: var(--mobile-bg-secondary, var(--hula-brand-primary));
+  border-top: 1px solid var(--mobile-border, var(--hula-brand-primary));
 
   .input-row {
     display: flex;

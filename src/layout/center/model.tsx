@@ -235,7 +235,7 @@ export const renderTargetList = (
                     height: '12px',
                     cursor: 'pointer',
                     marginLeft: '8px',
-                    color: '#909090'
+                    color: 'var(--hula-brand-primary)'
                   }}
                   onClick={() => {
                     const newCheckedOptions = checkedOptions.filter((o) => (o as FriendOption).value !== opt.value)
@@ -249,7 +249,7 @@ export const renderTargetList = (
                 <div
                   style={{
                     fontSize: '10px',
-                    color: '#909090',
+                    color: 'var(--hula-brand-primary)',
                     marginLeft: '8px'
                   }}>
                   {requiredTag}

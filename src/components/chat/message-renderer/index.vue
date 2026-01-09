@@ -27,7 +27,7 @@
     <!-- 信息时间(单聊) -->
     <div
       v-if="!isGroup"
-      class="text-(12px #909090) h-12px flex select-none"
+      class="text-(12px var(--hula-brand-primary)) h-12px flex select-none"
       :class="{
         'pr-48px justify-end': isMe,
         'pl-42px justify-start': !isMe
@@ -49,7 +49,7 @@
         <!-- 回复消息提示的箭头 -->
         <svg
           v-if="activeReply === message.message.id"
-          class="size-16px pt-4px color-#909090"
+          class="size-16px pt-4px color-var(--hula-brand-primary)"
           :class="isMe ? 'ml-8px' : 'mr-8px'">
           <use :href="isMe ? `#corner-down-left` : `#corner-down-right`"></use>
         </svg>
@@ -73,7 +73,7 @@
                 :size="34"
                 @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
                 class="select-none"
-                :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+                :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
                 :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                 :src="getAvatarSrc(message.fromUser.uid) || ''"
                 :class="isMe ? '' : 'mr-10px'" />
@@ -99,31 +99,31 @@
                 <!-- 用户名 -->
                 <span
                   :class="[
-                    'text-12px select-none color-#909090 inline-block align-top',
+                    'text-12px select-none color-var(--hula-brand-primary) inline-block align-top',
                     !isMe ? 'cursor-pointer hover:text-brand transition-colors' : ''
                   ]"
                   @click.stop="handleMentionUser">
                   {{ senderDisplayName }}
                 </span>
                 <!-- 消息归属地 -->
-                <span v-if="senderLocPlace" class="text-(12px #909090)">({{ senderLocPlace }})</span>
+                <span v-if="senderLocPlace" class="text-(12px var(--hula-brand-primary))">({{ senderLocPlace }})</span>
               </n-flex>
             </ContextMenu>
             <!-- 群主 -->
             <div
               v-if="groupStore.isCurrentLord(fromUser.uid)"
-              class="flex px-4px py-3px rounded-4px bg-#d5304f30 size-fit select-none">
-              <span class="text-(9px #d5304f)">{{ t('home.chat_sidebar.roles.owner') }}</span>
+              class="flex px-4px py-3px rounded-4px bg-var(--hula-brand-primary)30 size-fit select-none">
+              <span class="text-(9px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.owner') }}</span>
             </div>
             <!-- 管理员 -->
             <div
               v-if="groupStore.isAdmin(fromUser.uid)"
-              class="flex px-4px py-3px rounded-4px bg-#1a7d6b30 size-fit select-none">
-              <span class="text-(9px #008080)">{{ t('home.chat_sidebar.roles.admin') }}</span>
+              class="flex px-4px py-3px rounded-4px bg-var(--hula-brand-primary)30 size-fit select-none">
+              <span class="text-(9px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.admin') }}</span>
             </div>
             <!-- 信息时间(群聊) -->
             <Transition name="fade-group">
-              <span v-if="isGroup && hoverMsgId === message.message.id" class="text-(12px #909090) select-none">
+              <span v-if="isGroup && hoverMsgId === message.message.id" class="text-(12px var(--hula-brand-primary)) select-none">
                 {{ formatTimestamp(message.message.sendTime, true) }}
               </span>
             </Transition>
@@ -196,7 +196,7 @@
               <div v-if="message.message.body.translatedText" class="translated-text cursor-default flex flex-col">
                 <n-flex align="center" justify="space-between" class="mb-6px">
                   <n-flex align="center" :size="4">
-                    <span class="text-(12px #909090)">{{ message.message.body.translatedText.provider }}</span>
+                    <span class="text-(12px var(--hula-brand-primary))">{{ message.message.body.translatedText.provider }}</span>
                     <svg class="size-12px">
                       <use href="#success"></use>
                     </svg>
@@ -204,7 +204,7 @@
                     <n-tooltip trigger="hover">
                       <template #trigger>
                         <svg
-                          class="pl-6px size-10px cursor-pointer hover:color-#909090 hover:transition-colors"
+                          class="pl-6px size-10px cursor-pointer hover:color-var(--hula-brand-primary) hover:transition-colors"
                           @click="handleCopyTranslation(message.message.body.translatedText.text)">
                           <use href="#copy"></use>
                         </svg>
@@ -229,7 +229,7 @@
               </n-icon>
               <n-icon
                 v-if="message.message.status === MessageStatusEnum.FAILED"
-                class="text-#d5304f cursor-pointer"
+                class="text-var(--hula-brand-primary) cursor-pointer"
                 @click.stop="handleRetry(message)">
                 <svg class="size-16px">
                   <use href="#cloudError"></use>
@@ -237,7 +237,7 @@
               </n-icon>
               <span
                 v-if="readCount > 0"
-                class="text-(10px #909090) whitespace-nowrap mt-2px select-none">
+                class="text-(10px var(--hula-brand-primary)) whitespace-nowrap mt-2px select-none">
                 {{ readCount }} 已读
               </span>
             </div>
@@ -249,7 +249,7 @@
             :size="6"
             v-if="message.message.body.reply"
             @click="emit('jump2Reply', message.message.body.reply.id)"
-            :class="isMobile() ? 'bg-#fafafa text-13px' : 'bg-[--right-chat-reply-color] text-12px'"
+            :class="isMobile() ? 'bg-var(--hula-brand-primary) text-13px' : 'bg-[--right-chat-reply-color] text-12px'"
             class="reply-bubble relative w-fit custom-shadow select-none chat-message-max-width"
             :style="{ 'max-width': bubbleMaxWidth }">
             <svg class="size-14px">
@@ -259,7 +259,7 @@
               class="reply-avatar"
               round
               :size="20"
-              :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
               :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
               :src="getAvatarSrc(message.message.body.reply.uid ?? '') || ''" />
             <span>{{ `${message.message.body.reply.username}: ` }}</span>
@@ -284,7 +284,7 @@
                   :class="{ 'emoji-reply-bubble--active': hasUserMarkedEmoji(message, emoji.value) }"
                   @click.stop="message && cancelReplyEmoji(message, emoji.value)">
                   <img :title="emoji.title" class="size-18px" :src="emoji.url" :alt="emoji.title" />
-                  <span :class="hasUserMarkedEmoji(message, emoji.value) ? 'text-#fbb160' : 'text-(12px #eee)'">
+                  <span :class="hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'">
                     {{ message ? getEmojiCount(message, emoji.value) : 0 }}
                   </span>
                 </div>

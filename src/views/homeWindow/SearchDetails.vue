@@ -1,10 +1,10 @@
 <template>
-  <n-flex :size="14" vertical justify="center" class="p-14px text-(12px #909090)">
+  <n-flex :size="14" vertical justify="center" class="p-14px text-(12px var(--hula-brand-primary))">
     <!-- 搜索结果为空时显示建议和历史记录 -->
     <template v-if="searchResults.length === 0 && !searchQuery">
       <!-- 搜索建议 -->
-      <p class="text-(12px #909090)">{{ t('home.search_suggestions') }}</p>
-      <n-flex align="center" class="text-(12px #909090)">
+      <p class="text-(12px var(--hula-brand-primary))">{{ t('home.search_suggestions') }}</p>
+      <n-flex align="center" class="text-(12px var(--hula-brand-primary))">
         <p class="p-6px bg-[--search-color] rounded-8px cursor-pointer" @click="applySearchTerm('hula')">hula</p>
       </n-flex>
 
@@ -12,7 +12,7 @@
 
       <!-- 历史记录 -->
       <n-flex v-if="historyList.length > 0" align="center" justify="space-between">
-        <p class="text-(12px #909090)">{{ t('home.search_history') }}</p>
+        <p class="text-(12px var(--hula-brand-primary))">{{ t('home.search_history') }}</p>
         <p class="cursor-pointer text-(12px) text-brand" @click="clearHistory">{{ t('home.clear_search_history') }}</p>
       </n-flex>
 
@@ -41,7 +41,7 @@
 
     <!-- 搜索结果 -->
     <template v-else-if="searchResults.length > 0">
-      <p class="text-(12px #909090) mb-6px">{{ t('home.search_result') }}</p>
+      <p class="text-(12px var(--hula-brand-primary)) mb-6px">{{ t('home.search_result') }}</p>
 
       <n-scrollbar class="results-scrollbar">
         <template v-for="item in searchResults" :key="item.roomId">

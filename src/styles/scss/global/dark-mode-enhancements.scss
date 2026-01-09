@@ -5,19 +5,19 @@
 /* 暗色模式基础优化 */
 html[data-theme='dark'] {
   /* 深化背景色，提供更好的对比度 */
-  --app-bg-color: #0a0a0a;
-  --center-bg-color: #141414;
-  --right-bg-color: #0f0f0f;
-  --left-bg-color: #1a1a1a;
+  --app-bg-color: var(--hula-brand-primary);
+  --center-bg-color: var(--hula-brand-primary);
+  --right-bg-color: var(--hula-brand-primary);
+  --left-bg-color: var(--hula-brand-primary);
 
   /* 微调文字颜色，提高可读性 */
-  --text-primary: #f0f0f0;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #808080;
+  --text-primary: var(--hula-brand-primary);
+  --text-secondary: var(--hula-brand-primary);
+  --text-tertiary: var(--hula-brand-primary);
 
   /* 更细腻的边框色 */
-  --border-color: #2a2a2a;
-  --border-light: #1f1f1f;
+  --border-color: var(--hula-brand-primary);
+  --border-light: var(--hula-brand-primary);
 
   /* 优化交互状态 */
   --bg-hover: rgba(255, 255, 255, 0.03);
@@ -30,28 +30,28 @@ html[data-theme='dark'] {
   --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5);
 
   /* 优化组件背景 */
-  --input-bg: #1f1f1f;
-  --input-bg-disabled: #1a1a1a;
-  --popover-bg: #1a1a1a;
+  --input-bg: var(--hula-brand-primary);
+  --input-bg-disabled: var(--hula-brand-primary);
+  --popover-bg: var(--hula-brand-primary);
   --modal-bg: rgba(0, 0, 0, 0.8);
 
   /* 聊天相关优化 */
-  --chat-reply-color: #1f1f1f;
-  --chat-left-bg: #1e3a36;
-  --chat-right-bg: #13987f;
-  --chat-text-color: #e0e0e0;
+  --chat-reply-color: var(--hula-brand-primary);
+  --chat-left-bg: var(--hula-brand-primary);
+  --chat-right-bg: var(--hula-brand-primary);
+  --chat-text-color: var(--hula-brand-primary);
 
   /* 消息列表优化 */
-  --msg-list-bg: #141414;
-  --msg-hover: #1a1a1a;
+  --msg-list-bg: var(--hula-brand-primary);
+  --msg-hover: var(--hula-brand-primary);
   --msg-active: rgba(19, 152, 127, 0.5);
 
   /* 菜单优化 */
   --menu-bg: linear-gradient(45deg, rgba(26, 26, 26, 0.95) 60%, rgba(26, 26, 26, 0.98) 90%);
-  --menu-hover: #2a2a2a;
+  --menu-hover: var(--hula-brand-primary);
 
   /* 滚动条优化 */
-  scrollbar-color: #3a3a3a transparent;
+  scrollbar-color: var(--hula-brand-primary) transparent;
 }
 
 /* 暗色模式下的特殊效果 */
@@ -66,8 +66,8 @@ html[data-theme='dark'] {
 
   /* 暗色模式下的卡片优化 */
   .card {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: var(--hula-brand-primary);
+    border: 1px solid var(--hula-brand-primary);
     box-shadow:
       0 1px 3px rgba(0, 0, 0, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -75,9 +75,9 @@ html[data-theme='dark'] {
 
   /* 输入框增强 */
   input, textarea, select {
-    background: #1f1f1f;
+    background: var(--hula-brand-primary);
     color: var(--text-primary);
-    border-color: #2a2a2a;
+    border-color: var(--hula-brand-primary);
 
     &:focus {
       border-color: var(--primary-color);
@@ -87,22 +87,22 @@ html[data-theme='dark'] {
     }
 
     &::placeholder {
-      color: #606060;
+      color: var(--hula-brand-primary);
     }
   }
 
   /* 暗色模式下的代码块 */
   code {
-    background: #1a1a1a;
-    color: #e0e0e0;
+    background: var(--hula-brand-primary);
+    color: var(--hula-brand-primary);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'Consolas', 'Monaco', monospace;
   }
 
   pre {
-    background: #141414;
-    border: 1px solid #2a2a2a;
+    background: var(--hula-brand-primary);
+    border: 1px solid var(--hula-brand-primary);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     overflow-x: auto;
@@ -118,22 +118,22 @@ html[data-theme='dark'] {
     color: var(--text-primary);
 
     th {
-      background: #1f1f1f;
-      border-color: #2a2a2a;
+      background: var(--hula-brand-primary);
+      border-color: var(--hula-brand-primary);
     }
 
     td {
-      border-color: #1f1f1f;
+      border-color: var(--hula-brand-primary);
     }
 
     tr:hover {
-      background: #1a1a1a;
+      background: var(--hula-brand-primary);
     }
   }
 
   /* 暗色模式下的分割线 */
   hr {
-    border-color: #2a2a2a;
+    border-color: var(--hula-brand-primary);
     border-top: none;
     height: 1px;
   }
@@ -158,15 +158,15 @@ html[data-theme='dark'] {
   }
 
   ::-webkit-scrollbar-track {
-    background: #0f0f0f;
+    background: var(--hula-brand-primary);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #3a3a3a;
+    background: var(--hula-brand-primary);
     border-radius: 4px;
 
     &:hover {
-      background: #4a4a4a;
+      background: var(--hula-brand-primary);
     }
   }
 
@@ -191,13 +191,13 @@ html[data-theme='dark'] {
 /* 消息气泡暗色模式优化 */
 html[data-theme='dark'] {
   .h-message-bubble--left {
-    background: linear-gradient(135deg, #1e3a36 0%, #234540 100%);
+    background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
     &:hover {
-      background: linear-gradient(135deg, #234540 0%, #28504a 100%);
+      background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
     }
   }
 }
@@ -205,12 +205,12 @@ html[data-theme='dark'] {
 /* 聊天输入框暗色模式优化 */
 html[data-theme='dark'] {
   .h-chat-input__wrapper {
-    background: #1a1a1a;
-    border-color: #2a2a2a;
+    background: var(--hula-brand-primary);
+    border-color: var(--hula-brand-primary);
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.2);
 
     &:focus-within {
-      background: #1f1f1f;
+      background: var(--hula-brand-primary);
       box-shadow:
         0 0 0 2px rgba(19, 152, 127, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -221,7 +221,7 @@ html[data-theme='dark'] {
     color: var(--text-primary);
 
     &::placeholder {
-      color: #606060;
+      color: var(--hula-brand-primary);
     }
   }
 }
@@ -230,8 +230,8 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   nav,
   .navbar {
-    background: #0f0f0f;
-    border-bottom-color: #1f1f1f;
+    background: var(--hula-brand-primary);
+    border-bottom-color: var(--hula-brand-primary);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 }
@@ -240,42 +240,42 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   aside,
   .sidebar {
-    background: #1a1a1a;
-    border-right-color: #2a2a2a;
+    background: var(--hula-brand-primary);
+    border-right-color: var(--hula-brand-primary);
   }
 }
 
 /* 暗色模式下的模态框 */
 html[data-theme='dark'] {
   .modal {
-    background: #1a1a1a;
-    border: 1px solid #3a3a3a;
+    background: var(--hula-brand-primary);
+    border: 1px solid var(--hula-brand-primary);
     box-shadow:
       0 10px 40px rgba(0, 0, 0, 0.8),
       0 2px 10px rgba(0, 0, 0, 0.5);
   }
 
   .modal-header {
-    border-bottom-color: #2a2a2a;
+    border-bottom-color: var(--hula-brand-primary);
   }
 
   .modal-footer {
-    border-top-color: #2a2a2a;
+    border-top-color: var(--hula-brand-primary);
   }
 }
 
 /* 暗色模式下的下拉菜单 */
 html[data-theme='dark'] {
   .dropdown-menu {
-    background: #1a1a1a;
-    border: 1px solid #3a3a3a;
+    background: var(--hula-brand-primary);
+    border: 1px solid var(--hula-brand-primary);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 
     .dropdown-item {
       color: var(--text-primary);
 
       &:hover {
-        background: #2a2a2a;
+        background: var(--hula-brand-primary);
         color: var(--primary-color);
       }
 
@@ -286,7 +286,7 @@ html[data-theme='dark'] {
     }
 
     .dropdown-divider {
-      border-color: #2a2a2a;
+      border-color: var(--hula-brand-primary);
     }
   }
 }
@@ -296,7 +296,7 @@ html[data-theme='dark'] {
   .tooltip {
     background: rgba(0, 0, 0, 0.9);
     color: #fff;
-    border: 1px solid #3a3a3a;
+    border: 1px solid var(--hula-brand-primary);
   }
 
   .tooltip-arrow::before {
@@ -307,16 +307,16 @@ html[data-theme='dark'] {
 /* 暗色模式下的加载动画 */
 html[data-theme='dark'] {
   .loading-spinner {
-    border-color: #3a3a3a;
+    border-color: var(--hula-brand-primary);
     border-top-color: var(--primary-color);
   }
 
   .loading-skeleton {
     background: linear-gradient(
       90deg,
-      #1a1a1a 25%,
-      #2a2a2a 50%,
-      #1a1a1a 75%
+      var(--hula-brand-primary) 25%,
+      var(--hula-brand-primary) 50%,
+      var(--hula-brand-primary) 75%
     );
   }
 }
@@ -354,7 +354,7 @@ html[data-theme='dark'] {
 /* 暗色模式下的进度条 */
 html[data-theme='dark'] {
   .progress-bar {
-    background: #1a1a1a;
+    background: var(--hula-brand-primary);
 
     .progress-fill {
       background: var(--primary-color);
@@ -366,7 +366,7 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   .switch {
     .switch-track {
-      background: #3a3a3a;
+      background: var(--hula-brand-primary);
     }
 
     &.checked .switch-track {
@@ -379,7 +379,7 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   .slider {
     .slider-track {
-      background: #3a3a3a;
+      background: var(--hula-brand-primary);
     }
 
     .slider-fill {
@@ -397,18 +397,18 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   .timeline {
     .timeline-line {
-      background: #2a2a2a;
+      background: var(--hula-brand-primary);
     }
 
     .timeline-dot {
-      background: #1a1a1a;
+      background: var(--hula-brand-primary);
       border-color: var(--primary-color);
     }
 
     .timeline-item {
       &::before {
-        background: #1a1a1a;
-        border-color: #2a2a2a;
+        background: var(--hula-brand-primary);
+        border-color: var(--hula-brand-primary);
       }
     }
   }
@@ -418,14 +418,14 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   .rating {
     .rating-star {
-      color: #4a4a4a;
+      color: var(--hula-brand-primary);
 
       &.filled {
-        color: #fbbf24;
+        color: var(--hula-brand-primary);
       }
 
       &.hover {
-        color: #f59e0b;
+        color: var(--hula-brand-primary);
       }
     }
   }

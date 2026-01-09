@@ -148,19 +148,19 @@ const sizeClass = computed(() => `size-${props.size}`)
 
   /* 自定义状态 */
   .status-working {
-    background: #4a90e2;
+    background: var(--hula-brand-primary);
   }
   .status-studying {
-    background: #9b59b6;
+    background: var(--hula-brand-primary);
   }
   .status-gaming {
-    background: #e74c3c;
+    background: var(--hula-brand-primary);
   }
   .status-meeting {
-    background: #f39c12;
+    background: var(--hula-brand-primary);
   }
   .status-vacation {
-    background: #2ecc71;
+    background: var(--hula-brand-primary);
   }
 }
 
@@ -184,19 +184,19 @@ const sizeClass = computed(() => `size-${props.size}`)
 
   /* 自定义状态 */
   .status-working {
-    background: #4a90e2;
+    background: var(--hula-brand-primary);
   }
   .status-studying {
-    background: #9b59b6;
+    background: var(--hula-brand-primary);
   }
   .status-gaming {
-    background: #e74c3c;
+    background: var(--hula-brand-primary);
   }
   .status-meeting {
-    background: #f39c12;
+    background: var(--hula-brand-primary);
   }
   .status-vacation {
-    background: #2ecc71;
+    background: var(--hula-brand-primary);
   }
 }
 

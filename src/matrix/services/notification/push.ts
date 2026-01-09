@@ -11,8 +11,7 @@ import { logger } from '@/utils/logger'
 import { parseMatrixEvent } from '@/utils/messageUtils'
 import { MsgEnum } from '@/enums'
 import type { MatrixPushRule, MatrixPresence, MatrixTypingEvent } from '@/types/matrix'
-// @ts-expect-error - PushProcessor is exported from matrix-js-sdk
-import { PushProcessor } from 'matrix-js-sdk/lib/push/PushProcessor'
+import { PushProcessor } from 'matrix-js-sdk/lib/pushprocessor'
 
 export interface PushRuleScope {
   /** Global rules */
@@ -186,6 +185,7 @@ export class MatrixPushService {
       // Initialize SDK PushProcessor
       const client = matrixClientService.getClient()
       if (client) {
+        // @ts-expect-error - PushProcessor constructor expects SDK client format
         this.pushProcessor = new PushProcessor({ client })
         logger.info('[MatrixPushService] SDK PushProcessor initialized')
       }
@@ -429,6 +429,7 @@ export class MatrixPushService {
         const sdkEvent = this.convertToSdkEvent(event, room)
         if (sdkEvent) {
           // Use SDK's PushProcessor to evaluate push rules
+          // @ts-expect-error - SDK MatrixEvent type is complex, using runtime type
           const pushDetails = this.pushProcessor.actionsForEvent(sdkEvent)
 
           // Map SDK push details to our evaluator format

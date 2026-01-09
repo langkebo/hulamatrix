@@ -3,12 +3,19 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { PrivateChatExtension } from '../PrivateChatExtension.js'
-import { extendMatrixClient, isPrivateChatApiEnabled, getPrivateChatApi } from '../factory.js'
-import type { MatrixClientLike, PrivateChatSession } from '../types.js'
+import { PrivateChatExtension } from '@/sdk/matrix-private-chat/PrivateChatExtension.js'
+import { extendMatrixClient, isPrivateChatApiEnabled, getPrivateChatApi } from '@/sdk/matrix-private-chat/factory.js'
+import type { MatrixClientLike, PrivateChatSession } from '@/sdk/matrix-private-chat/types.js'
 
 // Mock fetch
 global.fetch = vi.fn()
+
+// Helper function to generate valid UUID-like session IDs
+function generateSessionId(suffix: string): string {
+  // Generate a valid UUID format for testing
+  const hash = suffix.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return `00000000-0000-4000-8000-${hash.toString(16).padStart(12, '0')}`
+}
 
 describe('PrivateChat SDK 集成测试', () => {
   let mockClient: MatrixClientLike
@@ -69,8 +76,9 @@ describe('PrivateChat SDK 集成测试', () => {
       const api = getPrivateChatApi(mockClient)
 
       // 2. 创建会话
+      const testSessionId = generateSessionId('test-session')
       const mockSession: PrivateChatSession = {
-        session_id: 'test-session',
+        session_id: testSessionId,
         session_name: 'Test Chat',
         creator_id: '@test:server.com',
         participants: ['@alice:server.com', '@bob:server.com'],
@@ -81,13 +89,13 @@ describe('PrivateChat SDK 集成测试', () => {
         ok: true,
         json: async () => ({
           status: 'ok',
-          session_id: 'test-session',
+          session_id: testSessionId,
           session: mockSession
         }),
         text: async () =>
           JSON.stringify({
             status: 'ok',
-            session_id: 'test-session',
+            session_id: testSessionId,
             session: mockSession
           })
       } as Response)
@@ -97,17 +105,19 @@ describe('PrivateChat SDK 集成测试', () => {
         session_name: 'Test Chat'
       })
 
-      expect(createResponse.session_id).toBe('test-session')
+      expect(createResponse.session_id).toBe(testSessionId)
       expect(createResponse.session).toEqual(mockSession)
 
       // 3. 验证会话已缓存
-      expect(api.hasSession('test-session')).toBe(true)
-      expect(api.getSession('test-session')).toEqual(mockSession)
+      expect(api.hasSession(testSessionId)).toBe(true)
+      expect(api.getSession(testSessionId)).toEqual(mockSession)
     })
 
     it('应该完成完整的消息发送流程', async () => {
       extendMatrixClient(mockClient)
       const api = getPrivateChatApi(mockClient)
+
+      const sessionId = generateSessionId('session-1')
 
       // 发送消息
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -119,7 +129,7 @@ describe('PrivateChat SDK 集成测试', () => {
         text: async () => JSON.stringify({ status: 'ok', message_id: 'msg-123' })
       } as Response)
 
-      const messageId = await api.sendText('session-1', 'Hello, World!')
+      const messageId = await api.sendText(sessionId, 'Hello, World!')
 
       expect(messageId).toBe('msg-123')
     })
@@ -128,6 +138,7 @@ describe('PrivateChat SDK 集成测试', () => {
       extendMatrixClient(mockClient)
       const api = getPrivateChatApi(mockClient)
 
+      const sessionId = generateSessionId('session-2')
       const handler = vi.fn()
 
       // 订阅消息
@@ -138,7 +149,7 @@ describe('PrivateChat SDK 集成测试', () => {
           messages: [
             {
               message_id: 'msg-1',
-              session_id: 'session-1',
+              session_id: sessionId,
               sender_id: '@other:server.com',
               content: 'New message',
               type: 'text',
@@ -152,7 +163,7 @@ describe('PrivateChat SDK 集成测试', () => {
             messages: [
               {
                 message_id: 'msg-1',
-                session_id: 'session-1',
+                session_id: sessionId,
                 sender_id: '@other:server.com',
                 content: 'New message',
                 type: 'text',
@@ -162,7 +173,7 @@ describe('PrivateChat SDK 集成测试', () => {
           })
       } as Response)
 
-      const unsubscribe = api.subscribeToMessages('session-1', handler)
+      const unsubscribe = api.subscribeToMessages(sessionId, handler)
 
       // 等待轮询
       await new Promise((resolve) => setTimeout(resolve, 3100))
@@ -177,9 +188,11 @@ describe('PrivateChat SDK 集成测试', () => {
       extendMatrixClient(mockClient)
       const api = getPrivateChatApi(mockClient)
 
+      const toDeleteSessionId = generateSessionId('to-delete')
+
       // 先创建会话
       const mockSession: PrivateChatSession = {
-        session_id: 'to-delete',
+        session_id: toDeleteSessionId,
         creator_id: '@test:server.com',
         participants: ['@user:server.com'],
         created_at: '2024-01-01T00:00:00Z'
@@ -189,13 +202,13 @@ describe('PrivateChat SDK 集成测试', () => {
         ok: true,
         json: async () => ({
           status: 'ok',
-          session_id: 'to-delete',
+          session_id: toDeleteSessionId,
           session: mockSession
         }),
         text: async () =>
           JSON.stringify({
             status: 'ok',
-            session_id: 'to-delete',
+            session_id: toDeleteSessionId,
             session: mockSession
           })
       } as Response)
@@ -211,15 +224,17 @@ describe('PrivateChat SDK 集成测试', () => {
         text: async () => JSON.stringify({ status: 'ok' })
       } as Response)
 
-      await api.deleteSession('to-delete')
+      await api.deleteSession(toDeleteSessionId)
 
       // 验证会话已删除
-      expect(api.hasSession('to-delete')).toBe(false)
+      expect(api.hasSession(toDeleteSessionId)).toBe(false)
     })
 
     it('应该处理缓存刷新', async () => {
       extendMatrixClient(mockClient)
       const api = getPrivateChatApi(mockClient)
+
+      const sessionId1 = generateSessionId('session-list-1')
 
       // 第一次获取
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -228,7 +243,7 @@ describe('PrivateChat SDK 集成测试', () => {
           status: 'ok',
           sessions: [
             {
-              session_id: 'session-1',
+              session_id: sessionId1,
               creator_id: '@test:server.com',
               participants: ['@user:server.com'],
               created_at: '2024-01-01T00:00:00Z'
@@ -240,7 +255,7 @@ describe('PrivateChat SDK 集成测试', () => {
             status: 'ok',
             sessions: [
               {
-                session_id: 'session-1',
+                session_id: sessionId1,
                 creator_id: '@test:server.com',
                 participants: ['@user:server.com'],
                 created_at: '2024-01-01T00:00:00Z'
@@ -315,6 +330,7 @@ describe('PrivateChat SDK 集成测试', () => {
 
       // 创建一个已过期的会话
       const pastDate = new Date(Date.now() - 10000).toISOString()
+      const expiredSessionId = generateSessionId('expired')
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -322,7 +338,7 @@ describe('PrivateChat SDK 集成测试', () => {
           status: 'ok',
           sessions: [
             {
-              session_id: 'expired-session',
+              session_id: expiredSessionId,
               creator_id: '@test:server.com',
               participants: ['@user:server.com'],
               created_at: '2024-01-01T00:00:00Z',
@@ -335,7 +351,7 @@ describe('PrivateChat SDK 集成测试', () => {
             status: 'ok',
             sessions: [
               {
-                session_id: 'expired-session',
+                session_id: expiredSessionId,
                 creator_id: '@test:server.com',
                 participants: ['@user:server.com'],
                 created_at: '2024-01-01T00:00:00Z',
@@ -348,7 +364,7 @@ describe('PrivateChat SDK 集成测试', () => {
       await api.listSessions()
 
       // 过期的会话不应该在缓存中
-      expect(api.hasSession('expired-session')).toBe(false)
+      expect(api.hasSession(expiredSessionId)).toBe(false)
     })
 
     it('应该处理并发操作', async () => {
@@ -356,30 +372,34 @@ describe('PrivateChat SDK 集成测试', () => {
       const api = getPrivateChatApi(mockClient)
 
       // 并发创建多个会话
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          status: 'ok',
-          session_id: `session-${Math.random()}`,
-          session: {
-            session_id: `session-${Math.random()}`,
-            creator_id: '@test:server.com',
-            participants: ['@user:server.com'],
-            created_at: '2024-01-01T00:00:00Z'
-          }
-        }),
-        text: async () =>
-          JSON.stringify({
+      let callCount = 0
+      vi.mocked(fetch).mockImplementation(async () => {
+        const sessionId = generateSessionId(`concurrent-${callCount++}`)
+        return {
+          ok: true,
+          json: async () => ({
             status: 'ok',
-            session_id: `session-${Math.random()}`,
+            session_id: sessionId,
             session: {
-              session_id: `session-${Math.random()}`,
+              session_id: sessionId,
               creator_id: '@test:server.com',
               participants: ['@user:server.com'],
               created_at: '2024-01-01T00:00:00Z'
             }
-          })
-      } as Response)
+          }),
+          text: async () =>
+            JSON.stringify({
+              status: 'ok',
+              session_id: sessionId,
+              session: {
+                session_id: sessionId,
+                creator_id: '@test:server.com',
+                participants: ['@user:server.com'],
+                created_at: '2024-01-01T00:00:00Z'
+              }
+            })
+        } as Response
+      })
 
       const promises = Array.from({ length: 5 }, () =>
         api.createSession({
@@ -401,15 +421,17 @@ describe('PrivateChat SDK 集成测试', () => {
       const api = getPrivateChatApi(mockClient)
 
       // 创建一些轮询
-      api.subscribeToMessages('session-1', () => {})
-      api.subscribeToMessages('session-2', () => {})
+      const session1 = generateSessionId('cleanup-1')
+      const session2 = generateSessionId('cleanup-2')
+      api.subscribeToMessages(session1, () => {})
+      api.subscribeToMessages(session2, () => {})
 
       // 清理
       api.dispose()
 
       // 验证资源已清理
-      expect(api.hasSession('session-1')).toBe(false)
-      expect(api.hasSession('session-2')).toBe(false)
+      expect(api.hasSession(session1)).toBe(false)
+      expect(api.hasSession(session2)).toBe(false)
     })
 
     it('应该处理无效的用户ID格式', async () => {
@@ -450,8 +472,9 @@ describe('PrivateChat SDK 集成测试', () => {
       api.on('message.sent', sentListener)
 
       // 创建会话
+      const eventTestSessionId = generateSessionId('event-test')
       const mockSession: PrivateChatSession = {
-        session_id: 'event-test-session',
+        session_id: eventTestSessionId,
         creator_id: '@test:server.com',
         participants: ['@user:server.com'],
         created_at: '2024-01-01T00:00:00Z'
@@ -461,13 +484,13 @@ describe('PrivateChat SDK 集成测试', () => {
         ok: true,
         json: async () => ({
           status: 'ok',
-          session_id: 'event-test-session',
+          session_id: eventTestSessionId,
           session: mockSession
         }),
         text: async () =>
           JSON.stringify({
             status: 'ok',
-            session_id: 'event-test-session',
+            session_id: eventTestSessionId,
             session: mockSession
           })
       } as Response)
@@ -489,7 +512,7 @@ describe('PrivateChat SDK 集成测试', () => {
       } as Response)
 
       await api.sendMessage({
-        session_id: 'event-test-session',
+        session_id: eventTestSessionId,
         content: 'Test'
       })
 

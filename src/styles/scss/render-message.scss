@@ -69,7 +69,7 @@
 }
 /** 浮标达到最大值时候的样式 */
 .max:hover {
-  background-color: #f5dce1;
+  background-color: var(--hula-brand-primary);
 }
 /** 回复气泡的样式 */
 .reply-bubble {
@@ -87,7 +87,7 @@
       filter: grayscale(0);
     }
     svg {
-      color: #13987f;
+      color: var(--hula-brand-primary);
     }
     span {
       color: var(--reply-hover);
@@ -105,12 +105,12 @@
 .emoji-reply-bubble {
   @apply relative flex-y-center gap-4px rounded-50px p-[4px_8px] cursor-pointer select-none text-14px w-fit custom-shadow;
   background-color: rgba(19, 152, 127, 0.4);
-  border: 1px solid #13987f;
+  border: 1px solid var(--hula-brand-primary);
 }
 
 /** 当前用户标记消息的样式 */
 .emoji-reply-bubble--active {
-  @apply dark:bg-[#fbb99020] bg-[#fbb99030] dark:border-(1px solid #fbb99050) border-(1px solid #fbb99090);
+  @apply dark:bg-[var(--hula-brand-primary)20] bg-[var(--hula-brand-primary)30] dark:border-(1px solid var(--hula-brand-primary)50) border-(1px solid var(--hula-brand-primary)90);
 }
 /** 跳转到回复内容时候显示的样式 */
 .active-reply {

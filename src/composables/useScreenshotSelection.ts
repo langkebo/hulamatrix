@@ -106,7 +106,7 @@ export function useScreenshotSelection(options: UseScreenshotSelectionOptions): 
       width: `${maxX - minX}px`,
       height: `${maxY - minY}px`,
       borderRadius: `${borderRadius.value}px`,
-      border: '2px solid #13987f'
+      border: '2px solid var(--hula-brand-primary)'
     }
 
     // 更新圆角控制器位置，确保不超出屏幕边界
@@ -256,7 +256,7 @@ export function useScreenshotSelection(options: UseScreenshotSelectionOptions): 
     selectionAreaStyle.value.left = `${constrainedLeft}px`
     selectionAreaStyle.value.top = `${constrainedTop}px`
     selectionAreaStyle.value.borderRadius = `${borderRadius.value}px`
-    selectionAreaStyle.value.border = '2px solid #13987f'
+    selectionAreaStyle.value.border = '2px solid var(--hula-brand-primary)'
 
     // 更新screenConfig
     const { scaleX, scaleY } = screenConfig.value
@@ -400,7 +400,7 @@ export function useScreenshotSelection(options: UseScreenshotSelectionOptions): 
       width: `${newWidth}px`,
       height: `${newHeight}px`,
       borderRadius: `${borderRadius.value}px`,
-      border: '2px solid #13987f'
+      border: '2px solid var(--hula-brand-primary)'
     }
 
     // 更新screenConfig

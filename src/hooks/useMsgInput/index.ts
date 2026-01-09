@@ -339,7 +339,7 @@ export default function useMsgInput(messageInputDom?: Ref<HTMLElement | null>) {
       mentionSpan.dataset.aitUid = user.uid
       mentionSpan.className = 'at-mention'
       mentionSpan.textContent = `@${user.name}`
-      mentionSpan.style.cssText = 'color: #13987f; font-weight: 500;'
+      mentionSpan.style.cssText = 'color: var(--hula-brand-primary); font-weight: 500;'
 
       // 替换文本
       const textNode = range.startContainer

@@ -10,7 +10,7 @@
         <div
           v-if="isMac()"
           @click="visible = false"
-          class="mac-close size-13px shadow-inner bg-#ed6a5eff rounded-50% mt-6px select-none absolute left-6px">
+          class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
           <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
@@ -51,7 +51,7 @@
             </div>
 
             <div @click="removeFile(index)" class="flex-shrink-0 pl-20px cursor-pointer">
-              <svg class="size-20px hover:color-#909090 transition-colors duration-200 ease-in-out">
+              <svg class="size-20px hover:color-var(--hula-brand-primary) transition-colors duration-200 ease-in-out">
                 <use href="#squareClose"></use>
               </svg>
             </div>

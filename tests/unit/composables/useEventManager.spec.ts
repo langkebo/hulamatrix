@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { useEventManager } from '../useEventManager'
+import { useEventManager } from '@/composables/useEventManager'
 
 describe('useEventManager', () => {
   let eventManager: ReturnType<typeof useEventManager>

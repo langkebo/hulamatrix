@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Unified Color Tokens - 统一色彩系统
+   ========================================================================== */
+
+:root {
+  /* ==================== 品牌色（单一来源） ==================== */
+  --hula-brand-primary: var(--hula-brand-primary);      /* 主品牌色：亮绿色 */
+  --hula-brand-hover: var(--hula-brand-primary);        /* 悬停状态：更亮绿色 */
+  --hula-brand-active: var(--hula-brand-primary);       /* 激活状态：深绿色 */
+  --hula-brand-subtle: rgba(0, 191, 165, 0.1);  /* 柔和背景 */
+  --hula-brand-rgb: 0, 191, 165;      /* RGB 值用于 rgba 计算 */
+
+  /* ==================== 功能色 ==================== */
+  --hula-success: var(--hula-brand-primary);            /* 成功：绿色 */
+  --hula-success-rgb: 0, 191, 165;
+  --hula-warning: var(--hula-brand-primary);            /* 警告：橙色 */
+  --hula-warning-rgb: 255, 184, 77;
+  --hula-error: var(--hula-brand-primary);              /* 错误：红色 */
+  --hula-error-rgb: 255, 107, 107;
+  --hula-info: var(--hula-brand-primary);               /* 信息：蓝色 */
+  --hula-info-rgb: 74, 144, 226;
+
+  /* ==================== 中性色 ==================== */
+  --hula-white: var(--hula-brand-primary);
+  --hula-white-rgb: 255, 255, 255;
+  --hula-black: var(--hula-brand-primary);
+  --hula-black-rgb: 0, 0, 0;
+
+  /* 灰色色阶 */
+  --hula-gray-50: var(--hula-brand-primary);
+  --hula-gray-100: var(--hula-brand-primary);
+  --hula-gray-200: var(--hula-brand-primary);
+  --hula-gray-300: var(--hula-brand-primary);
+  --hula-gray-400: var(--hula-brand-primary);
+  --hula-gray-500: var(--hula-brand-primary);
+  --hula-gray-600: var(--hula-brand-primary);
+  --hula-gray-700: var(--hula-brand-primary);
+  --hula-gray-800: var(--hula-brand-primary);
+  --hula-gray-900: var(--hula-brand-primary);
+
+  /* ==================== PC 端深色主题 ==================== */
+  /* 背景色 */
+  --hula-pc-bg-primary: var(--hula-brand-primary);      /* 左侧导航背景：深青绿色 */
+  --hula-pc-bg-secondary: var(--hula-brand-primary);    /* 中间列表背景：深灰色 */
+  --hula-pc-bg-tertiary: var(--hula-brand-primary);     /* 右侧聊天背景：中灰色 */
+  --hula-pc-bg-elevated: var(--hula-brand-primary);     /* 卡片/弹窗背景 */
+  --hula-pc-bg-hover: var(--hula-brand-primary);        /* 悬停背景 */
+  --hula-pc-bg-active: var(--hula-brand-primary);       /* 激活背景 */
+
+  /* 文字色 */
+  --hula-pc-text-primary: var(--hula-brand-primary);    /* 主要文字 */
+  --hula-pc-text-secondary: var(--hula-brand-primary);  /* 次要文字 */
+  --hula-pc-text-tertiary: var(--hula-brand-primary);   /* 辅助文字 */
+  --hula-pc-text-disabled: var(--hula-brand-primary);   /* 禁用文字 */
+
+  /* 边框色 */
+  --hula-pc-border: var(--hula-brand-primary);          /* 边框颜色 */
+  --hula-pc-divider: var(--hula-brand-primary);         /* 分割线颜色 */
+
+  /* ==================== 移动端浅色主题 ==================== */
+  /* 背景色 */
+  --hula-mobile-bg-primary: var(--hula-brand-primary);  /* 主背景：薄荷绿 */
+  --hula-mobile-bg-secondary: var(--hula-brand-primary); /* 次级背景：白色 */
+  --hula-mobile-bg-tertiary: var(--hula-brand-primary);  /* 第三级背景 */
+  --hula-mobile-bg-hover: var(--hula-brand-primary);     /* 悬停背景 */
+  --hula-mobile-bg-active: var(--hula-brand-primary);    /* 激活背景 */
+
+  /* 文字色 */
+  --hula-mobile-text-primary: var(--hula-brand-primary); /* 主要文字 */
+  --hula-mobile-text-secondary: var(--hula-brand-primary); /* 次要文字 */
+  --hula-mobile-text-tertiary: var(--hula-brand-primary);  /* 辅助文字 */
+  --hula-mobile-text-disabled: var(--hula-brand-primary);  /* 禁用文字 */
+
+  /* 边框色 */
+  --hula-mobile-border: var(--hula-brand-primary);       /* 边框颜色 */
+  --hula-mobile-divider: var(--hula-brand-primary);      /* 分割线颜色 */
+
+  /* ==================== 通用语义颜色 ==================== */
+  --hula-bg-page: var(--hula-brand-primary);            /* 页面背景 */
+  --hula-bg-component: var(--hula-brand-primary);       /* 组件背景 */
+  --hula-bg-overlay: rgba(0, 0, 0, 0.5); /* 遮罩层 */
+
+  /* ==================== 主题特定颜色 ==================== */
+  /* 选中状态 */
+  --hula-selected-bg: var(--hula-brand-primary);        /* 深红色选中背景（设计图规范） */
+  --hula-selected-border: var(--hula-brand-primary);    /* 深红色选中边框 */
+
+  /* 消息气泡 */
+  --hula-bubble-sent: var(--hula-brand-primary);        /* 发送气泡 */
+  --hula-bubble-sent-text: var(--hula-brand-primary);   /* 发送文字 */
+  --hula-bubble-received: var(--hula-brand-primary);    /* 接收气泡 */
+  --hula-bubble-received-text: var(--hula-brand-primary); /* 接收文字 */
+
+  /* 链接 */
+  --hula-link: var(--hula-brand-primary);
+  --hula-link-hover: var(--hula-brand-primary);
+
+  /* ==================== 阴影 ==================== */
+  --hula-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --hula-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --hula-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --hula-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+
+  /* 品牌色阴影 */
+  --hula-shadow-brand: 0 4px 12px rgba(var(--hula-brand-rgb), 0.2);
+  --hula-shadow-brand-lg: 0 8px 24px rgba(var(--hula-brand-rgb), 0.3);
+}
+
+/* ==================== 深色模式覆盖 ==================== */
+[data-theme='dark'] {
+  --hula-bg-page: var(--hula-brand-primary);
+  --hula-bg-component: var(--hula-brand-primary);
+  --hula-bg-overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* ==================== 辅助函数 ==================== */
+
+/* rgba 快捷方式 */
+.hula-bg-brand-10 { background-color: rgba(var(--hula-brand-rgb), 0.1); }
+.hula-bg-brand-20 { background-color: rgba(var(--hula-brand-rgb), 0.2); }
+.hula-bg-brand-30 { background-color: rgba(var(--hula-brand-rgb), 0.3); }
+.hula-bg-brand-40 { background-color: rgba(var(--hula-brand-rgb), 0.4); }
+.hula-bg-brand-50 { background-color: rgba(var(--hula-brand-rgb), 0.5); }
+
+/* 透明度快捷方式 */
+.hula-text-white-50 { color: rgba(var(--hula-white-rgb), 0.5); }
+.hula-text-white-70 { color: rgba(var(--hula-white-rgb), 0.7); }
+.hula-text-black-30 { color: rgba(var(--hula-black-rgb), 0.3); }
+.hula-text-black-50 { color: rgba(var(--hula-black-rgb), 0.5); }

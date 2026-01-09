@@ -8,7 +8,7 @@
       </p>
     </div>
 
-    <p class="w-full h-1px bg-#e3e3e3 dark:bg-#80808050 my-6px select-none"></p>
+    <p class="w-full h-1px bg-var(--hula-brand-primary) dark:bg-var(--hula-brand-primary)50 my-6px select-none"></p>
 
     <p class="text-(10px [--chat-text-color]) ml-4px select-none">查看 {{ msgIds.length }} 条转发消息</p>
   </main>
@@ -114,8 +114,8 @@ const openMultiMsgWindow = async () => {
 .multi-msg {
   cursor: default;
   @apply: w-230px flex flex-col h-fit bg-[--group-notice-bg]
-  border-(1px solid #e3e3e3) dark:border-(1px solid #404040)
-  hover:bg-#fefefe99 dark:hover:bg-#60606040 rounded-8px p-8px box-border
+  border-(1px solid var(--hula-brand-primary)) dark:border-(1px solid var(--hula-brand-primary))
+  hover:bg-var(--hula-brand-primary)99 dark:hover:bg-var(--hula-brand-primary)40 rounded-8px p-8px box-border
   custom-shadow transition-colors duration-200;
 }
 </style>

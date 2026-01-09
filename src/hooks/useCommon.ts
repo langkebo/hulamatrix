@@ -252,7 +252,7 @@ export const useCommon = () => {
       const spanNode = document.createElement('span')
       spanNode.id = 'aitSpan' // 设置id为aitSpan
       spanNode.contentEditable = 'false' // 设置为不可编辑
-      spanNode.classList.add('text-#13987f')
+      spanNode.classList.add('text-var(--hula-brand-primary)')
       spanNode.classList.add('select-none')
       spanNode.classList.add('cursor-default')
       spanNode.style.userSelect = 'text' // 允许全选选中

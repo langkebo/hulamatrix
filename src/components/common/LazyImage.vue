@@ -273,7 +273,7 @@ defineExpose({
   position: relative;
   display: inline-block;
   overflow: hidden;
-  background-color: var(--color-bg-secondary, #f5f5f5);
+  background-color: var(--color-bg-secondary, var(--hula-brand-primary));
 }
 
 .lazy-image-placeholder,
@@ -301,15 +301,15 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-secondary, #f5f5f5);
+  background-color: var(--color-bg-secondary, var(--hula-brand-primary));
   z-index: 2;
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-border, #e0e0e0);
-  border-top-color: var(--color-primary, #1890ff);
+  border: 3px solid var(--color-border, var(--hula-brand-primary));
+  border-top-color: var(--color-primary, var(--hula-brand-primary));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -326,7 +326,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-error, #fff2f0);
+  background-color: var(--color-bg-error, var(--hula-brand-primary));
   z-index: 3;
 }
 
@@ -347,14 +347,14 @@ defineExpose({
   padding: 8px 16px;
   font-size: 14px;
   color: white;
-  background-color: var(--color-primary, #1890ff);
+  background-color: var(--color-primary, var(--hula-brand-primary));
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: var(--color-primary-hover, #40a9ff);
+    background-color: var(--color-primary-hover, var(--hula-brand-primary));
   }
 
   &:active {

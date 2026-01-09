@@ -8,7 +8,7 @@
         class="mention-popover"
         v-if="mentionTokenSet.has(item) && !props.historyMode">
         <template #trigger>
-          <span :key="item" class="mention-text" class="text-#fbb990 cursor-pointer">
+          <span :key="item" class="mention-text text-brand cursor-pointer">
             {{ item }}
           </span>
         </template>
@@ -37,7 +37,7 @@
                 padding: '2px 4px',
                 borderRadius: '6px',
                 color: '#000',
-                background: '#13987f'
+                background: 'var(--hula-brand-primary)'
               }" />
             <p v-else class="link-paragraph">{{ item }}</p>
           </div>
@@ -52,7 +52,7 @@
           padding: '2px 4px',
           borderRadius: '6px',
           color: '#000',
-          background: '#13987f'
+          background: 'var(--hula-brand-primary)'
         }" />
       <template v-else>{{ item }}</template>
       <div
@@ -268,7 +268,7 @@ const onImageLoadError = (e: Event) => {
 }
 
 .mention-text-static {
-  color: #fbb990;
+  color: var(--hula-brand-primary);
   cursor: text;
 }
 

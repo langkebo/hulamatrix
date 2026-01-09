@@ -87,21 +87,21 @@
         </svg>
         <n-flex vertical :size="20" class="p-[22px_10px_10px_22px] select-none">
           <span class="text-16px">最小化还是直接退出程序?</span>
-          <label class="text-(14px #707070) flex gap-6px lh-16px items-center">
+          <label class="text-(14px var(--hula-brand-primary)) flex gap-6px lh-16px items-center">
             <n-radio :checked="tipsRef.type === CloseBxEnum.HIDE" @change="tipsRef.type = CloseBxEnum.HIDE" />
             <span>最小化到系统托盘</span>
           </label>
-          <label class="text-(14px #707070) flex gap-6px lh-16px items-center">
+          <label class="text-(14px var(--hula-brand-primary)) flex gap-6px lh-16px items-center">
             <n-radio :checked="tipsRef.type === CloseBxEnum.CLOSE" @change="tipsRef.type = CloseBxEnum.CLOSE" />
             <span>直接退出程序</span>
           </label>
-          <label class="text-(12px #909090) flex gap-6px justify-end items-center">
+          <label class="text-(12px var(--hula-brand-primary)) flex gap-6px justify-end items-center">
             <n-checkbox size="small" v-model:checked="tipsRef.notTips" />
             <span>下次不出现此提示</span>
           </label>
 
           <n-flex justify="end">
-            <n-button @click="handleConfirm" class="w-78px" :color="'#13987f'">确定</n-button>
+            <n-button @click="handleConfirm" class="w-78px" :color="'var(--hula-brand-primary)'">确定</n-button>
             <n-button @click="tipsRef.show = false" class="w-78px" secondary>取消</n-button>
           </n-flex>
         </n-flex>
@@ -392,7 +392,7 @@ defineExpose({
 }
 
 .action-close {
-  @apply w-28px h-24px flex-center cursor-pointer hover:bg-#c22b1c svg:hover:color-[#fff];
+  @apply w-28px h-24px flex-center cursor-pointer hover:bg-var(--hula-brand-primary) svg:hover:color-[#fff];
 }
 
 .n-modal {

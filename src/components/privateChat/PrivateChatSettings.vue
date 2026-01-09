@@ -172,9 +172,9 @@ const formatBytes = (bytes: number): string => {
 }
 
 const getStorageColor = (percentage: number): string => {
-  if (percentage < 50) return '#18a058'
-  if (percentage < 80) return '#f0a020'
-  return '#d03050'
+  if (percentage < 50) return 'var(--hula-brand-primary)'
+  if (percentage < 80) return 'var(--hula-brand-primary)'
+  return 'var(--hula-brand-primary)'
 }
 
 const handleToggleE2EE = async (value: boolean) => {

@@ -23,14 +23,14 @@
           :style="{
             width: `${imageStyle.width}`,
             height: `${imageStyle.height}`,
-            backgroundColor: '#c8c8c833'
+            backgroundColor: 'var(--hula-brand-primary)33'
           }"
           class="rounded-10px">
           <img class="size-24px select-none" src="@/assets/img/loading.svg" alt="loading" />
         </n-flex>
       </template>
       <template #error>
-        <n-flex v-if="isError" align="center" justify="center" class="w-200px h-150px bg-#c8c8c833 rounded-10px">
+        <n-flex v-if="isError" align="center" justify="center" class="w-200px h-150px bg-var(--hula-brand-primary)33 rounded-10px">
           <svg class="size-34px color-[--chat-text-color]">
             <use href="#error-picture"></use>
           </svg>

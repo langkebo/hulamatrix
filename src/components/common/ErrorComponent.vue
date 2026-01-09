@@ -17,9 +17,9 @@ defineEmits(['retry'])
   align-items: center;
   justify-content: center;
   padding: 20px;
-  color: #ff4d4f;
-  background-color: #fff2f0;
-  border: 1px solid #ffccc7;
+  color: var(--hula-brand-primary);
+  background-color: var(--hula-brand-primary);
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 4px;
 }
 
@@ -35,7 +35,7 @@ defineEmits(['retry'])
 
 .retry-btn {
   padding: 4px 12px;
-  background-color: #ff4d4f;
+  background-color: var(--hula-brand-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -44,6 +44,6 @@ defineEmits(['retry'])
 }
 
 .retry-btn:hover {
-  background-color: #ff7875;
+  background-color: var(--hula-brand-primary);
 }
 </style>

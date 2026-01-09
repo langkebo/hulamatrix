@@ -44,7 +44,7 @@
           <svg class="size-42px animate-pulse">
             <use :href="`#${scanStatus.icon}`"></use>
           </svg>
-          <span class="text-(14px #e3e3e3)">{{ scanStatusText }}</span>
+          <span class="text-(14px var(--hula-brand-primary))">{{ scanStatusText }}</span>
         </n-flex>
 
         <n-flex
@@ -55,12 +55,12 @@
           class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
           style="pointer-events: none">
           <n-spin size="small" />
-          <span class="text-(16px #e3e3e3)">{{ t('login.qr.overlay.refreshing') }}</span>
+          <span class="text-(16px var(--hula-brand-primary))">{{ t('login.qr.overlay.refreshing') }}</span>
         </n-flex>
       </div>
     </n-flex>
 
-    <n-flex justify="center" class="mt-15px text-(14px #808080)">
+    <n-flex justify="center" class="mt-15px text-(14px var(--hula-brand-primary))">
       {{ loadText }}
     </n-flex>
 
@@ -69,7 +69,7 @@
       <div class="text-brand cursor-pointer" @click="router.push('/login')">
         {{ t('login.qr.actions.account_login') }}
       </div>
-      <div class="w-1px h-14px bg-#ccc dark:bg-#707070"></div>
+      <div class="w-1px h-14px bg-#ccc dark:bg-var(--hula-brand-primary)"></div>
       <div
         class="text-brand cursor-pointer"
         @click="createWebviewWindow(t('login.qr.actions.register_title'), 'register', 600, 600)">
@@ -111,8 +111,8 @@ const loading = ref(true)
 const refreshing = ref(false) // 是否正在刷新
 const qrCodeValue = ref('')
 const qrCodeResp = ref<{ qrId?: string; deviceHash?: string; [key: string]: unknown } | null>(null)
-const qrCodeColor = ref('#000000')
-const qrCodeBgColor = ref('#FFFFFF')
+const qrCodeColor = ref('var(--hula-brand-primary)')
+const qrCodeBgColor = ref('var(--hula-brand-primary)')
 const qrCodeType = ref('canvas' as const)
 const qrCodeIcon = ref('/logo.png')
 const qrErrorCorrectionLevel = ref('H' as const)

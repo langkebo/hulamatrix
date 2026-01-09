@@ -11,7 +11,7 @@
         <div
           v-if="isMac()"
           @click="closeWindow"
-          class="mac-close size-13px shadow-inner bg-#ed6a5eff rounded-50% mt-6px select-none absolute left-6px">
+          class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
           <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
@@ -45,7 +45,7 @@
             :fixed-box="false"
             :fixed-number="[1, 1]"
             :center-box="true"
-            :background-color="'#f0f0f0'"
+            :background-color="'var(--hula-brand-primary)'"
             @real-time="handleRealTime"
             class="w-300px h-300px"
           />

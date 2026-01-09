@@ -272,27 +272,27 @@ const createRipple = (event: Event) => {
   // 变体样式
   &--primary .h-fab__main {
     background: var(--primary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--secondary .h-fab__main {
     background: var(--secondary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--danger .h-fab__main {
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--warning .h-fab__main {
     background: var(--warning-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--success .h-fab__main {
     background: var(--success-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   // 展开状态
@@ -350,7 +350,7 @@ const createRipple = (event: Event) => {
   justify-content: center;
   border-radius: 50%;
   border: none;
-  background: var(--hula-white, #ffffff);
+  background: var(--hula-white, var(--hula-brand-primary));
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -367,27 +367,27 @@ const createRipple = (event: Event) => {
 
   &--primary {
     background: var(--primary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--secondary {
     background: var(--secondary-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--danger {
     background: var(--danger-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--warning {
     background: var(--warning-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   &--success {
     background: var(--success-color);
-    color: #ffffff;
+    color: var(--hula-brand-primary);
   }
 
   svg {

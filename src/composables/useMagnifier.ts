@@ -129,7 +129,7 @@ export function useMagnifier(config: MagnifierConfig = { width: 120, height: 120
     )
 
     // Draw crosshair
-    magnifierCtx.value.strokeStyle = '#13987f'
+    magnifierCtx.value.strokeStyle = 'var(--hula-brand-primary)'
     magnifierCtx.value.lineWidth = 1
     magnifierCtx.value.beginPath()
     magnifierCtx.value.moveTo(config.width / 2, 0)

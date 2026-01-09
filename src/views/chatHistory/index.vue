@@ -66,8 +66,8 @@
                       class="rounded-10px mr-12px"
                       fallback-src="/default-avatar.png" />
                     <div class="flex-y-center gap-12px h-fit">
-                      <p class="text-(14px #909090)">{{ getUserDisplayName(item.payload.fromUser.uid) }}</p>
-                      <p class="text-(12px #909090)">{{ formatTime(item.payload.message.sendTime) }}</p>
+                      <p class="text-(14px var(--hula-brand-primary))">{{ getUserDisplayName(item.payload.fromUser.uid) }}</p>
+                      <p class="text-(12px var(--hula-brand-primary))">{{ formatTime(item.payload.message.sendTime) }}</p>
                     </div>
                   </div>
                   <ContextMenu
@@ -108,8 +108,8 @@
                       class="rounded-10px mr-12px"
                       fallback-src="/default-avatar.png" />
                     <div class="flex-y-center gap-12px h-fit">
-                      <p class="text-(14px #909090)">{{ getUserDisplayName(item.fromUser.uid) }}</p>
-                      <p class="text-(12px #909090)">{{ formatTime(item.message.sendTime) }}</p>
+                      <p class="text-(14px var(--hula-brand-primary))">{{ getUserDisplayName(item.fromUser.uid) }}</p>
+                      <p class="text-(12px var(--hula-brand-primary))">{{ formatTime(item.message.sendTime) }}</p>
                     </div>
                   </div>
                   <ContextMenu
@@ -506,7 +506,7 @@ onMounted(async () => {
 </style>
 <style lang="scss">
 .n-date-panel .n-date-panel-dates .n-date-panel-date.n-date-panel-date--selected::after {
-  background-color: #13987f;
+  background-color: var(--hula-brand-primary);
 }
 .n-date-panel.n-date-panel--daterange {
   border-radius: 14px;
@@ -515,6 +515,6 @@ onMounted(async () => {
 .n-date-panel-actions .n-button {
   background-color: rgba(19, 152, 127, 0.1) !important;
   border: none !important;
-  color: #13987f !important;
+  color: var(--hula-brand-primary) !important;
 }
 </style>

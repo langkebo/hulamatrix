@@ -231,19 +231,19 @@ onMounted(async () => {
   flex-shrink: 0;
 
   &.stat-icon-purple {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
   }
 
   &.stat-icon-pink {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
   }
 
   &.stat-icon-blue {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
   }
 
   &.stat-icon-orange {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    background: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
   }
 }
 
@@ -263,7 +263,7 @@ onMounted(async () => {
 
 .stat-label {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -290,7 +290,7 @@ onMounted(async () => {
 
 .detail-label {
   font-size: 12px;
-  color: #909090;
+  color: var(--hula-brand-primary);
 }
 
 .detail-value {

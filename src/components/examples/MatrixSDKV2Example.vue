@@ -241,13 +241,13 @@ h2 {
   display: flex;
   gap: 20px;
   padding: 10px;
-  background: #f5f5f5;
+  background: var(--hula-brand-primary);
   border-radius: 8px;
   margin-bottom: 20px;
 }
 
 .error {
-  color: #d32f2f;
+  color: var(--hula-brand-primary);
 }
 
 /* 统计信息 */
@@ -262,13 +262,13 @@ h2 {
   display: flex;
   gap: 10px;
   padding: 10px 15px;
-  background: #e3f2fd;
+  background: var(--hula-brand-primary);
   border-radius: 8px;
 }
 
 .stat-item .label {
   font-weight: bold;
-  color: #1976d2;
+  color: var(--hula-brand-primary);
 }
 
 .stat-item .value {
@@ -301,21 +301,21 @@ h2 {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background: #1976d2;
+  background: var(--hula-brand-primary);
   color: white;
   cursor: pointer;
   font-size: 14px;
 }
 
 .actions button:hover {
-  background: #1565c0;
+  background: var(--hula-brand-primary);
 }
 
 /* 区块 */
 .section {
   margin-bottom: 30px;
   padding: 20px;
-  background: #fafafa;
+  background: var(--hula-brand-primary);
   border-radius: 12px;
 }
 
@@ -344,7 +344,7 @@ h2 {
 }
 
 .friend-item.online {
-  border-left-color: #4caf50;
+  border-left-color: var(--hula-brand-primary);
 }
 
 .friend-info {
@@ -379,14 +379,14 @@ h2 {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
   cursor: pointer;
   font-size: 13px;
 }
 
 .friend-actions button:hover:not(:disabled) {
-  background: #bbdefb;
+  background: var(--hula-brand-primary);
 }
 
 .friend-actions button:disabled {
@@ -440,12 +440,12 @@ h2 {
 }
 
 .request-actions button:nth-child(1) {
-  background: #4caf50;
+  background: var(--hula-brand-primary);
   color: white;
 }
 
 .request-actions button:nth-child(2) {
-  background: #f44336;
+  background: var(--hula-brand-primary);
   color: white;
 }
 
@@ -463,12 +463,12 @@ h2 {
   padding: 15px;
   background: white;
   border-radius: 8px;
-  border-left: 4px solid #2196f3;
+  border-left: 4px solid var(--hula-brand-primary);
 }
 
 .session-item.active {
-  border-left-color: #4caf50;
-  background: #e8f5e9;
+  border-left-color: var(--hula-brand-primary);
+  background: var(--hula-brand-primary);
 }
 
 .session-info {
@@ -498,8 +498,8 @@ h2 {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--hula-brand-primary);
+  color: var(--hula-brand-primary);
   cursor: pointer;
   font-size: 13px;
 }
@@ -523,11 +523,11 @@ h2 {
   gap: 4px;
   padding: 10px;
   border-radius: 8px;
-  background: #f5f5f5;
+  background: var(--hula-brand-primary);
 }
 
 .message-item.own {
-  background: #e3f2fd;
+  background: var(--hula-brand-primary);
   align-items: flex-end;
 }
 
@@ -565,7 +565,7 @@ h2 {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background: #4caf50;
+  background: var(--hula-brand-primary);
   color: white;
   cursor: pointer;
   font-size: 14px;

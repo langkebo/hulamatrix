@@ -16,10 +16,10 @@ import { logger } from '@/utils/logger'
     <div
       v-show="isGroup"
       @click.stop="isCollapsed = !isCollapsed"
-      class="contraction-with-radius transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-#c8c8c833 h-60px w-14px">
+      class="contraction-with-radius transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-var(--hula-brand-primary)33 h-60px w-14px">
       <svg
         :class="isCollapsed ? 'rotate-0' : 'rotate-180'"
-        class="size-16px color-#909090 dark:color-#303030 absolute top-38%">
+        class="size-16px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) absolute top-38%">
         <use href="#left-arrow"></use>
       </svg>
     </div>
@@ -44,7 +44,7 @@ import { logger } from '@/utils/logger'
         <!-- 公告加载失败提示 -->
         <n-flex v-if="announError" class="h-74px" align="center" justify="center">
           <div class="text-center">
-            <p class="text-(12px #909090) mb-8px">{{ t('home.chat_sidebar.announcement.load_failed') }}</p>
+            <p class="text-(12px var(--hula-brand-primary)) mb-8px">{{ t('home.chat_sidebar.announcement.load_failed') }}</p>
             <n-button size="tiny" @click="announcementStore.loadGroupAnnouncements()">
               {{ t('home.chat_sidebar.actions.retry') }}
             </n-button>
@@ -53,12 +53,12 @@ import { logger } from '@/utils/logger'
 
         <!-- 公告内容 -->
         <n-scrollbar v-else class="h-74px">
-          <p class="text-(12px #909090) leading-6 line-clamp-4 max-w-99%" v-if="announNum === 0">
+          <p class="text-(12px var(--hula-brand-primary)) leading-6 line-clamp-4 max-w-99%" v-if="announNum === 0">
             {{ t('home.chat_sidebar.announcement.default') }}
           </p>
           <p
             v-else
-            class="announcement-text selectable-text text-(12px #909090) leading-6 line-clamp-4 max-w-99% break-words">
+            class="announcement-text selectable-text text-(12px var(--hula-brand-primary)) leading-6 line-clamp-4 max-w-99% break-words">
             <template v-if="announcementSegments.length > 0">
               <template v-for="(segment, index) in announcementSegments" :key="`segment-${segment.text}-${index}`">
                 <span
@@ -153,7 +153,7 @@ import { logger } from '@/utils/logger'
                         class="grayscale"
                         :class="{ 'grayscale-0': item.activeStatus === OnlineEnum.ONLINE }"
                         :size="26"
-                        :color="themes.content === ThemeEnum.DARK ? '#242424' : '#fff'"
+                        :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
                         :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                         :src="AvatarUtils.getAvatarUrl(item.avatar)"
                         @load="userLoadedMap[item.uid] = true"
@@ -180,13 +180,13 @@ import { logger } from '@/utils/logger'
 
                   <div
                     v-if="item.roleId === RoleEnum.LORD"
-                    class="flex px-4px bg-#d5304f30 py-3px rounded-4px size-fit select-none">
-                    <p class="text-(10px #d5304f)">{{ t('home.chat_sidebar.roles.owner') }}</p>
+                    class="flex px-4px bg-var(--hula-brand-primary)30 py-3px rounded-4px size-fit select-none">
+                    <p class="text-(10px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.owner') }}</p>
                   </div>
                   <div
                     v-if="item.roleId === RoleEnum.ADMIN"
-                    class="flex px-4px bg-#1a7d6b30 py-3px rounded-4px size-fit select-none">
-                    <p class="text-(10px #008080)">{{ t('home.chat_sidebar.roles.admin') }}</p>
+                    class="flex px-4px bg-var(--hula-brand-primary)30 py-3px rounded-4px size-fit select-none">
+                    <p class="text-(10px var(--hula-brand-primary))">{{ t('home.chat_sidebar.roles.admin') }}</p>
                   </div>
                 </n-flex>
               </ContextMenu>

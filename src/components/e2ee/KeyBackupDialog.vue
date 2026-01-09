@@ -78,7 +78,7 @@
 
                 <n-result v-if="recoveryKey" status="success" :title="t('setting.e2ee.key_backup.created')">
                   <template #icon>
-                    <n-icon size="80" color="#18a058">
+                    <n-icon size="80" color="var(--hula-brand-primary)">
                       <Key />
                     </n-icon>
                   </template>

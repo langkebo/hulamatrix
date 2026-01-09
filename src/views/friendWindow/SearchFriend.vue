@@ -61,7 +61,7 @@
                     <n-avatar
                       :size="48"
                       :src="AvatarUtils.getAvatarUrl(item.avatar)"
-                      :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
+                      :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                       round />
                     <n-flex vertical justify="center" :size="10" class="flex-1">
@@ -75,7 +75,7 @@
                         <n-tooltip trigger="hover">
                           <template #trigger>
                             <svg
-                              class="size-12px hover:color-#909090 hover:transition-colors"
+                              class="size-12px hover:color-var(--hula-brand-primary) hover:transition-colors"
                               @click="handleCopy(item.account)">
                               <use href="#copy"></use>
                             </svg>

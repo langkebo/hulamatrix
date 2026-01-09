@@ -16,7 +16,7 @@
         <div
           v-if="isMac()"
           @click="isShow = false"
-          class="mac-close z-10 relative size-13px shadow-inner bg-#ed6a5eff rounded-50% select-none">
+          class="mac-close z-10 relative size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none">
           <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>

@@ -568,11 +568,11 @@ watch(
 }
 
 .online-indicator.online {
-  background: #18a058;
+  background: var(--hula-brand-primary);
 }
 
 .online-indicator.offline {
-  background: #d0d0d0;
+  background: var(--hula-brand-primary);
 }
 
 .member-id {
@@ -654,7 +654,7 @@ watch(
   }
 
   .members-card {
-    background: var(--hula-gray-800, #2a2a2a);
+    background: var(--hula-gray-800, var(--hula-brand-primary));
   }
 
   .member-name {

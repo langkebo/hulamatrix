@@ -8,10 +8,13 @@
       </div>
       <!-- 锁屏页面 -->
       <LockScreen v-else />
-      <div v-if="showConnectionIndicator" class="connection-indicator" :data-state="connectionIndicatorState">
-        <span class="connection-dot" :data-state="connectionIndicatorState"></span>
-        <span class="connection-text">{{ connectionIndicatorText }}</span>
-      </div>
+      <!-- 连接状态指示器（使用优化后的组件） -->
+      <ConnectionStatus
+        :ws-state="wsConnectionState"
+        :matrix-state="matrixStore.syncState"
+        :is-syncing="chatStore.syncLoading || matrixStore.isSyncing"
+        mode="mini"
+      />
     </NaiveProvider>
   </div>
   <component :is="mobileRtcCallFloatCell" v-if="mobileRtcCallFloatCell" />
@@ -42,6 +45,7 @@ import { isDesktop, isIOS, isMobile, isWindows } from '@/utils/PlatformConstants
 import LockScreen from '@/views/LockScreen.vue'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
 import AppLoading from '@/components/common/AppLoading.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { useAppStateStore } from '@/stores/appState'
 import { AppState } from '@/enums'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
@@ -120,7 +124,8 @@ const preventGlobalContextMenu = (event: MouseEvent) => event.preventDefault()
 
 const notifyError = (message: string) => {
   try {
-    window.$message?.error?.(message)
+    // @ts-expect-error - globalThis.$message is injected at runtime by Naive UI
+    globalThis.$message?.error?.(message)
   } catch {}
 }
 
@@ -242,6 +247,8 @@ const handleSelfAdd = async (roomId: string) => {
     await groupStore.getGroupUserList(roomId, true)
   } catch (error) {
     notifyError('群成员同步失败，请稍后重试')
+    logger.error('Failed to get group user list:', error)
+    throw error
   }
 }
 
@@ -469,7 +476,7 @@ const handleVideoCall = async (remotedUid: string, callType: CallTypeEnum) => {
 }
 
 const listenMobileReLogin = async () => {
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+  const isTauri = typeof globalThis.window !== 'undefined' && '__TAURI__' in globalThis.window
   if (isMobile() && isTauri) {
     const { useLogin } = await import('@/hooks/useLogin')
 
@@ -804,25 +811,6 @@ useMitt.on(MittEnum.MSG_INIT, () => {
 onMounted(() => {
   ensureGroupSessionWatch()
 })
-
-const showConnectionIndicator = computed(() => {
-  if (chatStore.syncLoading) return true
-  if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return true
-  if (matrixStore.syncState === 'ERROR') return true
-  return false
-})
-
-const connectionIndicatorState = computed(() => {
-  if (chatStore.syncLoading || matrixStore.isSyncing) return 'SYNCING'
-  if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return 'DISCONNECTED'
-  if (matrixStore.syncState === 'ERROR') return 'DISCONNECTED'
-  return 'CONNECTED'
-})
-
-const connectionIndicatorText = computed(() => {
-  const ws = wsConnectionState.value || 'UNKNOWN'
-  return `WS:${ws} · Matrix:${matrixStore.syncState}`
-})
 </script>
 <style lang="scss">
 /* 修改naive-ui select 组件的样式 */
@@ -844,42 +832,5 @@ button,
 a {
   user-select: auto;
   cursor: auto;
-}
-
-.connection-indicator {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 9999;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-size: 12px;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-}
-
-.connection-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #999;
-}
-
-.connection-dot[data-state='SYNCING'] {
-  background: #f0b429;
-}
-
-.connection-dot[data-state='DISCONNECTED'] {
-  background: #e55353;
-}
-
-.connection-dot[data-state='CONNECTED'] {
-  background: #2fb344;
 }
 </style>

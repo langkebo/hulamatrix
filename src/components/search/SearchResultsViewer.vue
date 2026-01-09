@@ -502,7 +502,7 @@ watch(
 }
 
 .content :deep(mark) {
-  background-color: #ffeb3b;
+  background-color: var(--hula-brand-primary);
   padding: 1px 2px;
   border-radius: 2px;
 }
@@ -537,7 +537,7 @@ watch(
   flex-direction: column;
   gap: 8px;
   padding-left: 12px;
-  border-left: 2px solid var(--hula-gray-200, #e0e0e0);
+  border-left: 2px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
 
 .context-message {
@@ -559,7 +559,7 @@ watch(
 
 .main-message {
   padding: 16px;
-  background: var(--hula-gray-100, #f5f5f5);
+  background: var(--hula-gray-100, var(--hula-brand-primary));
   border-radius: 8px;
 }
 
@@ -583,7 +583,7 @@ watch(
   display: flex;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid var(--hula-gray-200, #e0e0e0);
+  border-top: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
 
 .empty-icon {
@@ -616,7 +616,7 @@ watch(
   }
 
   .main-message {
-    background: var(--hula-gray-800, #2a2a2a);
+    background: var(--hula-gray-800, var(--hula-brand-primary));
   }
 
   .detail-actions {

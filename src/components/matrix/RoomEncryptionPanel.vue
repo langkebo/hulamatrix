@@ -5,7 +5,7 @@
       <div class="encryption-status">
         <n-icon
           :component="encrypted ? Lock : LockOpen"
-          :color="encrypted ? '#18a058' : '#d03050'"
+          :color="encrypted ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
           :size="20" />
         <span>房间加密: {{ encrypted ? '已启用' : '未启用' }}</span>
       </div>

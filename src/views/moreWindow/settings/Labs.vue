@@ -24,7 +24,7 @@
                 <n-tag v-if="feature.new" size="small" type="success">新</n-tag>
                 <n-tag v-if="feature.beta" size="small" type="warning">测试版</n-tag>
               </n-flex>
-              <span v-if="feature.description" class="text-(12px #909090)">{{ feature.description }}</span>
+              <span v-if="feature.description" class="text-(12px var(--hula-brand-primary))">{{ feature.description }}</span>
             </n-flex>
 
             <n-switch
@@ -77,7 +77,7 @@
       <span class="pl-10px">重置选项</span>
 
       <n-flex class="item" :size="12" vertical>
-        <n-text depth="3" class="text-(12px #909090)">
+        <n-text depth="3" class="text-(12px var(--hula-brand-primary))">
           将所有设置重置为默认值（此操作不可撤销）
         </n-text>
 

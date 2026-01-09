@@ -497,17 +497,17 @@ onMounted(() => {
 
   &.missed {
     background: rgba(208, 48, 80, 0.1);
-    color: #d03050;
+    color: var(--hula-brand-primary);
   }
 
   &.incoming {
     background: rgba(24, 160, 88, 0.1);
-    color: #18a058;
+    color: var(--hula-brand-primary);
   }
 
   &.outgoing {
     background: rgba(51, 136, 255, 0.1);
-    color: #3388ff;
+    color: var(--hula-brand-primary);
   }
 }
 </style>

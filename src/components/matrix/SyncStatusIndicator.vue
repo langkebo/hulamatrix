@@ -78,17 +78,17 @@ const statusText = computed(() => {
 const statusColor = computed(() => {
   switch (syncState.value) {
     case 'SYNCING':
-      return '#18a058' // green
+      return 'var(--hula-brand-primary)' // green
     case 'PREPARED':
-      return '#2080f0' // blue
+      return 'var(--hula-brand-primary)' // blue
     case 'RECONNECTING':
-      return '#f0a020' // orange
+      return 'var(--hula-brand-primary)' // orange
     case 'ERROR':
-      return '#d03050' // red
+      return 'var(--hula-brand-primary)' // red
     case 'STOPPED':
-      return '#909090' // gray
+      return 'var(--hula-brand-primary)' // gray
     default:
-      return '#909090'
+      return 'var(--hula-brand-primary)'
   }
 })
 </script>

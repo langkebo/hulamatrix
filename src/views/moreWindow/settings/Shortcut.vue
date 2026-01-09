@@ -7,7 +7,7 @@
       <n-flex class="item" align="center" justify="space-between">
         <n-flex vertical :size="8">
           <span>{{ t('setting.shortcut.enable_global_shortcuts') }}</span>
-          <span class="text-(12px #909090)">{{ t('setting.shortcut.enable_global_shortcuts_hint') }}</span>
+          <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.enable_global_shortcuts_hint') }}</span>
         </n-flex>
 
         <n-switch v-model:value="globalShortcutEnabled" @update:value="handleGlobalShortcutToggle" size="small" />
@@ -24,7 +24,7 @@
           <n-flex vertical :size="8">
             <span>{{ shortcutConfigs.screenshot.displayName }}</span>
             <!-- <span>{{ t('setting.shortcut.screenshot') }}</span> -->
-            <span class="text-(12px #909090)">{{ t('setting.shortcut.screenshot_hint') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.screenshot_hint') }}</span>
           </n-flex>
 
           <n-flex align="center" :size="12">
@@ -34,7 +34,7 @@
             <n-input
               :value="screenshotShortcutDisplay"
               :placeholder="screenshotShortcutDisplay"
-              class="shortcut-input border-(1px solid #90909080)"
+              class="shortcut-input border-(1px solid var(--hula-brand-primary)80)"
               readonly
               size="small"
               :disabled="!globalShortcutEnabled"
@@ -65,7 +65,7 @@
           <n-flex vertical :size="8">
             <span>{{ shortcutConfigs.openMainPanel.displayName }}</span>
             <!-- <span>{{ t('setting.shortcut.panel_switch') }}</span> -->
-            <span class="text-(12px #909090)">{{ t('setting.shortcut.panel_switch_hint') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.panel_switch_hint') }}</span>
           </n-flex>
 
           <n-flex align="center" :size="12">
@@ -78,7 +78,7 @@
             <n-input
               :value="openMainPanelShortcutDisplay"
               :placeholder="openMainPanelShortcutDisplay"
-              class="shortcut-input border-(1px solid #90909080)"
+              class="shortcut-input border-(1px solid var(--hula-brand-primary)80)"
               readonly
               size="small"
               :disabled="!globalShortcutEnabled"
@@ -111,7 +111,7 @@
       <n-flex class="item" align="center" justify="space-between">
         <n-flex vertical :size="8">
           <span>{{ t('setting.shortcut.send_message_shortcut') }}</span>
-          <span class="text-(12px #909090)">{{ t('setting.shortcut.send_message_shortcut_hint') }}</span>
+          <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.send_message_shortcut_hint') }}</span>
         </n-flex>
 
         <n-flex align="center" :size="12">
@@ -533,6 +533,6 @@ onMounted(async () => {
 
 :deep(.n-input.n-input--focus) {
   border-width: 2px;
-  border-color: #13987f !important;
+  border-color: var(--hula-brand-primary) !important;
 }
 </style>

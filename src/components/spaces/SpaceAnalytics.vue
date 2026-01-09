@@ -13,7 +13,7 @@
           <n-gi>
             <n-statistic label="总空间数" :value="analytics.totalSpaces">
               <template #suffix>
-                <n-icon size="20" color="#18a058">
+                <n-icon size="20" color="var(--hula-brand-primary)">
                   <Space />
                 </n-icon>
               </template>
@@ -22,7 +22,7 @@
           <n-gi>
             <n-statistic label="总房间数" :value="analytics.totalRooms">
               <template #suffix>
-                <n-icon size="20" color="#3388ff">
+                <n-icon size="20" color="var(--hula-brand-primary)">
                   <Hash />
                 </n-icon>
               </template>
@@ -31,7 +31,7 @@
           <n-gi>
             <n-statistic label="总成员数" :value="analytics.totalMembers">
               <template #suffix>
-                <n-icon size="20" color="#f0a020">
+                <n-icon size="20" color="var(--hula-brand-primary)">
                   <Users />
                 </n-icon>
               </template>
@@ -40,7 +40,7 @@
           <n-gi>
             <n-statistic label="加密房间" :value="analytics.encryptedRooms">
               <template #suffix>
-                <n-icon size="20" :color="analytics.encryptedRooms > 0 ? '#18a058' : '#d03050'">
+                <n-icon size="20" :color="analytics.encryptedRooms > 0 ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'">
                   <Lock />
                 </n-icon>
               </template>
@@ -95,7 +95,7 @@
                   <n-progress
                     type="line"
                     :percentage="analytics.encryptionPercentage"
-                    :color="'#18a058'"
+                    :color="'var(--hula-brand-primary)'"
                     :show-indicator="false" />
                   <div class="stat-value">{{ analytics.encryptedRooms }}</div>
                 </div>
@@ -104,7 +104,7 @@
                   <n-progress
                     type="line"
                     :percentage="100 - analytics.encryptionPercentage"
-                    :color="'#d03050'"
+                    :color="'var(--hula-brand-primary)'"
                     :show-indicator="false" />
                   <div class="stat-value">{{ analytics.totalRooms - analytics.encryptedRooms }}</div>
                 </div>
@@ -213,9 +213,9 @@ const spacesStore = useSpacesStore()
 const loading = ref(false)
 
 const spaceTypeColors = {
-  space: '#18a058',
-  room: '#3388ff',
-  dm: '#f0a020'
+  space: 'var(--hula-brand-primary)',
+  room: 'var(--hula-brand-primary)',
+  dm: 'var(--hula-brand-primary)'
 }
 
 interface AnalyticsData {
@@ -343,12 +343,12 @@ const getJoinRuleLabel = (rule: string): string => {
 
 const getJoinRuleColor = (rule: string): string => {
   const colors: Record<string, string> = {
-    public: '#18a058',
-    invite: '#f0a020',
-    knock: '#3388ff',
-    restricted: '#d03050'
+    public: 'var(--hula-brand-primary)',
+    invite: 'var(--hula-brand-primary)',
+    knock: 'var(--hula-brand-primary)',
+    restricted: 'var(--hula-brand-primary)'
   }
-  return colors[rule] || '#cccccc'
+  return colors[rule] || 'var(--hula-brand-primary)'
 }
 
 const getSpaceTypeLabel = (type: string): string => {

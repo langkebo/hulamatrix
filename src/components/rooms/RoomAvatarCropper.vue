@@ -95,7 +95,7 @@ const canvasStyle = computed(() => ({
   overflow: 'hidden',
   position: 'relative' as const,
   cursor: isDragging.value ? 'grabbing' : 'grab',
-  backgroundColor: 'var(--hula-gray-100, #f5f5f5)'
+  backgroundColor: 'var(--hula-gray-100, var(--hula-brand-primary))'
 }))
 
 const imageStyle = computed(() => ({

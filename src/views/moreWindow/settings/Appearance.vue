@@ -65,7 +65,7 @@
       <n-flex class="item" :size="12" vertical>
         <n-flex align="center" justify="space-between">
           <span>缩放比例</span>
-          <span class="text-(12px #909090)">{{ fontScale }}%</span>
+          <span class="text-(12px var(--hula-brand-primary))">{{ fontScale }}%</span>
         </n-flex>
 
         <n-slider

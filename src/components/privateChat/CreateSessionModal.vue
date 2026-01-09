@@ -34,7 +34,7 @@
               class="friend-item"
               :class="{ 'is-selected': formData.userId === (friend.friend_id || friend.user_id) }"
               @click="handleSelectFriend(friend)">
-              <n-avatar round :size="32" :src="friend.avatar_url || ''" color="#00BFA5">
+              <n-avatar round :size="32" :src="friend.avatar_url || ''" color="var(--hula-brand-primary)">
                 <svg class="size-16px">
                   <use href="#user"></use>
                 </svg>

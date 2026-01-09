@@ -15,42 +15,42 @@
   /* ==========================================================================
       主色调系统
      ========================================================================== */
-  --primary-color: #13987f;
+  --primary-color: var(--hula-brand-primary);
   --primary-hover: rgba(19, 152, 127, 0.8);
   --primary-active: rgba(19, 152, 127, 0.4);
-  --primary-light: #64a29c;
+  --primary-light: var(--hula-brand-primary);
 
   /* ==========================================================================
       背景色系统
      ========================================================================== */
-  --app-bg-color: #FAFAFA;
+  --app-bg-color: var(--hula-brand-primary);
   --center-bg-color: #fff;
-  --right-bg-color: #f1f1f1;
-  --left-bg-color: #f1f1f1;
+  --right-bg-color: var(--hula-brand-primary);
+  --left-bg-color: var(--hula-brand-primary);
 
   /* 左侧导航栏图标颜色 */
   --left-icon-color: #666;
-  --left-win-icon-color: #13987f;
+  --left-win-icon-color: var(--hula-brand-primary);
   --left-active-bg-color: rgba(19, 152, 127, 0.1);
-  --left-active-icon-color: #13987f;
+  --left-active-icon-color: var(--hula-brand-primary);
   --left-bg-hover: rgba(0, 0, 0, 0.05);
-  --left-active-hover: #13987f;
+  --left-active-hover: var(--hula-brand-primary);
 
   /* ==========================================================================
       文字色系统
      ========================================================================== */
-  --text-primary: #18181c;
+  --text-primary: var(--hula-brand-primary);
   --text-secondary: #666;
   --text-tertiary: #999;
-  --text-disabled: #c1c1c1;
+  --text-disabled: var(--hula-brand-primary);
   --text-color: var(--text-primary); /* 向后兼容 */
 
   /* ==========================================================================
       边框色系统
      ========================================================================== */
-  --border-color: #e3e3e3;
-  --border-light: #f0f0f0;
-  --border-hover: #13987f;
+  --border-color: var(--hula-brand-primary);
+  --border-light: var(--hula-brand-primary);
+  --border-hover: var(--hula-brand-primary);
 
   /* ==========================================================================
       间距系统
@@ -97,16 +97,16 @@
   /* ==========================================================================
       状态色系统
      ========================================================================== */
-  --success-color: #28a745;
+  --success-color: var(--hula-brand-primary);
   --success-bg: rgba(40, 167, 69, 0.1);
 
-  --warning-color: #f7b668;
+  --warning-color: var(--hula-brand-primary);
   --warning-bg: rgba(247, 182, 104, 0.1);
 
-  --danger-color: #c14053;
+  --danger-color: var(--hula-brand-primary);
   --danger-bg: rgba(193, 64, 83, 0.1);
 
-  --info-color: #17a2b8;
+  --info-color: var(--hula-brand-primary);
   --info-bg: rgba(23, 162, 184, 0.1);
 
   /* ==========================================================================
@@ -115,7 +115,7 @@
   --bg-hover: rgba(19, 152, 127, 0.05);
   --bg-selected: rgba(19, 152, 127, 0.1);
   --bg-active: rgba(19, 152, 127, 0.15);
-  --bg-disabled: #f5f5f5;
+  --bg-disabled: var(--hula-brand-primary);
 
   /* ==========================================================================
       组件特定变量
@@ -132,7 +132,7 @@
 
   /* 输入框系统 */
   --input-bg: #fff;
-  --input-bg-disabled: #f5f5f5;
+  --input-bg-disabled: var(--hula-brand-primary);
   --input-border: var(--border-color);
   --input-border-hover: var(--primary-color);
   --input-border-focus: var(--primary-color);
@@ -141,12 +141,12 @@
   --input-height: 36px;
 
   /* 搜索框 */
-  --search-bg-color: #EAEAEA;
+  --search-bg-color: var(--hula-brand-primary);
   --search-placeholder: #999;
 
   /* 消息系统 */
   --msg-list-bg: #fff;
-  --msg-hover: #f3f3f3;
+  --msg-hover: var(--hula-brand-primary);
   --msg-active: var(--primary-color);
   --msg-active-text: #fff;
 
@@ -155,9 +155,9 @@
   --chat-bubble-padding-x: clamp(10px, 2vw, 16px);
   --chat-bubble-padding-y: clamp(6px, 1.2vw, 10px);
   --chat-bubble-radius: clamp(14px, 2vw, 18px);
-  --chat-left-bg: #cef9ec;
-  --chat-right-bg: #f1f1f1;
-  --chat-text-color: #505050;
+  --chat-left-bg: var(--hula-brand-primary);
+  --chat-right-bg: var(--hula-brand-primary);
+  --chat-text-color: var(--hula-brand-primary);
 
   /* 头像系统 */
   --avatar-xs: 24px;
@@ -210,27 +210,27 @@
 
 html[data-theme='dark'] {
   /* 背景色系统 */
-  --app-bg-color: #1b1b1b;
-  --center-bg-color: #1b1b1b;
-  --right-bg-color: #161616;
-  --left-bg-color: #1b1b1b;
+  --app-bg-color: var(--hula-brand-primary);
+  --center-bg-color: var(--hula-brand-primary);
+  --right-bg-color: var(--hula-brand-primary);
+  --left-bg-color: var(--hula-brand-primary);
 
   /* 左侧导航栏图标颜色 - 暗色主题 */
   --left-icon-color: #ccc;
-  --left-win-icon-color: #4fd1c7;
+  --left-win-icon-color: var(--hula-brand-primary);
   --left-active-bg-color: rgba(79, 209, 199, 0.2);
-  --left-active-icon-color: #4fd1c7;
+  --left-active-icon-color: var(--hula-brand-primary);
   --left-bg-hover: rgba(255, 255, 255, 0.1);
-  --left-active-hover: #4fd1c7;
+  --left-active-hover: var(--hula-brand-primary);
 
   /* 文字色系统 */
   --text-primary: #fff;
   --text-secondary: #ccc;
   --text-tertiary: #999;
-  --text-disabled: #575757;
+  --text-disabled: var(--hula-brand-primary);
 
   /* 边框色系统 */
-  --border-color: #404040;
+  --border-color: var(--hula-brand-primary);
   --border-light: #333;
 
   /* 阴影系统 */
@@ -243,38 +243,38 @@ html[data-theme='dark'] {
   --bg-hover: rgba(255, 255, 255, 0.05);
   --bg-selected: rgba(19, 152, 127, 0.15);
   --bg-active: rgba(19, 152, 127, 0.2);
-  --bg-disabled: #2a2a2a;
+  --bg-disabled: var(--hula-brand-primary);
 
   /* 组件特定变量 */
-  --input-bg: #2a2a2a;
-  --input-bg-disabled: #1f1f1f;
-  --input-border: #404040;
-  --search-bg-color: #282828;
+  --input-bg: var(--hula-brand-primary);
+  --input-bg-disabled: var(--hula-brand-primary);
+  --input-border: var(--hula-brand-primary);
+  --search-bg-color: var(--hula-brand-primary);
 
   /* 消息系统 */
-  --msg-list-bg: #1b1b1b;
-  --msg-hover: #2d2d2d;
+  --msg-list-bg: var(--hula-brand-primary);
+  --msg-hover: var(--hula-brand-primary);
   --msg-active: rgba(19, 152, 127, 0.6);
 
   /* 聊天气泡 */
-  --chat-left-bg: #355b55;
-  --chat-right-bg: #161616;
-  --chat-text-color: #b1b1b1;
+  --chat-left-bg: var(--hula-brand-primary);
+  --chat-right-bg: var(--hula-brand-primary);
+  --chat-text-color: var(--hula-brand-primary);
 
   /* 头像系统 */
-  --avatar-border-color: #1b1b1b;
+  --avatar-border-color: var(--hula-brand-primary);
 
   /* 弹窗系统 */
-  --popover-bg: #303030;
+  --popover-bg: var(--hula-brand-primary);
   --modal-bg: rgba(0, 0, 0, 0.7);
 
   /* 菜单系统 */
   --menu-bg: linear-gradient(45deg, rgba(33, 33, 33, 0.65) 60%, rgba(33, 33, 33, 0.95) 90%);
-  --menu-hover: #323232;
+  --menu-hover: var(--hula-brand-primary);
 
   /* 图标系统 */
-  --icon-color: #c1c1c1;
-  --icon-color-disabled: #575757;
+  --icon-color: var(--hula-brand-primary);
+  --icon-color-disabled: var(--hula-brand-primary);
 }
 
 /* ==========================================================================
@@ -315,11 +315,11 @@ html[data-theme='dark'] {
 
 /* 简洁主题 - 纯色背景 */
 :root[data-theme="simple"] {
-  --right-theme-bg: #f1f1f1;
+  --right-theme-bg: var(--hula-brand-primary);
 }
 
 :root[data-theme="dark"][data-theme-style="simple"] {
-  --right-theme-bg: #161616;
+  --right-theme-bg: var(--hula-brand-primary);
 }
 
 /* ==========================================================================

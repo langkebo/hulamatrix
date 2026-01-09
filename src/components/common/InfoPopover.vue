@@ -5,7 +5,7 @@
     <img
       class="absolute rounded-t-8px z-2 top-0 left-0 w-full h-100px"
       :class="
-        groupStore.getUserInfo(uid)?.wearingItemId === '6' ? 'object-contain bg-#e9e9e980 dark:bg-#111' : 'object-cover'
+        groupStore.getUserInfo(uid)?.wearingItemId === '6' ? 'object-contain bg-var(--hula-brand-primary)80 dark:bg-#111' : 'object-cover'
       "
       :src="groupStore.getUserInfo(uid)?.wearingItemId === '6' ? '/hula.png' : '/img/dispersion-bg.png'"
       alt="" />
@@ -22,7 +22,7 @@
             round
             :size="80"
             :src="avatarSrc"
-            :color="themes.content === ThemeEnum.DARK ? '#1b1b1b' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
         </div>
 
@@ -38,7 +38,7 @@
                 "
                 class="z-30 absolute top-72px left-72px border-(6px solid [--avatar-border-color]) rounded-full size-18px"
                 :class="[
-                  displayActiveStatus === OnlineEnum.ONLINE ? 'bg-#1ab292' : 'bg-#909090',
+                  displayActiveStatus === OnlineEnum.ONLINE ? 'bg-var(--hula-brand-primary)' : 'bg-var(--hula-brand-primary)',
                   isCurrentUserUid ? 'cursor-pointer' : 'cursor-default'
                 ]"></div>
             </template>
@@ -108,7 +108,7 @@
           </n-flex>
           <n-tooltip trigger="hover">
             <template #trigger>
-              <svg class="size-12px cursor-pointer hover:color-#909090 hover:transition-colors" @click="handleCopy">
+              <svg class="size-12px cursor-pointer hover:color-var(--hula-brand-primary) hover:transition-colors" @click="handleCopy">
                 <use href="#copy"></use>
               </svg>
             </template>
@@ -308,7 +308,7 @@ onMounted(() => {
 
 .text-underline {
   &:hover {
-    @apply cursor-pointer underline underline-offset-3 decoration-2 decoration-[#606060];
+    @apply cursor-pointer underline underline-offset-3 decoration-2 decoration-[var(--hula-brand-primary)];
   }
 }
 </style>

@@ -63,7 +63,7 @@
   transition:
     border-color 0.3s var(--n-bezier),
     background-color 0.3s var(--n-bezier);
-  border: 1px solid #e3e3e3;
+  border: 1px solid var(--hula-brand-primary);
   border-radius: 10px;
 }
 

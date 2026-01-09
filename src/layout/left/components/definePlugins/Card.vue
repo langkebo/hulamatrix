@@ -21,7 +21,7 @@
               <!-- 在下载中进度条 -->
               <n-flex
                 @click="handleState(plugin)"
-                class="relative rounded-22px border-(1px solid #4C77BD)"
+                class="relative rounded-22px border-(1px solid var(--hula-brand-primary))"
                 :class="[
                   plugin.state === PluginEnum.DOWNLOADING ? 'downloading' : 'bg-[--progress-bg] size-fit p-[4px_8px]'
                 ]">
@@ -34,11 +34,11 @@
                     (plugin.progress ?? 0) > 0 ? 'h-18px border-(1px solid transparent)' : 'h-20px'
                   ]"
                   v-if="plugin.state === PluginEnum.DOWNLOADING"
-                  class="bg-#8CA9F4">
-                  <p class="absolute-center text-(12px #4C77BD)">{{ plugin.progress ?? 0 }}%</p>
+                  class="bg-var(--hula-brand-primary)">
+                  <p class="absolute-center text-(12px var(--hula-brand-primary))">{{ plugin.progress ?? 0 }}%</p>
                 </div>
 
-                <p v-else class="text-(12px #4C77BD center)">{{ t('home.plugins.actions.install') }}</p>
+                <p v-else class="text-(12px var(--hula-brand-primary) center)">{{ t('home.plugins.actions.install') }}</p>
               </n-flex>
 
               <!-- 闪光效果 -->
@@ -70,20 +70,20 @@
 
               <n-flex
                 v-if="plugin.state === PluginEnum.UNINSTALLING"
-                class="relative rounded-22px border-(1px solid #c14053) bg-#f6dfe3 p-[4px_8px]">
-                <p class="text-(12px #c14053 center)">{{ t('home.plugins.status.uninstalling') }}</p>
+                class="relative rounded-22px border-(1px solid var(--hula-brand-primary)) bg-var(--hula-brand-primary) p-[4px_8px]">
+                <p class="text-(12px var(--hula-brand-primary) center)">{{ t('home.plugins.status.uninstalling') }}</p>
               </n-flex>
 
               <n-flex
                 v-if="plugin.state === PluginEnum.BUILTIN"
-                class="relative rounded-22px border-(1px solid #777) bg-#e3e3e3 size-fit p-[4px_8px]">
+                class="relative rounded-22px border-(1px solid #777) bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
                 <p class="text-(12px #777 center)">{{ t('home.plugins.status.builtin') }}</p>
               </n-flex>
 
               <n-flex
                 v-if="plugin.state === PluginEnum.INSTALLED"
-                class="relative rounded-22px border-(1px solid #4C77BD) bg-#e0e9fc p-[4px_8px]">
-                <p class="text-(12px #4C77BD center)">{{ plugin.version }}</p>
+                class="relative rounded-22px border-(1px solid var(--hula-brand-primary)) bg-var(--hula-brand-primary) p-[4px_8px]">
+                <p class="text-(12px var(--hula-brand-primary) center)">{{ plugin.version }}</p>
               </n-flex>
 
               <!-- 闪光效果 -->
@@ -114,16 +114,16 @@
                 <div class="action-item">
                   <div class="menu-list">
                     <div v-if="!plugin.isAdd" @click="handleAdd(plugin)" class="menu-item">
-                      <svg class="color-#4C77BD">
+                      <svg class="color-var(--hula-brand-primary)">
                         <use href="#add"></use>
                       </svg>
-                      <p class="text-#4C77BD">{{ t('home.plugins.actions.pin') }}</p>
+                      <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.pin') }}</p>
                     </div>
                     <div v-else @click="handleDelete(plugin)" class="menu-item">
-                      <svg class="color-#c14053">
+                      <svg class="color-var(--hula-brand-primary)">
                         <use href="#reduce"></use>
                       </svg>
-                      <p class="text-#c14053">{{ t('home.plugins.actions.unpin') }}</p>
+                      <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.unpin') }}</p>
                     </div>
                     <div @click="handleUnload(plugin)" class="menu-item">
                       <svg>
@@ -329,15 +329,15 @@ onUnmounted(() => {
 }
 
 .colorful {
-  background-image: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%);
+  background-image: linear-gradient(45deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 }
 
 .built {
-  background-image: linear-gradient(-20deg, #e9defa 0%, #fbfcdb 100%);
+  background-image: linear-gradient(-20deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 }
 
 .unload {
-  background-image: linear-gradient(to top, #feada6 0%, #f5efef 100%);
+  background-image: linear-gradient(to top, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 }
 
 .filter-shadow {

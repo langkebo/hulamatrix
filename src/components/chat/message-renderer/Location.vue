@@ -9,7 +9,7 @@
         <p class="text-14px font-medium color-[--text-color]">位置</p>
       </div>
 
-      <div class="text-(10px) text-brand p-4px rounded-4px" :style="{ border: '1px solid #13987f' }">
+      <div class="text-(10px) text-brand p-4px rounded-4px" :style="{ border: '1px solid var(--hula-brand-primary)' }">
         <p v-if="body?.precision">{{ body.precision }}</p>
       </div>
     </n-flex>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- 地图预览区域 -->
-    <div class="relative rounded-6px overflow-hidden bg-gray-100 dark:bg-#202020 h-120px flex-center">
+    <div class="relative rounded-6px overflow-hidden bg-gray-100 dark:bg-var(--hula-brand-primary) h-120px flex-center">
       <!-- 如果有地图API，显示地图预览 -->
       <div v-if="showMapPreview" class="size-full">
         <LocationMap
@@ -108,8 +108,8 @@ onMounted(() => {
   cursor: default;
   user-select: none;
   @apply: w-260px flex flex-col h-fit bg-[--group-notice-bg]
-  border-(1px solid #e3e3e3) dark:border-(1px solid #404040)
-  hover:bg-#fefefe99 dark:hover:bg-#60606040 rounded-8px p-8px box-border
+  border-(1px solid var(--hula-brand-primary)) dark:border-(1px solid var(--hula-brand-primary))
+  hover:bg-var(--hula-brand-primary)99 dark:hover:bg-var(--hula-brand-primary)40 rounded-8px p-8px box-border
   custom-shadow transition-colors duration-200;
 }
 </style>

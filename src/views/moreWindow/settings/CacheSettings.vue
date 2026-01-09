@@ -47,7 +47,7 @@
               <span>MB</span>
             </template>
           </n-input-number>
-          <template #feedback>
+          <template var(--hula-brand-primary)ck>
             <n-text depth="3" class="description-text">
               {{ t('setting.cache.limit_desc', { default: '建议 100-500MB，最大 2GB' }) }}
             </n-text>

@@ -1,0 +1,426 @@
+/* ==========================================================================
+   响应式工具类 - Responsive Utilities
+   提供统一的响应式工具类，避免重复的媒体查询代码
+   ========================================================================== */
+
+@use '../tokens/breakpoints' as bp;
+
+/* ==================== 显示/隐藏工具类 ==================== */
+
+/* 移动端隐藏（桌面端显示） */
+.u-hide-mobile {
+  @include bp.down(md) {
+    display: none !important;
+  }
+}
+
+/* 桌面端隐藏（移动端显示） */
+.u-hide-desktop {
+  @include bp.up(md) {
+    display: none !important;
+  }
+}
+
+/* 平板端隐藏 */
+.u-hide-tablet {
+  @include bp.between(sm, lg) {
+    display: none !important;
+  }
+}
+
+/* 小屏幕隐藏 */
+.u-hide-small {
+  @include bp.down(sm) {
+    display: none !important;
+  }
+}
+
+/* 大屏幕隐藏 */
+.u-hide-large {
+  @include bp.up(lg) {
+    display: none !important;
+  }
+}
+
+/* ==================== 文字响应式工具类 ==================== */
+
+/* 响应式字体大小 */
+.u-text-responsive {
+  font-size: clamp(14px, 2.5vw, 16px);
+}
+
+.u-text-responsive-lg {
+  font-size: clamp(16px, 3vw, 20px);
+}
+
+.u-text-responsive-sm {
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+/* 移动端文字调整 */
+.u-mobile-text-sm {
+  @include bp.down(md) {
+    font-size: 0.875em;
+  }
+}
+
+.u-mobile-text-lg {
+  @include bp.down(md) {
+    font-size: 1.125em;
+  }
+}
+
+/* ==================== 布局响应式工具类 ==================== */
+
+/* 移动端全宽 */
+.u-mobile-full-width {
+  @include bp.down(md) {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* 桌面端居中 */
+.u-desktop-centered {
+  @include bp.up(md) {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* ==================== 触摸目标优化 ==================== */
+
+/* 最小触摸目标（44x44px - WCAG 标准） */
+.u-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 移动端触摸目标优化 */
+.u-mobile-touch-target {
+  @include bp.down(md) {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+  }
+}
+
+/* ==================== 容器工具类 ==================== */
+
+/* 响应式容器 */
+.u-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+
+  @include bp.up(sm) {
+    max-width: 640px;
+  }
+
+  @include bp.up(md) {
+    max-width: 768px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  @include bp.up(lg) {
+    max-width: 1024px;
+  }
+
+  @include bp.up(xl) {
+    max-width: 1280px;
+  }
+
+  @include bp.up(xxl) {
+    max-width: 1536px;
+  }
+}
+
+/* 流式容器 */
+.u-container-fluid {
+  width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+
+  @include bp.up(md) {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* ==================== 网格工具类 ==================== */
+
+/* 响应式网格 */
+.u-grid {
+  display: grid;
+  gap: 16px;
+
+  @include bp.up(md) {
+    gap: 24px;
+  }
+}
+
+.u-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @include bp.up(md) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+.u-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @include bp.up(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include bp.up(lg) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+.u-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @include bp.up(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include bp.up(md) {
+    gap: 24px;
+  }
+
+  @include bp.up(lg) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ==================== Flexbox 响应式工具类 ==================== */
+
+/* 移动端列布局，桌面端行布局 */
+.u-flex-column-mobile {
+  display: flex;
+  flex-direction: column;
+
+  @include bp.up(md) {
+    flex-direction: row;
+  }
+}
+
+/* 移动端行布局，桌面端列布局 */
+.u-flex-row-mobile {
+  display: flex;
+  flex-direction: row;
+
+  @include bp.up(md) {
+    flex-direction: column;
+  }
+}
+
+/* ==================== 间距响应式工具类 ==================== */
+
+/* 移动端间距调整 */
+.u-mobile-spacing-sm {
+  @include bp.down(md) {
+    gap: 8px !important;
+    margin: 8px !important;
+    padding: 8px !important;
+  }
+}
+
+.u-mobile-spacing-md {
+  @include bp.down(md) {
+    gap: 12px !important;
+    margin: 12px !important;
+    padding: 12px !important;
+  }
+}
+
+/* 桌面端间距调整 */
+.u-desktop-spacing-lg {
+  @include bp.up(md) {
+    gap: 32px !important;
+    margin: 32px !important;
+    padding: 32px !important;
+  }
+}
+
+/* ==================== 可见性工具类 ==================== */
+
+/* 移动端可见（桌面端隐藏内容） */
+.u-only-mobile {
+  display: none;
+
+  @include bp.down(md) {
+    display: block;
+  }
+}
+
+/* 桌面端可见（移动端隐藏内容） */
+.u-only-desktop {
+  display: block;
+
+  @include bp.down(md) {
+    display: none;
+  }
+}
+
+/* 平板端可见 */
+.u-only-tablet {
+  display: none;
+
+  @include bp.between(sm, lg) {
+    display: block;
+  }
+}
+
+/* ==================== 安全区域适配 ==================== */
+
+/* 顶部安全区域（刘海屏适配） */
+.u-safe-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* 底部安全区域（Home Indicator 适配） */
+.u-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* 左侧安全区域 */
+.u-safe-left {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+/* 右侧安全区域 */
+.u-safe-right {
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* 完整安全区域 */
+.u-safe-all {
+  padding: env(safe-area-inset-top, 0)
+           env(safe-area-inset-right, 0)
+           env(safe-area-inset-bottom, 0)
+           env(safe-area-inset-left, 0);
+}
+
+/* ==================== 性能优化工具类 ==================== */
+
+/* 移动端减少动画 */
+.u-reduce-motion-mobile {
+  @include bp.down(md) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 移动端简化阴影 */
+.u-mobile-simple-shadow {
+  @include bp.down(md) {
+    box-shadow: none !important;
+  }
+}
+
+/* 移动端简化渐变 */
+.u-mobile-flat {
+  @include bp.down(md) {
+    background: var(--hula-bg-component) !important;
+  }
+}
+
+/* ==================== 打印样式 ==================== */
+
+@media print {
+  .u-no-print {
+    display: none !important;
+  }
+
+  .u-print-only {
+    display: block !important;
+  }
+}
+
+/* ==================== 辅助类 ==================== */
+
+/* 屏幕阅读器专用 */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 聚焦时可见（用于键盘导航） */
+.u-sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* 隐藏但保持可访问性 */
+.u-visually-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==================== 调试工具类（开发环境） ==================== */
+
+/* 响应式断点指示器 */
+.u-viewport-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 10px;
+  font-family: monospace;
+
+  @include bp.down(sm) {
+    content: 'XS (≤639px)';
+  }
+
+  @include bp.between(sm, md) {
+    content: 'SM (640px-767px)';
+  }
+
+  @include bp.between(md, lg) {
+    content: 'MD (768px-1023px)';
+  }
+
+  @include bp.between(lg, xl) {
+    content: 'LG (1024px-1279px)';
+  }
+
+  @include bp.up(xl) {
+    content: 'XL (≥1280px)';
+  }
+}

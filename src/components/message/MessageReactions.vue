@@ -325,7 +325,7 @@ defineExpose({
   position: absolute;
   top: -2px;
   right: -2px;
-  background: #1890ff;
+  background: var(--hula-brand-primary);
   color: white;
   border-radius: 50%;
   width: 16px;

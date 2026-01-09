@@ -69,7 +69,7 @@ const hasError = computed(() => appStateStore.state === AppState.ERROR)
 
 // 加载动画颜色
 const loadingColor = computed<string>(() => {
-  return hasError.value ? '#ff6b6b' : '#18a058'
+  return hasError.value ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'
 })
 
 // 显示进度条（可选，未来可以添加实际进度）
@@ -134,7 +134,7 @@ const progress = ref(0)
 }
 
 .loading-subtext.has-error {
-  color: #ff6b6b;
+  color: var(--hula-brand-primary);
 }
 
 .loading-progress {

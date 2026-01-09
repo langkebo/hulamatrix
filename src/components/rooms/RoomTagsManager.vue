@@ -458,7 +458,7 @@ watch(
 
 .custom-tag-item {
   padding: 8px;
-  background: #f9f9f9;
+  background: var(--hula-brand-primary);
   border-radius: 6px;
 }
 
@@ -480,7 +480,7 @@ watch(
   .create-tag-card,
   .tags-card,
   .rooms-card {
-    background: #2a2a2a;
+    background: var(--hula-brand-primary);
   }
 
   .custom-tag-item {

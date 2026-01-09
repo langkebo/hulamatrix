@@ -23,8 +23,8 @@
       :show-indicator="false"
       :height="6"
       :border-radius="3"
-      :color="'#13987f'"
-      :rail-color="themes.content === ThemeEnum.DARK ? '#404040' : '#90909040'" />
+      :color="'var(--hula-brand-primary)'"
+      :rail-color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)40'" />
   </div>
 </template>
 

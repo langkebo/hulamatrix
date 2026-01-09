@@ -11,7 +11,7 @@
 }
 
 .text-color-primary {
-  color: var(--color-primary, #1890ff) !important;
+  color: var(--color-primary, var(--hula-brand-primary)) !important;
 }
 
 .text-color-secondary {

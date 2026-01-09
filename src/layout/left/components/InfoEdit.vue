@@ -5,7 +5,7 @@
         <div
           v-if="isMac()"
           @click="editInfo.show = false"
-          class="mac-close size-13px shadow-inner bg-#ed6a5eff rounded-50% mt-6px select-none absolute left-6px">
+          class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
           <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
@@ -29,9 +29,9 @@
           <n-popover trigger="hover" :delay="300" :duration="300" placement="bottom">
             <template #trigger>
               <div class="avatar-wrapper relative" @click="openAvatarCropper">
-                <n-avatar :size="80" :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)" round color="#00BFA5" />
+                <n-avatar :size="80" :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)" round color="var(--hula-brand-primary)" />
                 <div class="avatar-hover absolute size-full rounded-50% flex-center">
-                  <span class="text-12px color-#606060">{{ t('home.profile_edit.avatar.change') }}</span>
+                  <span class="text-12px color-var(--hula-brand-primary)">{{ t('home.profile_edit.avatar.change') }}</span>
                 </div>
               </div>
             </template>
@@ -59,7 +59,7 @@
               show-count
               type="text">
               <template #prefix>
-                <span class="pr-6px text-[--hula-gray-500,#909090]">
+                <span class="pr-6px text-[--hula-gray-500,var(--hula-brand-primary)]">
                   {{ t('home.profile_edit.form.nickname.label') }}
                 </span>
               </template>
@@ -74,7 +74,7 @@
         <n-button
           class="save-button"
           :disabled="editInfo.content.name === localUserInfo.name || !backendConnected"
-          :color="'#13987f'"
+          :color="'var(--hula-brand-primary)'"
           @click="saveEditInfo(localUserInfo as ModifyUserInfoType)">
           {{ t('home.profile_edit.actions.save') }}
         </n-button>

@@ -3,7 +3,7 @@
     <ActionBar :shrink="false" :current-label="WebviewWindow.getCurrent().label" />
     <n-scrollbar
       class="preview-scrollbar w-full box-border bg-[--center-bg-color] rounded-b-8px border-(solid 1px [--line-color])">
-      <div class="flex flex-col gap-4 bg-#808080">
+      <div class="flex flex-col gap-4 bg-var(--hula-brand-primary)">
         <!-- @vue-office依赖已移除，暂时禁用文档预览功能 -->
         <div v-if="isShowWord || isShowPdf || isShowExcel || isShowPpt" class="flex items-center justify-center h-96">
           <div class="text-center">

@@ -1113,7 +1113,7 @@ watch(
 /* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
   .call-overlay-fullscreen {
-    background: #000000;
+    background: var(--hula-brand-primary);
   }
 
   .call-bar {

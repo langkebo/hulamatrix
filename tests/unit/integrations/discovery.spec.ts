@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import * as sdk from 'matrix-js-sdk'
-import { safeAutoDiscovery } from '../matrix/discovery'
+import { safeAutoDiscovery } from '@/integrations/matrix/discovery'
 
 describe('discovery', () => {
   it('safeAutoDiscovery returns homeserverUrl', async () => {

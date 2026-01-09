@@ -2,17 +2,17 @@
 :root {
   .default {
     // 侧边栏样式
-    --left-bg-color: #64a29c;
+    --left-bg-color: var(--hula-brand-primary);
     --left-active-bg-color: rgba(222, 222, 222, 0.2);
-    --left-text-color: #e3e3e3;
-    --left-icon-color: #e3e3e3;
-    --left-active-hover: #f1f1f1;
+    --left-text-color: var(--hula-brand-primary);
+    --left-icon-color: var(--hula-brand-primary);
+    --left-active-hover: var(--hula-brand-primary);
     --left-bg-hover: rgba(255, 255, 255, 0.2);
-    --left-active-icon-color: #f1f1f1;
+    --left-active-icon-color: var(--hula-brand-primary);
     --left-win-icon-color: rgba(255, 255, 255, 0.4);
 
     // 包含边框的选中样式
-    --border-active-color: #64a29c;
+    --border-active-color: var(--hula-brand-primary);
 
     // 右边布局内容背景
     --right-theme-bg-color: radial-gradient(
@@ -22,12 +22,12 @@
     );
 
     // 聊天框主体样式
-    --right-chat-reply-color: #f1f1f1;
+    --right-chat-reply-color: var(--hula-brand-primary);
     --right-chat-reply-active-color: rgba(99, 99, 99, 0.1);
     --right-chat-footer-line-color: rgba(99, 99, 99, 0.1);
 
     // 消息列表样式
-    --msg-active-color: #13987f;
+    --msg-active-color: var(--hula-brand-primary);
     // 群公告消息背景色
     --group-notice-bg: #fff;
 
@@ -48,11 +48,11 @@ html[data-theme='dark'] {
     --left-icon-color: #ccc;
     --left-active-hover: rgba(26, 178, 146, 0.8);
     --left-bg-hover: rgba(133, 133, 133, 0.2);
-    --left-active-icon-color: #1ab292;
-    --left-win-icon-color: #1ab292;
+    --left-active-icon-color: var(--hula-brand-primary);
+    --left-win-icon-color: var(--hula-brand-primary);
 
     // 包含边框的选中样式
-    --border-active-color: #64a29c;
+    --border-active-color: var(--hula-brand-primary);
 
     // 右边布局内容背景
     --right-theme-bg-color: radial-gradient(

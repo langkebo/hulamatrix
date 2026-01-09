@@ -92,7 +92,7 @@
                     </svg>
                     <p>{{ t('editor.screenshot') }}</p>
                   </n-flex>
-                  <p class="text-(12px #909090)">{{ settingStore.shortcuts.screenshot }}</p>
+                  <p class="text-(12px var(--hula-brand-primary))">{{ settingStore.shortcuts.screenshot }}</p>
                 </n-flex>
 
                 <n-flex
@@ -739,7 +739,7 @@ onUnmounted(() => {
     cursor: pointer;
 
     &:hover {
-      color: #13987f;
+      color: var(--hula-brand-primary);
     }
   }
 
@@ -770,7 +770,7 @@ onUnmounted(() => {
 .resize-indicator {
   width: 40px;
   height: 3px;
-  background: #909090;
+  background: var(--hula-brand-primary);
   border-radius: 2px;
   opacity: 0.3;
   transition: all 0.2s ease;
@@ -829,7 +829,7 @@ onUnmounted(() => {
 .panel-container {
   width: 100%;
   overflow: hidden;
-  background-color: var(--bg-emoji, #f5f5f5);
+  background-color: var(--bg-emoji, var(--hula-brand-primary));
   display: flex;
   flex-direction: column;
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
