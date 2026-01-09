@@ -13,7 +13,7 @@ import { TauriCommand } from '@/enums'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { parseMatrixEvent } from '@/utils/messageUtils'
 import { threadService } from './matrixThreadAdapter'
-import { messageSyncService } from './messageSyncService'
+import { messageSyncService } from '@/matrix/services/message/sync'
 
 export type MessageSource = 'matrix' | 'local'
 

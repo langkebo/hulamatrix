@@ -5,7 +5,7 @@ import { MsgEnum, MessageStatusEnum } from '@/enums'
 import type { MsgType, MessageBody } from '@/services/types'
 import { generateMessageId, formatMessageContent } from '@/utils/messageUtils'
 import { mediaService } from './mediaService'
-import { messageSyncService } from './messageSyncService'
+import { messageSyncService, type RetryMessage } from '@/matrix/services/message/sync'
 
 // 发送消息类型定义
 interface SendMessageParams {
@@ -85,7 +85,7 @@ export class EnhancedMessageService {
    * 设置重试回调
    */
   private setupRetryCallback(): void {
-    messageSyncService.setRetryCallback(async (retryMessage) => {
+    messageSyncService.setRetryCallback(async (retryMessage: RetryMessage) => {
       try {
         const msg: SendMessageParams = {
           type: retryMessage.type,
