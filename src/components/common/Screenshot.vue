@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { writeImage } from '@tauri-apps/plugin-clipboard-manager'
@@ -117,8 +117,8 @@ import type { Ref } from 'vue'
 import { useCanvasTool } from '@/hooks/useCanvasTool'
 import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
 import { useScreenshotMagnifier } from '@/composables/useScreenshotMagnifier'
+import { useScreenshotCanvas } from '@/composables/useScreenshotCanvas'
 import { isMac } from '@/utils/PlatformConstants'
-import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import {
   drawRectangle as drawRectUtil,
   drawSizeText,
@@ -143,20 +143,20 @@ type ScreenConfig = {
   height: number
 }
 
-// 获取当前窗口实例
+// Get current window instance
 const { t } = useI18n()
 const appWindow = WebviewWindow.getCurrent()
 const canvasbox: Ref<HTMLDivElement | null> = ref(null)
 
-// 图像层
+// Image layer
 const imgCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const imgCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
 
-// 蒙版层
+// Mask layer
 const maskCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const maskCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
 
-// 绘图层
+// Drawing layer
 const drawCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const drawCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
 
@@ -178,23 +178,19 @@ interface CanvasTool {
   [key: string]: unknown
 }
 
-let drawTools: CanvasTool | null
-// 是否可撤回
-const canUndo = ref(false)
-
-// 放大镜
+// Magnifier
 const magnifier: Ref<HTMLDivElement | null> = ref(null)
 const magnifierCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const magnifierCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
 
-// 按钮组
+// Button group
 const buttonGroup: Ref<HTMLDivElement | null> = ref(null)
-const showButtonGroup: Ref<boolean> = ref(false) // 控制按钮组显示
+const showButtonGroup: Ref<boolean> = ref(false)
 
-// 选区拖动区域
+// Selection drag area
 const selectionArea: Ref<HTMLDivElement | null> = ref(null)
 
-// 截屏信息
+// Screen config
 const screenConfig: Ref<ScreenConfig> = ref({
   startX: 0,
   startY: 0,
@@ -207,28 +203,90 @@ const screenConfig: Ref<ScreenConfig> = ref({
   height: 0
 })
 
-// 截屏图片
-let screenshotImage: HTMLImageElement
-let isImageLoaded: boolean = false
-
-// 当前选择的绘图工具
+// Current drawing tool
 const currentDrawTool: Ref<string | null> = ref(null)
 
-// 性能优化：鼠标移动事件节流（仅 macOS）
+// Performance optimization: mouse move throttle (macOS only)
 let mouseMoveThrottleId: number | null = null
-const mouseMoveThrottleDelay = 16 // 约60FPS，在菜单栏区域降低频率
-
-// 窗口状态恢复函数
-const restoreWindowState = async () => {
-  await appWindow.hide()
-}
+const mouseMoveThrottleDelay = 16 // ~60FPS
 
 /**
- * 绘制图形
- * @param {string} type - 图形类型
+ * Initialize canvas composable after wrapper functions are defined
+ */
+// Wrapper functions for utilities
+const drawRectangle = (
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  lineWidth: number = 2
+) => {
+  drawRectUtil(context, x, y, width, height, lineWidth, 0, screenConfig.value.scaleX)
+  drawSizeText(context, x, y, width, height)
+}
+
+const drawMask = () => {
+  drawMaskUtil(maskCtx, maskCanvas)
+}
+
+const redrawSelection = () => {
+  redrawSelUtil(maskCtx, maskCanvas, screenConfig)
+}
+
+// Reset drawing tools - will be passed to canvas composable
+const resetDrawTools = () => {
+  currentDrawTool.value = null
+  // Drawing tools cleanup will be handled by canvas composable
+
+  // Clear draw canvas
+  if (drawCtx.value && drawCanvas.value) {
+    drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
+    logger.debug('Drawing content cleared', undefined, 'Screenshot')
+  }
+
+  // Disable drawing canvas events
+  if (drawCanvas.value) {
+    drawCanvas.value.style.pointerEvents = 'none'
+    drawCanvas.value.style.zIndex = '5'
+  }
+
+  logger.debug('Drawing tools reset', undefined, 'Screenshot')
+}
+
+// Create temporary refs for isDragging and isResizing (will be overridden)
+const tempIsDragging = ref(false)
+const tempIsResizing = ref(false)
+const tempIsImageLoaded = ref(false)
+
+// Initialize canvas composable
+const canvasComposable = useScreenshotCanvas({
+  imgCanvas,
+  imgCtx,
+  maskCanvas,
+  maskCtx,
+  drawCanvas,
+  drawCtx,
+  screenConfig,
+  showButtonGroup,
+  isDragging: tempIsDragging,
+  isResizing: tempIsResizing,
+  borderRadius: ref(0), // Will be provided by selection composable
+  isImageLoaded: tempIsImageLoaded,
+  drawRectangle,
+  resetDrawTools
+})
+
+// Destructure canvas composable
+const { isImageLoaded, drawTools, canUndo, initCanvas, resetScreenshot, setupEventListeners, removeEventListeners } =
+  canvasComposable
+
+/**
+ * Draw shapes
+ * @param {string} type - Shape type
  */
 const drawImgCanvas = (type: string) => {
-  if (!drawTools) {
+  if (!drawTools.value) {
     logger.warn('绘图工具未初始化')
     return
   }
@@ -236,257 +294,62 @@ const drawImgCanvas = (type: string) => {
   const drawableTypes = ['rect', 'circle', 'arrow', 'mosaic']
 
   if (drawableTypes.includes(type)) {
-    // 如果点击的是当前已激活的工具，保持选中，不进行任何操作（不可取消，只能切换其他选项）
+    // If clicking the active tool, keep it selected (not cancelable)
     if (currentDrawTool.value === type) {
       return
     }
 
-    // 先停止之前的工具
+    // Stop previous tool
     if (currentDrawTool.value) {
-      drawTools.stopDrawing && drawTools.stopDrawing()
+      drawTools.value.stopDrawing && drawTools.value.stopDrawing()
     }
 
-    // 激活新的绘图工具
+    // Activate new drawing tool
     currentDrawTool.value = type
 
-    // 启用绘图Canvas事件接收
+    // Enable drawing canvas events
     if (drawCanvas.value) {
       drawCanvas.value.style.pointerEvents = 'auto'
     }
 
-    // 绘制马赛克时设置笔宽
+    // Set brush size for mosaic
     if (type === 'mosaic') {
-      drawTools.drawMosaicBrushSize && drawTools.drawMosaicBrushSize(20)
+      drawTools.value.drawMosaicBrushSize && drawTools.value.drawMosaicBrushSize(20)
     }
 
-    // 调用绘图方法，确保绘图工具被正确激活
+    // Call drawing method to activate tool
     try {
-      drawTools.draw(type)
+      drawTools.value.draw(type)
     } catch (error) {
-      logger.error(`绘图工具激活失败: ${type}`, error)
+      logger.error(`Drawing tool activation failed: ${type}`, error)
       currentDrawTool.value = null
-      // 激活失败时也要禁用事件
       if (drawCanvas.value) {
         drawCanvas.value.style.pointerEvents = 'none'
       }
     }
   } else if (type === 'redo') {
-    // 需求：点击“重做”清空绘图画布的全部涂鸦
-    if (drawTools.clearAll) {
-      drawTools.clearAll()
+    // Clear all drawings
+    if (drawTools.value.clearAll) {
+      drawTools.value.clearAll()
     }
-    // 清空后重置工具状态并禁用绘图事件穿透
     currentDrawTool.value = null
-    drawTools.resetState && drawTools.resetState()
-    drawTools.clearEvents && drawTools.clearEvents()
+    drawTools.value.resetState && drawTools.value.resetState()
+    drawTools.value.clearEvents && drawTools.value.clearEvents()
     if (drawCanvas.value) {
       drawCanvas.value.style.pointerEvents = 'none'
       drawCanvas.value.style.zIndex = '5'
     }
-    logger.debug('已清空全部涂鸦 (通过重做按钮)', undefined, 'Screenshot')
+    logger.debug('Cleared all drawings (via redo button)', undefined, 'Screenshot')
   } else if (type === 'undo') {
-    // 没有可撤回的内容时直接忽略点击
+    // Ignore if nothing to undo
     if (!canUndo.value) return
-    // 先停止可能正在进行的绘制，确保一次点击立即生效
-    drawTools.stopDrawing && drawTools.stopDrawing()
-    drawTools.undo && drawTools.undo()
-    logger.debug('执行撤销', undefined, 'Screenshot')
+    drawTools.value.stopDrawing && drawTools.value.stopDrawing()
+    drawTools.value.undo && drawTools.value.undo()
+    logger.debug('Undo executed', undefined, 'Screenshot')
   }
 }
 
-// 重置绘图工具状态
-const resetDrawTools = () => {
-  currentDrawTool.value = null
-  if (drawTools) {
-    // 停止当前绘图操作
-    drawTools.stopDrawing && drawTools.stopDrawing()
-    // 重置绘图工具到默认状态
-    drawTools.resetState && drawTools.resetState()
-    // 清除绘图工具的事件监听
-    drawTools.clearEvents && drawTools.clearEvents()
-  }
-
-  // 清除绘图canvas的内容
-  if (drawCtx.value && drawCanvas.value) {
-    drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-    logger.debug('绘图内容已清除', undefined, 'Screenshot')
-  }
-
-  // 重置时禁用绘图canvas事件，让事件穿透到选区
-  if (drawCanvas.value) {
-    drawCanvas.value.style.pointerEvents = 'none'
-    drawCanvas.value.style.zIndex = '5'
-  }
-
-  logger.debug('绘图工具已重置', undefined, 'Screenshot')
-}
-
-/**
- * 初始化canvas
- */
-const initCanvas = async () => {
-  // 在截图前隐藏放大镜，避免被截进去
-  hideMagnifier()
-  // 重置绘图工具状态
-  resetDrawTools()
-
-  // 重置图像加载状态
-  isImageLoaded = false
-
-  // 重置其他状态
-  borderRadius.value = 0
-  isDragging.value = false
-  isResizing.value = false
-
-  const canvasWidth = screen.width * window.devicePixelRatio
-  const canvasHeight = screen.height * window.devicePixelRatio
-
-  const config = {
-    x: '0',
-    y: '0',
-    width: `${canvasWidth}`,
-    height: `${canvasHeight}`
-  }
-
-  const screenshotData = await invokeWithErrorHandler<string>('screenshot', config, {
-    customErrorMessage: '截图失败',
-    errorType: ErrorType.Client
-  })
-
-  if (imgCanvas.value && maskCanvas.value) {
-    imgCanvas.value.width = canvasWidth
-    imgCanvas.value.height = canvasHeight
-    maskCanvas.value.width = canvasWidth
-    maskCanvas.value.height = canvasHeight
-    drawCanvas.value!.width = canvasWidth
-    drawCanvas.value!.height = canvasHeight
-
-    imgCtx.value = imgCanvas.value.getContext('2d')
-    maskCtx.value = maskCanvas.value.getContext('2d')
-    drawCtx.value = drawCanvas.value!.getContext('2d', { willReadFrequently: true })
-
-    // 清除绘图canvas的内容
-    if (drawCtx.value) {
-      drawCtx.value.clearRect(0, 0, canvasWidth, canvasHeight)
-    }
-
-    // 获取屏幕缩放比例
-    const { clientWidth: containerWidth, clientHeight: containerHeight } = imgCanvas.value!
-    screenConfig.value.scaleX = canvasWidth / containerWidth
-    screenConfig.value.scaleY = canvasHeight / containerHeight
-
-    screenshotImage = new Image()
-
-    screenshotImage.onload = () => {
-      if (imgCtx.value) {
-        try {
-          imgCtx.value.drawImage(screenshotImage, 0, 0, canvasWidth, canvasHeight)
-
-          // 绘制全屏绿色边框
-          if (maskCtx.value) {
-            drawRectangle(
-              maskCtx.value,
-              screenConfig.value.startX,
-              screenConfig.value.startY,
-              canvasWidth,
-              canvasHeight,
-              4
-            )
-          }
-
-          if (drawCanvas.value && drawCtx.value && imgCtx.value) {
-            drawTools = useCanvasTool(drawCanvas, drawCtx, imgCtx, screenConfig)
-            // 初始化时禁用绘图canvas事件，让事件穿透到选区
-            drawCanvas.value.style.pointerEvents = 'none'
-            drawCanvas.value.style.zIndex = '5'
-            // 同步 canUndo 状态到本组件用于禁用撤回按钮
-            const currentDrawTools = drawTools
-            if (currentDrawTools?.canUndo) {
-              watch(
-                () => currentDrawTools.canUndo?.value,
-                (val) => (canUndo.value = val ?? false),
-                { immediate: true }
-              )
-            }
-            logger.debug('绘图工具初始化完成 (备用方式)', undefined, 'Screenshot')
-          }
-          isImageLoaded = true
-        } catch (error) {
-          logger.error('绘制图像到canvas失败:', error)
-        }
-      } else {
-        logger.error('imgCtx.value为空')
-      }
-    }
-
-    // 直接将原始buffer绘制到canvas，不使用Image对象
-    if (screenshotData && imgCtx.value) {
-      try {
-        // 解码base64数据
-        const binaryString = atob(screenshotData)
-        const bytes = new Uint8Array(binaryString.length)
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i)
-        }
-
-        // 创建ImageData并绘制到canvas
-        const imageData = new ImageData(new Uint8ClampedArray(bytes), canvasWidth, canvasHeight)
-        imgCtx.value.putImageData(imageData, 0, 0)
-
-        // 绘制全屏绿色边框
-        if (maskCtx.value) {
-          drawRectangle(
-            maskCtx.value,
-            screenConfig.value.startX,
-            screenConfig.value.startY,
-            canvasWidth,
-            canvasHeight,
-            4
-          )
-        }
-
-        if (drawCanvas.value && drawCtx.value && imgCtx.value) {
-          drawTools = useCanvasTool(drawCanvas, drawCtx, imgCtx, screenConfig)
-          // 初始化时禁用绘图canvas事件，让事件穿透到选区
-          drawCanvas.value.style.pointerEvents = 'none'
-          drawCanvas.value.style.zIndex = '5'
-          // 同步 canUndo 状态到本组件用于禁用撤回按钮
-          const currentDrawTools = drawTools
-          if (currentDrawTools?.canUndo) {
-            watch(
-              () => currentDrawTools.canUndo?.value,
-              (val) => (canUndo.value = val ?? false),
-              { immediate: true }
-            )
-          }
-          logger.debug('绘图工具初始化完成', undefined, 'Screenshot')
-        }
-        isImageLoaded = true
-      } catch (error) {
-        // 如果直接绘制失败，回退到Image对象方式
-        screenshotImage.src = `data:image/png;base64,${screenshotData}`
-      }
-    } else {
-      screenshotImage.src = `data:image/png;base64,${screenshotData}`
-    }
-  }
-
-  // 添加鼠标监听事件
-  maskCanvas.value?.addEventListener('mousedown', handleMaskMouseDown)
-  maskCanvas.value?.addEventListener('mousemove', handleMaskMouseMove)
-  maskCanvas.value?.addEventListener('mouseup', handleMaskMouseUp)
-  maskCanvas.value?.addEventListener('contextmenu', handleRightClick)
-
-  // 添加键盘监听事件
-  document.addEventListener('keydown', handleKeyDown)
-
-  // 添加全局右键监听事件
-  document.addEventListener('contextmenu', handleRightClick)
-
-  // 添加全局点击监听，用于取消绘图工具
-  document.addEventListener('mousedown', handleGlobalMouseDown)
-}
-
+// Mask mouse event handlers
 const handleMaskMouseDown = (event: MouseEvent) => {
   // 如果已经显示按钮组，则不执行任何操作
   if (showButtonGroup.value) return
@@ -604,42 +467,15 @@ const handleMaskMouseUp = (event: MouseEvent) => {
   }
 }
 
-/**
- * 绘制矩形（支持圆角）
- */
-const drawRectangle = (
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  lineWidth: number = 2
-) => {
-  drawRectUtil(context, x, y, width, height, lineWidth, borderRadius.value, screenConfig.value.scaleX)
-  drawSizeText(context, x, y, width, height)
-}
-
-/**
- * 绘制蒙版
- */
-const drawMask = () => {
-  drawMaskUtil(maskCtx, maskCanvas)
-}
-
-// 重绘蒙版为透明选区 + 无描边，避免与 DOM 选区边框重复
-const redrawSelection = () => {
-  redrawSelUtil(maskCtx, maskCanvas, screenConfig)
-}
-
 // Initialize magnifier composable before selection (selection needs handleMagnifierMouseMove)
 const magnifierComp = useScreenshotMagnifier({
   imgCanvas,
   imgCtx,
   screenConfig,
-  isDragging: ref(false), // Will be overridden by selection composable
-  isResizing: ref(false), // Will be overridden by selection composable
+  isDragging: tempIsDragging,
+  isResizing: tempIsResizing,
   showButtonGroup,
-  isImageLoaded: ref(false),
+  isImageLoaded,
   magnifier,
   magnifierCanvas,
   magnifierCtx
@@ -728,61 +564,7 @@ const confirmSelection = async () => {
   }
 }
 
-const resetScreenshot = async () => {
-  try {
-    // 清理性能优化相关的定时器（仅 macOS）
-    if (isMac() && mouseMoveThrottleId) {
-      clearTimeout(mouseMoveThrottleId)
-      mouseMoveThrottleId = null
-    }
-
-    // 重置绘图工具状态
-    resetDrawTools()
-
-    // 重置所有状态
-    showButtonGroup.value = false
-    isImageLoaded = false
-    borderRadius.value = 0 // 重置圆角
-    isDragging.value = false
-    isResizing.value = false
-
-    screenConfig.value = {
-      startX: 0,
-      startY: 0,
-      endX: 0,
-      endY: 0,
-      scaleX: 0,
-      scaleY: 0,
-      isDrawing: false,
-      width: 0,
-      height: 0
-    }
-
-    // 清除所有canvas内容
-    if (imgCtx.value && imgCanvas.value) {
-      imgCtx.value.clearRect(0, 0, imgCanvas.value.width, imgCanvas.value.height)
-    }
-    if (maskCtx.value && maskCanvas.value) {
-      maskCtx.value.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height)
-    }
-    if (drawCtx.value && drawCanvas.value) {
-      drawCtx.value.clearRect(0, 0, drawCanvas.value.width, drawCanvas.value.height)
-      // 重置时禁用绘图canvas事件
-      drawCanvas.value.style.pointerEvents = 'none'
-    }
-
-    // 隐藏放大镜
-    hideMagnifier()
-
-    // 恢复窗口状态（macOS需要退出全屏）
-    await restoreWindowState()
-  } catch (error) {
-    // 即使出错也要尝试恢复窗口状态
-    await restoreWindowState()
-  }
-}
-
-// 全局鼠标点击处理，用于取消绘图工具
+// Global mouse click handler for canceling drawing tools
 const handleGlobalMouseDown = (event: MouseEvent) => {
   // 只有在绘图工具激活且按钮组显示时才考虑处理
   if (!currentDrawTool.value || !showButtonGroup.value) return
@@ -818,6 +600,16 @@ const handleScreenshot = () => {
   initMagnifier()
 }
 
+// Setup event listeners through canvas composable
+setupEventListeners({
+  onMaskMouseDown: handleMaskMouseDown,
+  onMaskMouseMove: handleMaskMouseMove,
+  onMaskMouseUp: handleMaskMouseUp,
+  onKeyDown: handleKeyDown,
+  onRightClick: handleRightClick,
+  onGlobalMouseDown: handleGlobalMouseDown
+})
+
 onMounted(async () => {
   appWindow.listen('capture', () => {
     resetDrawTools()
@@ -825,38 +617,25 @@ onMounted(async () => {
     initMagnifier()
   })
 
-  // 监听窗口隐藏时的重置事件
+  // Listen for window hide reset event
   appWindow.listen('capture-reset', () => {
     resetDrawTools()
     resetScreenshot()
   })
 
-  // 监听自定义截图事件
+  // Listen for custom screenshot event
   window.addEventListener('trigger-screenshot', handleScreenshot)
 })
 
 onUnmounted(async () => {
-  // 清理性能优化相关的定时器（仅 macOS）
-  if (isMac() && mouseMoveThrottleId) {
-    clearTimeout(mouseMoveThrottleId)
-    mouseMoveThrottleId = null
-  }
+  // Remove event listeners through canvas composable
+  removeEventListeners({
+    onKeyDown: handleKeyDown,
+    onRightClick: handleRightClick,
+    onGlobalMouseDown: handleGlobalMouseDown
+  })
 
-  // 清理键盘监听事件
-  document.removeEventListener('keydown', handleKeyDown)
-
-  // 清理全局右键监听事件
-  document.removeEventListener('contextmenu', handleRightClick)
-
-  // 清理全局点击监听事件
-  document.removeEventListener('mousedown', handleGlobalMouseDown)
-
-  // 清理右键监听事件
-  if (maskCanvas.value) {
-    maskCanvas.value.removeEventListener('contextmenu', handleRightClick)
-  }
-
-  // 清理自定义事件监听
+  // Remove custom event listener
   window.removeEventListener('trigger-screenshot', handleScreenshot)
 })
 </script>
