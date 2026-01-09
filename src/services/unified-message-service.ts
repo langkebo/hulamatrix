@@ -888,9 +888,9 @@ export class UnifiedMessageService {
       typeof (chatStore as { markThreadAsRead?: (threadRootId: string) => Promise<boolean> }).markThreadAsRead ===
       'function'
     ) {
-      const result = await (chatStore as { markThreadAsRead: (threadRootId: string) => Promise<boolean> }).markThreadAsRead(
-        threadRootId
-      )
+      const result = await (
+        chatStore as { markThreadAsRead: (threadRootId: string) => Promise<boolean> }
+      ).markThreadAsRead(threadRootId)
       if (result) {
         logger.info('[UnifiedMessageService] Thread marked as read:', threadRootId)
       } else {
