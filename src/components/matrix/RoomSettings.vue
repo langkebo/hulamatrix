@@ -118,79 +118,18 @@
         </div>
 
         <!-- Encryption -->
-        <div class="settings-section">
-          <h3>加密设置</h3>
-          <div class="encryption-settings">
-            <div class="encryption-status">
-              <n-icon
-                :component="roomInfo.encrypted ? Lock : LockOpen"
-                :color="roomInfo.encrypted ? '#18a058' : '#d03050'"
-                size="20" />
-              <span>房间加密: {{ roomInfo.encrypted ? '已启用' : '未启用' }}</span>
-            </div>
-            <n-alert v-if="roomInfo.encrypted" type="info" title="端到端加密">
-              此房间已启用端到端加密，只有房间成员可以解密消息
-            </n-alert>
-            <n-button v-else type="primary" :loading="enablingEncryption" @click="enableEncryption">
-              启用端到端加密
-            </n-button>
-          </div>
-        </div>
+        <RoomEncryptionPanel :encrypted="roomInfo.encrypted || false" :enabling="enablingEncryption" @enable="enableEncryption" />
       </n-tab-pane>
 
       <!-- Members Management -->
       <n-tab-pane name="members" tab="成员管理">
-        <div class="members-section">
-          <div class="section-header">
-            <h3>房间成员 ({{ members.length }})</h3>
-            <div class="member-actions">
-              <n-input
-                v-model:value="memberSearchQuery"
-                placeholder="搜索成员..."
-                clearable
-                class="member-search-input">
-                <template #prefix>
-                  <n-icon :component="Search" />
-                </template>
-              </n-input>
-              <n-button @click="showInviteModal = true">
-                <n-icon :component="UserPlus" />
-                邀请成员
-              </n-button>
-            </div>
-          </div>
-
-          <!-- Member List -->
-          <div class="member-list">
-            <div v-for="member in filteredMembers" :key="member.userId" class="member-item">
-              <n-avatar v-if="member.avatarUrl !== undefined" :src="member.avatarUrl" round size="medium">
-                {{ getMemberInitials(member.displayName || '', member.userId) }}
-              </n-avatar>
-              <n-avatar v-else round size="medium">
-                {{ getMemberInitials(member.displayName || '', member.userId) }}
-              </n-avatar>
-              <div class="member-info">
-                <div class="member-name">
-                  {{ member.displayName || member.userId }}
-                  <n-tag v-if="(member.powerLevel || 0) >= 50" type="warning" size="tiny">管理员</n-tag>
-                  <n-tag v-if="(member.powerLevel || 0) >= 100" type="error" size="tiny">房主</n-tag>
-                </div>
-                <div class="member-id">{{ member.userId }}</div>
-                <div class="member-status">
-                  <span class="membership">{{ getMembershipText(member.membership) }}</span>
-                  <span class="power-level">权限等级: {{ member.powerLevel || 0 }}</span>
-                </div>
-              </div>
-              <div class="member-actions">
-                <n-dropdown :options="getMemberMenuOptions(member)" @select="handleMemberAction($event, member)">
-                  <n-button quaternary>
-                    <n-icon :component="DotsVertical" />
-                  </n-button>
-                </n-dropdown>
-              </div>
-            </div>
-          </div>
-        </div>
+        <RoomMembersList
+          :members="members"
+          :current-user-id="currentUserId"
+          :current-power-level="members.find((m) => m.userId === currentUserId)?.powerLevel || 0"
+          :ban-threshold="powerLevels.ban"
+          @invite="showInviteModal = true"
+          @member-action="handleMemberAction" />
 
         <!-- Power Levels -->
         <div class="power-levels-section">
@@ -429,24 +368,23 @@ import {
   NTag,
   NIcon,
   NUpload,
-  NAlert,
   NDescriptions,
   NDescriptionsItem,
-  NDropdown,
   NModal,
   useMessage
 } from 'naive-ui'
-import { Users, Lock, LockOpen, Search, UserPlus, DotsVertical, Download, Logout, Trash, User } from '@vicons/tabler'
+import { Users, Download, Logout, Trash, User } from '@vicons/tabler'
 import { matrixRoomManager } from '@/matrix/services/room/manager'
 import type { MatrixMember } from '@/types/matrix'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { getUserId, getRoom } from '@/utils/matrixClientUtils'
 import PowerLevelEditor from '@/components/rooms/PowerLevelEditor.vue'
+import RoomMembersList from './RoomMembersList.vue'
+import RoomEncryptionPanel from './RoomEncryptionPanel.vue'
 import {
   getJoinRuleDescription,
   getGuestAccessDescription,
   getHistoryVisibilityDescription,
-  getMemberInitials,
   getMembershipText,
   getMembershipTagType,
   getPowerLevelRole,
@@ -502,7 +440,6 @@ const showDeleteModal = ref(false)
 const showMemberProfileModal = ref(false)
 const showPowerLevelEditor = ref(false)
 const deleteConfirmText = ref('')
-const memberSearchQuery = ref('')
 const messageCount = ref(0)
 
 // Member profile state
@@ -599,15 +536,6 @@ const historyVisibilityOptions = [
 ]
 
 // Computed
-const filteredMembers = computed(() => {
-  if (!memberSearchQuery.value) return members.value
-
-  const query = memberSearchQuery.value.toLowerCase()
-  return members.value.filter(
-    (member) => member.displayName?.toLowerCase().includes(query) || member.userId.toLowerCase().includes(query)
-  )
-})
-
 const isRoomOwner = computed(() => {
   const client = matrixClientService.getClient()
   const myUserId = getUserId(client)
@@ -830,47 +758,8 @@ const inviteMember = async () => {
   }
 }
 
-const getMemberMenuOptions = (member: MatrixMember) => {
-  const client = matrixClientService.getClient()
-  const myUserId = getUserId(client)
-  const myPowerLevel = members.value.find((m) => m.userId === myUserId)?.powerLevel || 0
-
-  const options = []
-
-  // View profile
-  options.push({
-    label: '查看资料',
-    key: 'profile'
-  })
-
-  // Power level management
-  if (myPowerLevel >= (member.powerLevel || 0) + 10 && member.userId !== myUserId) {
-    options.push({
-      label: '修改权限',
-      key: 'power'
-    })
-  }
-
-  // Kick member
-  if (myPowerLevel > (member.powerLevel || 0) && member.userId !== myUserId) {
-    options.push({
-      label: '踢出',
-      key: 'kick'
-    })
-  }
-
-  // Ban member
-  if (myPowerLevel >= powerLevels.ban && member.userId !== myUserId) {
-    options.push({
-      label: '封禁',
-      key: 'ban'
-    })
-  }
-
-  return options
-}
-
-const handleMemberAction = async (action: string, member: MatrixMember) => {
+const handleMemberAction = async (payload: { action: string; member: MatrixMember }) => {
+  const { action, member } = payload
   switch (action) {
     case 'profile':
       selectedMember.value = member
@@ -1100,81 +989,6 @@ onMounted(() => {
   margin-top: 4px;
 }
 
-.encryption-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.encryption-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-.members-section .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.member-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.member-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.member-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--n-hover-color);
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.member-item:hover {
-  background: var(--n-pressed-color);
-}
-
-.member-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.member-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.member-id {
-  font-size: 12px;
-  color: var(--n-text-color-3);
-  font-family: monospace;
-}
-
-.member-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--n-text-color-3);
-}
-
 .power-levels-section {
   margin-top: 32px;
 }
@@ -1289,11 +1103,6 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   color: var(--n-text-color-2);
-}
-
-/* 成员搜索输入框 */
-.member-search-input {
-  width: 200px;
 }
 
 /* 删除确认输入框 */
