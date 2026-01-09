@@ -648,8 +648,60 @@ Matrix Integration (SDK Wrapper)
 Matrix SDK (matrix-js-sdk)
 ```
 
+### C. Matrix 服务架构迁移 (2026-01-09)
+
+#### ✅ 已完成 - Phase 0-7
+
+**新的统一架构:**
+```
+src/matrix/
+├── core/                      # 核心模块 (23 个文件)
+│   ├── client.ts             # Matrix Client
+│   ├── auth.ts               # 认证
+│   ├── discovery.ts          # 服务发现
+│   ├── alias.ts              # 房间别名验证
+│   ├── crypto.ts             # 加密工具
+│   ├── e2ee.ts               # 端到端加密
+│   ├── encryption.ts         # 加密管理
+│   ├── history.ts            # 消息历史
+│   ├── members.ts            # 成员列表
+│   ├── messages.ts           # 消息处理
+│   ├── notifications.ts      # 通知核心
+│   ├── power-levels.ts       # 权限级别
+│   ├── pushers.ts            # 推送设置
+│   ├── reactions.ts          # 消息反应
+│   ├── receipts.ts           # 已读回执
+│   ├── rooms.ts              # 房间操作核心
+│   ├── spaces.ts             # 基础空间功能
+│   ├── threads.ts            # 线程处理
+│   ├── typing.ts             # 输入指示器
+│   ├── types.ts              # 类型定义
+│   └── media-crypto.ts       # 媒体加密
+├── services/                  # 服务层 (12 个子目录)
+│   ├── auth/                 # 认证服务 (uia.ts)
+│   ├── call/                 # 通话服务
+│   ├── crypto/               # 加密服务 (manager.ts)
+│   ├── media/                # 媒体服务 (batch, metadata, upload)
+│   ├── message/              # 消息服务 (sync, decrypt, event-handler)
+│   ├── notification/         # 通知服务
+│   ├── presence/             # 在线状态服务 (8 个文件)
+│   ├── room/                 # 房间服务 (manager, spaces, service, utils)
+│   ├── search/               # 搜索服务 (room, space)
+│   └── sync/                 # 同步服务 (sliding)
+└── types/                    # 类型定义
+```
+
+**迁移成果:**
+- ✅ 所有 Matrix 服务从分散位置统一到 `src/matrix/`
+- ✅ 清晰的模块边界 (core vs services)
+- ✅ 类型安全：源文件中 `any` 类型全部移除
+- ✅ Re-export facades 保持向后兼容
+- ✅ 268 行遗留代码清理
+
+**详细的迁移计划见**: [MATRIX_MIGRATION.md](./MATRIX_MIGRATION.md)
+
 ---
 
-**文档版本**: v6.0
-**最后更新**: 2026-01-09 (Phase 4 完成 - 所有大型组件已重构)
+**文档版本**: v7.0
+**最后更新**: 2026-01-09 (Phase 7 完成 - Matrix 服务架构统一迁移)
 **下次审查**: Matrix 服务架构重组
