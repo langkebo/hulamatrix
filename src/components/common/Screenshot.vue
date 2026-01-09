@@ -119,6 +119,12 @@ import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
 import { useScreenshotMagnifier } from '@/composables/useScreenshotMagnifier'
 import { isMac } from '@/utils/PlatformConstants'
 import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
+import {
+  drawRectangle as drawRectUtil,
+  drawSizeText,
+  drawMask as drawMaskUtil,
+  redrawSelection as redrawSelUtil
+} from '@/utils/screenshotCanvasUtils'
 
 import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
@@ -608,97 +614,20 @@ const drawRectangle = (
   height: number,
   lineWidth: number = 2
 ) => {
-  context.strokeStyle = '#13987f'
-  context.lineWidth = lineWidth
-
-  // 如果有圆角，绘制圆角矩形
-  if (borderRadius.value > 0) {
-    const radius = borderRadius.value * screenConfig.value.scaleX // 根据缩放调整圆角大小
-    const adjustedRadius = Math.min(radius, Math.abs(width) / 2, Math.abs(height) / 2)
-
-    context.beginPath()
-
-    // 确保坐标正确（处理负宽高的情况）
-    const rectX = width >= 0 ? x : x + width
-    const rectY = height >= 0 ? y : y + height
-    const rectWidth = Math.abs(width)
-    const rectHeight = Math.abs(height)
-
-    // 绘制圆角矩形路径
-    context.moveTo(rectX + adjustedRadius, rectY)
-    context.lineTo(rectX + rectWidth - adjustedRadius, rectY)
-    context.quadraticCurveTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + adjustedRadius)
-    context.lineTo(rectX + rectWidth, rectY + rectHeight - adjustedRadius)
-    context.quadraticCurveTo(
-      rectX + rectWidth,
-      rectY + rectHeight,
-      rectX + rectWidth - adjustedRadius,
-      rectY + rectHeight
-    )
-    context.lineTo(rectX + adjustedRadius, rectY + rectHeight)
-    context.quadraticCurveTo(rectX, rectY + rectHeight, rectX, rectY + rectHeight - adjustedRadius)
-    context.lineTo(rectX, rectY + adjustedRadius)
-    context.quadraticCurveTo(rectX, rectY, rectX + adjustedRadius, rectY)
-    context.closePath()
-
-    context.stroke()
-  } else {
-    // 普通矩形
-    context.strokeRect(x, y, width, height)
-  }
-
+  drawRectUtil(context, x, y, width, height, lineWidth, borderRadius.value, screenConfig.value.scaleX)
   drawSizeText(context, x, y, width, height)
-}
-
-/**
- * 绘制矩形尺寸文本
- */
-const drawSizeText = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
-  if (context) {
-    // 对宽度和高度进行取整
-    const roundedWidth = Math.round(Math.abs(width))
-    const roundedHeight = Math.round(Math.abs(height))
-    const sizeText = `${roundedWidth} x ${roundedHeight}`
-
-    // 确保文本始终显示在矩形的左上角
-    const textX = width >= 0 ? x : x + width
-    const textY = height >= 0 ? y : y + height
-
-    // 设置字体和样式
-    context.font = '14px Arial'
-    context.fillStyle = 'white'
-    // 设置图像插值质量
-    context.imageSmoothingEnabled = true
-    context.imageSmoothingQuality = 'high'
-    context.fillText(sizeText, textX + 5, textY - 10) // 在矩形左上角并稍微偏移的位置绘制文本
-  }
 }
 
 /**
  * 绘制蒙版
  */
 const drawMask = () => {
-  if (maskCtx.value && maskCanvas.value) {
-    maskCtx.value.fillStyle = 'rgba(0, 0, 0, 0.4)'
-    maskCtx.value.fillRect(0, 0, maskCanvas.value.width, maskCanvas.value.height)
-  }
+  drawMaskUtil(maskCtx, maskCanvas)
 }
 
 // 重绘蒙版为透明选区 + 无描边，避免与 DOM 选区边框重复
 const redrawSelection = () => {
-  if (!maskCtx.value || !maskCanvas.value) return
-
-  const { startX, startY, endX, endY } = screenConfig.value
-  const x = Math.min(startX, endX)
-  const y = Math.min(startY, endY)
-  const width = Math.abs(endX - startX)
-  const height = Math.abs(endY - startY)
-
-  // 清空并重绘蒙版
-  maskCtx.value.clearRect(0, 0, maskCanvas.value.width, maskCanvas.value.height)
-  drawMask()
-
-  maskCtx.value.clearRect(x, y, width, height)
+  redrawSelUtil(maskCtx, maskCanvas, screenConfig)
 }
 
 // Initialize magnifier composable before selection (selection needs handleMagnifierMouseMove)

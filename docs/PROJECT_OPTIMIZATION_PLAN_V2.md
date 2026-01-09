@@ -1,8 +1,8 @@
-# HuLa 项目优化方案 V4.5
+# HuLa 项目优化方案 V4.6
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 26 完成)
-**版本**: v4.5
+**最后更新**: 2026-01-09 (Phase 27 完成)
+**版本**: v4.6
 **总体进度**: 99%
 
 ---
@@ -16,7 +16,7 @@
 | 指标 | 状态 | 详情 |
 |------|------|------|
 | **类型安全** | ✅ 100% | TypeScript 编译通过 |
-| **代码质量** | ✅ 100% | Biome 检查通过 (0 警告, 1186 文件) |
+| **代码质量** | ✅ 100% | Biome 检查通过 (0 警告, 1187 文件) |
 | **内存泄漏** | ✅ 已验证 | 无泄漏风险 |
 | **Matrix 架构** | ✅ 100% | 统一架构完成 |
 
@@ -260,6 +260,20 @@
 - ✅ 创建 1 个新的可复用 composable
 - ✅ 所有检查通过 (0 TypeScript 错误, 0 Biome 警告)
 
+**Phase 27**: Screenshot Canvas Drawing Utilities 提取 ✅
+- ✅ 创建 screenshotCanvasUtils.ts 工具模块 (125 行)
+  - 矩形绘制函数（支持圆角）
+  - 尺寸文本绘制函数
+  - 蒙版绘制函数
+  - 选区重绘函数
+  - 纯函数设计，易于测试和复用
+- ✅ Screenshot.vue 简化 (~60 行减少)
+  - 移除重复的绘图函数实现
+  - 使用工具模块统一绘图逻辑
+  - 提高代码复用性和可测试性
+- ✅ 创建 1 个新的工具模块
+- ✅ 所有检查通过 (0 TypeScript 错误, 0 Biome 警告)
+
 ### 待处理的优化任务
 
 根据当前实际情况，以下是剩余的优化机会：
@@ -290,13 +304,14 @@
 
 #### 🟡 中优先级 (需要规划)
 
-4. **Screenshot.vue** (~1,260 行) 🟡 进行中
+4. **Screenshot.vue** (~1,200 行) 🟡 进行中
    - 已完成: Phase 25 - 提取 useScreenshotSelection composable (439 行)
    - 已完成: Phase 26 - 提取 useScreenshotMagnifier composable (210 行)
-   - 已完成: 移除选区和放大镜相关函数 (~450 行减少)
-   - 集成难度: 🟡 中等 (剩余 canvas 初始化和绘图逻辑需要仔细规划)
-   - 建议: 继续提取 canvas 初始化和绘图相关逻辑
-   - 下一步: 提取 useScreenshotCanvas composable (canvas 初始化、绘图函数、截图处理)
+   - 已完成: Phase 27 - 提取 screenshotCanvasUtils.ts 工具模块 (125 行)
+   - 已完成: 移除选区、放大镜和绘图相关函数 (~510 行减少)
+   - 集成难度: 🟡 中等 (剩余 canvas 初始化和截图处理逻辑需要仔细规划)
+   - 建议: 继续提取 canvas 初始化和截图处理相关逻辑
+   - 下一步: 可选择性提取 useScreenshotCanvas composable (canvas 初始化、截图处理)
 
 5. **MatrixMsgInput.vue** (~500 行) ✅ 已完成
    - 已完成: 创建 useMessageEditor composable (481 行)
@@ -550,6 +565,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v4.6 (2026-01-09): Phase 27 - Screenshot Canvas Drawing Utilities 提取完成
 - v4.5 (2026-01-09): Phase 26 - Screenshot Magnifier Composable 提取完成
 - v4.4 (2026-01-09): Phase 25 - Screenshot Selection Composable 提取完成
 - v4.3 (2026-01-09): Phase 24 - ChatHeader Composables 提取完成
