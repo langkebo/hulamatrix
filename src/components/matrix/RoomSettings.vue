@@ -79,43 +79,11 @@
         </div>
 
         <!-- Access Control -->
-        <div class="settings-section">
-          <h3>访问控制</h3>
-          <n-form :model="accessSettings" label-placement="left">
-            <!-- Join Rule -->
-            <n-form-item label="加入规则">
-              <n-select
-                v-model:value="accessSettings.joinRule"
-                :options="joinRuleOptions"
-                @update:value="updateJoinRule" />
-              <div class="option-description">
-                {{ getJoinRuleDescription(accessSettings.joinRule) }}
-              </div>
-            </n-form-item>
-
-            <!-- Guest Access -->
-            <n-form-item label="访客访问">
-              <n-select
-                v-model:value="accessSettings.guestAccess"
-                :options="guestAccessOptions"
-                @update:value="updateGuestAccess" />
-              <div class="option-description">
-                {{ getGuestAccessDescription(accessSettings.guestAccess) }}
-              </div>
-            </n-form-item>
-
-            <!-- History Visibility -->
-            <n-form-item label="历史记录可见性">
-              <n-select
-                v-model:value="accessSettings.historyVisibility"
-                :options="historyVisibilityOptions"
-                @update:value="updateHistoryVisibility" />
-              <div class="option-description">
-                {{ getHistoryVisibilityDescription(accessSettings.historyVisibility) }}
-              </div>
-            </n-form-item>
-          </n-form>
-        </div>
+        <RoomAccessControl
+          :access-settings="accessSettings"
+          @update-join-rule="updateJoinRule"
+          @update-guest-access="updateGuestAccess"
+          @update-history-visibility="updateHistoryVisibility" />
 
         <!-- Encryption -->
         <RoomEncryptionPanel :encrypted="roomInfo.encrypted || false" :enabling="enablingEncryption" @enable="enableEncryption" />
@@ -132,34 +100,7 @@
           @member-action="handleMemberAction" />
 
         <!-- Power Levels -->
-        <div class="power-levels-section">
-          <h3>权限等级</h3>
-          <n-form :model="powerLevels" label-placement="left">
-            <n-form-item label="默认用户权限">
-              <n-input-number
-                v-model:value="powerLevels.usersDefault"
-                :min="0"
-                :max="100"
-                @update:value="updatePowerLevels" />
-            </n-form-item>
-
-            <n-form-item label="默认事件权限">
-              <n-input-number
-                v-model:value="powerLevels.eventsDefault"
-                :min="0"
-                :max="100"
-                @update:value="updatePowerLevels" />
-            </n-form-item>
-
-            <n-form-item label="踢出权限">
-              <n-input-number v-model:value="powerLevels.kick" :min="0" :max="100" @update:value="updatePowerLevels" />
-            </n-form-item>
-
-            <n-form-item label="封禁权限">
-              <n-input-number v-model:value="powerLevels.ban" :min="0" :max="100" @update:value="updatePowerLevels" />
-            </n-form-item>
-          </n-form>
-        </div>
+        <RoomPowerLevels :power-levels="powerLevels" @update-power-levels="handlePowerLevelsUpdate" />
       </n-tab-pane>
 
       <!-- Advanced Settings -->
@@ -362,7 +303,6 @@ import {
   NFormItem,
   NInput,
   NInputNumber,
-  NSelect,
   NButton,
   NAvatar,
   NTag,
@@ -381,10 +321,9 @@ import { getUserId, getRoom } from '@/utils/matrixClientUtils'
 import PowerLevelEditor from '@/components/rooms/PowerLevelEditor.vue'
 import RoomMembersList from './RoomMembersList.vue'
 import RoomEncryptionPanel from './RoomEncryptionPanel.vue'
+import RoomAccessControl from './RoomAccessControl.vue'
+import RoomPowerLevels from './RoomPowerLevels.vue'
 import {
-  getJoinRuleDescription,
-  getGuestAccessDescription,
-  getHistoryVisibilityDescription,
   getMembershipText,
   getMembershipTagType,
   getPowerLevelRole,
@@ -514,26 +453,6 @@ interface RecentEvent {
 }
 
 const recentEvents = ref<RecentEvent[]>([])
-
-// Options
-const joinRuleOptions = [
-  { label: '公开(任何人都可以加入)', value: 'public' },
-  { label: '邀请制', value: 'invite' },
-  { label: '敲门制', value: 'knock' },
-  { label: '受限', value: 'restricted' }
-]
-
-const guestAccessOptions = [
-  { label: '禁止', value: 'forbidden' },
-  { label: '可以加入', value: 'can_join' }
-]
-
-const historyVisibilityOptions = [
-  { label: '任何人可见', value: 'world_readable' },
-  { label: '成员可见', value: 'shared' },
-  { label: '受邀者可见', value: 'invited' },
-  { label: '加入后可见', value: 'joined' }
-]
 
 // Computed
 const isRoomOwner = computed(() => {
@@ -712,6 +631,11 @@ const updatePowerLevels = async () => {
   } catch (error) {
     message.error('更新权限等级失败')
   }
+}
+
+const handlePowerLevelsUpdate = async (newPowerLevels: typeof powerLevels) => {
+  Object.assign(powerLevels, newPowerLevels)
+  await updatePowerLevels()
 }
 
 const enableEncryption = async () => {
@@ -981,22 +905,6 @@ onMounted(() => {
   gap: 4px;
   color: var(--n-text-color-3);
   font-size: 12px;
-}
-
-.option-description {
-  font-size: 12px;
-  color: var(--n-text-color-3);
-  margin-top: 4px;
-}
-
-.power-levels-section {
-  margin-top: 32px;
-}
-
-.power-levels-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
 }
 
 .advanced-section {

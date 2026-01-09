@@ -1,9 +1,9 @@
-# HuLa 项目优化方案 V3.7
+# HuLa 项目优化方案 V3.8
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 18 完成)
-**版本**: v3.7
-**总体进度**: 94%
+**最后更新**: 2026-01-09 (Phase 19 完成)
+**版本**: v3.8
+**总体进度**: 95%
 
 ---
 
@@ -122,6 +122,19 @@
 - ✅ 提高组件可维护性和复用性
 - ✅ 移除重复的样式定义
 
+**Phase 19**: RoomSettings 进一步拆分 ✅
+- ✅ 提取 RoomAccessControl 子组件 (78 行)
+  - 加入规则设置
+  - 访客访问设置
+  - 历史记录可见性设置
+- ✅ 提取 RoomPowerLevels 子组件 (76 行)
+  - 默认用户权限
+  - 默认事件权限
+  - 踢出/封禁权限
+- ✅ RoomSettings.vue 再减少 82 行 (1,201 → 1,119)
+- ✅ 移除未使用的选项常量
+- ✅ 组件职责更加清晰
+
 ### 待处理的优化任务
 
 根据当前实际情况，以下是剩余的优化机会：
@@ -133,11 +146,12 @@
    - 下一步: 提取 composables (useCallControls, useCallParticipants, useCallStats)
    - 预计进一步减少: ~400 行
 
-2. **RoomSettings.vue** (1,201 行) 🔄 进行中
+2. **RoomSettings.vue** (1,119 行) 🔄 进行中
    - 已完成: 提取辅助函数到 roomSettingsUtils.ts (-98 行)
    - 已完成: 提取 RoomMembersList 和 RoomEncryptionPanel (-102 行)
-   - 下一步: 继续提取其他子组件
-   - 预计进一步减少: ~200 行
+   - 已完成: 提取 RoomAccessControl 和 RoomPowerLevels (-82 行)
+   - 总共减少: 282 行 (1,401 → 1,119)
+   - 状态: 组件已大幅简化，可选择性继续优化
 
 #### 🟡 中优先级 (需要规划)
 
@@ -347,7 +361,8 @@ src/components/matrix/
 | Phase 16 | ~13 行 | 迁移到统一格式化入口 |
 | Phase 17 | ~8 行 | 完成格式化工具迁移 |
 | Phase 18 | ~102 行 | RoomSettings 子组件拆分 |
-| **总计** | **~11,960** | **~99%** |
+| Phase 19 | ~82 行 | RoomSettings 进一步拆分 |
+| **总计** | **~12,042** | **~99%** |
 
 ---
 
@@ -408,6 +423,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v3.8 (2026-01-09): Phase 19 - RoomSettings 进一步拆分完成
 - v3.7 (2026-01-09): Phase 18 - RoomSettings 子组件拆分完成
 - v3.6 (2026-01-09): Phase 17 - 完成格式化工具迁移
 - v3.5 (2026-01-09): Phase 16 - 迁移到统一格式化工具入口完成
