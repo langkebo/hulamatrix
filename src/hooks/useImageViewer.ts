@@ -6,7 +6,7 @@ import { useChatStore } from '@/stores/chat'
 import { useMediaStore } from '@/stores/useMediaStore'
 import { useMediaViewerStore, type MediaItem } from '@/stores/mediaViewer'
 import type { FilesMeta } from '@/services/types'
-import { extractFileName } from '@/utils/Formatting'
+import { extractFileName } from '@/utils/formatUtils'
 import { getFilesMeta } from '@/utils/PathUtil'
 import { logger } from '@/utils/logger'
 

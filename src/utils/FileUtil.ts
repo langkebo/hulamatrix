@@ -2,7 +2,7 @@ import { join } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 import { copyFile, readFile } from '@tauri-apps/plugin-fs'
 import type { FilesMeta } from '@/services/types'
-import { extractFileName } from '@/utils/Formatting'
+import { extractFileName } from '@/utils/formatUtils'
 import { useUserStore } from '@/stores/user'
 import { getFilesMeta } from './PathUtil'
 

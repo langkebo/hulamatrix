@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify'
 import { MsgEnum } from '@/enums'
-import { removeTag } from '@/utils/Formatting'
+import { removeTag } from '@/utils/formatUtils'
 import { AppException } from '@/common/exception'
 import { TEXT_LIMITS, ERROR_MESSAGES } from '@/constants'
 import { AbstractMessageStrategy, ReplyMessage, MessageBody } from '../base'

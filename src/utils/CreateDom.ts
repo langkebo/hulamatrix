@@ -1,4 +1,4 @@
-import { formatBytes } from '@/utils/Formatting'
+import { formatBytes } from '@/utils/formatUtils'
 
 import { msg } from '@/utils/SafeUI' /**
  * 创建一个带有SVG图标的img标签

@@ -11,7 +11,7 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { removeTag } from '@/utils/Formatting'
+import { removeTag } from '@/utils/formatUtils'
 import { getImageCache } from '@/utils/PathUtil'
 import { isMobile } from '@/utils/PlatformConstants'
 

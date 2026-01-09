@@ -116,7 +116,7 @@ import type { FileBody, MsgType, MessageType } from '@/services/types'
 import { useMediaStore } from '@/stores/useMediaStore'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
-import { formatBytes, getFileSuffix } from '@/utils/Formatting'
+import { formatBytes, getFileSuffix } from '@/utils/formatUtils'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
 
 import { msg } from '@/utils/SafeUI'

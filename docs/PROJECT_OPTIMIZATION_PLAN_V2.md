@@ -1,9 +1,9 @@
-# HuLa 项目优化方案 V3.4
+# HuLa 项目优化方案 V3.5
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 15 完成)
-**版本**: v3.4
-**总体进度**: 91%
+**最后更新**: 2026-01-09 (Phase 16 完成)
+**版本**: v3.5
+**总体进度**: 92%
 
 ---
 
@@ -86,6 +86,18 @@
   - 统一使用 formatUtils.ts
 - ✅ 消除 69 个文件中 183 处重复的格式化代码潜在机会
 - ✅ formatUtils.ts 成为格式化工具的单一入口点
+
+**Phase 16**: 迁移到统一格式化工具入口 ✅
+- ✅ 扩展 formatUtils.ts 重新导出 Formatting.ts 函数
+  - formatBytes, getFileSuffix, extractFileName
+  - removeTag, getMimeTypeFromExtension
+- ✅ 更新 11 个文件的导入路径
+  - Components: FileUploadModal.vue, Video.vue, File.vue
+  - Hooks: useChatMain.ts, useCommon.ts, useImageViewer.ts
+  - Strategy: ImageMessageStrategy.ts, TextMessageStrategy.ts
+  - Utils: FileUtil.ts, CreateDom.ts
+- ✅ formatUtils.ts 成为所有格式化工具的单一入口点
+- ✅ 为剩余 58 个文件迁移奠定基础
 
 ### 待处理的优化任务
 
@@ -308,7 +320,8 @@ src/components/matrix/
 | Phase 13 | ~54 行 | GroupCall 工具模块化 |
 | Phase 14 | ~22 行 | 通用格式化工具模块 |
 | Phase 15 | ~17 行 | 统一格式化工具入口 |
-| **总计** | **~11,837** | **~97%** |
+| Phase 16 | ~13 行 | 迁移到统一格式化入口 |
+| **总计** | **~11,850** | **~98%** |
 
 ---
 
@@ -369,6 +382,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v3.5 (2026-01-09): Phase 16 - 迁移到统一格式化工具入口完成
 - v3.4 (2026-01-09): Phase 15 - 统一格式化工具入口完成
 - v3.3 (2026-01-09): Phase 14 - 通用格式化工具模块完成
 - v3.2 (2026-01-09): Phase 13 - GroupCall 工具模块化完成
