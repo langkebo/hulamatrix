@@ -21,7 +21,7 @@
         align="center"
         :size="14"
         class="p-6px mb-6px mr-10px cursor-pointer rounded-8px hover:bg-[--list-hover-color]">
-        <n-avatar :size="38" round src="msgAction/clapping.png" />
+        <n-avatar :size="38" round src="msgAction/clapping.webp" />
         <p class="text-(12px [--chat-text-color]) flex-1 truncate">{{ t('home.search_guide') }}</p>
       </n-flex>
 

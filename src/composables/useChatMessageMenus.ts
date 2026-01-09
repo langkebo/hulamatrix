@@ -898,7 +898,7 @@ export function useChatMessageMenus(options: UseChatMessageMenusOptions): UseCha
   /** Emoji reaction menu */
   const emojiList = computed(() => [
     {
-      url: '/msgAction/like.png',
+      url: '/msgAction/like.webp',
       value: 1,
       title: t('home.chat_reaction.like')
     },
@@ -933,7 +933,7 @@ export function useChatMessageMenus(options: UseChatMessageMenusOptions): UseCha
       title: t('home.chat_reaction.lol')
     },
     {
-      url: '/msgAction/clapping.png',
+      url: '/msgAction/clapping.webp',
       value: 8,
       title: t('home.chat_reaction.clap')
     },
