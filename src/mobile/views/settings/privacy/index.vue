@@ -193,7 +193,7 @@ const goToManage = () => {
   flex: 1;
   padding: 12px;
   border-radius: 8px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid var(--hula-gray-100);
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;

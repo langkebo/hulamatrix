@@ -429,7 +429,7 @@ onMounted(() => {
 <style scoped>
 .mobile-admin-users {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: var(--hula-gray-50);
 }
 
 .user-name {
@@ -439,7 +439,7 @@ onMounted(() => {
 
 .user-id {
   font-size: 12px;
-  color: #969799;
+  color: var(--hula-gray-400);
   margin-top: 2px;
 }
 

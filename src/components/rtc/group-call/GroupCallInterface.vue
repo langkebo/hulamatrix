@@ -574,7 +574,7 @@ const {
 
   &.local-participant {
     .participant-info {
-      background: linear-gradient(to top, rgba(24, 160, 88, 0.8), transparent);
+      background: linear-gradient(to top, rgba(var(--hula-success-rgb), 0.8), transparent);
     }
   }
 }
@@ -644,7 +644,7 @@ const {
     }
 
     &.local-user {
-      background: rgba(24, 160, 88, 0.05);
+      background: rgba(var(--hula-success-rgb), 0.05);
     }
   }
 }
@@ -828,7 +828,7 @@ const {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(240, 160, 32, 0.9);
+  background: rgba(var(--hula-warning-rgb), 0.9);
   color: white;
   border-radius: 20px;
   font-weight: 600;

@@ -140,7 +140,7 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 .text-bold-style {
   font-size: 14px;
   font-family: $font-family-system, $font-family-windows, $font-family-sans;
-  color: #757775;
+  color: var(--hula-gray-500);
 }
 
 .online-status-text {

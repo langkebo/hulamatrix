@@ -178,7 +178,7 @@ watch(
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -186,7 +186,7 @@ watch(
   transition: background 0.2s;
 
   &:active {
-    background: #d0d0d0;
+    background: var(--hula-gray-300);
   }
 }
 
@@ -195,7 +195,7 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   .header-title {
@@ -223,7 +223,7 @@ watch(
 
 .popup-footer {
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -272,13 +272,13 @@ watch(
     gap: 6px;
     padding: 10px 12px;
     background: #e6f7ff;
-    border: 1px solid #91d5ff;
+    border: 1px solid var(--hula-info);
     border-radius: 6px;
     font-size: 12px;
     color: #0050b3;
 
     .van-icon {
-      color: #1890ff;
+      color: var(--hula-info);
       flex-shrink: 0;
     }
   }

@@ -17,7 +17,7 @@
         <!-- Loading state -->
         <div v-if="loading" class="verify-loading">
           <van-loading size="24px" />
-          <p class="mt-12px">{{ loadingText }}</p>
+          <p class="mt-12px">正在处理...</p>
         </div>
 
         <!-- Error state -->
@@ -46,10 +46,10 @@
         <!-- Verification method selection -->
         <div v-if="step === 'method' && !loading" class="method-selection">
           <div class="button-group">
-            <van-button size="large" type="primary" block @click="startSasVerification" icon="key">
+            <van-button size="large" type="primary" block @click="handleStartSas" icon="key">
               SAS 表情符号验证
             </van-button>
-            <van-button size="large" type="default" block @click="startQrVerification" icon="qr" class="mt-12px">
+            <van-button size="large" type="default" block @click="handleStartQr" icon="qr" class="mt-12px">
               二维码验证
             </van-button>
           </div>
@@ -94,7 +94,7 @@
 
         <!-- Success state -->
         <div v-if="step === 'success'" class="success-state">
-          <van-icon name="success" :size="60" color="#18a058" class="success-icon" />
+          <van-icon name="success" :size="60" color="var(--hula-success)" class="success-icon" />
           <p class="success-text">设备验证成功！</p>
         </div>
       </div>
@@ -107,8 +107,8 @@
 
         <template v-if="step === 'sas'">
           <div class="button-group">
-            <van-button type="primary" block :loading="confirming" @click="confirmSas">确认匹配</van-button>
-            <van-button type="danger" block :disabled="confirming" @click="cancelVerification" class="mt-8px">
+            <van-button type="primary" block :loading="confirming" @click="handleConfirmSas">确认匹配</van-button>
+            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">
               不匹配
             </van-button>
           </div>
@@ -116,8 +116,8 @@
 
         <template v-if="step === 'qr'">
           <div class="button-group">
-            <van-button type="primary" block :loading="confirming" @click="confirmQr">已扫描</van-button>
-            <van-button type="danger" block :disabled="confirming" @click="cancelVerification" class="mt-8px">
+            <van-button type="primary" block :loading="confirming" @click="handleConfirmQr">已扫描</van-button>
+            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">
               取消
             </van-button>
           </div>
@@ -130,24 +130,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { computed, watch } from 'vue'
 import { msg } from '@/utils/SafeUI'
-import {
-  startSasVerification as apiStartSas,
-  startQrVerification as apiStartQr
-} from '@/integrations/matrix/encryption'
-import { useE2EEStore } from '@/stores/e2ee'
-
-// Icon name mapping for Vant
-const getVantIconName = (iconName: string): string => {
-  const iconMap: Record<string, string> = {
-    DeviceMobile: 'phone-o',
-    Key: 'key',
-    Qrcode: 'qr',
-    CircleCheck: 'success'
-  }
-  return iconMap[iconName] || 'circle'
-}
+import { useDeviceVerification } from '@/composables/useDeviceVerification'
 
 // Props
 interface Props {
@@ -173,34 +158,21 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-// Store
-const e2eeStore = useE2EEStore()
-
-// State
-const step = ref<'method' | 'sas' | 'qr' | 'success'>('method')
-const loading = ref(false)
-const loadingText = ref('')
-const error = ref('')
-const confirming = ref(false)
-
-// SAS data
-interface SasData {
-  decimals?: number[]
-  emojis?: Array<{ emoji: string; name: string }>
-  confirm?: () => Promise<void>
-  cancel?: () => Promise<void>
-}
-
-const sasData = ref<SasData | null>(null)
-
-// QR data
-interface QrData {
-  dataUri?: string
-  confirm?: () => Promise<void>
-  cancel?: () => Promise<void>
-}
-
-const qrData = ref<QrData | null>(null)
+// Composable
+const {
+  step,
+  loading,
+  confirming,
+  error,
+  sasData,
+  qrData,
+  reset,
+  startSas,
+  startQr,
+  confirmSas,
+  confirmQr,
+  cancel
+} = useDeviceVerification()
 
 // Computed
 const showVerifyDialog = computed(() => props.show)
@@ -222,139 +194,67 @@ const title = computed(() => {
   }
 })
 
+// Watch for step changes to emit events or handle side effects if needed
+watch(step, (newStep) => {
+  if (newStep === 'success' && props.device) {
+    msg.success('设备验证成功')
+    emit('verified', props.device.device_id)
+  }
+})
+
+// Watch for dialog close to reset state
+watch(() => props.show, (newVal) => {
+  if (!newVal) {
+    // When dialog closes, ensure we reset if we are not in success state?
+    // Or just reset on open?
+    // Ideally we reset when closing.
+    if (step.value !== 'success') {
+       // If we are in the middle of verification, we should probably cancel?
+       // But handleClose calls cancel/reset.
+    }
+  } else {
+    reset()
+  }
+})
+
 // Methods
 const handleClose = () => {
   if (confirming.value) return
-  reset()
+  if (step.value !== 'success' && step.value !== 'method') {
+    cancel()
+  } else {
+    reset()
+  }
   emit('update:show', false)
 }
 
-const reset = () => {
-  step.value = 'method'
-  loading.value = false
-  loadingText.value = ''
-  error.value = ''
-  confirming.value = false
-  sasData.value = null
-  qrData.value = null
-}
-
-const startSasVerification = async () => {
+const handleStartSas = async () => {
   if (!props.device?.device_id || !props.userId) {
     error.value = '缺少必要信息'
     return
   }
-
-  loading.value = true
-  loadingText.value = '正在启动 SAS 验证...'
-  error.value = ''
-
-  try {
-    const result = await apiStartSas(props.userId, props.device.device_id)
-
-    if (!result.ok) {
-      error.value = result.reason || 'SAS 验证启动失败'
-      loading.value = false
-      return
-    }
-
-    sasData.value = {
-      decimals: result.decimals,
-      emojis: result.emojis,
-      confirm: result.confirm,
-      cancel: result.cancel
-    }
-
-    step.value = 'sas'
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'SAS 验证启动失败'
-  } finally {
-    loading.value = false
-  }
+  await startSas(props.userId, props.device.device_id)
 }
 
-const startQrVerification = async () => {
+const handleStartQr = async () => {
   if (!props.device?.device_id || !props.userId) {
     error.value = '缺少必要信息'
     return
   }
-
-  loading.value = true
-  loadingText.value = '正在生成二维码...'
-  error.value = ''
-
-  try {
-    const result = await apiStartQr(props.userId, props.device.device_id)
-
-    if (!result.ok) {
-      error.value = result.reason || '二维码生成失败'
-      loading.value = false
-      return
-    }
-
-    qrData.value = {
-      dataUri: result.dataUri,
-      confirm: result.confirm,
-      cancel: result.cancel
-    }
-
-    step.value = 'qr'
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : '二维码生成失败'
-  } finally {
-    loading.value = false
-  }
+  await startQr(props.userId, props.device.device_id)
 }
 
-const confirmSas = async () => {
-  if (!sasData.value?.confirm) return
-
-  confirming.value = true
-  try {
-    await sasData.value.confirm()
-    msg.success('设备验证成功')
-    e2eeStore.updateDevice(props.device!.device_id, { verified: true })
-    step.value = 'success'
-    emit('verified', props.device!.device_id)
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : '验证失败'
-  } finally {
-    confirming.value = false
-  }
+const handleConfirmSas = async () => {
+  if (!props.device?.device_id) return
+  await confirmSas(props.device.device_id)
 }
 
-const confirmQr = async () => {
-  if (!qrData.value?.confirm) return
-
-  confirming.value = true
-  try {
-    await qrData.value.confirm()
-    msg.success('设备验证成功')
-    e2eeStore.updateDevice(props.device!.device_id, { verified: true })
-    step.value = 'success'
-    emit('verified', props.device!.device_id)
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : '验证失败'
-  } finally {
-    confirming.value = false
-  }
-}
-
-const cancelVerification = async () => {
-  confirming.value = true
-  try {
-    await sasData.value?.cancel?.()
-    await qrData.value?.cancel?.()
-  } catch {
-    // Ignore cancel errors
-  }
-  reset()
-  emit('update:show', false)
-  confirming.value = false
+const handleConfirmQr = async () => {
+  if (!props.device?.device_id) return
+  await confirmQr(props.device.device_id)
 }
 
 const getDeviceAvatar = (_device: { device_id: string; display_name?: string }): string => {
-  // Could return device avatar URL if available
   return ''
 }
 </script>
@@ -372,7 +272,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   .header-title {
@@ -389,7 +289,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
 
 .dialog-footer {
   padding: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 }
 
@@ -401,7 +301,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
   background: var(--hula-white)2f0;
   border: 1px solid #ffccc7;
   border-radius: 8px;
-  color: #ff4d4f;
+  color: var(--hula-error);
   font-size: 13px;
   margin: 0 16px;
 }
@@ -412,9 +312,9 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
   gap: 8px;
   padding: 12px;
   background: #e6f7ff;
-  border: 1px solid #91d5ff;
+  border: 1px solid var(--hula-info);
   border-radius: 8px;
-  color: #0958d9;
+  color: var(--hula-info);
   font-size: 13px;
   margin: 0 16px 16px;
 }
@@ -425,7 +325,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--primary-color, #18a058);
+  background: var(--primary-color, var(--hula-success));
   color: white;
   border-radius: 50%;
 }

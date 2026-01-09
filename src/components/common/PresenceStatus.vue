@@ -86,7 +86,7 @@ function formatLastActive(timestamp: number): string {
 
     &.status-online {
       background: var(--hula-brand-primary);
-      box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
+      box-shadow: 0 0 0 2px rgba(var(--hula-success-rgb), 0.2);
     }
 
     &.status-offline {
@@ -95,7 +95,7 @@ function formatLastActive(timestamp: number): string {
 
     &.status-unavailable {
       background: var(--hula-brand-primary);
-      box-shadow: 0 0 0 2px rgba(240, 160, 32, 0.2);
+      box-shadow: 0 0 0 2px rgba(var(--hula-warning-rgb), 0.2);
     }
   }
 

@@ -337,7 +337,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--hula-gray-100);
 
   &.device-verified {
     border-left: 3px solid var(--hula-brand-primary);

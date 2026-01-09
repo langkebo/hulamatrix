@@ -841,7 +841,7 @@ onUnmounted(() => {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(240, 160, 32, 0.9);
+  background: rgba(var(--hula-warning-rgb), 0.9);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;

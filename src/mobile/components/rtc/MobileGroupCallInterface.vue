@@ -4,7 +4,7 @@
     <!-- Call Setup Screen -->
     <div v-if="callState === GroupCallState.SETUP" class="call-setup">
       <div class="setup-header">
-        <n-icon :size="32" color="#18a058">
+        <n-icon :size="32" color="var(--hula-success)">
           <Users />
         </n-icon>
         <h2>群组通话</h2>
@@ -13,14 +13,14 @@
 
       <div class="setup-options">
         <div class="option-card" :class="{ selected: callType === 'voice' }" @click="callType = 'voice'">
-          <n-icon :size="40" :color="callType === 'voice' ? '#18a058' : 'var(--hula-gray-700)'">
+          <n-icon :size="40" :color="callType === 'voice' ? 'var(--hula-success)' : 'var(--hula-gray-700)'">
             <Phone />
           </n-icon>
           <span>语音通话</span>
         </div>
 
         <div class="option-card" :class="{ selected: callType === 'video' }" @click="callType = 'video'">
-          <n-icon :size="40" :color="callType === 'video' ? '#18a058' : 'var(--hula-gray-700)'">
+          <n-icon :size="40" :color="callType === 'video' ? 'var(--hula-success)' : 'var(--hula-gray-700)'">
             <Video />
           </n-icon>
           <span>视频通话</span>
@@ -47,7 +47,7 @@
         </div>
 
         <div v-else class="empty-participants">
-          <n-icon :size="48" color="#d0d0d0">
+          <n-icon :size="48" color="var(--hula-gray-300)">
             <Users />
           </n-icon>
           <p>暂无其他参与者</p>
@@ -212,7 +212,7 @@
     <!-- Call Ended Screen -->
     <div v-else-if="callState === GroupCallState.ENDED" class="call-ended">
       <div class="ended-content">
-        <n-icon :size="64" :color="endCallReason === 'hung_up' ? '#18a058' : '#d03050'">
+        <n-icon :size="64" :color="endCallReason === 'hung_up' ? 'var(--hula-success)' : 'var(--hula-error)'">
           <PhoneCheck v-if="endCallReason === 'hung_up'" />
           <PhoneX v-else />
         </n-icon>
@@ -778,7 +778,7 @@ watch(callType, (_newType) => {
 
       &.selected {
         border-color: var(--primary-color);
-        background: rgba(24, 160, 88, 0.1);
+        background: rgba(var(--hula-success-rgb), 0.1);
       }
 
       span {
@@ -868,7 +868,7 @@ watch(callType, (_newType) => {
       }
 
       &.speaking {
-        border: 2px solid #18a058;
+        border: 2px solid var(--hula-success);
       }
 
       video {
@@ -897,7 +897,7 @@ watch(callType, (_newType) => {
         right: 8px;
         width: 12px;
         height: 12px;
-        background: #18a058;
+        background: var(--hula-success);
         border-radius: 50%;
         animation: pulse 1s infinite;
       }
@@ -953,7 +953,7 @@ watch(callType, (_newType) => {
       .avatar-wave {
         width: 8px;
         height: 8px;
-        background: #18a058;
+        background: var(--hula-success);
         border-radius: 50%;
         animation: pulse 1.5s infinite;
       }
@@ -983,7 +983,7 @@ watch(callType, (_newType) => {
           transition: all 0.2s;
 
           &.speaking {
-            border-color: #18a058;
+            border-color: var(--hula-success);
             transform: scale(1.1);
           }
 
@@ -1094,11 +1094,11 @@ watch(callType, (_newType) => {
   z-index: 100;
 
   &.connecting {
-    background: rgba(240, 160, 32, 0.9);
+    background: rgba(var(--hula-warning-rgb), 0.9);
   }
 
   &.failed {
-    background: rgba(208, 48, 80, 0.9);
+    background: rgba(var(--hula-error-rgb), 0.9);
   }
 }
 

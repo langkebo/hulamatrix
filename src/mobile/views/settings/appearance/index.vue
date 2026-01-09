@@ -203,7 +203,7 @@ onMounted(() => {
 .theme-preview {
   aspect-ratio: 16/10;
   border-radius: 12px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid var(--hula-gray-100);
   overflow: hidden;
   margin-bottom: 8px;
   transition: all 0.2s;

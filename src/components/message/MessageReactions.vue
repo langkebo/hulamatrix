@@ -228,8 +228,8 @@ defineExpose({
 }
 
 .reaction-item.user-reacted {
-  background: rgba(24, 144, 255, 0.1);
-  border-color: rgba(24, 144, 255, 0.3);
+  background: rgba(var(--hula-info-rgb), 0.1);
+  border-color: rgba(var(--hula-info-rgb), 0.3);
 }
 
 .reaction-compact {
@@ -312,8 +312,8 @@ defineExpose({
 }
 
 .reaction-emoji-item.has-reaction {
-  background: rgba(24, 144, 255, 0.1);
-  border-color: rgba(24, 144, 255, 0.3);
+  background: rgba(var(--hula-info-rgb), 0.1);
+  border-color: rgba(var(--hula-info-rgb), 0.3);
 }
 
 .emoji {

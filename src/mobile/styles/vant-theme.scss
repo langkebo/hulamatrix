@@ -20,7 +20,7 @@
   --van-text-color-3: var(--hula-text-secondary, #9fa1a9);
 
   /* 背景颜色 */
-  --van-background-color: var(--hula-bg-page, #f7f8fa);
+  --van-background-color: var(--hula-bg-page, var(--hula-gray-50));
   --van-background-color-light: var(--hula-bg-component, var(--hula-white));
 
   /* 边框颜色 */
@@ -28,7 +28,7 @@
   --van-border-color-2: var(--hula-border-base, #dcdee0);
 
   /* 活动状态 */
-  --van-active-color: var(--hula-bg-page, #f7f8fa);
+  --van-active-color: var(--hula-bg-page, var(--hula-gray-50));
   --van-active-color-opacity: 0.7;
 
   /* 禁用状态 */

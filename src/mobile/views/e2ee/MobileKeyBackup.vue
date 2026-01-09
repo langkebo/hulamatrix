@@ -447,29 +447,29 @@ onMounted(() => {
   border-radius: 12px;
 
   &.status-ok {
-    background: rgba(24, 160, 88, 0.1);
-    border: 1px solid rgba(24, 160, 88, 0.2);
+    background: rgba(var(--hula-success-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-success-rgb), 0.2);
 
     .banner-icon {
-      color: #18a058;
+      color: var(--hula-success);
     }
   }
 
   &.status-warning {
-    background: rgba(240, 160, 32, 0.1);
-    border: 1px solid rgba(240, 160, 32, 0.2);
+    background: rgba(var(--hula-warning-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-warning-rgb), 0.2);
 
     .banner-icon {
-      color: #f0a020;
+      color: var(--hula-warning);
     }
   }
 
   &.status-none {
-    background: rgba(208, 48, 80, 0.1);
-    border: 1px solid rgba(208, 48, 80, 0.2);
+    background: rgba(var(--hula-error-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-error-rgb), 0.2);
 
     .banner-icon {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 

@@ -49,7 +49,7 @@
               <div class="room-name">{{ room.name }}</div>
               <div class="room-members">{{ room.memberCount || 0 }} {{ t('message.members') }}</div>
             </div>
-            <n-icon v-if="selectedRoomId === room.roomId" :size="20" color="#18a058">
+            <n-icon v-if="selectedRoomId === room.roomId" :size="20" color="var(--hula-success)">
               <Check />
             </n-icon>
           </div>
@@ -57,7 +57,7 @@
 
         <!-- Empty State -->
         <div v-else class="empty-state">
-          <n-icon :size="48" color="#d0d0d0">
+          <n-icon :size="48" color="var(--hula-gray-300)">
             <Search />
           </n-icon>
           <p>{{ searchQuery ? t('message.noRoomsFound') : t('message.noRooms') }}</p>
@@ -330,8 +330,8 @@ watch(
         }
 
         &.selected {
-          background: rgba(24, 160, 88, 0.1);
-          border: 1px solid rgba(24, 160, 88, 0.3);
+          background: rgba(var(--hula-success-rgb), 0.1);
+          border: 1px solid rgba(var(--hula-success-rgb), 0.3);
         }
 
         .room-info {

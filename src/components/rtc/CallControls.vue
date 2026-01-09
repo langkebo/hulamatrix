@@ -577,8 +577,8 @@ watch(
 }
 
 .control-btn.muted {
-  background: rgba(255, 77, 79, 0.2);
-  border-color: rgba(255, 77, 79, 0.4);
+  background: rgba(var(--hula-error-rgb), 0.2);
+  border-color: rgba(var(--hula-error-rgb), 0.4);
 }
 
 .control-btn.sharing {
@@ -607,13 +607,13 @@ watch(
 
 .reject-btn,
 .hangup-btn {
-  background: rgba(255, 77, 79, 0.2);
-  border-color: rgba(255, 77, 79, 0.4);
+  background: rgba(var(--hula-error-rgb), 0.2);
+  border-color: rgba(var(--hula-error-rgb), 0.4);
 }
 
 .reject-btn:hover,
 .hangup-btn:hover {
-  background: rgba(255, 77, 79, 0.3);
+  background: rgba(var(--hula-error-rgb), 0.3);
 }
 
 .quality-indicator {

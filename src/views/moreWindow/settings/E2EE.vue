@@ -484,7 +484,7 @@ onMounted(() => {
     color: var(--text-color-2);
 
     &.verified {
-      background: rgba(24, 160, 88, 0.1);
+      background: rgba(var(--hula-success-rgb), 0.1);
       color: var(--hula-brand-primary);
     }
   }

@@ -48,14 +48,14 @@
               class="timer-option"
               :class="{ active: selectedTimer === option.value }"
               @click="selectTimer(option.value)">
-              <n-icon :size="24" :color="selectedTimer === option.value ? '#18a058' : '#c0c0c0'">
+              <n-icon :size="24" :color="selectedTimer === option.value ? 'var(--hula-success)' : '#c0c0c0'">
                 <component :is="option.icon" />
               </n-icon>
               <div class="timer-info">
                 <span class="timer-label">{{ option.label }}</span>
                 <span class="timer-desc">{{ option.desc }}</span>
               </div>
-              <n-icon v-if="selectedTimer === option.value" :size="18" color="#18a058">
+              <n-icon v-if="selectedTimer === option.value" :size="18" color="var(--hula-success)">
                 <CircleCheck />
               </n-icon>
             </div>
@@ -76,7 +76,7 @@
         <div v-if="currentTimer" class="current-section">
           <div class="section-title">当前设置</div>
           <div class="current-timer-card">
-            <n-icon :size="20" color="#f0a020">
+            <n-icon :size="20" color="var(--hula-warning)">
               <Clock />
             </n-icon>
             <span class="current-timer-text">{{ formatTimerDisplay(currentTimer) }}</span>
@@ -105,7 +105,7 @@
 
     <!-- Countdown Indicator (shown when active) -->
     <div v-if="showCountdown && remainingTime > 0" class="countdown-indicator" @click="showDialog = true">
-      <n-icon :size="16" color="#f0a020">
+      <n-icon :size="16" color="var(--hula-warning)">
         <Clock />
       </n-icon>
       <span class="countdown-text">{{ formatCountdown(remainingTime) }}</span>
@@ -404,7 +404,7 @@ defineExpose({
 
     &.active {
       border-color: var(--primary-color);
-      background: rgba(24, 160, 88, 0.05);
+      background: rgba(var(--hula-success-rgb), 0.05);
     }
 
     &:active {
@@ -458,13 +458,13 @@ defineExpose({
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    background: rgba(240, 160, 32, 0.1);
+    background: rgba(var(--hula-warning-rgb), 0.1);
     border-radius: 12px;
 
     .current-timer-text {
       font-size: 15px;
       font-weight: 500;
-      color: #f0a020;
+      color: var(--hula-warning);
     }
   }
 }
@@ -483,19 +483,19 @@ defineExpose({
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background: rgba(240, 160, 32, 0.1);
+  background: rgba(var(--hula-warning-rgb), 0.1);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s;
 
   &:active {
-    background: rgba(240, 160, 32, 0.2);
+    background: rgba(var(--hula-warning-rgb), 0.2);
   }
 
   .countdown-text {
     font-size: 12px;
     font-weight: 500;
-    color: #f0a020;
+    color: var(--hula-warning);
   }
 }
 

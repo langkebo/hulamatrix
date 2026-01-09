@@ -528,7 +528,7 @@ const dialog = useDialog()
 
         &.n-radio--checked {
           border-color: var(--primary-color);
-          background: rgba(24, 144, 255, 0.05);
+          background: rgba(var(--hula-info-rgb), 0.05);
         }
 
         .n-radio__dot-wrapper {

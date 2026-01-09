@@ -205,7 +205,7 @@ watch(localValue, (newValue) => {
 
   &__divider {
     height: 1px;
-    background: #f0f0f0;
+    background: var(--hula-gray-100);
     margin: 8px 0;
   }
 

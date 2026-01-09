@@ -522,7 +522,7 @@ function formatFileSize(bytes: number): string {
   font-weight: 500;
   color: var(--color-text-primary, var(--hula-gray-900));
   background-color: white;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--hula-gray-200));
   border-radius: 12px;
   cursor: pointer;
   transition:
@@ -554,7 +554,7 @@ function formatFileSize(bytes: number): string {
   gap: 8px;
   padding: 12px;
   font-size: 14px;
-  color: var(--color-error, #ff4d4f);
+  color: var(--color-error, var(--hula-error));
   background-color: var(--color-bg-error, var(--hula-white)2f0);
   border-radius: 8px;
 }
@@ -574,8 +574,8 @@ function formatFileSize(bytes: number): string {
 .processing-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--color-border, #e0e0e0);
-  border-top-color: var(--color-primary, #1890ff);
+  border: 4px solid var(--color-border, var(--hula-gray-200));
+  border-top-color: var(--color-primary, var(--hula-info));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

@@ -52,7 +52,7 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { useUserStore } from '@/stores/user'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 
-const qrCodeBgColor = ref('#FFFFFF')
+const qrCodeBgColor = ref('var(--hula-white)')
 const qrCodeType = ref('canvas' as const)
 const qrErrorCorrectionLevel = ref('H' as const)
 

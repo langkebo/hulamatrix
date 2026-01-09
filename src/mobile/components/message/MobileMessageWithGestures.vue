@@ -478,13 +478,13 @@ onMounted(() => {
     transition: opacity 0.2s;
 
     &.reply {
-      background: rgba(24, 160, 88, 0.9);
+      background: rgba(var(--hula-success-rgb), 0.9);
       padding: 12px 16px;
       border-radius: 12px;
     }
 
     &.delete {
-      background: rgba(208, 48, 80, 0.9);
+      background: rgba(var(--hula-error-rgb), 0.9);
       padding: 12px 16px;
       border-radius: 12px;
     }
@@ -615,7 +615,7 @@ onMounted(() => {
     font-size: 14px;
 
     &.has-voted {
-      background: rgba(24, 160, 88, 0.2);
+      background: rgba(var(--hula-success-rgb), 0.2);
     }
   }
 }
@@ -634,11 +634,11 @@ onMounted(() => {
 
   .status-icon {
     &.delivered {
-      color: #18a058;
+      color: var(--hula-success);
     }
 
     &.failed {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 }
@@ -699,7 +699,7 @@ onMounted(() => {
   .handle-bar {
     width: 40px;
     height: 4px;
-    background: #e0e0e0;
+    background: var(--hula-gray-200);
     border-radius: 2px;
     margin: 8px auto;
     flex-shrink: 0;
@@ -707,7 +707,7 @@ onMounted(() => {
     transition: background 0.2s;
 
     &:active {
-      background: #d0d0d0;
+      background: var(--hula-gray-300);
     }
   }
 
@@ -716,7 +716,7 @@ onMounted(() => {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--hula-gray-100);
 
     .avatar-fallback {
       display: flex;
@@ -767,8 +767,8 @@ onMounted(() => {
       }
 
       &.danger .action-icon {
-        background: rgba(208, 48, 80, 0.1);
-        color: #d03050;
+        background: rgba(var(--hula-error-rgb), 0.1);
+        color: var(--hula-error);
       }
 
       .action-icon {
@@ -782,12 +782,12 @@ onMounted(() => {
         color: var(--text-color-1);
 
         &.reply {
-          background: rgba(24, 160, 88, 0.1);
-          color: #18a058;
+          background: rgba(var(--hula-success-rgb), 0.1);
+          color: var(--hula-success);
         }
         &.react {
-          background: rgba(24, 160, 88, 0.1);
-          color: #18a058;
+          background: rgba(var(--hula-success-rgb), 0.1);
+          color: var(--hula-success);
         }
         &.edit {
           background: rgba(102, 126, 234, 0.1);
@@ -820,7 +820,7 @@ onMounted(() => {
 
   .action-menu-footer {
     padding: 12px 16px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--hula-gray-100);
     flex-shrink: 0;
   }
 }

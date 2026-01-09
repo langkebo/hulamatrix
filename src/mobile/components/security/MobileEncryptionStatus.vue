@@ -212,11 +212,11 @@ const statusClass = computed(() => {
 })
 
 const statusColor = computed(() => {
-  if (!encryptionStatus.value.enabled) return '#d03050'
+  if (!encryptionStatus.value.enabled) return 'var(--hula-error)'
   if (encryptionStatus.value.crossSigningReady && encryptionStatus.value.secretStorageReady) {
-    return '#18a058'
+    return 'var(--hula-success)'
   }
-  return '#f0a020'
+  return 'var(--hula-warning)'
 })
 
 const statusLabel = computed(() => {
@@ -387,15 +387,15 @@ defineExpose({
 }
 
 .status-disabled {
-  color: #d03050;
+  color: var(--hula-error);
 }
 
 .status-secure {
-  color: #18a058;
+  color: var(--hula-success);
 }
 
 .status-warning {
-  color: #f0a020;
+  color: var(--hula-warning);
 }
 
 .encryption-details-popup {
@@ -408,7 +408,7 @@ defineExpose({
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -416,7 +416,7 @@ defineExpose({
   transition: background 0.2s;
 
   &:active {
-    background: #d0d0d0;
+    background: var(--hula-gray-300);
   }
 }
 
@@ -425,7 +425,7 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   .header-title {
@@ -453,7 +453,7 @@ defineExpose({
 
 .popup-footer {
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 }
 
@@ -553,7 +553,7 @@ defineExpose({
     font-size: 13px;
 
     .van-icon {
-      color: #52c41a;
+      color: var(--hula-success);
       flex-shrink: 0;
     }
   }

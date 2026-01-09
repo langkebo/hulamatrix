@@ -328,7 +328,7 @@ const controlButtonStyle = {
 const endCallButtonStyle = {
   width: '64px',
   height: '64px',
-  backgroundColor: '#f0a020'
+  backgroundColor: 'var(--hula-warning)'
 }
 
 const audioControlStyle = {
@@ -342,7 +342,7 @@ const audioControlStyle = {
 const audioEndCallStyle = {
   width: '72px',
   height: '72px',
-  backgroundColor: '#f0a020'
+  backgroundColor: 'var(--hula-warning)'
 }
 
 const incomingActionStyle = {

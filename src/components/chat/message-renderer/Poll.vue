@@ -295,7 +295,7 @@ watch(
 
   &.poll-answer-selected {
     border-color: var(--hula-brand-primary);
-    background: rgba(24, 160, 88, 0.1);
+    background: rgba(var(--hula-success-rgb), 0.1);
   }
 
   &.poll-answer-most-selected {

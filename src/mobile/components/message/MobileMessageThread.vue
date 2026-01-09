@@ -92,7 +92,7 @@
 
         <!-- Error State -->
         <div v-else-if="error" class="error-state">
-          <n-icon :size="48" color="#d03050">
+          <n-icon :size="48" color="var(--hula-error)">
             <AlertCircle />
           </n-icon>
           <p>{{ error }}</p>
@@ -595,7 +595,7 @@ watch(
 
 .thread-root {
   padding: 12px;
-  background: rgba(24, 160, 88, 0.05);
+  background: rgba(var(--hula-success-rgb), 0.05);
   border-radius: 8px;
   margin-bottom: 12px;
 

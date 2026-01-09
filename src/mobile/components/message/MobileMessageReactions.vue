@@ -241,8 +241,8 @@ defineExpose({
   }
 
   &.user-reacted {
-    background: rgba(24, 160, 88, 0.1);
-    border-color: rgba(24, 160, 88, 0.3);
+    background: rgba(var(--hula-success-rgb), 0.1);
+    border-color: rgba(var(--hula-success-rgb), 0.3);
   }
 }
 
@@ -294,7 +294,7 @@ defineExpose({
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -305,7 +305,7 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   span:first-child {
@@ -333,7 +333,7 @@ defineExpose({
 
 .picker-footer {
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 }
 
@@ -398,7 +398,7 @@ defineExpose({
   }
 
   &.has-reaction {
-    background: rgba(24, 160, 88, 0.1);
+    background: rgba(var(--hula-success-rgb), 0.1);
 
     .emoji {
       filter: brightness(1.1);
@@ -414,7 +414,7 @@ defineExpose({
   position: absolute;
   top: -2px;
   right: -2px;
-  background: #18a058;
+  background: var(--hula-success);
   color: white;
   border-radius: 50%;
   width: 18px;

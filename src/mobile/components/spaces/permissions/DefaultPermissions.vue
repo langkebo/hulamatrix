@@ -269,15 +269,15 @@ const emit = defineEmits<(e: 'update', key: string, value: number) => void>()
   color: var(--primary-color);
 
   &.danger {
-    color: #d03050;
+    color: var(--hula-error);
   }
 
   &.warning {
-    color: #f0a020;
+    color: var(--hula-warning);
   }
 
   &.success {
-    color: #18a058;
+    color: var(--hula-success);
   }
 }
 

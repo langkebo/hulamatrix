@@ -697,7 +697,7 @@ onUnmounted(() => {
 
 /* 账号下拉框 */
 .account-dropdown {
-  border: 1px solid rgba(70, 70, 70, 0.1);
+  border: 1px solid rgba(var(--hula-gray-600-rgb), 0.1);
 }
 
 /* 账号滚动条 */

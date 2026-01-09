@@ -434,7 +434,7 @@ onMounted(() => {
         }
 
         .missed-call {
-          background: rgba(208, 48, 80, 0.1);
+          background: rgba(var(--hula-error-rgb), 0.1);
         }
       }
     }
@@ -496,12 +496,12 @@ onMounted(() => {
   justify-content: center;
 
   &.missed {
-    background: rgba(208, 48, 80, 0.1);
+    background: rgba(var(--hula-error-rgb), 0.1);
     color: var(--hula-brand-primary);
   }
 
   &.incoming {
-    background: rgba(24, 160, 88, 0.1);
+    background: rgba(var(--hula-success-rgb), 0.1);
     color: var(--hula-brand-primary);
   }
 

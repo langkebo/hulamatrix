@@ -54,12 +54,12 @@ import bgImage from '@/assets/mobile/chat-home/background.webp'
 /* 头部栏边框 */
 .header-bar-border {
   border-bottom: 1px solid;
-  border-color: #dfdfdf;
+  border-color: var(--hula-gray-200);
 }
 
 /* 设置项分隔线 */
 .setting-item-divider {
   border-bottom: 1px solid;
-  border-color: #ebebeb;
+  border-color: var(--hula-gray-200);
 }
 </style>

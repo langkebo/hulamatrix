@@ -100,7 +100,7 @@ const handleClick = (item: SettingsItem) => {
         left: 60px;
         right: 0;
         height: 1px;
-        background: #f0f0f0;
+        background: var(--hula-gray-100);
       }
 
       &:last-child:after {

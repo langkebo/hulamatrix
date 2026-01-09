@@ -247,7 +247,7 @@
                 <!-- Leave -->
                 <van-cell title="离开工作区" @click="handleLeave" class="danger-item">
                   <template #icon>
-                    <van-icon name="log-out" :size="20" color="#d03050" />
+                    <van-icon name="log-out" :size="20" color="var(--hula-error)" />
                   </template>
                 </van-cell>
               </van-cell-group>
@@ -1051,11 +1051,11 @@ onMounted(() => {
       border-radius: 50%;
 
       &.online {
-        background: #52c41a;
+        background: var(--hula-success);
       }
 
       &.away {
-        background: #faad14;
+        background: var(--hula-warning);
       }
 
       &.offline {
@@ -1084,7 +1084,7 @@ onMounted(() => {
 
 .danger-item {
   &:hover {
-    background: rgba(208, 48, 80, 0.1);
+    background: rgba(var(--hula-error-rgb), 0.1);
   }
 }
 
@@ -1118,7 +1118,7 @@ onMounted(() => {
 
   .dialog-header {
     padding: 16px;
-    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    border-bottom: 1px solid var(--border-color, var(--hula-gray-100));
 
     h3 {
       margin: 0;
@@ -1133,7 +1133,7 @@ onMounted(() => {
     display: flex;
     gap: 8px;
     padding: 16px;
-    border-top: 1px solid var(--border-color, #f0f0f0);
+    border-top: 1px solid var(--border-color, var(--hula-gray-100));
 
     .van-button {
       flex: 1;

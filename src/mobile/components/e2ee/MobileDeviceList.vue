@@ -29,7 +29,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <van-icon name="close-circle" :size="64" color="#d03050" class="mb-12px" />
+      <van-icon name="close-circle" :size="64" color="var(--hula-error)" class="mb-12px" />
       <div class="state-title">加载失败</div>
       <div class="state-desc">{{ error }}</div>
       <van-button @click="refreshDevices" type="primary" class="mt-16px">重试</van-button>
@@ -37,7 +37,7 @@
 
     <!-- Empty State -->
     <div v-else-if="devices.length === 0" class="empty-state">
-      <van-icon name="info-o" :size="64" color="#18a058" class="mb-12px" />
+      <van-icon name="info-o" :size="64" color="var(--hula-success)" class="mb-12px" />
       <div class="state-title">暂无设备</div>
       <div class="state-desc">没有找到任何设备</div>
       <van-button @click="refreshDevices" type="primary" class="mt-16px">刷新</van-button>
@@ -49,7 +49,7 @@
       <div v-if="verifiedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <van-icon name="success" :size="16" color="#18a058" />
+            <van-icon name="success" :size="16" color="var(--hula-success)" />
             已验证设备 ({{ verifiedDevices.length }})
           </div>
         </div>
@@ -86,7 +86,7 @@
       <div v-if="unverifiedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <van-icon name="warning-o" :size="16" color="#f0a020" />
+            <van-icon name="warning-o" :size="16" color="var(--hula-warning)" />
             未验证设备 ({{ unverifiedDevices.length }})
           </div>
         </div>
@@ -123,7 +123,7 @@
       <div v-if="blockedDevices.length > 0" class="device-section">
         <div class="section-header">
           <div class="section-title">
-            <van-icon name="shield-close" :size="16" color="#d03050" />
+            <van-icon name="shield-close" :size="16" color="var(--hula-error)" />
             已屏蔽设备 ({{ blockedDevices.length }})
           </div>
         </div>
@@ -495,29 +495,29 @@ onMounted(() => {
   margin-bottom: 16px;
 
   &.security-high {
-    background: rgba(24, 160, 88, 0.1);
-    border: 1px solid rgba(24, 160, 88, 0.2);
+    background: rgba(var(--hula-success-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-success-rgb), 0.2);
 
     .banner-icon {
-      color: #18a058;
+      color: var(--hula-success);
     }
   }
 
   &.security-medium {
-    background: rgba(240, 160, 32, 0.1);
-    border: 1px solid rgba(240, 160, 32, 0.2);
+    background: rgba(var(--hula-warning-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-warning-rgb), 0.2);
 
     .banner-icon {
-      color: #f0a020;
+      color: var(--hula-warning);
     }
   }
 
   &.security-low {
-    background: rgba(208, 48, 80, 0.1);
-    border: 1px solid rgba(208, 48, 80, 0.2);
+    background: rgba(var(--hula-error-rgb), 0.1);
+    border: 1px solid rgba(var(--hula-error-rgb), 0.2);
 
     .banner-icon {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 
@@ -607,15 +607,15 @@ onMounted(() => {
     }
 
     &.verified {
-      border-left: 3px solid #18a058;
+      border-left: 3px solid var(--hula-success);
     }
 
     &.unverified {
-      border-left: 3px solid #f0a020;
+      border-left: 3px solid var(--hula-warning);
     }
 
     &.blocked {
-      border-left: 3px solid #d03050;
+      border-left: 3px solid var(--hula-error);
       opacity: 0.7;
     }
   }
@@ -690,7 +690,7 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--primary-color, #18a058);
+  background: var(--primary-color, var(--hula-success));
   color: white;
   border-radius: 50%;
 }
@@ -740,10 +740,10 @@ onMounted(() => {
   }
 
   &.danger {
-    color: #d03050;
+    color: var(--hula-error);
     
     .action-icon {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 

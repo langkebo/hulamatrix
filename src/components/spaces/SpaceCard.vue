@@ -575,7 +575,7 @@ const handleArchiveSpace = async () => {
       }
 
       .join-indicator {
-        background: rgba(24, 160, 88, 0.9);
+        background: rgba(var(--hula-success-rgb), 0.9);
         color: white;
       }
     }

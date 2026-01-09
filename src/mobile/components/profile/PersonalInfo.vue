@@ -482,7 +482,7 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 .text-bold-style {
   font-size: 14px;
   font-family: $font-family-system, $font-family-windows, $font-family-sans;
-  color: #757775;
+  color: var(--hula-gray-500);
 }
 
 .medal-number {
@@ -503,7 +503,7 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin-top: 0.5rem;
   font-size: 13px;
   font-family: $font-family-system, $font-family-windows, $font-family-sans;
-  color: #757775;
+  color: var(--hula-gray-500);
 }
 
 .custom-rounded {

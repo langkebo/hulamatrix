@@ -637,15 +637,15 @@ defineExpose({
     color: var(--text-color-1);
 
     &.admin {
-      color: #d03050;
+      color: var(--hula-error);
     }
 
     &.moderator {
-      color: #f0a020;
+      color: var(--hula-warning);
     }
 
     &.online {
-      color: #18a058;
+      color: var(--hula-success);
     }
   }
 
@@ -721,7 +721,7 @@ defineExpose({
   border: 2px solid var(--card-color);
 
   &.online {
-    background: #18a058;
+    background: var(--hula-success);
   }
 
   &.offline {
@@ -777,7 +777,7 @@ defineExpose({
   background: var(--item-hover-bg);
 
   &.online {
-    background: #18a058;
+    background: var(--hula-success);
     color: white;
   }
 

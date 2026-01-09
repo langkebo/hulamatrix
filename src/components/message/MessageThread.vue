@@ -890,7 +890,7 @@ onMounted(() => {
 
     .thread-root {
       padding: 16px;
-      background: rgba(24, 160, 88, 0.05);
+      background: rgba(var(--hula-success-rgb), 0.05);
       border-bottom: 1px solid var(--border-color);
 
       .root-message {

@@ -166,7 +166,7 @@
 
         <div class="stats-grid">
           <div class="stat-card">
-            <n-icon :size="20" color="#18a058"><Clock /></n-icon>
+            <n-icon :size="20" color="var(--hula-success)"><Clock /></n-icon>
             <div class="stat-info">
               <div class="stat-label">通话时长</div>
               <div class="stat-value">{{ formatDuration(callStats.duration) }}</div>
@@ -457,9 +457,9 @@ const formatBytes = (bytes: number): string => {
 }
 
 const getLatencyColor = (value: number) => {
-  if (value < 100) return '#18a058'
-  if (value < 300) return '#f0a020'
-  return '#d03050'
+  if (value < 100) return 'var(--hula-success)'
+  if (value < 300) return 'var(--hula-warning)'
+  return 'var(--hula-error)'
 }
 
 const loadDevices = async () => {

@@ -732,7 +732,7 @@ onMounted(() => {
 
         &.active {
           border-color: var(--primary-color);
-          background: rgba(24, 160, 88, 0.1);
+          background: rgba(var(--hula-success-rgb), 0.1);
         }
 
         img,

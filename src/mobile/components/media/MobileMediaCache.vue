@@ -139,7 +139,7 @@
 
       <!-- Empty State -->
       <div v-else-if="filteredItems.length === 0" class="empty-state">
-        <n-icon :size="48" color="#d0d0d0">
+        <n-icon :size="48" color="var(--hula-gray-300)">
           <Database />
         </n-icon>
         <p>{{ cacheStats.totalItems === 0 ? '暂无缓存文件' : '没有符合条件的文件' }}</p>
@@ -587,9 +587,9 @@ const formatDate = (timestamp: number): string => {
 
 const getUsageColor = () => {
   const pct = usagePercentage.value
-  if (pct < 50) return '#18a058'
-  if (pct < 80) return '#f0a020'
-  return '#d03050'
+  if (pct < 50) return 'var(--hula-success)'
+  if (pct < 80) return 'var(--hula-warning)'
+  return 'var(--hula-error)'
 }
 
 const refreshCache = async () => {

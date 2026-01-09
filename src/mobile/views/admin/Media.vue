@@ -341,7 +341,7 @@ onMounted(() => {
 <style scoped>
 .mobile-admin-media {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: var(--hula-gray-50);
 }
 
 :deep(.van-card) {

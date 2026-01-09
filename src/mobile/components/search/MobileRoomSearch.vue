@@ -71,7 +71,7 @@
 
       <!-- No Results -->
       <div v-else-if="!hasResults" class="no-results">
-        <n-icon :size="48" color="#d0d0d0">
+        <n-icon :size="48" color="var(--hula-gray-300)">
           <Search />
         </n-icon>
         <p>未找到匹配的房间</p>
@@ -766,7 +766,7 @@ watch([searchScope, roomType, encryptionFilter], () => {
           display: flex;
           align-items: center;
           gap: 4px;
-          color: #18a058;
+          color: var(--hula-success);
         }
       }
     }
@@ -867,7 +867,7 @@ watch([searchScope, roomType, encryptionFilter], () => {
 
 // Highlight matches
 :deep(mark) {
-  background: rgba(24, 160, 88, 0.2);
+  background: rgba(var(--hula-success-rgb), 0.2);
   color: inherit;
   padding: 0 2px;
   border-radius: 2px;

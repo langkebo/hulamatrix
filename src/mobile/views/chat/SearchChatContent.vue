@@ -89,7 +89,7 @@
 
     <!-- Empty State -->
     <div v-else-if="!searched && !searchQuery" class="empty-state">
-      <n-icon size="60" color="#d0d0d0">
+      <n-icon size="60" color="var(--hula-gray-300)">
         <Search />
       </n-icon>
       <p class="empty-text">输入关键词搜索聊天内容</p>
@@ -105,7 +105,7 @@
 
     <!-- No Results -->
     <div v-else-if="searchResults.length === 0" class="no-results">
-      <n-icon size="48" color="#d0d0d0">
+      <n-icon size="48" color="var(--hula-gray-300)">
         <X />
       </n-icon>
       <p>未找到匹配的结果</p>
@@ -611,7 +611,7 @@ onMounted(() => {
   -webkit-box-orient: vertical;
 
   :deep(mark) {
-    background: rgba(24, 160, 88, 0.2);
+    background: rgba(var(--hula-success-rgb), 0.2);
     color: var(--primary-color);
     padding: 0 2px;
     border-radius: 2px;

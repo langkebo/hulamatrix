@@ -129,7 +129,7 @@
       <!-- Slow Components Modal -->
       <n-modal v-model:show="showSlowComponents" preset="card" title="慢速组件分析" class="w-90-max-w-400px">
         <div v-if="slowComponents.length === 0" class="empty-state">
-          <n-icon :size="48" color="#18a058">
+          <n-icon :size="48" color="var(--hula-success)">
             <Check />
           </n-icon>
           <p>所有组件渲染速度正常</p>
@@ -407,18 +407,18 @@ onUnmounted(() => {
     border: 1px solid transparent;
 
     &.good {
-      background: rgba(24, 160, 88, 0.1);
-      border-color: rgba(24, 160, 88, 0.3);
+      background: rgba(var(--hula-success-rgb), 0.1);
+      border-color: rgba(var(--hula-success-rgb), 0.3);
     }
 
     &.warning {
-      background: rgba(240, 160, 32, 0.1);
-      border-color: rgba(240, 160, 32, 0.3);
+      background: rgba(var(--hula-warning-rgb), 0.1);
+      border-color: rgba(var(--hula-warning-rgb), 0.3);
     }
 
     &.danger {
-      background: rgba(208, 48, 80, 0.1);
-      border-color: rgba(208, 48, 80, 0.3);
+      background: rgba(var(--hula-error-rgb), 0.1);
+      border-color: rgba(var(--hula-error-rgb), 0.3);
     }
 
     .metric-icon {
@@ -467,18 +467,18 @@ onUnmounted(() => {
       margin-bottom: 6px;
 
       &.warning {
-        background: rgba(240, 160, 32, 0.1);
-        color: #f0a020;
+        background: rgba(var(--hula-warning-rgb), 0.1);
+        color: var(--hula-warning);
       }
 
       &.error {
-        background: rgba(208, 48, 80, 0.1);
-        color: #d03050;
+        background: rgba(var(--hula-error-rgb), 0.1);
+        color: var(--hula-error);
       }
 
       &.critical {
-        background: rgba(208, 48, 80, 0.15);
-        color: #d03050;
+        background: rgba(var(--hula-error-rgb), 0.15);
+        color: var(--hula-error);
       }
 
       .issue-message {

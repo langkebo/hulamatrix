@@ -277,7 +277,7 @@ const handleCreate = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--border-color, var(--hula-gray-100));
   flex-shrink: 0;
 
   .header-title {
@@ -298,7 +298,7 @@ const handleCreate = async () => {
   justify-content: flex-end;
   gap: 8px;
   padding: 16px;
-  border-top: 1px solid var(--border-color, #f0f0f0);
+  border-top: 1px solid var(--border-color, var(--hula-gray-100));
   flex-shrink: 0;
 }
 

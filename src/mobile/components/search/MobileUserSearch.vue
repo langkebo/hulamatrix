@@ -51,7 +51,7 @@
 
       <!-- Error State -->
       <div v-else-if="error" class="error-state">
-        <n-icon :size="48" color="#d03050">
+        <n-icon :size="48" color="var(--hula-error)">
           <AlertCircle />
         </n-icon>
         <p>{{ error }}</p>
@@ -533,7 +533,7 @@ defineExpose({
     padding: 4px;
 
     &:active {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 }
@@ -628,7 +628,7 @@ defineExpose({
         border-radius: 50%;
 
         &.online {
-          background: #18a058;
+          background: var(--hula-success);
         }
 
         &.offline {
@@ -636,7 +636,7 @@ defineExpose({
         }
 
         &.unavailable {
-          background: #f0a020;
+          background: var(--hula-warning);
         }
       }
     }
@@ -692,7 +692,7 @@ defineExpose({
       border-radius: 50%;
 
       &.online {
-        background: #18a058;
+        background: var(--hula-success);
       }
 
       &.offline {
@@ -700,7 +700,7 @@ defineExpose({
       }
 
       &.unavailable {
-        background: #f0a020;
+        background: var(--hula-warning);
       }
     }
   }

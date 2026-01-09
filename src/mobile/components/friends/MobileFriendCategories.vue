@@ -243,14 +243,14 @@ const editFormRef = ref()
 const createForm = ref({
   name: '',
   description: '',
-  color: '#18a058',
+  color: 'var(--hula-success)',
   icon: ''
 })
 
 const editForm = ref({
   name: '',
   description: '',
-  color: '#18a058',
+  color: 'var(--hula-success)',
   icon: ''
 })
 
@@ -310,7 +310,7 @@ const handleCreateCategory = async () => {
     await loadCategories()
     message.success('分类创建成功')
     showCreateDialog.value = false
-    createForm.value = { name: '', description: '', color: '#18a058', icon: '' }
+    createForm.value = { name: '', description: '', color: 'var(--hula-success)', icon: '' }
     emit('category-created', category)
   } catch (error) {
     message.error('创建分类失败: ' + (error instanceof Error ? error.message : '未知错误'))
@@ -393,7 +393,7 @@ const handleCategoryAction = (key: string, category: FriendCategory) => {
       editForm.value = {
         name: category.name,
         description: category.description || '',
-        color: category.color || '#18a058',
+        color: category.color || 'var(--hula-success)',
         icon: ''
       }
       showEditDialog.value = true

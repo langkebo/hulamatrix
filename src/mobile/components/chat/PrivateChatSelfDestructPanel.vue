@@ -42,7 +42,7 @@
               <div class="option-desc">{{ option.desc }}</div>
             </div>
             <div v-if="selectedTime === option.value" class="option-check">
-              <n-icon :size="20" color="#18a058">
+              <n-icon :size="20" color="var(--hula-success)">
                 <Check />
               </n-icon>
             </div>
@@ -78,7 +78,7 @@
 
     <!-- 安全提示 -->
     <div class="security-hint">
-      <n-icon :size="16" color="#f0a020">
+      <n-icon :size="16" color="var(--hula-warning)">
         <InfoCircle />
       </n-icon>
       <span>启用自毁消息后，消息将在设定时间后自动销毁</span>
@@ -408,7 +408,7 @@ watch(
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(240, 160, 32, 0.1);
+  background: rgba(var(--hula-warning-rgb), 0.1);
   border-radius: 8px;
   font-size: 12px;
   color: #b45309;

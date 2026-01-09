@@ -97,7 +97,7 @@
             <div class="section-title">选择验证方式</div>
             <div class="method-list">
               <div class="method-item" @click="startEmojiVerification">
-                <van-icon name="smile-o" :size="24" color="#18a058" />
+                <van-icon name="smile-o" :size="24" color="var(--hula-success)" />
                 <div class="method-info">
                   <span class="method-name">表情符号验证</span>
                   <span class="method-desc">对比7个表情符号和数字</span>
@@ -105,7 +105,7 @@
                 <van-icon name="arrow" :size="18" />
               </div>
               <div class="method-item" @click="startQRVerification">
-                <van-icon name="qr" :size="24" color="#18a058" />
+                <van-icon name="qr" :size="24" color="var(--hula-success)" />
                 <div class="method-info">
                   <span class="method-name">二维码验证</span>
                   <span class="method-desc">扫描二维码快速验证</span>
@@ -151,7 +151,7 @@
       :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }">
       <div class="success-dialog">
         <div class="success-header">
-          <van-icon name="success" :size="48" color="#18a058" />
+          <van-icon name="success" :size="48" color="var(--hula-success)" />
         </div>
         <div class="success-content">
           <h3>验证成功!</h3>
@@ -528,7 +528,7 @@ defineExpose({
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -536,7 +536,7 @@ defineExpose({
   transition: background 0.2s;
 
   &:active {
-    background: #d0d0d0;
+    background: var(--hula-gray-300);
   }
 }
 
@@ -546,7 +546,7 @@ defineExpose({
   align-items: flex-start;
   width: 100%;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   .header-content {
@@ -591,7 +591,7 @@ defineExpose({
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--primary-color, #18a058);
+  background: var(--primary-color, var(--hula-success));
   color: white;
   border-radius: 50%;
 }
@@ -602,9 +602,9 @@ defineExpose({
   gap: 8px;
   padding: 12px;
   background: #e6f7ff;
-  border: 1px solid #91d5ff;
+  border: 1px solid var(--hula-info);
   border-radius: 8px;
-  color: #0958d9;
+  color: var(--hula-info);
   font-size: 13px;
 }
 
@@ -652,7 +652,7 @@ defineExpose({
     &.active .step-circle {
       border-color: var(--primary-color);
       color: var(--primary-color);
-      background: rgba(24, 160, 88, 0.1);
+      background: rgba(var(--hula-success-rgb), 0.1);
     }
 
     &.completed .step-circle {
@@ -689,7 +689,7 @@ defineExpose({
 
 .dialog-footer {
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   display: flex;
   gap: 8px;
   flex-shrink: 0;
@@ -806,18 +806,18 @@ defineExpose({
     border-radius: 12px;
 
     &.trust-verified {
-      background: rgba(24, 160, 88, 0.1);
-      color: #18a058;
+      background: rgba(var(--hula-success-rgb), 0.1);
+      color: var(--hula-success);
     }
 
     &.trust-blocked {
-      background: rgba(208, 48, 80, 0.1);
-      color: #d03050;
+      background: rgba(var(--hula-error-rgb), 0.1);
+      color: var(--hula-error);
     }
 
     &.trust-unknown {
-      background: rgba(240, 160, 32, 0.1);
-      color: #f0a020;
+      background: rgba(var(--hula-warning-rgb), 0.1);
+      color: var(--hula-warning);
     }
 
     .trust-info {

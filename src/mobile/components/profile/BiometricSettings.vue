@@ -23,7 +23,7 @@
 
       <!-- Not Available -->
       <div v-else-if="!capability?.available" class="not-available">
-        <n-icon :size="48" color="#d03050">
+        <n-icon :size="48" color="var(--hula-error)">
           <LockOff />
         </n-icon>
         <p class="not-available-text">
@@ -122,7 +122,7 @@
       :title="testResult?.success ? '验证成功' : '验证失败'"
       class="w-90-max-w-320px">
       <div class="test-result">
-        <n-icon :size="60" :color="testResult?.success ? '#18a058' : '#d03050'" class="result-icon">
+        <n-icon :size="60" :color="testResult?.success ? 'var(--hula-success)' : 'var(--hula-error)'" class="result-icon">
           <Check v-if="testResult?.success" />
           <X v-else />
         </n-icon>
@@ -353,7 +353,7 @@ onMounted(() => {
 
   .security-info {
     padding: 16px;
-    background: rgba(24, 160, 88, 0.05);
+    background: rgba(var(--hula-success-rgb), 0.05);
     border-radius: 12px;
     margin-bottom: 16px;
 

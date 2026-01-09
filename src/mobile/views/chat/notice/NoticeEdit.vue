@@ -176,7 +176,7 @@ onMounted(() => {
 <style scoped>
 .header-border {
   border-bottom: 1px solid;
-  border-color: #dfdfdf;
+  border-color: var(--hula-gray-200);
 }
 
 .upload-image-container {

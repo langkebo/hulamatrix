@@ -9,7 +9,7 @@
 
           <div class="flex-1 min-w-0">
             <div class="text-15px font-semibold text-white truncate">{{ displayName }}</div>
-            <div class="mt-4px text-12px text-#FFFFFFB3 truncate">{{ callMessage }}</div>
+            <div class="mt-4px text-12px text-var(--hula-white)B3 truncate">{{ callMessage }}</div>
           </div>
 
           <div class="flex items-center gap-18px">

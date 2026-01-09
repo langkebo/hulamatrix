@@ -35,13 +35,13 @@
 
       <!-- Verified Devices Count -->
       <div v-if="isEncrypted && verifiedCount > 0" class="verified-count">
-        <van-icon name="success" :size="14" color="#18a058" />
+        <van-icon name="success" :size="14" color="var(--hula-success)" />
         <span>{{ verifiedCount }}/{{ totalDevices }} 个设备已验证</span>
       </div>
 
       <!-- Warning for Unverified Devices -->
       <div v-if="isEncrypted && unverifiedCount > 0" class="warning-badge">
-        <van-icon name="warning-o" :size="14" color="#f0a020" />
+        <van-icon name="warning-o" :size="14" color="var(--hula-warning)" />
         <span>{{ unverifiedCount }} 个设备未验证</span>
       </div>
     </div>
@@ -234,11 +234,11 @@ const statusDesc = computed(() => {
 })
 
 const iconColor = computed(() => {
-  if (!isEncrypted.value) return '#d03050'
-  if (trustLevel.value === 'verified') return '#18a058'
-  if (trustLevel.value === 'trusted') return '#18a058'
-  if (trustLevel.value === 'blacklisted') return '#d03050'
-  return '#f0a020'
+  if (!isEncrypted.value) return 'var(--hula-error)'
+  if (trustLevel.value === 'verified') return 'var(--hula-success)'
+  if (trustLevel.value === 'trusted') return 'var(--hula-success)'
+  if (trustLevel.value === 'blacklisted') return 'var(--hula-error)'
+  return 'var(--hula-warning)'
 })
 
 const trustIcon = computed(() => {
@@ -487,23 +487,23 @@ defineExpose({
   margin-bottom: 8px;
 
   &.verified {
-    background: rgba(24, 160, 88, 0.1);
-    color: #18a058;
+    background: rgba(var(--hula-success-rgb), 0.1);
+    color: var(--hula-success);
   }
 
   &.trusted {
-    background: rgba(24, 160, 88, 0.1);
-    color: #18a058;
+    background: rgba(var(--hula-success-rgb), 0.1);
+    color: var(--hula-success);
   }
 
   &.warning {
-    background: rgba(240, 160, 32, 0.1);
-    color: #f0a020;
+    background: rgba(var(--hula-warning-rgb), 0.1);
+    color: var(--hula-warning);
   }
 
   &.blacklisted {
-    background: rgba(208, 48, 80, 0.1);
-    color: #d03050;
+    background: rgba(var(--hula-error-rgb), 0.1);
+    color: var(--hula-error);
   }
 }
 
@@ -521,7 +521,7 @@ defineExpose({
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #f0a020;
+  color: var(--hula-warning);
 }
 
 // Detail Modal Styles
@@ -559,15 +559,15 @@ defineExpose({
     border-radius: 50%;
 
     &.verified {
-      background: rgba(24, 160, 88, 0.1);
+      background: rgba(var(--hula-success-rgb), 0.1);
     }
 
     &.unencrypted {
-      background: rgba(208, 48, 80, 0.1);
+      background: rgba(var(--hula-error-rgb), 0.1);
     }
 
     &.warning {
-      background: rgba(240, 160, 32, 0.1);
+      background: rgba(var(--hula-warning-rgb), 0.1);
     }
   }
 
@@ -613,19 +613,19 @@ defineExpose({
     font-family: 'Monaco', 'Consolas', monospace;
 
     &.verified {
-      color: #18a058;
+      color: var(--hula-success);
     }
 
     &.trusted {
-      color: #18a058;
+      color: var(--hula-success);
     }
 
     &.warning {
-      color: #f0a020;
+      color: var(--hula-warning);
     }
 
     &.blacklisted {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 }
@@ -684,13 +684,13 @@ defineExpose({
   flex-shrink: 0;
 
   &.verified {
-    background: rgba(24, 160, 88, 0.1);
-    color: #18a058;
+    background: rgba(var(--hula-success-rgb), 0.1);
+    color: var(--hula-success);
   }
 
   &.unverified {
-    background: rgba(240, 160, 32, 0.1);
-    color: #f0a020;
+    background: rgba(var(--hula-warning-rgb), 0.1);
+    color: var(--hula-warning);
   }
 }
 
@@ -703,10 +703,10 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(240, 160, 32, 0.1);
-  border: 1px solid rgba(240, 160, 32, 0.3);
+  background: rgba(var(--hula-warning-rgb), 0.1);
+  border: 1px solid rgba(var(--hula-warning-rgb), 0.3);
   border-radius: 8px;
-  color: #f0a020;
+  color: var(--hula-warning);
   font-size: 13px;
 }
 
@@ -725,7 +725,7 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--border-color, var(--hula-gray-100));
   flex-shrink: 0;
 
   .header-title {
@@ -743,7 +743,7 @@ defineExpose({
 
 .detail-modal-footer {
   padding: 16px;
-  border-top: 1px solid var(--border-color, #f0f0f0);
+  border-top: 1px solid var(--border-color, var(--hula-gray-100));
   flex-shrink: 0;
 }
 
@@ -758,7 +758,7 @@ defineExpose({
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--primary-color, #18a058);
+  background: var(--primary-color, var(--hula-success));
   color: white;
   border-radius: 50%;
   font-size: 14px;
@@ -771,22 +771,22 @@ defineExpose({
 
 // Status variants
 .mobile-encryption-status.verified {
-  --status-color: #18a058;
+  --status-color: var(--hula-success);
 }
 
 .mobile-encryption-status.trusted {
-  --status-color: #18a058;
+  --status-color: var(--hula-success);
 }
 
 .mobile-encryption-status.warning {
-  --status-color: #f0a020;
+  --status-color: var(--hula-warning);
 }
 
 .mobile-encryption-status.blacklisted {
-  --status-color: #d03050;
+  --status-color: var(--hula-error);
 }
 
 .mobile-encryption-status.unencrypted {
-  --status-color: #d03050;
+  --status-color: var(--hula-error);
 }
 </style>

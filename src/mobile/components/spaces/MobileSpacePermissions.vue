@@ -45,7 +45,7 @@
       :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }">
       <div class="warning-dialog">
         <div class="warning-header">
-          <van-icon name="warning-o" :size="24" color="#f0a020" />
+          <van-icon name="warning-o" :size="24" color="var(--hula-warning)" />
           <span class="warning-title">未保存的更改</span>
         </div>
 
@@ -456,7 +456,7 @@ defineExpose({
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--border-color, var(--hula-gray-100));
 
   .warning-title {
     font-size: 16px;
@@ -480,7 +480,7 @@ defineExpose({
   display: flex;
   gap: 8px;
   padding: 16px;
-  border-top: 1px solid var(--border-color, #f0f0f0);
+  border-top: 1px solid var(--border-color, var(--hula-gray-100));
 }
 
 // Safe area for mobile

@@ -487,7 +487,7 @@ defineExpose({
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -498,7 +498,7 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   span:first-child {
@@ -526,7 +526,7 @@ defineExpose({
 
 .actions-footer {
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 }
 
@@ -588,8 +588,8 @@ defineExpose({
 
   &.danger {
     .action-icon {
-      background: rgba(208, 48, 80, 0.1);
-      color: #d03050;
+      background: rgba(var(--hula-error-rgb), 0.1);
+      color: var(--hula-error);
     }
   }
 
@@ -654,11 +654,11 @@ defineExpose({
 
   &.danger {
     .list-icon {
-      color: #d03050;
+      color: var(--hula-error);
     }
 
     .action-label {
-      color: #d03050;
+      color: var(--hula-error);
     }
   }
 

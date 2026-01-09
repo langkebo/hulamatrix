@@ -168,7 +168,7 @@ watch(
 .handle-bar {
   width: 40px;
   height: 4px;
-  background: #e0e0e0;
+  background: var(--hula-gray-200);
   border-radius: 2px;
   margin: 8px auto;
   flex-shrink: 0;
@@ -176,7 +176,7 @@ watch(
   transition: background 0.2s;
 
   &:active {
-    background: #d0d0d0;
+    background: var(--hula-gray-300);
   }
 }
 
@@ -185,7 +185,7 @@ watch(
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 
   .profile-avatar {
@@ -268,7 +268,7 @@ watch(
 
 .cancel-section {
   padding: 12px 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--hula-gray-100);
   flex-shrink: 0;
 }
 

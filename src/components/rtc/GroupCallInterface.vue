@@ -1030,7 +1030,7 @@ onUnmounted(() => {
 
   &.local-participant {
     .participant-info {
-      background: linear-gradient(to top, rgba(24, 160, 88, 0.8), transparent);
+      background: linear-gradient(to top, rgba(var(--hula-success-rgb), 0.8), transparent);
     }
   }
 }
@@ -1086,11 +1086,11 @@ onUnmounted(() => {
       }
 
       &.speaking {
-        background: rgba(24, 160, 88, 0.1);
+        background: rgba(var(--hula-success-rgb), 0.1);
       }
 
       &.local-user {
-        background: rgba(24, 160, 88, 0.05);
+        background: rgba(var(--hula-success-rgb), 0.05);
       }
 
       .participant-details {
@@ -1299,7 +1299,7 @@ onUnmounted(() => {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(240, 160, 32, 0.9);
+  background: rgba(var(--hula-warning-rgb), 0.9);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;

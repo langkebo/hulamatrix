@@ -56,7 +56,7 @@
               <!-- 群号 -->
               <div class="flex justify-between items-center">
                 <div class="text-14px">群聊成员</div>
-                <div @click="toGroupChatMember" class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
+                <div @click="toGroupChatMember" class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <div>
                     有
                     <span class="text-#398D7E">
@@ -129,7 +129,7 @@
                 class="divider-bottom flex justify-between py-15px items-center"
                 @click="handleCopy(currentSession?.account || '')">
                 <div class="text-14px">{{ isGroup ? '群号/二维码' : 'Hula号/二维码' }}</div>
-                <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
+                <div class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <div>{{ currentSession?.account || '' }}</div>
                   <div>
                     <svg class="w-14px h-14px iconpark-icon">
@@ -149,7 +149,7 @@
 
               <div v-if="isGroup && (isLord || isAdmin)" class="flex justify-between py-15px items-center">
                 <div class="text-14px">本群昵称</div>
-                <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
+                <div class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <input
                     class="name-input"
                     v-model="nameValue"
@@ -160,7 +160,7 @@
 
               <div v-if="isGroup" class="flex justify-between py-15px items-center">
                 <div class="text-14px">我的群昵称</div>
-                <div class="text-12px text-#6E6E6E flex flex-wrap gap-10px items-center">
+                <div class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <input
                     class="name-input"
                     v-model="nicknameValue"
@@ -174,7 +174,7 @@
           <div class="w-full flex flex-col gap-15px rounded-10px">
             <div class="ps-15px text-14px">
               <span>{{ title + '备注' }}</span>
-              <span class="text-#6E6E6E">（仅自己可见）</span>
+              <span class="text-var(--hula-gray-500)">（仅自己可见）</span>
             </div>
             <div class="rounded-10px flex w-full bg-white shadow">
               <div class="w-full px-15px">
@@ -188,7 +188,7 @@
           </div>
           <div class="flex bg-white rounded-10px w-full h-auto shadow">
             <div class="px-15px flex flex-col w-full">
-              <div class="pt-15px text-14px text-#6E6E6E">{{ title }}设置</div>
+              <div class="pt-15px text-14px text-var(--hula-gray-500)">{{ title }}设置</div>
               <!-- 群号 -->
               <div class="divider-bottom flex justify-between py-12px items-center">
                 <div class="text-14px">设置为置顶</div>
@@ -651,7 +651,7 @@ onMounted(async () => {
 <style scoped>
 .header-bar {
   border-bottom: 1px solid;
-  border-color: #dfdfdf;
+  border-color: var(--hula-gray-200);
 }
 
 .avatar-container {
@@ -660,7 +660,7 @@ onMounted(async () => {
 
 .divider-bottom {
   border-bottom: 1px solid;
-  border-color: #ebebeb;
+  border-color: var(--hula-gray-200);
 }
 
 .name-input {

@@ -67,7 +67,7 @@
     <!-- 销毁动画 -->
     <transition name="destroy-fade">
       <div v-if="isDestroyed" class="destroyed-overlay">
-        <van-icon name="delete-o" :size="32" color="#d03050" />
+        <van-icon name="delete-o" :size="32" color="var(--hula-error)" />
         <span class="destroyed-text">已销毁</span>
       </div>
     </transition>
@@ -129,14 +129,14 @@ const isCritical = computed(() => {
 })
 
 const ringColor = computed(() => {
-  if (isCritical.value) return '#d03050'
-  if (isWarning.value) return '#f0a020'
-  return '#18a058'
+  if (isCritical.value) return 'var(--hula-error)'
+  if (isWarning.value) return 'var(--hula-warning)'
+  return 'var(--hula-success)'
 })
 
 const iconColor = computed(() => {
-  if (isCritical.value) return '#d03050'
-  if (isWarning.value) return '#f0a020'
+  if (isCritical.value) return 'var(--hula-error)'
+  if (isWarning.value) return 'var(--hula-warning)'
   return 'var(--hula-brand-primary)'
 })
 
@@ -299,13 +299,13 @@ watch(
 
     &.is-warning {
       .ring-progress {
-        color: #f0a020;
+        color: var(--hula-warning);
       }
     }
 
     &.is-critical {
       .ring-progress {
-        color: #d03050;
+        color: var(--hula-error);
         animation: ring-pulse 0.5s ease-in-out infinite;
       }
     }
@@ -346,18 +346,18 @@ watch(
     align-items: center;
     gap: 4px;
     padding: 4px 10px;
-    background: #18a058;
+    background: var(--hula-success);
     color: white;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
 
     &.is-warning {
-      background: #f0a020;
+      background: var(--hula-warning);
     }
 
     &.is-critical {
-      background: #d03050;
+      background: var(--hula-error);
       animation: badge-pulse 0.5s ease-in-out infinite;
     }
 
@@ -381,18 +381,18 @@ watch(
     align-items: center;
     justify-content: center;
     height: 100%;
-    background: #18a058;
+    background: var(--hula-success);
     border-radius: 2px;
     transition:
       width 0.3s ease,
       background-color 0.3s ease;
 
     &.is-warning {
-      background: #f0a020;
+      background: var(--hula-warning);
     }
 
     &.is-critical {
-      background: #d03050;
+      background: var(--hula-error);
     }
   }
 }
@@ -408,7 +408,7 @@ watch(
   .destroyed-text {
     font-size: 14px;
     font-weight: 600;
-    color: #d03050;
+    color: var(--hula-error);
   }
 }
 

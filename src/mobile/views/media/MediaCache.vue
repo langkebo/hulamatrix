@@ -542,9 +542,9 @@ const formatDate = (timestamp: number): string => {
 }
 
 const getProgressColor = (percentage: number): string => {
-  if (percentage < 50) return '#18a058'
-  if (percentage < 80) return '#f0a020'
-  return '#d03050'
+  if (percentage < 50) return 'var(--hula-success)'
+  if (percentage < 80) return 'var(--hula-warning)'
+  return 'var(--hula-error)'
 }
 
 const getTypeIcon = (type: string) => {
@@ -563,9 +563,9 @@ const getTypeIcon = (type: string) => {
 const getTypeColor = (type: string): string => {
   switch (type) {
     case 'image':
-      return '#18a058'
+      return 'var(--hula-success)'
     case 'video':
-      return '#f0a020'
+      return 'var(--hula-warning)'
     case 'audio':
       return '#7c4dff'
     default:

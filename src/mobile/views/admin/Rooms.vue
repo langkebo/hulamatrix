@@ -414,7 +414,7 @@ onMounted(() => {
 <style scoped>
 .mobile-admin-rooms {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: var(--hula-gray-50);
 }
 
 .room-name {
@@ -424,7 +424,7 @@ onMounted(() => {
 
 .room-id {
   font-size: 12px;
-  color: #969799;
+  color: var(--hula-gray-400);
   margin-top: 2px;
 }
 
@@ -432,7 +432,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   font-size: 13px;
-  color: #969799;
+  color: var(--hula-gray-400);
 }
 
 .room-topic {
