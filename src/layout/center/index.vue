@@ -113,7 +113,7 @@
             v-if="isMac()"
             @click="resetCreateGroupState"
             class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
-            <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+            <svg class="hidden size-7px color-var(--hula-black) select-none absolute top-3px left-3px">
               <use href="#close"></use>
             </svg>
           </div>

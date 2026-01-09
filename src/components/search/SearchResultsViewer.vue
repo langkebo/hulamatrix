@@ -486,17 +486,17 @@ watch(
 
 .sender {
   font-weight: 500;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .timestamp {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .content {
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
   line-height: 1.5;
   word-break: break-word;
 }
@@ -528,7 +528,7 @@ watch(
 .context-label {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
 }
 
@@ -548,12 +548,12 @@ watch(
 
 .msg-sender {
   font-weight: 500;
-  color: #666;
+  color: var(--hula-gray-700);
   flex-shrink: 0;
 }
 
 .msg-content {
-  color: #333;
+  color: var(--hula-gray-900);
   word-break: break-word;
 }
 
@@ -571,7 +571,7 @@ watch(
 
 .msg-time {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .main-message .msg-content {
@@ -603,12 +603,12 @@ watch(
 
   .timestamp,
   .msg-time {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .content,
   .msg-content {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .context-messages {

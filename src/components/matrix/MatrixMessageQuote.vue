@@ -33,7 +33,7 @@ function truncate(text: string, length: number): string {
 .matrix-message-quote {
   padding: 8px;
   border-left: 3px solid #888;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   border-radius: 4px;
 }
 
@@ -51,6 +51,6 @@ function truncate(text: string, length: number): string {
 
 .quote-text {
   font-size: 13px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 </style>

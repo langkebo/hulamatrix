@@ -350,10 +350,10 @@ defineExpose({
 .info-icon {
   margin-left: 4px;
   cursor: help;
-  color: #999;
+  color: var(--hula-gray-400);
 
   &:hover {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 }
 
@@ -379,7 +379,7 @@ defineExpose({
   }
 
   .detail-label {
-    color: #999;
+    color: var(--hula-gray-400);
     margin-right: 8px;
   }
 

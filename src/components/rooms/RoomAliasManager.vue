@@ -599,7 +599,7 @@ watch(
 
 .loading-text {
   margin-top: 16px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .empty-state {
@@ -607,7 +607,7 @@ watch(
 }
 
 .empty-description {
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .mt-16 {
@@ -632,12 +632,12 @@ watch(
 }
 
 .input-prefix {
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .help-text {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .mt-8 {

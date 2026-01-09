@@ -392,7 +392,7 @@ defineExpose({
 }
 
 .action-close {
-  @apply w-28px h-24px flex-center cursor-pointer hover:bg-var(--hula-brand-primary) svg:hover:color-[#fff];
+  @apply w-28px h-24px flex-center cursor-pointer hover:bg-var(--hula-brand-primary) svg:hover:color-[var(--hula-white)];
 }
 
 .n-modal {

@@ -19,7 +19,7 @@
 
     <!-- Empty State -->
     <div v-else-if="!safeRooms.length && !loading" class="empty-state">
-      <n-icon :component="Inbox" size="48" color="#999" />
+      <n-icon :component="Inbox" size="48" color="var(--hula-gray-400)" />
       <p>暂无房间</p>
     </div>
 
@@ -279,7 +279,7 @@ watch(searchQuery, () => {
   justify-content: center;
   gap: 16px;
   padding: 32px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .room-list-container {

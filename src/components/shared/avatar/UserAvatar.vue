@@ -310,7 +310,7 @@ defineExpose({
   border-radius: var(--radius-full);
   font-weight: var(--font-semibold);
   z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.2);
 }
 
 .badge-sm {

@@ -514,7 +514,7 @@ watch(
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .space-member-list__stats {
@@ -537,7 +537,7 @@ watch(
 }
 
 .members-card {
-  background: #fff;
+  background: var(--hula-white);
 }
 
 .member-cell {
@@ -554,7 +554,7 @@ watch(
 .member-name {
   font-weight: 500;
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -577,13 +577,13 @@ watch(
 
 .member-id {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   font-family: monospace;
 }
 
 .room-count {
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .member-detail {
@@ -605,13 +605,13 @@ watch(
 .member-detail__info h4 {
   margin: 0 0 4px;
   font-size: 18px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .member-detail__info .user-id {
   margin: 0 0 8px;
   font-size: 13px;
-  color: #999;
+  color: var(--hula-gray-400);
   font-family: monospace;
 }
 
@@ -635,12 +635,12 @@ watch(
 .detail-section label {
   font-weight: 500;
   font-size: 14px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .detail-section span {
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .icon {
@@ -650,7 +650,7 @@ watch(
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .space-member-list__header h3 {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .members-card {
@@ -658,11 +658,11 @@ watch(
   }
 
   .member-name {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .member-id {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .room-count {
@@ -670,7 +670,7 @@ watch(
   }
 
   .member-detail__info h4 {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .detail-section label {
@@ -678,7 +678,7 @@ watch(
   }
 
   .detail-section span {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 }
 </style>

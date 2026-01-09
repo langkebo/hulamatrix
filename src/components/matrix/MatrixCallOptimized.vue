@@ -805,7 +805,7 @@ watch(
   left: 0;
   right: 0;
   bottom: 0;
-  background: #000;
+  background: var(--hula-black);
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -817,7 +817,7 @@ watch(
   left: 0;
   right: 0;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(var(--hula-black-rgb), 0.7);
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: space-between;
@@ -839,7 +839,7 @@ watch(
 
 .call-state {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--hula-white-rgb), 0.7);
 }
 
 .call-media-fullscreen {
@@ -887,7 +887,7 @@ watch(
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.3);
 }
 
 .local-video-pip:hover {
@@ -913,7 +913,7 @@ watch(
   left: 0;
   right: 0;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
   backdrop-filter: blur(10px);
 }
 

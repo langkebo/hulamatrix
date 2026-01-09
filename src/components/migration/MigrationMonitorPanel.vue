@@ -336,7 +336,7 @@ onUnmounted(() => {
 .migration-monitor-panel {
   padding: 16px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg-color, #fff);
+  background: var(--bg-color, var(--hula-white));
   border-radius: 8px;
   max-width: 600px;
 }
@@ -383,7 +383,7 @@ onUnmounted(() => {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-color-2, #666);
+  color: var(--text-color-2, var(--hula-gray-700));
   margin-bottom: 12px;
 }
 
@@ -432,7 +432,7 @@ onUnmounted(() => {
 
 .stat-label {
   font-size: 12px;
-  color: var(--text-color-3, #999);
+  color: var(--text-color-3, var(--hula-gray-400));
 }
 
 .stat-value {
@@ -505,7 +505,7 @@ onUnmounted(() => {
 
 .perf-label {
   font-size: 12px;
-  color: var(--text-color-3, #999);
+  color: var(--text-color-3, var(--hula-gray-400));
 }
 
 .perf-value {
@@ -547,7 +547,7 @@ onUnmounted(() => {
 
   &.header {
     font-weight: 600;
-    color: var(--text-color-2, #666);
+    color: var(--text-color-2, var(--hula-gray-700));
   }
 
   span {
@@ -566,7 +566,7 @@ onUnmounted(() => {
   li {
     margin-bottom: 8px;
     font-size: 13px;
-    color: var(--text-color-1, #333);
+    color: var(--text-color-1, var(--hula-gray-900));
   }
 }
 
@@ -581,7 +581,7 @@ onUnmounted(() => {
   padding: 8px 16px;
   border: 1px solid var(--hula-brand-primary);
   border-radius: 4px;
-  background: #fff;
+  background: var(--hula-white);
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
@@ -599,12 +599,12 @@ onUnmounted(() => {
   &.primary {
     background: var(--hula-brand-primary);
     border-color: var(--hula-brand-primary);
-    color: #fff;
+    color: var(--hula-white);
 
     &:hover:not(:disabled) {
       background: var(--hula-brand-primary);
       border-color: var(--hula-brand-primary);
-      color: #fff;
+      color: var(--hula-white);
     }
   }
 
@@ -614,7 +614,7 @@ onUnmounted(() => {
 
     &:hover:not(:disabled) {
       background: var(--hula-brand-primary);
-      color: #fff;
+      color: var(--hula-white);
     }
   }
 }
@@ -665,7 +665,7 @@ onUnmounted(() => {
 
   &:not(.enabled) {
     background: var(--hula-brand-primary);
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 

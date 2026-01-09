@@ -752,7 +752,7 @@ watch(
 
 .setting-description {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   margin-top: 4px;
   line-height: 1.5;
 }
@@ -809,7 +809,7 @@ watch(
 
 .label-text {
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
   display: block;
   margin-bottom: 8px;
 }

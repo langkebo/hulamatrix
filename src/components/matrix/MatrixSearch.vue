@@ -642,7 +642,7 @@ onMounted(() => {
   background: var(--n-color);
   border: 1px solid var(--n-border-color);
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   z-index: 100;
   max-height: 200px;
   overflow-y: auto;
@@ -711,7 +711,7 @@ onMounted(() => {
 
 .message-result-item:hover {
   border-color: var(--n-primary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .message-header {
@@ -811,7 +811,7 @@ onMounted(() => {
 .room-result-item:hover,
 .user-result-item:hover {
   border-color: var(--n-primary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .room-info,

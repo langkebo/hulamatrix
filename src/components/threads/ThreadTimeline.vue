@@ -356,7 +356,7 @@ watch(
   display: flex;
   gap: 8px;
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .reply-count {
@@ -364,7 +364,7 @@ watch(
 }
 
 .participants {
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .participant-avatars {
@@ -385,8 +385,8 @@ watch(
 .more-avatars {
   margin-left: 4px;
   font-size: 11px;
-  color: #999;
-  background: #fff;
+  color: var(--hula-gray-400);
+  background: var(--hula-white);
   border-radius: 12px;
   padding: 2px 6px;
 }
@@ -407,7 +407,7 @@ watch(
 
 .thread-root:hover,
 .thread-reply:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(var(--hula-black-rgb), 0.04);
 }
 
 .message {
@@ -434,23 +434,23 @@ watch(
 .message__sender {
   font-weight: 500;
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .message__time {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .message__content {
-  color: #333;
+  color: var(--hula-gray-900);
   line-height: 1.4;
   word-break: break-word;
 }
 
 .message__meta {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .thread-expand {
@@ -483,12 +483,12 @@ watch(
   }
 
   .message__content {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .thread-root:hover,
   .thread-reply:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(var(--hula-white-rgb), 0.06);
   }
 
   .thread-timeline__actions {
@@ -500,7 +500,7 @@ watch(
   }
 
   .more-avatars {
-    background: #333;
+    background: var(--hula-gray-900);
   }
 }
 </style>

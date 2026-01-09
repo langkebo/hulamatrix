@@ -821,7 +821,7 @@ onUnmounted(() => {
   right: 24px;
   width: 56px;
   height: 56px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   z-index: 100;
 }
 

@@ -543,7 +543,7 @@ watch(
 .sticker-item:hover {
   transform: scale(1.05);
   border-color: var(--n-border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .sticker-image-wrapper {

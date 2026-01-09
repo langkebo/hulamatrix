@@ -489,7 +489,7 @@ const handleArchiveSpace = async () => {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px rgba(var(--hula-black-rgb), 0.12);
     border-color: var(--primary-color);
   }
 
@@ -567,7 +567,7 @@ const handleArchiveSpace = async () => {
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.2);
       }
 
       .notification-badge {
@@ -577,7 +577,7 @@ const handleArchiveSpace = async () => {
       .join-indicator,
       .privacy-indicator,
       .archive-indicator {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(var(--hula-white-rgb), 0.9);
         color: var(--text-color-1);
         width: 28px;
         height: 28px;
@@ -585,7 +585,7 @@ const handleArchiveSpace = async () => {
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.2);
       }
 
       .join-indicator {

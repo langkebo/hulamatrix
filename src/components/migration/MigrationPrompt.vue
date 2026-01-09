@@ -325,7 +325,7 @@ defineExpose({
       .options {
         margin: 20px 0;
         padding: 16px;
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(var(--hula-white-rgb), 0.8);
         border-radius: 8px;
       }
     }
@@ -333,7 +333,7 @@ defineExpose({
     .prompt-footer {
       margin-top: 16px;
       padding-top: 16px;
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      border-top: 1px solid rgba(var(--hula-black-rgb), 0.1);
     }
   }
 }

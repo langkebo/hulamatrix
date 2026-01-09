@@ -107,7 +107,7 @@ defineExpose({
   padding: var(--space-sm, 8px);
   background: var(--pc-bg-elevated, var(--hula-brand-primary));
   border-radius: var(--radius-lg, 12px);
-  box-shadow: var(--shadow-dark-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+  box-shadow: var(--shadow-dark-md, 0 4px 12px rgba(var(--hula-black-rgb), 0.1));
 }
 
 .reaction-item {
@@ -123,7 +123,7 @@ defineExpose({
 }
 
 .reaction-item:hover {
-  background: var(--pc-bg-hover, rgba(0, 0, 0, 0.05));
+  background: var(--pc-bg-hover, rgba(var(--hula-black-rgb), 0.05));
   transform: scale(1.1);
 }
 

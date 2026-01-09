@@ -154,7 +154,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 8px;
     padding: 6px 10px;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(var(--hula-black-rgb), 0.05);
     border-radius: 6px;
     font-size: 12px;
     color: var(--text-color-2);
@@ -216,7 +216,7 @@ onUnmounted(() => {
     }
 
     .destruct-timer {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(var(--hula-white-rgb), 0.05);
     }
 
     .destruct-hint {

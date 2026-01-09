@@ -424,7 +424,7 @@ watch(
       <div v-if="!hasImage" class="upload-section">
         <NUpload :show-file-list="false" :custom-request="handleFileSelect" accept="image/*" :disabled="isProcessing">
           <div class="upload-area">
-            <NIcon size="64" color="#999">
+            <NIcon size="64" color="var(--hula-gray-400)">
               <CloudUpload />
             </NIcon>
             <div class="upload-text">
@@ -590,7 +590,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(var(--hula-black-rgb), 0.1);
   color: white;
   pointer-events: none;
 }
@@ -621,7 +621,7 @@ img {
 
 .upload-subtitle {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .shape-label {

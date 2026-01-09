@@ -780,7 +780,7 @@ watch(currentCall, (newCall) => {
 .matrix-call {
   position: relative;
   height: 100%;
-  background: #000;
+  background: var(--hula-black);
 }
 
 .call-overlay {
@@ -826,7 +826,7 @@ watch(currentCall, (newCall) => {
   height: 160px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.3);
   z-index: 10;
 }
 
@@ -843,7 +843,7 @@ watch(currentCall, (newCall) => {
   left: 0;
   right: 0;
   padding: 24px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
 }
 
 .call-info {
@@ -873,13 +873,13 @@ watch(currentCall, (newCall) => {
 .control-buttons .n-button {
   width: 56px;
   height: 56px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--hula-white-rgb), 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--hula-white-rgb), 0.2);
 }
 
 .control-buttons .n-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.2);
 }
 
 .control-buttons .n-button--error-type {

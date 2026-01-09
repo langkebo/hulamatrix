@@ -447,13 +447,13 @@ watch(
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .create-tag-card,
 .tags-card,
 .rooms-card {
-  background: #fff;
+  background: var(--hula-white);
 }
 
 .custom-tag-item {
@@ -464,7 +464,7 @@ watch(
 
 .tag-count {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .tag-order-input {
@@ -474,7 +474,7 @@ watch(
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .room-tags-manager__header h3 {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .create-tag-card,
@@ -484,11 +484,11 @@ watch(
   }
 
   .custom-tag-item {
-    background: #333;
+    background: var(--hula-gray-900);
   }
 
   .tag-count {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 }
 </style>

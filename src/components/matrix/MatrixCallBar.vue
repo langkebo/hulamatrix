@@ -336,7 +336,7 @@ const handleEnd = async () => {
 .matrix-call-bar:hover {
   background: var(--n-color-pressed);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .matrix-call-bar.active {
@@ -353,7 +353,7 @@ const handleEnd = async () => {
   height: 40px;
   background: var(--n-color);
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .call-info {

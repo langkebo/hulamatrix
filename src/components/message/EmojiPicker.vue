@@ -468,7 +468,7 @@ onMounted(() => {
   background: var(--card-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px rgba(var(--hula-black-rgb), 0.15);
   max-width: 400px;
   max-height: 500px;
   display: flex;
@@ -476,7 +476,7 @@ onMounted(() => {
   position: relative;
 
   &.is-inline {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 12px rgba(var(--hula-black-rgb), 0.1);
     max-height: 400px;
   }
 
@@ -623,7 +623,7 @@ onMounted(() => {
     background: var(--card-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 24px rgba(var(--hula-black-rgb), 0.15);
     padding: 12px;
     min-width: 200px;
     z-index: 1000;

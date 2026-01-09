@@ -466,11 +466,11 @@ const {
     height: 80px;
     background: var(--card-color);
     border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 24px rgba(var(--hula-black-rgb), 0.15);
   }
 
   &.is-fullscreen {
-    background: #000;
+    background: var(--hula-black);
   }
 }
 
@@ -556,7 +556,7 @@ const {
     left: 0;
     right: 0;
     padding: 12px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
     color: white;
 
     .participant-name {

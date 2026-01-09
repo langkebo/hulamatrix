@@ -420,7 +420,7 @@ watch(
 <style scoped>
 .video-player-container {
   position: relative;
-  background: #000;
+  background: var(--hula-black);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -448,7 +448,7 @@ watch(
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
   padding: 20px;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -475,7 +475,7 @@ watch(
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(var(--hula-white-rgb), 0.3);
   border-radius: 3px;
   cursor: pointer;
   position: relative;
@@ -487,7 +487,7 @@ watch(
   top: 0;
   left: 0;
   height: 100%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(var(--hula-white-rgb), 0.5);
   border-radius: 3px;
 }
 
@@ -509,7 +509,7 @@ watch(
   border-radius: 50%;
   transform: translate(-50%, -50%);
   cursor: grab;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.3);
 }
 
 .progress-handle:active {
@@ -538,7 +538,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
 }
 
 .play-button-overlay {

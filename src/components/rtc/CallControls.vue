@@ -491,7 +491,7 @@ watch(
   align-items: center;
   gap: 16px;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
   border-radius: 12px;
   color: white;
 }
@@ -566,13 +566,13 @@ watch(
   width: 56px !important;
   height: 56px !important;
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.1);
+  border: 1px solid rgba(var(--hula-white-rgb), 0.2);
   transition: all 0.2s ease;
 }
 
 .control-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.2);
   transform: scale(1.05);
 }
 
@@ -588,7 +588,7 @@ watch(
 
 .control-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--hula-white-rgb), 0.7);
 }
 
 .call-actions {
@@ -630,7 +630,7 @@ watch(
 .quality-bar {
   width: 4px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.2);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
@@ -646,7 +646,7 @@ watch(
 
 .quality-text {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--hula-white-rgb), 0.7);
 }
 
 .call-stats {
@@ -659,7 +659,7 @@ watch(
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--hula-white-rgb), 0.7);
 }
 
 .volume-indicator {
@@ -674,7 +674,7 @@ watch(
 .volume-bar {
   width: 3px;
   height: 20px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.2);
   border-radius: 1px;
   transition: all 0.1s ease;
 }

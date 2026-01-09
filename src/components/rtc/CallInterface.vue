@@ -79,8 +79,7 @@
               :src="remoteParticipant?.avatar || ''"
               :size="120"
               round
-              :fallback="remoteParticipant?.name?.charAt(0) || '?'
-            "
+              :fallback="remoteParticipant?.name?.charAt(0) || '?'"
             />
           </div>
           <div class="participant-name">{{ remoteParticipant?.name || 'Unknown' }}</div>
@@ -695,11 +694,11 @@ onUnmounted(() => {
     height: 80px;
     background: var(--card-color);
     border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 24px rgba(var(--hula-black-rgb), 0.15);
   }
 
   &.is-fullscreen {
-    background: #000;
+    background: var(--hula-black);
   }
 }
 
@@ -712,7 +711,7 @@ onUnmounted(() => {
 .video-area {
   flex: 1;
   position: relative;
-  background: #000;
+  background: var(--hula-black);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,7 +754,7 @@ onUnmounted(() => {
           }
 
           .call-status {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(var(--hula-white-rgb), 0.8);
             font-size: 14px;
           }
         }
@@ -779,7 +778,7 @@ onUnmounted(() => {
     border-radius: 8px;
     overflow: hidden;
     cursor: move;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 12px rgba(var(--hula-black-rgb), 0.15);
     transition: transform 0.1s ease;
 
     &.dragging {

@@ -568,13 +568,13 @@ onMounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .permissions-card,
 .users-card,
 .events-card {
-  background: #fff;
+  background: var(--hula-white);
 }
 
 .permission-row {
@@ -591,7 +591,7 @@ onMounted(() => {
 
 .permission-row label {
   font-size: 14px;
-  color: #666;
+  color: var(--hula-gray-700);
   flex: 1;
 }
 
@@ -604,12 +604,12 @@ onMounted(() => {
 .user-name {
   font-weight: 500;
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .user-id {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   font-family: monospace;
 }
 
@@ -640,7 +640,7 @@ onMounted(() => {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .power-level-editor__header h3 {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .permissions-card,
@@ -658,15 +658,15 @@ onMounted(() => {
   }
 
   .user-name {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .user-id {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .event-type {
-    background: #333;
+    background: var(--hula-gray-900);
   }
 
   .power-level-editor__actions {

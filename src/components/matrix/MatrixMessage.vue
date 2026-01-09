@@ -508,7 +508,7 @@ const toggleReaction = (emoji: string) => {
   background: var(--n-color);
   border-radius: 12px;
   padding: 8px 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(var(--hula-black-rgb), 0.05);
 }
 
 .matrix-message.is-own .message-body {
@@ -574,7 +574,7 @@ const toggleReaction = (emoji: string) => {
   position: absolute;
   bottom: 4px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(var(--hula-black-rgb), 0.7);
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
@@ -586,7 +586,7 @@ const toggleReaction = (emoji: string) => {
   align-items: center;
   gap: 12px;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(var(--hula-black-rgb), 0.02);
   border-radius: 8px;
 }
 
@@ -620,14 +620,14 @@ const toggleReaction = (emoji: string) => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(var(--hula-black-rgb), 0.02);
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .file-container:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(var(--hula-black-rgb), 0.04);
 }
 
 .file-info {
@@ -702,7 +702,7 @@ const toggleReaction = (emoji: string) => {
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(var(--hula-black-rgb), 0.04);
   border-radius: 12px;
   font-size: 12px;
   cursor: pointer;
@@ -710,7 +710,7 @@ const toggleReaction = (emoji: string) => {
 }
 
 .reaction-item:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(var(--hula-black-rgb), 0.08);
 }
 
 .reaction-emoji {

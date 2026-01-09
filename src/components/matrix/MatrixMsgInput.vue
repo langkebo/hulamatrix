@@ -490,7 +490,7 @@ onUnmounted(() => {
   background: var(--n-color);
   border: 1px solid var(--n-border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
   overflow: hidden;
 }
 
@@ -557,7 +557,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
   z-index: 9999;
   display: flex;
   align-items: center;

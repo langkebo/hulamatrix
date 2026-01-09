@@ -236,7 +236,7 @@ watch(
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .message-edit-dialog__original .content {
@@ -244,7 +244,7 @@ watch(
   background: var(--hula-gray-100, var(--hula-brand-primary));
   border-radius: 6px;
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -256,7 +256,7 @@ watch(
 
 .hint {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -264,7 +264,7 @@ watch(
 
 .hint kbd {
   padding: 2px 6px;
-  background: #eee;
+  background: var(--hula-gray-200);
   border: 1px solid #ddd;
   border-radius: 4px;
   font-family: monospace;
@@ -279,15 +279,15 @@ watch(
 
   .message-edit-dialog__original .content {
     background: var(--hula-gray-800, var(--hula-brand-primary));
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .hint {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .hint kbd {
-    background: #333;
+    background: var(--hula-gray-900);
     border-color: #444;
   }
 }

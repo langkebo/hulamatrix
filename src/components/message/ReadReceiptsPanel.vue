@@ -244,7 +244,7 @@ function renderReader(reader: ReadReceipt) {
             'div',
             { class: 'reader-time' },
             h('span', { class: 'time-row' }, [
-              h(NIcon, { size: 12, color: '#999' }, { default: () => h(Clock) }),
+              h(NIcon, { size: 12, color: 'var(--hula-gray-400)' }, { default: () => h(Clock) }),
               h('span', formatReadTime(reader.ts))
             ])
           )
@@ -412,7 +412,7 @@ watch(
 .loading-text {
   margin-left: 8px;
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .scrollable-area {
@@ -431,6 +431,6 @@ watch(
 
 /* Popover trigger button hover effect */
 :deep(.n-button:hover) {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
 }
 </style>

@@ -213,8 +213,8 @@ defineExpose({
   align-items: center;
   gap: 2px;
   padding: 2px 6px;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(var(--hula-black-rgb), 0.05);
+  border: 1px solid rgba(var(--hula-black-rgb), 0.1);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -223,7 +223,7 @@ defineExpose({
 }
 
 .reaction-item:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(var(--hula-black-rgb), 0.08);
   transform: translateY(-1px);
 }
 
@@ -245,7 +245,7 @@ defineExpose({
 
 .reaction-count {
   font-size: 11px;
-  color: #666;
+  color: var(--hula-gray-700);
   min-width: 12px;
   text-align: center;
 }
@@ -255,19 +255,19 @@ defineExpose({
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px dashed rgba(0, 0, 0, 0.2);
+  background: rgba(var(--hula-black-rgb), 0.03);
+  border: 1px dashed rgba(var(--hula-black-rgb), 0.2);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .add-reaction-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.3);
-  color: #333;
+  background: rgba(var(--hula-black-rgb), 0.06);
+  border-color: rgba(var(--hula-black-rgb), 0.3);
+  color: var(--hula-gray-900);
 }
 
 .reactions-loading {
@@ -300,14 +300,14 @@ defineExpose({
   justify-content: center;
   width: 40px;
   height: 40px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(var(--hula-black-rgb), 0.1);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .reaction-emoji-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   transform: scale(1.1);
 }
 
@@ -359,23 +359,23 @@ defineExpose({
 /* Dark theme support */
 @media (prefers-color-scheme: dark) {
   .reaction-item {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--hula-white-rgb), 0.05);
+    border-color: rgba(var(--hula-white-rgb), 0.1);
   }
 
   .reaction-item:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(var(--hula-white-rgb), 0.08);
   }
 
   .add-reaction-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(var(--hula-white-rgb), 0.03);
+    border-color: rgba(var(--hula-white-rgb), 0.2);
     color: #aaa;
   }
 
   .add-reaction-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(var(--hula-white-rgb), 0.06);
+    border-color: rgba(var(--hula-white-rgb), 0.3);
     color: #ddd;
   }
 }

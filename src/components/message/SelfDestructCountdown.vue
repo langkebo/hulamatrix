@@ -159,7 +159,7 @@ watch(isDestroyed, (destroyed) => {
   gap: 4px;
   padding: 2px 6px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   border: 1px solid;
   font-size: 11px;
   
@@ -176,7 +176,7 @@ watch(isDestroyed, (destroyed) => {
 .countdown-progress {
   width: 100%;
   height: 2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(var(--hula-black-rgb), 0.1);
   border-radius: 1px;
   overflow: hidden;
   
@@ -206,7 +206,7 @@ watch(isDestroyed, (destroyed) => {
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   border-radius: 6px;
   font-size: 11px;
   color: white;
@@ -250,11 +250,11 @@ watch(isDestroyed, (destroyed) => {
 // 暗色主题适配
 :global(.dark) {
   .countdown-badge {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--hula-white-rgb), 0.1);
   }
   
   .countdown-progress {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--hula-white-rgb), 0.1);
   }
   
   .warning-text {

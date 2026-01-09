@@ -444,7 +444,7 @@ onUnmounted(() => {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   padding: 8px 16px;
   border-radius: 20px;
   backdrop-filter: blur(10px);
@@ -454,7 +454,7 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   backdrop-filter: blur(10px);
 }
 
@@ -471,7 +471,7 @@ onUnmounted(() => {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
@@ -485,16 +485,16 @@ onUnmounted(() => {
 }
 
 .image-display-area::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(var(--hula-black-rgb), 0.1);
   border-radius: 4px;
 }
 
 .image-display-area::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(var(--hula-black-rgb), 0.3);
   border-radius: 4px;
 }
 
 .image-display-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
 }
 </style>

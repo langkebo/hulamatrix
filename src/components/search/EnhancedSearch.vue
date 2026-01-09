@@ -722,7 +722,7 @@ defineExpose({
 
 <style scoped>
 .mxid-dm-btn :deep(.n-button__content){
-  color:#fff !important;
+  color:var(--hula-white) !important;
 }
 .enhanced-search {
   max-width: 600px;
@@ -753,7 +753,7 @@ defineExpose({
   background: white;
   border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
   z-index: 1000;
   max-height: 300px;
   overflow-y: auto;
@@ -763,7 +763,7 @@ defineExpose({
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: #666;
+  color: var(--hula-gray-700);
   background: var(--hula-gray-100, var(--hula-brand-primary));
   border-bottom: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
@@ -787,7 +787,7 @@ defineExpose({
 
 .suggestion-icon {
   margin-right: 8px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .suggestion-content {
@@ -796,12 +796,12 @@ defineExpose({
 
 .suggestion-title {
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .suggestion-subtitle {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
   margin-top: 2px;
 }
 
@@ -827,7 +827,7 @@ defineExpose({
 .filter-label {
   font-size: 12px;
   font-weight: 500;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .advanced-actions {
@@ -848,12 +848,12 @@ defineExpose({
 
 .results-info {
   font-size: 14px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .search-time {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .results-list {
@@ -910,16 +910,16 @@ defineExpose({
 
 .result-sender {
   font-weight: 500;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .result-time {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .result-body {
-  color: #333;
+  color: var(--hula-gray-900);
   line-height: 1.4;
 }
 
@@ -931,7 +931,7 @@ defineExpose({
 }
 
 .media-message {
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .result-room {
@@ -940,7 +940,7 @@ defineExpose({
   gap: 4px;
   margin-top: 4px;
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .load-more {
@@ -959,7 +959,7 @@ defineExpose({
   margin-bottom: 12px;
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .history-list {
@@ -978,7 +978,7 @@ defineExpose({
   cursor: pointer;
   transition: background 0.2s ease;
   font-size: 14px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .history-item:hover {
@@ -988,7 +988,7 @@ defineExpose({
 .history-count {
   margin-left: auto;
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .search-stats {
@@ -1016,24 +1016,24 @@ defineExpose({
 
 .stat-label {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 /* 暗色主题支持 */
 @media (prefers-color-scheme: dark) {
   .search-suggestions {
     background: var(--hula-brand-primary);
-    border-color: #333;
+    border-color: var(--hula-gray-900);
   }
 
   .suggestions-header {
     background: var(--hula-gray-800, var(--hula-brand-primary));
-    border-bottom-color: #333;
+    border-bottom-color: var(--hula-gray-900);
     color: #ccc;
   }
 
   .suggestion-item {
-    border-bottom-color: #333;
+    border-bottom-color: var(--hula-gray-900);
   }
 
   .suggestion-item:hover {
@@ -1042,7 +1042,7 @@ defineExpose({
 
   .result-item {
     background: var(--hula-brand-primary);
-    border-color: #333;
+    border-color: var(--hula-gray-900);
   }
 
   .result-item:hover {

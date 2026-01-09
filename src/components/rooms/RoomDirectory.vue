@@ -327,7 +327,7 @@ watch(
 
 .room-directory__count {
   font-size: 14px;
-  color: #999;
+  color: var(--hula-gray-400);
   text-align: center;
 }
 
@@ -364,12 +364,12 @@ watch(
 .room-card__name {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .room-card__topic {
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -410,7 +410,7 @@ watch(
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .room-card__name {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .room-card__topic {

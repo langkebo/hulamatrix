@@ -295,8 +295,8 @@ defineExpose({
     align-items: center;
     justify-content: center;
     position: relative;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: rgba(var(--hula-white-rgb), 0.9);
+    box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.15);
 
     &::before {
       content: '';
@@ -310,7 +310,7 @@ defineExpose({
 
     .timer-icon {
       font-size: 12px;
-      color: #666;
+      color: var(--hula-gray-700);
       z-index: 1;
       margin-bottom: 2px;
     }
@@ -318,7 +318,7 @@ defineExpose({
     .countdown-text {
       font-size: 10px;
       font-weight: 600;
-      color: #333;
+      color: var(--hula-gray-900);
       z-index: 1;
       line-height: 1;
     }
@@ -329,10 +329,10 @@ defineExpose({
     color: var(--hula-brand-primary);
     white-space: nowrap;
     font-weight: 500;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(var(--hula-white-rgb), 0.9);
     padding: 2px 6px;
     border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(var(--hula-black-rgb), 0.1);
   }
 }
 
@@ -510,7 +510,7 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(var(--hula-black-rgb), 0.7);
   color: white;
   padding: 8px 12px;
   border-radius: 8px;
