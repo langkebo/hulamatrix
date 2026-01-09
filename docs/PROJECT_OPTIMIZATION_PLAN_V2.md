@@ -1,11 +1,11 @@
 # HuLa 项目深度优化方案 V2.0
 
 **分析日期**: 2025-01-08
-**最后更新**: 2026-01-09 (Phase 10 - 待处理任务分析)
+**最后更新**: 2026-01-09 (Phase 10 - 导入路径更新完成)
 **分析范围**: 全面代码质量、性能、安全、架构分析 + Matrix SDK API 对齐验证
-**状态**: ✅ Phase 1-9 已完成，🔄 Phase 10 分析中，✅ Matrix 迁移 (Phase 0-11) 100% 完成
-**版本**: v6.2
-**总体进度**: 86%
+**状态**: ✅ Phase 1-10 部分完成，✅ Matrix 迁移 (Phase 0-11) 100% 完成
+**版本**: v6.3
+**总体进度**: 87%
 
 ---
 
@@ -101,12 +101,11 @@ interface SpacesTestHarness { ... }
 | ~~`src/services/matrixCallService.ts`~~ | ~~1841~~ | ✅ **已重构为模块化架构** | **已完成** | ✅ |
 | ~~`src/stores/core/index.ts`~~ | ~~1761~~ | ✅ **已重构为模块化架构** | **已完成** | ✅ |
 | ~~`src/stores/chat.ts`~~ | ~~1744~~ | ✅ **已重构为模块化架构** | **已完成** | ✅ |
-| ~~`src/components/common/Screenshot.vue`~~ | ~~1710~~ | ✅ **已提取 composables** | **已完成** | ✅ |
-| ~~`src/components/spaces/SpaceDetails.vue`~~ | ~~1655~~ | ✅ **已拆分为 5 个子组件** | **已完成** | ✅ |
-| `src/components/spaces/ManageSpaceDialog.vue` | 1647 | 对话框组件过大 | 拆分子组件 | 🔄 待处理 |
+| `src/components/common/Screenshot.vue` | 1710 | 已提取 composables 未集成 | 集成 composables | 🔄 待处理 |
+| ~~`src/components/spaces/SpaceDetails.vue`~~ | ~~1655~~ | ✅ **已拆分为 7 个子组件** | **已完成** | ✅ |
+| ~~`src/components/spaces/ManageSpaceDialog.vue`~~ | ~~1561~~ | ✅ **已删除（新版本 377 行）** | **已完成** | ✅ |
 | ~~`src/services/enhancedFriendsService.ts`~~ | ~~1641~~ | ✅ **已重构为模块化架构** | **已完成** | ✅ |
-| `src/components/matrix/MatrixChatSidebar.vue` | 1641 | 组件过大 | 拆分子组件 | 🔄 待处理 |
-| `src/components/rtc/GroupCallInterface.vue` | 1498 | RTC 组件过大 | 提取逻辑到 hooks | 🟡 低于阈值 |
+| `src/components/rtc/GroupCallInterface.vue` | 1504 | RTC 组件过大 | 提取逻辑到 hooks | 🔄 待处理 |
 
 #### ✅ 已完成: enhancedFriendsService.ts 重构 (2025-01-08)
 
@@ -1465,40 +1464,35 @@ const generateHashKey = (...) => {
   - ✅ 内联样式: 92% (91/99 文件已清理)
   - ✅ Matrix 架构: 100% (迁移完成，已清理)
   - ✅ 代码质量: 100% (0 Biome 警告)
-  - 🔄 大文件重构: 65% (6.5/10 已完成)
-  - 📊 代码减少: ~10,233 行 (~97%)
+  - 🔄 大文件重构: 70% (7/10 已完成)
+  - 📊 代码减少: ~11,646 行 (~97%)
 
-**本次更新 (v6.2 - Phase 10 分析中)**:
-- **Phase 10: 待处理任务分析 - 🔄 分析中**
-  - ✅ 完成 PROJECT_OPTIMIZATION_PLAN_V2.md 文档分析
-  - ✅ 识别剩余待处理任务
-  - ✅ 分析大文件重构状态
+**本次更新 (v6.3 - Phase 10 部分完成)**:
+- **Phase 10: 导入路径更新和旧文件删除 - ✅ 部分完成**
+  - ✅ 删除旧的 `ManageSpaceDialog.vue` (1561 行)
+  - ✅ 更新 22 个文件的导入路径
+    - `matrixRoomManager` → `@/matrix/services/room/manager` (9 文件)
+    - `matrixSpacesService` → `@/matrix/services/room/spaces` (5 文件)
+    - `matrixThumbnailService` → `@/matrix/services/media/thumbnail` (4 文件)
+    - `matrixEventHandler` → `@/matrix/services/message/event-handler` (1 文件)
+    - `matrixPushService` → `@/matrix/services/notification/push` (1 文件)
+    - `matrixSlidingSyncService` → `@/matrix/services/sync/sliding` (2 文件)
+  - ⏳ `matrixThreadAdapter` 保持不变（未迁移到 `src/matrix/`）
+  - ⏳ Screenshot.vue composables 集成（待处理）
 
-**分析结果**:
+**影响范围**:
+- 删除: 1,561 行代码
+- 更新: 22 个文件
+- 新增代码: 148 行 (导入路径更新)
+- 净减少: 1,413 行
 
-**大文件重构状态** (Phase 4):
-- `Screenshot.vue` (1710 行): 已提取 composables 但未集成到组件
-- `ManageSpaceDialog.vue` (1561 行): 新版本已存在 (377 行)，旧版本待删除
-- `GroupCallInterface.vue` (1504 行): 需要重构
-- `enhancedFriendsService.spec.ts` (3062 行): 测试文件过大
-
-**Re-export facades 状态**:
-- 29 个文件仍在使用 deprecated re-export facades
-- 这些 facades 暂不能删除，需要先迁移所有导入
-- 主要使用的 facades: `matrixRoomManager`, `matrixSpacesService`, `matrixThreadAdapter`, `matrixThumbnailService`
-
-**内联样式清理** (Phase 6):
-- 约 60 处内联样式待处理
-- 大多数是动态样式（条件样式、动态值），不适合提取为 CSS 类
-
-**下一步建议**:
-1. 删除 `src/components/spaces/ManageSpaceDialog.vue` (旧版本，1561 行)
-2. 更新 29 个文件的导入路径，移除对 re-export facades 的依赖
-3. 集成 Screenshot.vue composables 到组件中
-4. 重构 GroupCallInterface.vue
+**下一步**:
+1. 集成 Screenshot.vue composables 到组件中
+2. 重构 GroupCallInterface.vue
+3. 拆分 enhancedFriendsService.spec.ts 测试文件
 
 **进度统计**:
 - Phase 1-9: 已完成
-- Phase 10: 🔄 分析中
+- Phase 10: 🔄 部分完成 (2/3 任务)
 - Matrix 迁移 (Phase 0-11): ✅ 100% 完成
-- 总体优化进度: 86%
+- 总体优化进度: 87%
