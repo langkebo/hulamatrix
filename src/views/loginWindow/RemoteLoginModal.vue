@@ -12,7 +12,10 @@
           <n-flex vertical align="center" :size="30">
             <span class="text-(14px [--text-color])">下线通知</span>
             <div class="relative">
-              <img class="rounded-full size-72px" :src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')" />
+              <img
+                class="rounded-full size-72px"
+                :src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')"
+                alt="用户头像" />
               <div
                 class="absolute inset-0 bg-[--avatar-hover-bg] backdrop-blur-[2px] rounded-full flex items-center justify-center">
                 <svg class="size-34px text-white animate-pulse">
@@ -26,7 +29,9 @@
               登录，如非本人登录，请尽快修改密码，建议联系管理员
             </div>
           </n-flex>
-          <n-button class="confirm-button w-full" :color="'var(--hula-brand-primary)'" @click="handleConfirm">知道了</n-button>
+          <n-button class="confirm-button w-full" :color="'var(--hula-brand-primary)'" @click="handleConfirm">
+            知道了
+          </n-button>
         </div>
       </div>
     </div>

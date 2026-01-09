@@ -60,7 +60,7 @@
     <!-- 没有搜索结果时 -->
     <template v-else-if="searchQuery && searchResults.length === 0">
       <div class="no-results-container">
-        <img class="size-64px" src="/msgAction/exploding-head.png" />
+        <img class="size-64px" src="/msgAction/exploding-head.png" alt="未找到搜索结果" />
         <p class="text-(12px [--chat-text-color])">{{ t('home.no_search_results') }}</p>
       </div>
     </template>

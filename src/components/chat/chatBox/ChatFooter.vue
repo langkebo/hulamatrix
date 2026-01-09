@@ -55,7 +55,7 @@
                       :key="index"
                       class="emoji-item cursor-pointer flex-center"
                       @click="emojiHandle(emoji, checkIsUrl(emoji) ? 'emoji-url' : 'emoji')">
-                      <img v-if="checkIsUrl(emoji)" :src="emoji" class="size-24px" />
+                      <img v-if="checkIsUrl(emoji)" :src="emoji" class="size-24px" :alt="`最近使用的表情: ${emoji}`" />
                       <span v-else class="text-18px">{{ emoji }}</span>
                     </div>
                   </div>
@@ -69,11 +69,7 @@
             <svg @click="handleScreenshot()">
               <use href="#screenshot"></use>
             </svg>
-            <n-popover
-              class="emoji-popover"
-              trigger="hover"
-              :show-arrow="false"
-              placement="top">
+            <n-popover class="emoji-popover" trigger="hover" :show-arrow="false" placement="top">
               <template #trigger>
                 <svg class="dropdown-arrow dropdown-icon">
                   <use href="#down"></use>

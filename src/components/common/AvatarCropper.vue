@@ -47,8 +47,7 @@
             :center-box="true"
             :background-color="'var(--hula-brand-primary)'"
             @real-time="handleRealTime"
-            class="w-300px h-300px"
-          />
+            class="w-300px h-300px" />
         </n-flex>
 
         <!-- 预览区域 -->
@@ -69,7 +68,7 @@
                   left: 0,
                   transformOrigin: '0 0'
                 }">
-                <img :src="previewUrl?.url" :style="previewUrl?.img" />
+                <img :src="previewUrl?.url" :style="previewUrl?.img" alt="头像预览" />
               </div>
             </div>
           </div>
@@ -90,7 +89,7 @@
                   left: 0,
                   transformOrigin: '0 0'
                 }">
-                <img :src="previewUrl?.url" :style="previewUrl?.img" />
+                <img :src="previewUrl?.url" :style="previewUrl?.img" alt="头像预览" />
               </div>
             </div>
           </div>

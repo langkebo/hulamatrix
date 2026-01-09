@@ -133,7 +133,11 @@
             :class="{ active: activeIndex === item.id }"
             @click="selectSeries(item.id - 1)"
             class="series-icon">
-            <img :title="item.name" :src="item.cover" class="w-full h-full object-contain" />
+            <img
+              :title="item.name"
+              :src="item.cover"
+              :alt="`表情系列: ${item.name}`"
+              class="w-full h-full object-contain" />
           </div>
         </template>
       </div>

@@ -16,7 +16,7 @@ import { logger } from '@/utils/logger'
     <div
       v-show="isGroup"
       @click.stop="isCollapsed = !isCollapsed"
-      class="contraction-with-radius transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-var(--hula-brand-primary)33 h-60px w-14px">
+      class="contraction-with-radius transition-all duration-200 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-var(--hula-brand-primary)33 h-60px w-14px">
       <svg
         :class="isCollapsed ? 'rotate-0' : 'rotate-180'"
         class="size-16px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) absolute top-38%">
@@ -44,7 +44,9 @@ import { logger } from '@/utils/logger'
         <!-- 公告加载失败提示 -->
         <n-flex v-if="announError" class="h-74px" align="center" justify="center">
           <div class="text-center">
-            <p class="text-(12px var(--hula-brand-primary)) mb-8px">{{ t('home.chat_sidebar.announcement.load_failed') }}</p>
+            <p class="text-(12px var(--hula-brand-primary)) mb-8px">
+              {{ t('home.chat_sidebar.announcement.load_failed') }}
+            </p>
             <n-button size="tiny" @click="announcementStore.loadGroupAnnouncements()">
               {{ t('home.chat_sidebar.actions.retry') }}
             </n-button>

@@ -84,7 +84,11 @@
     "lint:full": "biome check",
     "lint:eslint": "eslint . --ext .ts,.tsx,.vue",
     "quality:gate": "node scripts/quality/run-quality-gates.cjs",
-    "analyze:type": "node scripts/quality/scan-typecheck.cjs"
+    "analyze:type": "node scripts/quality/scan-typecheck.cjs",
+    "========= UI/UX 检查和修复 =========": "",
+    "uiux:check": "node scripts/ui-ux-check.cjs",
+    "uiux:fix": "node scripts/ui-ux-fix.cjs",
+    "uiux:fix:dry": "node scripts/ui-ux-fix.cjs --dry-run"
   },
   "dependencies": {
     "@tauri-apps/api": "2.9.0",

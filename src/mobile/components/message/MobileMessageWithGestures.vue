@@ -9,8 +9,7 @@
       'is-own': isOwn,
       'has-reaction': reactionCount > 0
     }"
-    @contextmenu.prevent
-  >
+    @contextmenu.prevent>
     <!-- Swipe Actions Background -->
     <div class="swipe-actions">
       <div class="swipe-action reply" :style="{ opacity: isSwiped ? 1 : 0 }">
@@ -29,8 +28,7 @@
       :style="{ transform: `translateX(${swipeX}px)` }"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
-    >
+      @touchend="handleTouchEnd">
       <!-- Sender Avatar (not for own messages) -->
       <div v-if="!isOwn" class="message-avatar">
         <van-image :src="avatarUrl" width="36" height="36" round>
@@ -61,7 +59,7 @@
 
         <!-- Image Attachment -->
         <div v-if="imageUrl" class="message-image">
-          <img :src="imageUrl" @click="previewImage" />
+          <img :src="imageUrl" @click="previewImage" alt="消息图片" />
         </div>
 
         <!-- Reactions -->
@@ -70,8 +68,7 @@
             v-for="(reaction, index) in reactions"
             :key="index"
             class="reaction-item"
-            :class="{ 'has-voted': reaction.hasVoted }"
-          >
+            :class="{ 'has-voted': reaction.hasVoted }">
             <span class="reaction-emoji">{{ reaction.emoji }}</span>
             <span class="reaction-count">{{ reaction.count }}</span>
           </div>
@@ -93,8 +90,7 @@
             :created-at="messageCreatedAt"
             mode="icon"
             :show-text="true"
-            @destroyed="handleMessageDestroyed"
-          />
+            @destroyed="handleMessageDestroyed" />
         </div>
 
         <!-- Double Tap Heart Animation -->
@@ -110,8 +106,7 @@
     <van-popup
       v-model:show="showActionMenu"
       position="bottom"
-      :style="{ height: '60%', borderRadius: '16px 16px 0 0' }"
-    >
+      :style="{ height: '60%', borderRadius: '16px 16px 0 0' }">
       <div class="action-menu">
         <!-- Handle bar -->
         <div class="handle-bar" @click="showActionMenu = false"></div>
@@ -191,12 +186,7 @@
     <!-- Reaction Picker -->
     <div v-if="showReactionPicker" class="reaction-picker">
       <div class="reaction-picker-content">
-        <div
-          v-for="emoji in quickReactions"
-          :key="emoji"
-          class="emoji-option"
-          @click="addReaction(emoji)"
-        >
+        <div v-for="emoji in quickReactions" :key="emoji" class="emoji-option" @click="addReaction(emoji)">
           {{ emoji }}
         </div>
       </div>
@@ -791,13 +781,34 @@ onMounted(() => {
         background: var(--card-color);
         color: var(--text-color-1);
 
-        &.reply { background: rgba(24, 160, 88, 0.1); color: #18a058; }
-        &.react { background: rgba(24, 160, 88, 0.1); color: #18a058; }
-        &.edit { background: rgba(102, 126, 234, 0.1); color: #667eea; }
-        &.forward { background: rgba(0, 206, 201, 0.1); color: #00cec9; }
-        &.copy { background: rgba(253, 203, 110, 0.1); color: #fdcb6e; }
-        &.pin { background: rgba(162, 155, 254, 0.1); color: #a29bfe; }
-        &.select { background: rgba(255, 154, 158, 0.1); color: #ff9a9e; }
+        &.reply {
+          background: rgba(24, 160, 88, 0.1);
+          color: #18a058;
+        }
+        &.react {
+          background: rgba(24, 160, 88, 0.1);
+          color: #18a058;
+        }
+        &.edit {
+          background: rgba(102, 126, 234, 0.1);
+          color: #667eea;
+        }
+        &.forward {
+          background: rgba(0, 206, 201, 0.1);
+          color: #00cec9;
+        }
+        &.copy {
+          background: rgba(253, 203, 110, 0.1);
+          color: #fdcb6e;
+        }
+        &.pin {
+          background: rgba(162, 155, 254, 0.1);
+          color: #a29bfe;
+        }
+        &.select {
+          background: rgba(255, 154, 158, 0.1);
+          color: #ff9a9e;
+        }
       }
 
       span {

@@ -26,7 +26,7 @@
               showImagePreviewRef = true
             }
           ">
-          <img :src="image.url" class="w-full h-full" />
+          <img :src="image.url" class="w-full h-full" :alt="`媒体文件 ${index + 1}`" />
         </div>
       </div>
     </div>
