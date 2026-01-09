@@ -36,11 +36,7 @@
           <div class="item-content">
             <div class="item-label">{{ t('setting.privacy.action') }}</div>
           </div>
-          <n-select
-            v-model:value="form.action"
-            :options="actionOptions"
-            class="action-select"
-            size="medium" />
+          <n-select v-model:value="form.action" :options="actionOptions" class="action-select" size="medium" />
         </div>
 
         <!-- Reason Input (for reports) -->
@@ -175,7 +171,7 @@ const goToManage = () => {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0 4px 8px;
@@ -218,7 +214,7 @@ const goToManage = () => {
 
   &__label {
     font-size: 14px;
-    color: #666;
+    color: var(--hula-gray-700);
   }
 }
 
@@ -234,7 +230,7 @@ const goToManage = () => {
   transition: background-color 0.2s;
 
   &:active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   &:last-child {
@@ -248,13 +244,13 @@ const goToManage = () => {
 
   .item-label {
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 2px;
   }
 
   .item-description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 

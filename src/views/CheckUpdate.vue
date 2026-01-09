@@ -83,7 +83,7 @@
                   <use href="#RightArrow"></use>
                 </svg>
 
-                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px #999)">
+                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px var(--hula-gray-400))">
                   {{ currentVersion }}
                 </span>
               </n-flex>

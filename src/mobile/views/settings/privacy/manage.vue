@@ -20,10 +20,7 @@
           <p>{{ t('setting.privacy.no_blocked_users') }}</p>
         </div>
         <div v-else class="list">
-          <div
-            v-for="user in blockedUsers"
-            :key="user.mxid"
-            class="list-item">
+          <div v-for="user in blockedUsers" :key="user.mxid" class="list-item">
             <div class="item-content">
               <div class="item-label">{{ user.mxid }}</div>
             </div>
@@ -41,10 +38,7 @@
           <p>{{ t('setting.privacy.no_blocked_rooms') }}</p>
         </div>
         <div v-else class="list">
-          <div
-            v-for="room in blockedRooms"
-            :key="room.roomId"
-            class="list-item">
+          <div v-for="room in blockedRooms" :key="room.roomId" class="list-item">
             <div class="item-content">
               <div class="item-label">{{ room.roomId }}</div>
             </div>
@@ -62,10 +56,7 @@
           <p>{{ t('setting.privacy.no_reports') }}</p>
         </div>
         <div v-else class="list">
-          <div
-            v-for="report in reports"
-            :key="report.target + report.time"
-            class="list-item list-item--vertical">
+          <div v-for="report in reports" :key="report.target + report.time" class="list-item list-item--vertical">
             <div class="report-header">
               <span class="report-target">{{ report.target }}</span>
               <span class="report-time">{{ formatTime(report.time) }}</span>
@@ -223,14 +214,14 @@ onMounted(fetchData)
     }
 
     .tab-item__badge {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(var(--hula-white-rgb), 0.25);
       color: white;
     }
   }
 
   &__label {
     font-size: 14px;
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   &__badge {
@@ -263,7 +254,7 @@ onMounted(fetchData)
   padding: 40px 20px;
   background: white;
   border-radius: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 
   p {
     margin-top: 12px;
@@ -298,7 +289,7 @@ onMounted(fetchData)
 
   .item-label {
     font-size: 14px;
-    color: #333;
+    color: var(--hula-gray-900);
     word-break: break-all;
   }
 }
@@ -314,17 +305,17 @@ onMounted(fetchData)
 .report-target {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .report-time {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .report-reason {
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
   line-height: 1.4;
 }
 </style>

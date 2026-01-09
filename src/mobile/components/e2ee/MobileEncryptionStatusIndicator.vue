@@ -3,7 +3,10 @@
   <div class="mobile-encryption-status" :class="statusClass">
     <!-- Compact Mode (Default) -->
     <div v-if="compact" class="status-compact" @click="showDetail = true">
-      <van-icon :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')" :size="iconSize" :color="iconColor" />
+      <van-icon
+        :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
+        :size="iconSize"
+        :color="iconColor" />
       <span v-if="showLabel" class="status-label">{{ statusText }}</span>
     </div>
 
@@ -20,7 +23,13 @@
 
       <!-- Trust Level Badge -->
       <div v-if="isEncrypted && trustLevel" class="trust-badge" :class="trustClass">
-        <van-icon :name="getVantIconName(trustIcon === 'ShieldCheck' ? 'ShieldCheck' : trustIcon === 'Shield' ? 'Shield' : 'AlertTriangle')" :size="14" />
+        <van-icon
+          :name="
+            getVantIconName(
+              trustIcon === 'ShieldCheck' ? 'ShieldCheck' : trustIcon === 'Shield' ? 'Shield' : 'AlertTriangle'
+            )
+          "
+          :size="14" />
         <span>{{ trustLevelText }}</span>
       </div>
 
@@ -43,8 +52,7 @@
       position="center"
       :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
       :close-on-click-overlay="true"
-      @update:show="showDetail = $event"
-    >
+      @update:show="showDetail = $event">
       <div class="detail-modal">
         <!-- Header -->
         <div class="detail-modal-header">
@@ -61,8 +69,7 @@
                 <van-icon
                   :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
                   :size="32"
-                  :color="iconColor"
-                />
+                  :color="iconColor" />
               </div>
               <div class="item-content">
                 <div class="item-title">{{ statusTitle }}</div>
@@ -90,18 +97,9 @@
           <div v-if="isEncrypted && devices.length > 0" class="detail-section">
             <div class="section-title">设备列表</div>
             <div class="device-list">
-              <div
-                v-for="device in devices"
-                :key="device.deviceId"
-                class="device-item"
-              >
+              <div v-for="device in devices" :key="device.deviceId" class="device-item">
                 <div class="device-info">
-                  <van-image
-                    :width="32"
-                    :height="32"
-                    round
-                    class="device-avatar"
-                  >
+                  <van-image :width="32" :height="32" round class="device-avatar">
                     <template #error>
                       <div class="avatar-fallback">
                         {{ device.displayName?.[0] || '?' }}
@@ -114,10 +112,7 @@
                   </div>
                 </div>
                 <div class="device-status" :class="device.verified ? 'verified' : 'unverified'">
-                  <van-icon
-                    :name="getVantIconName(device.verified ? 'ShieldCheck' : 'AlertTriangle')"
-                    :size="16"
-                  />
+                  <van-icon :name="getVantIconName(device.verified ? 'ShieldCheck' : 'AlertTriangle')" :size="16" />
                   <span>{{ device.verified ? '已验证' : '未验证' }}</span>
                 </div>
               </div>
@@ -136,31 +131,10 @@
         <!-- Actions Footer -->
         <div class="detail-modal-footer">
           <div v-if="isEncrypted" class="action-buttons">
-            <van-button
-              type="primary"
-              size="small"
-              @click="handleVerifyDevices"
-              icon="shield-o"
-            >
-              验证设备
-            </van-button>
-            <van-button
-              type="default"
-              size="small"
-              @click="handleResetSession"
-              icon="replay"
-            >
-              重置会话
-            </van-button>
+            <van-button type="primary" size="small" @click="handleVerifyDevices" icon="shield-o">验证设备</van-button>
+            <van-button type="default" size="small" @click="handleResetSession" icon="replay">重置会话</van-button>
           </div>
-          <van-button
-            v-else
-            type="primary"
-            size="small"
-            block
-            @click="handleEnableEncryption"
-            icon="lock"
-          >
+          <van-button v-else type="primary" size="small" block @click="handleEnableEncryption" icon="lock">
             启用加密
           </van-button>
         </div>
@@ -740,7 +714,7 @@ defineExpose({
 .detail-modal {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, #ffffff);
+  background: var(--card-color, var(--hula-white)fff);
   max-height: 80vh;
   border-radius: 12px;
   overflow: hidden;
@@ -757,7 +731,7 @@ defineExpose({
   .header-title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-color-1, #333);
+    color: var(--text-color-1, var(--hula-gray-900));
   }
 }
 

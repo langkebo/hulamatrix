@@ -358,10 +358,7 @@ watch(
       </template>
       <NSpace vertical :size="12">
         <NSpace :size="12">
-          <NInput
-            v-model:value="newTagName"
-            placeholder="Tag name"
-            clearable />
+          <NInput v-model:value="newTagName" placeholder="Tag name" clearable />
           <NInputNumber
             v-model:value="newTagOrder"
             placeholder="Order (0-1)"
@@ -369,9 +366,7 @@ watch(
             :max="1"
             :step="0.1"
             class="tag-order-input" />
-          <NButton type="primary" :disabled="!newTagName.trim()" @click="createTag">
-            Create
-          </NButton>
+          <NButton type="primary" :disabled="!newTagName.trim()" @click="createTag">Create</NButton>
         </NSpace>
       </NSpace>
     </NCard>
@@ -382,12 +377,7 @@ watch(
         <span>Default Tags</span>
       </template>
       <NSpace :size="8">
-        <NTag
-          v-for="tag in defaultTags"
-          :key="tag.value"
-          size="large"
-          :bordered="false"
-          type="info">
+        <NTag v-for="tag in defaultTags" :key="tag.value" size="large" :bordered="false" type="info">
           {{ tag.icon }} {{ tag.label }}
         </NTag>
       </NSpace>
@@ -403,13 +393,9 @@ watch(
         <NSpace v-else :size="8" vertical>
           <div v-for="tag in customTags" :key="tag.name" class="custom-tag-item">
             <NSpace align="center" :size="8">
-              <NTag size="large" :bordered="false" type="success">
-                🏷️ {{ getTagName(tag.name) }}
-              </NTag>
+              <NTag size="large" :bordered="false" type="success">🏷️ {{ getTagName(tag.name) }}</NTag>
               <span class="tag-count">{{ tag.rooms.length }} rooms</span>
-              <NButton size="small" type="error" @click="deleteTag(tag.name)">
-                Delete
-              </NButton>
+              <NButton size="small" type="error" @click="deleteTag(tag.name)">Delete</NButton>
             </NSpace>
           </div>
         </NSpace>

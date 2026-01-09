@@ -18,15 +18,12 @@
             :src="participant.avatarUrl"
             :size="24"
             round
-            class="participant-avatar"
-          >
+            class="participant-avatar">
             <template #fallback>
               <span>{{ participant.displayName?.[0] || '?' }}</span>
             </template>
           </n-avatar>
-          <span v-if="threadParticipants.length > 3" class="more-count">
-            +{{ threadParticipants.length - 3 }}
-          </span>
+          <span v-if="threadParticipants.length > 3" class="more-count">+{{ threadParticipants.length - 3 }}</span>
         </div>
       </div>
       <n-icon :size="18" class="expand-icon">
@@ -48,8 +45,7 @@
         borderRadius: '16px 16px 0 0'
       }"
       preset="card"
-      @close="collapseThread"
-    >
+      @close="collapseThread">
       <template #header>
         <div class="thread-header">
           <div class="header-left">
@@ -80,11 +76,7 @@
             </div>
             <div class="message-body">
               <div class="message-text">{{ rootMessage.content }}</div>
-              <MobileMessageReactions
-                :room-id="roomId"
-                :event-id="rootMessage.id"
-                :show-add-button="false"
-              />
+              <MobileMessageReactions :room-id="roomId" :event-id="rootMessage.id" :show-add-button="false" />
             </div>
           </div>
         </div>
@@ -111,9 +103,7 @@
         <template v-else>
           <!-- Load More Button -->
           <div v-if="hasMoreMessages" class="load-more">
-            <n-button @click="loadMoreMessages" :loading="isLoadingMore">
-              加载更多
-            </n-button>
+            <n-button @click="loadMoreMessages" :loading="isLoadingMore">加载更多</n-button>
           </div>
 
           <!-- Messages -->
@@ -121,8 +111,7 @@
             v-for="message in threadMessages"
             :key="message.id"
             class="thread-message"
-            :class="{ 'is-own': message.isOwn }"
-          >
+            :class="{ 'is-own': message.isOwn }">
             <n-avatar :src="message.senderAvatar" :size="32" round class="message-avatar" />
             <div class="message-content">
               <div class="message-header">
@@ -132,11 +121,7 @@
               </div>
               <div class="message-body">
                 <div class="message-text">{{ message.content }}</div>
-                <MobileMessageReactions
-                  :room-id="roomId"
-                  :event-id="message.id"
-                  :show-add-button="false"
-                />
+                <MobileMessageReactions :room-id="roomId" :event-id="message.id" :show-add-button="false" />
               </div>
             </div>
           </div>
@@ -164,8 +149,7 @@
             :placeholder="t('thread.replyPlaceholder')"
             :autosize="{ minRows: 1, maxRows: 4 }"
             @keyup.enter.ctrl="sendReply"
-            @focus="scrollToBottom"
-          />
+            @focus="scrollToBottom" />
           <n-button
             type="primary"
             circle
@@ -173,8 +157,7 @@
             :disabled="!replyContent.trim()"
             :loading="sending"
             @click="sendReply"
-            class="send-button"
-          >
+            class="send-button">
             <template #icon>
               <n-icon><Send /></n-icon>
             </template>

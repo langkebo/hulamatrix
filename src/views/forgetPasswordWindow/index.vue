@@ -1,7 +1,7 @@
 <template>
   <n-config-provider
     :theme="naiveTheme"
-    class="size-full bg-#fff dark:bg-var(--hula-brand-primary) rounded-8px select-none cursor-default">
+    class="size-full bg-var(--hula-white) dark:bg-var(--hula-brand-primary) rounded-8px select-none cursor-default">
     <!--顶部操作栏-->
     <ActionBar :max-w="false" :shrink="false" />
     <n-flex vertical class="w-full size-full">
@@ -145,7 +145,7 @@
         </n-icon> -->
         <img class="size-98px" src="/emoji/party-popper.webp" alt="Success celebration party popper emoji" />
         <div class="mt-16px text-18px">{{ t('auth.forget.success.title') }}</div>
-        <div class="mt-16px text-14px text-#666">{{ t('auth.forget.success.desc') }}</div>
+        <div class="mt-16px text-14px text-var(--hula-gray-700)">{{ t('auth.forget.success.desc') }}</div>
       </div>
     </n-flex>
   </n-config-provider>
@@ -442,6 +442,6 @@ onBeforeUnmount(() => {
 
 /* 提交按钮 */
 .submit-button {
-  color: #fff;
+  color: var(--hula-white);
 }
 </style>

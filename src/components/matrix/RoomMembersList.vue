@@ -3,11 +3,7 @@
     <div class="section-header">
       <h3>房间成员 ({{ members.length }})</h3>
       <div class="member-actions">
-        <n-input
-          v-model:value="searchQuery"
-          placeholder="搜索成员..."
-          clearable
-          class="member-search-input">
+        <n-input v-model:value="searchQuery" placeholder="搜索成员..." clearable class="member-search-input">
           <template #prefix>
             <n-icon :component="Search" />
           </template>
@@ -41,7 +37,9 @@
           </div>
         </div>
         <div class="member-actions">
-          <n-dropdown :options="getMemberMenuOptions(member)" @select="$emit('memberAction', { action: $event, member })">
+          <n-dropdown
+            :options="getMemberMenuOptions(member)"
+            @select="$emit('memberAction', { action: $event, member })">
             <n-button quaternary>
               <n-icon :component="DotsVertical" />
             </n-button>

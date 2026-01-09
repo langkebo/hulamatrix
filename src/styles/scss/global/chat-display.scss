@@ -24,7 +24,7 @@
 /* 右侧面板背景 */
 .right-panel,
 .layout-right {
-  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }

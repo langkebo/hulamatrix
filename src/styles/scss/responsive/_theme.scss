@@ -26,7 +26,7 @@ $color-bg-primary: var(--hula-brand-primary);
 $color-bg-secondary: var(--hula-brand-primary);
 $color-bg-tertiary: var(--hula-brand-primary);
 $color-bg-elevated: var(--hula-brand-primary);
-$color-bg-overlay: rgba(0, 0, 0, 0.5);
+$color-bg-overlay: rgba(var(--hula-black-rgb), 0.5);
 
 // 边框颜色
 $color-border: var(--hula-brand-primary);
@@ -82,11 +82,11 @@ $radius-full: 9999px;
 // 阴影系统
 // ----------------------------------------------------------------------------
 
-$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
-$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-$shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
+$shadow-xs: 0 1px 2px rgba(var(--hula-black-rgb), 0.05);
+$shadow-sm: 0 1px 3px rgba(var(--hula-black-rgb), 0.08);
+$shadow-md: 0 4px 6px rgba(var(--hula-black-rgb), 0.08);
+$shadow-lg: 0 10px 25px rgba(var(--hula-black-rgb), 0.1);
+$shadow-xl: 0 20px 40px rgba(var(--hula-black-rgb), 0.12);
 
 // ----------------------------------------------------------------------------
 // 字体系统

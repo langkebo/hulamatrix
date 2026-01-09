@@ -39,20 +39,26 @@
             <n-progress
               type="line"
               :percentage="backupRate"
-              :color="backupRate > 80 ? 'var(--hula-success, var(--hula-brand-primary))' : 'var(--hula-warning, var(--hula-brand-primary))'"
+              :color="
+                backupRate > 80
+                  ? 'var(--hula-success, var(--hula-brand-primary))'
+                  : 'var(--hula-warning, var(--hula-brand-primary))'
+              "
               :rail-color="'var(--hula-brand-primary)'"
-              indicator-placement="inside"
-            />
+              indicator-placement="inside" />
           </div>
           <div class="chart-row mt-4px">
             <span>恢复成功率</span>
             <n-progress
               type="line"
               :percentage="recoveryRate"
-              :color="recoveryRate > 80 ? 'var(--hula-success, var(--hula-brand-primary))' : 'var(--hula-warning, var(--hula-brand-primary))'"
+              :color="
+                recoveryRate > 80
+                  ? 'var(--hula-success, var(--hula-brand-primary))'
+                  : 'var(--hula-warning, var(--hula-brand-primary))'
+              "
               :rail-color="'var(--hula-brand-primary)'"
-              indicator-placement="inside"
-            />
+              indicator-placement="inside" />
           </div>
         </div>
       </n-card>
@@ -138,7 +144,7 @@ const recoveryRate = computed(() => {
   const total = stats.value.restoreSuccess + stats.value.restoreFail
   return total > 0 ? Math.round((stats.value.restoreSuccess / total) * 100) : 0
 })
-const measure = async <T>(fn: () => Promise<T>, kind: 'backup' | 'restore'): Promise<T> => {
+const measure = async <T,>(fn: () => Promise<T>, kind: 'backup' | 'restore'): Promise<T> => {
   const t0 = performance.now()
   try {
     const res = await fn()
@@ -356,7 +362,7 @@ onMounted(() => {
 <style scoped>
 .status-log {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 .chart-row {
   display: flex;

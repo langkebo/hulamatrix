@@ -1,11 +1,7 @@
 <template>
   <AutoFixHeightPage :show-footer="false">
     <template #header>
-      <HeaderBar
-        :isOfficial="false"
-        class="bg-white header-border"
-        :hidden-right="true"
-        room-name="公告详情" />
+      <HeaderBar :isOfficial="false" class="bg-white header-border" :hidden-right="true" room-name="公告详情" />
     </template>
 
     <template #container>
@@ -18,8 +14,7 @@
 
           <div v-else-if="announcement" class="bg-white flex flex-col shadow p-10px gap-15px text-14px rounded-15px">
             <!-- 公告头部信息 -->
-            <div
-              class="announcement-header grid grid-cols-[2.2rem_1fr_4rem] items-start px-2 py-3 gap-1">
+            <div class="announcement-header grid grid-cols-[2.2rem_1fr_4rem] items-start px-2 py-3 gap-1">
               <!-- 头像 -->
               <div class="self-center h-38px">
                 <n-badge>
@@ -29,11 +24,19 @@
 
               <!-- 发布人信息 -->
               <div class="truncate pl-4 flex gap-10px flex-col">
-                <div class="text-14px leading-tight font-bold flex-1 truncate text-#333">
+                <div class="text-14px leading-tight font-bold flex-1 truncate text-var(--hula-gray-900)">
                   {{ publisherName }}
                 </div>
-                <div class="text-12px text-#333">
-                  {{ formatTimestamp(typeof announcement.createTime === 'number' ? announcement.createTime : announcement.createTime ? Number(announcement.createTime) : 0) }}
+                <div class="text-12px text-var(--hula-gray-900)">
+                  {{
+                    formatTimestamp(
+                      typeof announcement.createTime === 'number'
+                        ? announcement.createTime
+                        : announcement.createTime
+                          ? Number(announcement.createTime)
+                          : 0
+                    )
+                  }}
                 </div>
               </div>
 
@@ -44,15 +47,13 @@
             </div>
 
             <!-- 公告内容 -->
-            <div class="announcement-content whitespace-pre-wrap break-words text-14px leading-6 text-#333">
+            <div class="announcement-content whitespace-pre-wrap break-words text-14px leading-6 text-var(--hula-gray-900)">
               {{ announcement.content }}
             </div>
 
             <!-- 编辑按钮（仅管理员/群主可见） -->
             <div v-if="canEdit" class="flex justify-center mb-10px">
-              <div @click="goToNoticeEdit" class="edit-button">
-                编辑公告
-              </div>
+              <div @click="goToNoticeEdit" class="edit-button">编辑公告</div>
             </div>
           </div>
 
@@ -189,7 +190,7 @@ onMounted(() => {
   padding: 10px 30px;
   color: white;
   font-weight: 500;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(var(--hula-black-rgb), 0.15);
   text-align: center;
   display: inline-block;
   cursor: pointer;

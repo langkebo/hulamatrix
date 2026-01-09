@@ -28,7 +28,11 @@
         </n-flex>
       </template>
       <template #error>
-        <n-flex v-if="isError" align="center" justify="center" class="w-200px h-150px bg-var(--hula-brand-primary)33 rounded-10px">
+        <n-flex
+          v-if="isError"
+          align="center"
+          justify="center"
+          class="w-200px h-150px bg-var(--hula-brand-primary)33 rounded-10px">
           <svg class="size-34px color-[--chat-text-color]"><use href="#error-picture"></use></svg>
         </n-flex>
       </template>

@@ -20,14 +20,14 @@ driver-popover.driverjs-theme .driver-popover-title {
 .driver-popover.driverjs-theme .driver-popover-title,
 .driver-popover.driverjs-theme .driver-popover-description,
 .driver-popover.driverjs-theme .driver-popover-progress-text {
-  color: #000;
+  color: var(--hula-black);
 }
 
 .driver-popover.driverjs-theme button {
   text-align: center;
-  background-color: #000;
+  background-color: var(--hula-black);
   color: var(--hula-brand-primary);
-  border: 2px solid #000;
+  border: 2px solid var(--hula-black);
   text-shadow: none;
   font-size: 12px;
   padding: 5px 8px;
@@ -37,7 +37,7 @@ driver-popover.driverjs-theme .driver-popover-title {
 }
 
 .driver-popover.driverjs-theme button:hover {
-  background-color: #000;
+  background-color: var(--hula-black);
   color: var(--hula-brand-primary);
 }
 

@@ -542,7 +542,7 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   border-radius: 8px;
   margin-bottom: 8px;
 
@@ -610,7 +610,7 @@ onMounted(() => {
     align-items: center;
     gap: 4px;
     padding: 4px 8px;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(var(--hula-black-rgb), 0.05);
     border-radius: 12px;
     font-size: 14px;
 
@@ -649,10 +649,10 @@ onMounted(() => {
   align-items: center;
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(var(--hula-black-rgb), 0.06);
 
   .is-own & {
-    border-top-color: rgba(255, 255, 255, 0.15);
+    border-top-color: rgba(var(--hula-white-rgb), 0.15);
   }
 }
 
@@ -834,7 +834,7 @@ onMounted(() => {
   background: var(--card-color);
   border-radius: 12px;
   padding: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(var(--hula-black-rgb), 0.15);
 
   .reaction-picker-content {
     display: flex;

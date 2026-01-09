@@ -316,7 +316,7 @@ const userColumns = computed(() => [
       h('div', { class: 'flex items-center gap-8px' }, [
         h('div', { class: 'flex-1' }, [
           h('div', { class: 'font-weight-500' }, row.name || row.userId),
-          h('div', { class: 'text-12px text-#999' }, row.userId)
+          h('div', { class: 'text-12px text-var(--hula-gray-400)' }, row.userId)
         ])
       ])
   },

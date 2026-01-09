@@ -16,7 +16,12 @@
           <Icon icon="mdi:magnify" size="18" />
         </template>
         <template #suffix>
-          <n-button v-if="showAdvancedOptions" text size="small" @click.stop="showAdvancedPanel = !showAdvancedPanel" class="advanced-btn">
+          <n-button
+            v-if="showAdvancedOptions"
+            text
+            size="small"
+            @click.stop="showAdvancedPanel = !showAdvancedPanel"
+            class="advanced-btn">
             <Icon icon="mdi:cog" size="16" />
           </n-button>
         </template>
@@ -44,7 +49,6 @@
                 {{ suggestion.subtitle }}
               </div>
             </div>
-            
           </div>
         </div>
       </div>
@@ -52,7 +56,9 @@
 
     <div class="mt-8px flex items-center gap-10px">
       <n-input v-model:value="mxid" size="small" class="w-320px" placeholder="输入完整 MXID 如 @user:domain" />
-      <n-button size="small" tertiary type="primary" class="mxid-dm-btn" @click="startDmByMxid">按MXID发起私聊</n-button>
+      <n-button size="small" tertiary type="primary" class="mxid-dm-btn" @click="startDmByMxid">
+        按MXID发起私聊
+      </n-button>
     </div>
 
     <!-- 高级搜索面板 -->
@@ -721,8 +727,8 @@ defineExpose({
 </script>
 
 <style scoped>
-.mxid-dm-btn :deep(.n-button__content){
-  color:var(--hula-white) !important;
+.mxid-dm-btn :deep(.n-button__content) {
+  color: var(--hula-white) !important;
 }
 .enhanced-search {
   max-width: 600px;

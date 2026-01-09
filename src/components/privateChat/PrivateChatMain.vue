@@ -13,10 +13,7 @@
 
     <!-- 聊天内容 -->
     <div class="flex flex-col flex-1 min-h-0">
-      <div
-        ref="scrollContainer"
-        class="scrollbar-container"
-        @scroll="handleScroll">
+      <div ref="scrollContainer" class="scrollbar-container" @scroll="handleScroll">
         <!-- 消息列表 -->
         <div class="message-list min-h-full flex flex-col p-[14px_10px]">
           <!-- 空状态 -->
@@ -51,22 +48,14 @@
             </span>
 
             <!-- 消息气泡 -->
-            <div
-              :class="[
-                'w-full box-border min-h-62px flex',
-                message.is_own ? 'justify-end' : 'justify-start'
-              ]">
+            <div :class="['w-full box-border min-h-62px flex', message.is_own ? 'justify-end' : 'justify-start']">
               <div
                 :class="[
                   'message-bubble max-w-70% p-[10px_14px] rounded-8px',
-                  message.is_own
-                    ? 'bg-brand text-white'
-                    : 'bg-[--chat-bubble-bg] text-[--text-color]'
+                  message.is_own ? 'bg-brand text-white' : 'bg-[--chat-bubble-bg] text-[--text-color]'
                 ]">
                 <!-- 发送者名称（仅群聊或对方消息显示） -->
-                <div
-                  v-if="!message.is_own"
-                  class="text-(12px [--chat-bubble-name]) mb-4px opacity-70">
+                <div v-if="!message.is_own" class="text-(12px [--chat-bubble-name]) mb-4px opacity-70">
                   {{ getSenderName(message) }}
                 </div>
 
@@ -76,11 +65,7 @@
                 </div>
 
                 <!-- 时间戳 -->
-                <div
-                  :class="[
-                    'text-(10px) mt-4px opacity-70',
-                    message.is_own ? 'text-right' : 'text-left'
-                  ]">
+                <div :class="['text-(10px) mt-4px opacity-70', message.is_own ? 'text-right' : 'text-left']">
                   {{ formatMessageTime(message.created_at) }}
                   <span v-if="message.is_own" class="ml-4px">
                     {{ message.status === 'sent' ? '✓' : message.status === 'delivered' ? '✓✓' : '↺' }}

@@ -17,8 +17,12 @@
     <n-card v-if="backupStatus">
       <n-space :size="8" align="center">
         <n-tag type="info">备份版本：{{ backupStatus?.version || '-' }}</n-tag>
-        <n-tag :type="backupStatus?.trusted ? 'success' : 'warning'">{{ backupStatus?.trusted ? '备份可信' : '备份未可信' }}</n-tag>
-        <n-tag :type="backupStatus?.secretReady ? 'success' : 'warning'">{{ backupStatus?.secretReady ? '4S已就绪' : '4S未就绪' }}</n-tag>
+        <n-tag :type="backupStatus?.trusted ? 'success' : 'warning'">
+          {{ backupStatus?.trusted ? '备份可信' : '备份未可信' }}
+        </n-tag>
+        <n-tag :type="backupStatus?.secretReady ? 'success' : 'warning'">
+          {{ backupStatus?.secretReady ? '4S已就绪' : '4S未就绪' }}
+        </n-tag>
         <n-button type="primary" @click="autoRepair">自动修复</n-button>
       </n-space>
     </n-card>

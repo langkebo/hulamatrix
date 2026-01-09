@@ -15,10 +15,7 @@
     </van-cell-group>
 
     <!-- Search & Filter -->
-    <van-search
-      v-model="searchQuery"
-      :placeholder="t('admin.media.search_placeholder')"
-      @input="handleSearch" />
+    <van-search v-model="searchQuery" :placeholder="t('admin.media.search_placeholder')" @input="handleSearch" />
 
     <van-dropdown-menu>
       <van-dropdown-item v-model="mediaTypeFilter" :options="mediaTypeOptions" @change="handleFilterChange" />
@@ -27,11 +24,7 @@
 
     <!-- Media List -->
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        :finished-text="t('common.no_more')"
-        @load="onLoad">
+      <van-list v-model:loading="loading" :finished="finished" :finished-text="t('common.no_more')" @load="onLoad">
         <van-card
           v-for="media in filteredMedia"
           :key="media.id"

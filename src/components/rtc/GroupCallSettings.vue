@@ -18,10 +18,7 @@
           <label>参与者权限</label>
           <div class="permission-settings">
             <div class="permission-item">
-              <n-switch
-                v-model:value="hostSettings.allowParticipantsToUnmute"
-                @update:value="updatePermissionSettings"
-              >
+              <n-switch v-model:value="hostSettings.allowParticipantsToUnmute" @update:value="updatePermissionSettings">
                 <template #checked>允许</template>
                 <template #unchecked>禁止</template>
               </n-switch>
@@ -30,28 +27,21 @@
             <div class="permission-item">
               <n-switch
                 v-model:value="hostSettings.allowParticipantsToStartVideo"
-                @update:value="updatePermissionSettings"
-              >
+                @update:value="updatePermissionSettings">
                 <template #checked>允许</template>
                 <template #unchecked>禁止</template>
               </n-switch>
               <span class="permission-label">允许参与者开启摄像头</span>
             </div>
             <div class="permission-item">
-              <n-switch
-                v-model:value="hostSettings.allowParticipantsToShare"
-                @update:value="updatePermissionSettings"
-              >
+              <n-switch v-model:value="hostSettings.allowParticipantsToShare" @update:value="updatePermissionSettings">
                 <template #checked>允许</template>
                 <template #unchecked>禁止</template>
               </n-switch>
               <span class="permission-label">允许参与者共享屏幕</span>
             </div>
             <div class="permission-item">
-              <n-switch
-                v-model:value="hostSettings.allowParticipantsToRecord"
-                @update:value="updatePermissionSettings"
-              >
+              <n-switch v-model:value="hostSettings.allowParticipantsToRecord" @update:value="updatePermissionSettings">
                 <template #checked>允许</template>
                 <template #unchecked>禁止</template>
               </n-switch>
@@ -68,9 +58,7 @@
               <n-radio value="approval">需要批准</n-radio>
               <n-radio value="waiting">等候室</n-radio>
             </n-radio-group>
-            <div class="setting-description">
-              选择参与者加入群组通话的方式
-            </div>
+            <div class="setting-description">选择参与者加入群组通话的方式</div>
           </div>
         </div>
 
@@ -80,11 +68,8 @@
             v-model:value="hostSettings.maxParticipants"
             :min="2"
             :max="100"
-            @update:value="updateMaxParticipants"
-          />
-          <div class="setting-description">
-            设置群组通话的最大参与人数限制
-          </div>
+            @update:value="updateMaxParticipants" />
+          <div class="setting-description">设置群组通话的最大参与人数限制</div>
         </div>
       </div>
 
@@ -106,11 +91,8 @@
           <n-select
             v-model:value="audioSettings.quality"
             :options="audioQualityOptions"
-            @update:value="updateAudioQuality"
-          />
-          <div class="setting-description">
-            更高的质量需要更多的网络带宽
-          </div>
+            @update:value="updateAudioQuality" />
+          <div class="setting-description">更高的质量需要更多的网络带宽</div>
         </div>
 
         <div class="setting-item">
@@ -118,8 +100,7 @@
           <n-select
             v-model:value="audioSettings.noiseSuppression"
             :options="noiseSuppressionOptions"
-            @update:value="updateNoiseSuppression"
-          />
+            @update:value="updateNoiseSuppression" />
         </div>
       </div>
 
@@ -138,35 +119,21 @@
 
         <div class="setting-item">
           <label>视频布局</label>
-          <n-select
-            v-model:value="videoSettings.layout"
-            :options="layoutOptions"
-            @update:value="updateVideoLayout"
-          />
-          <div class="setting-description">
-            选择视频通话的布局方式
-          </div>
+          <n-select v-model:value="videoSettings.layout" :options="layoutOptions" @update:value="updateVideoLayout" />
+          <div class="setting-description">选择视频通话的布局方式</div>
         </div>
 
         <div class="setting-item">
           <label>发言人视图</label>
-          <n-switch
-            v-model:value="videoSettings.speakerView"
-            @update:value="toggleSpeakerView"
-          >
+          <n-switch v-model:value="videoSettings.speakerView" @update:value="toggleSpeakerView">
             <template #checked>启用</template>
           </n-switch>
-          <div class="setting-description">
-            自动放大当前发言人的视频画面
-          </div>
+          <div class="setting-description">自动放大当前发言人的视频画面</div>
         </div>
 
         <div class="setting-item">
           <label>虚拟背景</label>
-          <n-switch
-            v-model:value="videoSettings.virtualBackground"
-            @update:value="toggleVirtualBackground"
-          >
+          <n-switch v-model:value="videoSettings.virtualBackground" @update:value="toggleVirtualBackground">
             <template #checked>启用</template>
           </n-switch>
           <div v-if="videoSettings.virtualBackground" class="background-options">
@@ -176,8 +143,7 @@
                 :key="bg.id"
                 class="background-preset"
                 :class="{ active: selectedBackground === bg.id }"
-                @click="selectBackground(bg.id)"
-              >
+                @click="selectBackground(bg.id)">
                 <img v-if="bg.type === 'image'" :src="bg.url" :alt="bg.name" />
                 <div v-else-if="bg.type === 'color'" class="color-preview" :style="{ backgroundColor: bg.value }"></div>
                 <div v-else class="blur-preview">
@@ -196,15 +162,10 @@
 
         <div class="setting-item">
           <label>自动录制</label>
-          <n-switch
-            v-model:value="recordingSettings.autoRecord"
-            @update:value="updateRecordingSettings"
-          >
+          <n-switch v-model:value="recordingSettings.autoRecord" @update:value="updateRecordingSettings">
             <template #checked>启用</template>
           </n-switch>
-          <div class="setting-description">
-            通话开始时自动开始录制
-          </div>
+          <div class="setting-description">通话开始时自动开始录制</div>
         </div>
 
         <div class="setting-item">
@@ -212,8 +173,7 @@
           <n-select
             v-model:value="recordingSettings.format"
             :options="recordingFormatOptions"
-            @update:value="updateRecordingFormat"
-          />
+            @update:value="updateRecordingFormat" />
         </div>
 
         <div class="setting-item">
@@ -221,8 +181,7 @@
           <n-select
             v-model:value="recordingSettings.quality"
             :options="recordingQualityOptions"
-            @update:value="updateRecordingQuality"
-          />
+            @update:value="updateRecordingQuality" />
         </div>
 
         <div class="setting-item">
@@ -230,8 +189,7 @@
           <n-select
             v-model:value="recordingSettings.storage"
             :options="storageOptions"
-            @update:value="updateRecordingStorage"
-          />
+            @update:value="updateRecordingStorage" />
         </div>
       </div>
 
@@ -245,32 +203,21 @@
             v-model:value="securitySettings.waitingRoomPassword"
             type="password"
             placeholder="设置等候室密码（可选）"
-            @update:value="updateSecuritySettings"
-          />
-          <div class="setting-description">
-            参与者需要输入密码才能进入等候室
-          </div>
+            @update:value="updateSecuritySettings" />
+          <div class="setting-description">参与者需要输入密码才能进入等候室</div>
         </div>
 
         <div class="setting-item">
           <label>端到端加密</label>
-          <n-switch
-            v-model:value="securitySettings.endToEndEncryption"
-            @update:value="updateSecuritySettings"
-          >
+          <n-switch v-model:value="securitySettings.endToEndEncryption" @update:value="updateSecuritySettings">
             <template #checked>启用</template>
           </n-switch>
-          <div class="setting-description">
-            启用端到端加密以确保通话内容隐私
-          </div>
+          <div class="setting-description">启用端到端加密以确保通话内容隐私</div>
         </div>
 
         <div class="setting-item">
           <label>锁定通话</label>
-          <n-button
-            :type="isCallLocked ? 'error' : 'default'"
-            @click="toggleCallLock"
-          >
+          <n-button :type="isCallLocked ? 'error' : 'default'" @click="toggleCallLock">
             <template #icon>
               <n-icon>
                 <Lock v-if="isCallLocked" />
@@ -279,9 +226,7 @@
             </template>
             {{ isCallLocked ? '解锁通话' : '锁定通话' }}
           </n-button>
-          <div class="setting-description">
-            锁定后新成员无法加入通话
-          </div>
+          <div class="setting-description">锁定后新成员无法加入通话</div>
         </div>
       </div>
 
@@ -292,21 +237,15 @@
         <div class="setting-item">
           <label>网络优化</label>
           <div class="network-settings">
-          <n-switch
-            v-model:value="advancedSettings.adaptiveBitrate"
-            @update:value="updateAdvancedSettings"
-          >
-            <template #checked>启用</template>
-          </n-switch>
+            <n-switch v-model:value="advancedSettings.adaptiveBitrate" @update:value="updateAdvancedSettings">
+              <template #checked>启用</template>
+            </n-switch>
             <span class="setting-label">自适应码率</span>
           </div>
           <div class="network-settings">
-          <n-switch
-            v-model:value="advancedSettings.lowLatencyMode"
-            @update:value="updateAdvancedSettings"
-          >
-            <template #checked>启用</template>
-          </n-switch>
+            <n-switch v-model:value="advancedSettings.lowLatencyMode" @update:value="updateAdvancedSettings">
+              <template #checked>启用</template>
+            </n-switch>
             <span class="setting-label">低延迟模式</span>
           </div>
         </div>
@@ -333,12 +272,8 @@
 
     <div class="settings-footer">
       <n-space>
-        <n-button @click="resetToDefaults">
-          重置默认
-        </n-button>
-        <n-button type="primary" @click="saveSettings">
-          保存设置
-        </n-button>
+        <n-button @click="resetToDefaults">重置默认</n-button>
+        <n-button type="primary" @click="saveSettings">保存设置</n-button>
       </n-space>
     </div>
   </div>
@@ -800,7 +735,9 @@ onMounted(() => {
           background: rgba(24, 160, 88, 0.1);
         }
 
-        img, .color-preview, .blur-preview {
+        img,
+        .color-preview,
+        .blur-preview {
           width: 60px;
           height: 40px;
           border-radius: 4px;
@@ -812,10 +749,27 @@ onMounted(() => {
         }
 
         .blur-preview {
-          background: linear-gradient(45deg, var(--hula-brand-primary) 25%, transparent 25%, transparent 75%, var(--hula-brand-primary) 75%, var(--hula-brand-primary)),
-                        linear-gradient(45deg, var(--hula-brand-primary) 25%, transparent 25%, transparent 75%, var(--hula-brand-primary) 75%, var(--hula-brand-primary));
+          background:
+            linear-gradient(
+              45deg,
+              var(--hula-brand-primary) 25%,
+              transparent 25%,
+              transparent 75%,
+              var(--hula-brand-primary) 75%,
+              var(--hula-brand-primary)
+            ),
+            linear-gradient(
+              45deg,
+              var(--hula-brand-primary) 25%,
+              transparent 25%,
+              transparent 75%,
+              var(--hula-brand-primary) 75%,
+              var(--hula-brand-primary)
+            );
           background-size: 10px 10px;
-          background-position: 0 0, 5px 5px;
+          background-position:
+            0 0,
+            5px 5px;
           display: flex;
           align-items: center;
           justify-content: center;

@@ -937,7 +937,7 @@ defineExpose({
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--mobile-text-primary, #333);
+    color: var(--mobile-text-primary, var(--hula-gray-900));
   }
 }
 
@@ -987,17 +987,17 @@ defineExpose({
   .session-name {
     font-weight: 600;
     font-size: 16px;
-    color: var(--mobile-text-primary, #333);
+    color: var(--mobile-text-primary, var(--hula-gray-900));
   }
 
   .session-time {
     font-size: 12px;
-    color: var(--mobile-text-tertiary, #999);
+    color: var(--mobile-text-tertiary, var(--hula-gray-400));
   }
 
   .session-preview {
     font-size: 14px;
-    color: var(--mobile-text-secondary, #666);
+    color: var(--mobile-text-secondary, var(--hula-gray-700));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1030,12 +1030,12 @@ defineExpose({
   .chat-name {
     font-weight: 600;
     font-size: 16px;
-    color: var(--mobile-text-primary, #333);
+    color: var(--mobile-text-primary, var(--hula-gray-900));
   }
 
   .chat-status {
     font-size: 12px;
-    color: var(--mobile-text-secondary, #666);
+    color: var(--mobile-text-secondary, var(--hula-gray-700));
   }
 }
 
@@ -1096,7 +1096,7 @@ defineExpose({
 }
 
 .empty-text {
-  color: var(--mobile-text-tertiary, #999);
+  color: var(--mobile-text-tertiary, var(--hula-gray-400));
   font-size: 14px;
 }
 

@@ -4,7 +4,7 @@
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave">
     <!-- 顶部操作栏 -->
-    <ActionBar class="bg-#000 z-9999" :shrink="false" :current-label="currentLabel" />
+    <ActionBar class="bg-var(--hula-black) z-9999" :shrink="false" :current-label="currentLabel" />
 
     <!-- 主体内容区域 -->
     <div ref="contentRef" class="flex-1 overflow-auto">
@@ -56,7 +56,7 @@
     </div>
 
     <!-- 底部工具栏 -->
-    <div data-tauri-drag-region class="z-9999 h-50px bg-#000 flex justify-center items-center gap-30px">
+    <div data-tauri-drag-region class="z-9999 h-50px bg-var(--hula-black) flex justify-center items-center gap-30px">
       <n-tooltip placement="top">
         <template #trigger>
           <svg @click="zoomOut" class="size-24px cursor-pointer color-white"><use href="#zoom-out"></use></svg>
@@ -434,7 +434,7 @@ onUnmounted(() => {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--hula-white-rgb), 0.2);
   border-radius: 3px;
 }
 
@@ -446,7 +446,7 @@ onUnmounted(() => {
 :deep(.action-close),
 :deep(.hover-box) {
   svg {
-    color: #fff !important;
+    color: var(--hula-white) !important;
   }
 }
 

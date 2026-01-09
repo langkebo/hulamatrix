@@ -9,8 +9,8 @@
       <!-- 头像 -->
       <n-flex justify="center" class="w-full pt-35px" data-tauri-drag-region>
         <n-avatar
-          class="welcome size-80px rounded-50% border-(2px solid #fff) dark:border-(2px solid var(--hula-brand-primary))"
-          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+          class="welcome size-80px rounded-50% border-(2px solid var(--hula-white)) dark:border-(2px solid var(--hula-brand-primary))"
+          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="AvatarUtils.getAvatarUrl(info.avatar)" />
       </n-flex>
@@ -58,7 +58,7 @@
               @click="giveAccount(item)"
               class="p-8px cursor-pointer hover:bg-var(--hula-brand-primary)20 dark:hover:bg-var(--hula-brand-primary)30 hover:rounded-6px">
               <div class="flex-between-center">
-                <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" color="#fff" class="size-28px rounded-50%" />
+                <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" color="var(--hula-white)" class="size-28px rounded-50%" />
                 <p class="text-14px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary)">
                   {{ item.account }}
                 </p>
@@ -158,7 +158,7 @@
           <n-avatar
             round
             :size="110"
-            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
             :src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')" />
         </n-flex>
@@ -663,7 +663,7 @@ onUnmounted(() => {
 
 .login-button-manual,
 .login-button-auto {
-  color: #fff;
+  color: var(--hula-white);
 }
 
 .user-name-ellipsis {

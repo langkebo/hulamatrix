@@ -1,5 +1,6 @@
 <template>
-  <div class="private-chat-footer flex flex-col gap-8px p-[10px_16px_16px_16px] border-t-1px border-[--right-chat-footer-line-color]">
+  <div
+    class="private-chat-footer flex flex-col gap-8px p-[10px_16px_16px_16px] border-t-1px border-[--right-chat-footer-line-color]">
     <!-- 消息自毁设置 -->
     <div v-if="showSelfDestructSettings" class="flex items-center gap-8px px-8px">
       <n-flex :size="8" align="center">

@@ -11,10 +11,14 @@
     <n-card size="small" class="mt-12px" hoverable>
       <n-form label-placement="left" label-width="80">
         <n-grid cols="1 s:2 m:4" x-gap="12" y-gap="8">
-          <n-form-item label="关键字"><n-input v-model:value="search.query" placeholder="房间名称/ID" clearable /></n-form-item>
+          <n-form-item label="关键字">
+            <n-input v-model:value="search.query" placeholder="房间名称/ID" clearable />
+          </n-form-item>
           <n-form-item label="模式"><n-select v-model:value="search.mode" :options="searchModeOptions" /></n-form-item>
           <n-form-item label="排序"><n-select v-model:value="search.sortBy" :options="sortOptions" /></n-form-item>
-          <n-form-item label="筛选"><n-select v-model:value="search.filter" multiple :options="filterOptions" /></n-form-item>
+          <n-form-item label="筛选">
+            <n-select v-model:value="search.filter" multiple :options="filterOptions" />
+          </n-form-item>
         </n-grid>
         <n-space>
           <n-button type="primary" :loading="searching" @click="doSearch">搜索房间</n-button>
@@ -78,5 +82,7 @@ const columns = [
 </script>
 
 <style scoped>
-.rooms-search { padding-right: 24px; }
+.rooms-search {
+  padding-right: 24px;
+}
 </style>

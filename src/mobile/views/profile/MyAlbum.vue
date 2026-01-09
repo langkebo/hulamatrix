@@ -2,11 +2,7 @@
   <div>
     <AutoFixHeightPage :show-footer="false">
       <template #header>
-        <HeaderBar
-          :isOfficial="false"
-          class="bg-white header-border"
-          :hidden-right="true"
-          room-name="我的相册" />
+        <HeaderBar :isOfficial="false" class="bg-white header-border" :hidden-right="true" room-name="我的相册" />
       </template>
 
       <template #container>

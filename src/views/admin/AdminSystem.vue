@@ -3,7 +3,10 @@
     <n-card title="系统配置">
       <n-form label-placement="left" label-width="140">
         <n-form-item label="Homeserver Base URL">
-          <n-input :value="configs.baseUrl ?? ''" @update:value="(v: string) => (configs.baseUrl = v)" placeholder="https://matrix.example.com" />
+          <n-input
+            :value="configs.baseUrl ?? ''"
+            @update:value="(v: string) => (configs.baseUrl = v)"
+            placeholder="https://matrix.example.com" />
         </n-form-item>
         <n-form-item label="加密默认启用">
           <n-switch v-model:value="configs.enableEncryption" />

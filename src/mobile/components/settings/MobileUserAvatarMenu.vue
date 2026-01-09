@@ -23,8 +23,7 @@
               v-for="item in displayMenuItems"
               :key="item.id"
               :class="['menu-item', { 'menu-item--danger': item.danger }]"
-              @click="handleItemClick(item)"
-            >
+              @click="handleItemClick(item)">
               <div class="menu-item__icon">
                 <Icon :name="item.icon" :size="20" />
               </div>
@@ -148,7 +147,7 @@ watch(
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
   z-index: 9999;
   display: flex;
   align-items: flex-end;
@@ -201,7 +200,7 @@ watch(
   .profile-name {
     font-size: 18px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -210,7 +209,7 @@ watch(
 
   .profile-mxid {
     font-size: 14px;
-    color: #999;
+    color: var(--hula-gray-400);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -232,7 +231,7 @@ watch(
   transition: background-color 0.2s;
 
   &:active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   &--danger {
@@ -252,18 +251,18 @@ watch(
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   &__label {
     flex: 1;
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   &__chevron {
     flex-shrink: 0;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 
@@ -279,8 +278,8 @@ watch(
   text-align: center;
   font-size: 16px;
   font-weight: 500;
-  color: #333;
-  background: #f5f5f5;
+  color: var(--hula-gray-900);
+  background: var(--hula-gray-50);
   border-radius: 12px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -293,7 +292,9 @@ watch(
 // Slide up animation
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .slide-up-enter-from,

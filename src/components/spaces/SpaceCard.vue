@@ -1,5 +1,10 @@
 <template>
-  <div v-if="props.space" class="space-card" :class="{ 'is-joined': isJoined, 'is-public': safeSpace.isPublic, 'is-hovered': isHovered }" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
+  <div
+    v-if="props.space"
+    class="space-card"
+    :class="{ 'is-joined': isJoined, 'is-public': safeSpace.isPublic, 'is-hovered': isHovered }"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false">
     <!-- 空间封面 -->
     <div class="space-cover" @click="handleView">
       <div v-if="safeSpace.avatar" class="space-avatar">
@@ -12,10 +17,14 @@
 
       <!-- 空间状态覆盖层 -->
       <div class="space-overlay">
-        <div v-if="safeSpace.notifications?.highlightCount && safeSpace.notifications.highlightCount > 0" class="highlight-badge">
+        <div
+          v-if="safeSpace.notifications?.highlightCount && safeSpace.notifications.highlightCount > 0"
+          class="highlight-badge">
           {{ safeSpace.notifications.highlightCount }}
         </div>
-        <div v-if="safeSpace.notifications?.notificationCount && safeSpace.notifications.notificationCount > 0" class="notification-badge">
+        <div
+          v-if="safeSpace.notifications?.notificationCount && safeSpace.notifications.notificationCount > 0"
+          class="notification-badge">
           {{ safeSpace.notifications.notificationCount }}
         </div>
         <div v-if="!isJoined" class="join-indicator">
@@ -30,7 +39,13 @@
       </div>
 
       <!-- 渐变背景 -->
-      <div class="space-gradient" :style="{ background: safeSpace.theme?.gradient || 'linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%)' }"></div>
+      <div
+        class="space-gradient"
+        :style="{
+          background:
+            safeSpace.theme?.gradient ||
+            'linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%)'
+        }"></div>
     </div>
 
     <!-- 空间信息 -->
@@ -39,13 +54,7 @@
         <h3 class="space-name" :title="safeSpace.name">{{ safeSpace.name }}</h3>
         <div class="space-actions" @click.stop>
           <!-- 加入/退出按钮 -->
-          <n-button
-            v-if="!isJoined"
-            type="primary"
-            size="small"
-            @click="handleJoin"
-            :loading="isJoining"
-          >
+          <n-button v-if="!isJoined" type="primary" size="small" @click="handleJoin" :loading="isJoining">
             <template #icon>
               <n-icon><Plus /></n-icon>
             </template>
@@ -53,12 +62,7 @@
           </n-button>
 
           <!-- 管理按钮 -->
-          <n-dropdown
-            v-else
-            :options="getSpaceActions()"
-            @select="handleSpaceAction"
-            placement="bottom-end"
-          >
+          <n-dropdown v-else :options="getSpaceActions()" @select="handleSpaceAction" placement="bottom-end">
             <n-button size="small" quaternary>
               <template #icon>
                 <n-icon><MoreHorizontal /></n-icon>
@@ -98,49 +102,31 @@
               :src="getChildAvatar(i - 1)"
               :size="24"
               round
-              :style="{ marginLeft: i > 1 ? '-8px' : '0' }"
-            >
+              :style="{ marginLeft: i > 1 ? '-8px' : '0' }">
               <template #fallback>
                 <span>{{ getChildFallback(i - 1) }}</span>
               </template>
             </n-avatar>
-            <span v-if="childrenPreview.length > 4" class="more-children">
-              +{{ childrenPreview.length - 4 }}
-            </span>
+            <span v-if="childrenPreview.length > 4" class="more-children">+{{ childrenPreview.length - 4 }}</span>
           </div>
         </div>
       </div>
 
       <!-- 空间标签 -->
       <div class="space-tags">
-        <n-tag
-          v-if="safeSpace.isPublic"
-          type="info"
-          size="small"
-          round
-        >
+        <n-tag v-if="safeSpace.isPublic" type="info" size="small" round>
           <template #icon>
             <n-icon><Globe /></n-icon>
           </template>
           公开
         </n-tag>
-        <n-tag
-          v-if="safeSpace.isArchived"
-          type="default"
-          size="small"
-          round
-        >
+        <n-tag v-if="safeSpace.isArchived" type="default" size="small" round>
           <template #icon>
             <n-icon><Archive /></n-icon>
           </template>
           已归档
         </n-tag>
-        <n-tag
-          v-for="tag in safeSpace.tags"
-          :key="tag"
-          size="small"
-          round
-        >
+        <n-tag v-for="tag in safeSpace.tags" :key="tag" size="small" round>
           {{ tag }}
         </n-tag>
       </div>

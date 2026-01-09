@@ -6,8 +6,7 @@
           <svg viewBox="0 0 24 24">
             <path
               fill="currentColor"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-            />
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
           </svg>
         </n-icon>
         <div class="prompt-title">
@@ -49,8 +48,7 @@
               v-model:value="scheduledTime"
               type="datetime"
               :placeholder="t('migration.prompt.schedule.placeholder')"
-              class="full-width"
-            />
+              class="full-width" />
           </n-space>
         </div>
       </div>
@@ -63,11 +61,7 @@
           <n-button @click="handleDetails" tertiary>
             {{ t('migration.prompt.learn_more') }}
           </n-button>
-          <n-button
-            type="primary"
-            @click="handleConfirm"
-            :disabled="selectedOption === 'schedule' && !scheduledTime"
-          >
+          <n-button type="primary" @click="handleConfirm" :disabled="selectedOption === 'schedule' && !scheduledTime">
             {{ getConfirmButtonText() }}
           </n-button>
         </n-space>
@@ -79,8 +73,7 @@
   <MigrationProgress
     v-model="showProgress"
     @migration-completed="handleMigrationCompleted"
-    @migration-failed="handleMigrationFailed"
-  />
+    @migration-failed="handleMigrationFailed" />
 </template>
 
 <script setup lang="ts">

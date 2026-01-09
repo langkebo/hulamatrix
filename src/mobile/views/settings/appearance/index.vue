@@ -172,7 +172,7 @@ onMounted(() => {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0 4px 8px;
@@ -211,7 +211,7 @@ onMounted(() => {
 
 .theme-name {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
   text-align: center;
 }
 
@@ -230,7 +230,7 @@ onMounted(() => {
 
 .font-scale-label {
   font-size: 14px;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .font-scale-value {
@@ -269,13 +269,13 @@ onMounted(() => {
 
   .item-label {
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 2px;
   }
 
   .item-description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 

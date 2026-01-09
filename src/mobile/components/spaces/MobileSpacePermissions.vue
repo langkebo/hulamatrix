@@ -9,18 +9,9 @@
 
     <!-- Permission Level Tabs -->
     <div class="tabs-section">
-      <van-tabs
-        v-model:active="activeTab"
-        type="card"
-        animated
-        swipeable
-      >
+      <van-tabs v-model:active="activeTab" type="card" animated swipeable>
         <van-tab title="默认权限" name="default">
-          <DefaultPermissions
-            :power-levels="powerLevels"
-            :loading="loading"
-            @update="handleUpdateDefault"
-          />
+          <DefaultPermissions :power-levels="powerLevels" :loading="loading" @update="handleUpdateDefault" />
         </van-tab>
 
         <van-tab title="用户权限" name="users">
@@ -29,47 +20,29 @@
             :members="members"
             :loading="loading"
             @update="handleUpdateUser"
-            @remove="handleRemoveUser"
-          />
+            @remove="handleRemoveUser" />
         </van-tab>
 
         <van-tab title="事件权限" name="events">
-          <EventPermissions
-            :power-levels="powerLevels"
-            :loading="loading"
-            @update="handleUpdateEvent"
-          />
+          <EventPermissions :power-levels="powerLevels" :loading="loading" @update="handleUpdateEvent" />
         </van-tab>
 
         <van-tab title="房间权限" name="rooms">
-          <RoomPermissions
-            :room-permissions="roomPermissions"
-            :loading="loading"
-            @update="handleUpdateRoom"
-          />
+          <RoomPermissions :room-permissions="roomPermissions" :loading="loading" @update="handleUpdateRoom" />
         </van-tab>
       </van-tabs>
     </div>
 
     <!-- Save Button -->
     <div class="footer-section">
-      <van-button
-        type="primary"
-        size="large"
-        block
-        :loading="isSaving"
-        @click="handleSaveAll"
-      >
-        保存所有更改
-      </van-button>
+      <van-button type="primary" size="large" block :loading="isSaving" @click="handleSaveAll">保存所有更改</van-button>
     </div>
 
     <!-- Unsaved Changes Warning -->
     <van-popup
       :show="showUnsavedWarning"
       position="center"
-      :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }"
-    >
+      :style="{ width: '85%', maxWidth: '400px', borderRadius: '12px' }">
       <div class="warning-dialog">
         <div class="warning-header">
           <van-icon name="warning-o" :size="24" color="#f0a020" />
@@ -79,11 +52,7 @@
         <div class="warning-content">
           <p>您有 {{ pendingChanges.length }} 项未保存的更改。</p>
           <van-cell-group inset :border="true">
-            <van-cell
-              v-for="change in pendingChanges"
-              :key="change.id"
-              :title="change.description"
-            />
+            <van-cell v-for="change in pendingChanges" :key="change.id" :title="change.description" />
           </van-cell-group>
         </div>
 
@@ -476,7 +445,7 @@ defineExpose({
 .warning-dialog {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, #ffffff);
+  background: var(--card-color, var(--hula-white)fff);
   border-radius: 12px;
   overflow: hidden;
   max-height: 70vh;

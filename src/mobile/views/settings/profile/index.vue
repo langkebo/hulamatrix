@@ -81,7 +81,11 @@
     </div>
 
     <!-- Password Change Dialog -->
-    <n-modal v-model:show="showPasswordDialog" preset="card" :title="t('setting.profile.change_password')" class="password-dialog">
+    <n-modal
+      v-model:show="showPasswordDialog"
+      preset="card"
+      :title="t('setting.profile.change_password')"
+      class="password-dialog">
       <n-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-placement="top">
         <n-form-item :label="t('setting.profile.current_password')" path="oldPassword">
           <n-input
@@ -290,14 +294,14 @@ const handlePasswordChange = async () => {
 .profile-name {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--hula-gray-900);
   margin-bottom: 4px;
   word-break: break-all;
 }
 
 .profile-mxid {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   font-family: monospace;
 }
 
@@ -312,7 +316,7 @@ const handlePasswordChange = async () => {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0 4px 8px;
@@ -343,7 +347,7 @@ const handlePasswordChange = async () => {
   transition: background-color 0.2s;
 
   &:active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   .item-content {
@@ -353,18 +357,18 @@ const handlePasswordChange = async () => {
 
   .item-label {
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 2px;
   }
 
   .item-description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 
   .item-value {
     font-size: 14px;
-    color: #666;
+    color: var(--hula-gray-700);
   }
 }
 

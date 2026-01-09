@@ -25,9 +25,7 @@
           </div>
           <div class="stat">
             <span class="stat-label">错误率</span>
-            <span class="stat-value" :class="{ error: stats.errorRate > 1 }">
-              {{ stats.errorRate.toFixed(2) }}%
-            </span>
+            <span class="stat-value" :class="{ error: stats.errorRate > 1 }">{{ stats.errorRate.toFixed(2) }}%</span>
           </div>
         </div>
       </div>
@@ -52,7 +50,9 @@
             <span class="route-count">{{ stats.messageRoutes.websocket }}</span>
           </div>
           <div class="route-bar">
-            <div class="route-fill websocket" :style="{ width: `${getPercentage(stats.messageRoutes.websocket)}%` }"></div>
+            <div
+              class="route-fill websocket"
+              :style="{ width: `${getPercentage(stats.messageRoutes.websocket)}%` }"></div>
           </div>
         </div>
         <div class="route-item">
@@ -128,31 +128,13 @@
       <button class="action-btn" @click="showDetailed = !showDetailed">
         {{ showDetailed ? '隐藏详细报告' : '显示详细报告' }}
       </button>
-      <button class="action-btn primary" @click="refreshData">
-        刷新数据
-      </button>
-      <button class="action-btn" @click="copyReport">
-        复制报告
-      </button>
-      <button class="action-btn" @click="exportJSON">
-        导出 JSON
-      </button>
-      <button class="action-btn" @click="exportCSV">
-        导出 CSV
-      </button>
-      <button class="action-btn" @click="triggerFileInput">
-        导入数据
-      </button>
-      <input
-        ref="fileInput"
-        type="file"
-        accept=".json"
-        class="hidden-input"
-        @change="importFile"
-      />
-      <button class="action-btn danger" @click="resetStats" :disabled="stats.totalMessages === 0">
-        重置统计
-      </button>
+      <button class="action-btn primary" @click="refreshData">刷新数据</button>
+      <button class="action-btn" @click="copyReport">复制报告</button>
+      <button class="action-btn" @click="exportJSON">导出 JSON</button>
+      <button class="action-btn" @click="exportCSV">导出 CSV</button>
+      <button class="action-btn" @click="triggerFileInput">导入数据</button>
+      <input ref="fileInput" type="file" accept=".json" class="hidden-input" @change="importFile" />
+      <button class="action-btn danger" @click="resetStats" :disabled="stats.totalMessages === 0">重置统计</button>
     </div>
 
     <!-- 功能开关控制 -->
@@ -161,7 +143,7 @@
       <div class="flags-control">
         <div class="flag-item">
           <label>
-            <input type="checkbox" v-model="matrixFirstRouting" @change="toggleMatrixFirst">
+            <input type="checkbox" v-model="matrixFirstRouting" @change="toggleMatrixFirst" />
             <span>MATRIX_FIRST_ROUTING (Matrix SDK 优先)</span>
           </label>
           <span class="flag-status" :class="{ enabled: matrixFirstRouting }">
@@ -170,7 +152,7 @@
         </div>
         <div class="flag-item">
           <label>
-            <input type="checkbox" v-model="disableWebSocket" @change="toggleWebSocket">
+            <input type="checkbox" v-model="disableWebSocket" @change="toggleWebSocket" />
             <span>DISABLE_WEBSOCKET (禁用 WebSocket)</span>
           </label>
           <span class="flag-status" :class="{ enabled: disableWebSocket }">
@@ -640,7 +622,7 @@ onUnmounted(() => {
     flex: 1;
     cursor: pointer;
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       width: 16px;
       height: 16px;
       cursor: pointer;

@@ -75,7 +75,12 @@
             {{ t('fileManager.search.clear') }}
           </n-button>
 
-          <n-button v-if="selectedUser" @click="clearUserFilter" ghost :color="'var(--hula-brand-primary)'" size="small">
+          <n-button
+            v-if="selectedUser"
+            @click="clearUserFilter"
+            ghost
+            :color="'var(--hula-brand-primary)'"
+            size="small">
             {{ t('fileManager.search.showAllUsers') }}
           </n-button>
         </template>

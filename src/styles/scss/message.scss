@@ -36,11 +36,11 @@
 .active {
   background: var(--msg-active-color);
   border-radius: 12px;
-  color: #fff;
+  color: var(--hula-white);
   transform: translateZ(0); /* 启用硬件加速 */
 
   .text {
-    color: #fff;
+    color: var(--hula-white);
   }
 }
 

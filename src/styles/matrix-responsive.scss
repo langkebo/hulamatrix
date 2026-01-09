@@ -116,8 +116,8 @@ $breakpoints: (
   @include dark-mode {
     --matrix-bg-primary: rgba(24, 24, 28, 0.95);
     --matrix-bg-secondary: rgba(36, 36, 40, 0.95);
-    --matrix-border: rgba(255, 255, 255, 0.1);
-    --matrix-text: rgba(255, 255, 255, 0.9);
+    --matrix-border: rgba(var(--hula-white-rgb), 0.1);
+    --matrix-text: rgba(var(--hula-white-rgb), 0.9);
   }
 
   // 高对比度适配
@@ -329,7 +329,7 @@ $breakpoints: (
         content: '';
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.1);
+        background: rgba(var(--hula-black-rgb), 0.1);
         opacity: 0;
         transition: opacity 0.2s;
       }

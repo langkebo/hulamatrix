@@ -46,7 +46,7 @@
                     <div>
                       <div class="font-600">{{ f.display_name || f.user_id }}</div>
                       <div class="text-(12px var(--hula-brand-primary))">{{ f.user_id }}</div>
-                      <div class="text-(12px #666)">状态: {{ f.presence || 'unknown' }}</div>
+                      <div class="text-(12px var(--hula-gray-700))">状态: {{ f.presence || 'unknown' }}</div>
                     </div>
                   </div>
                   <n-space>
@@ -75,7 +75,7 @@
                     <div>
                       <div class="font-600">{{ f.display_name || f.user_id }}</div>
                       <div class="text-(12px var(--hula-brand-primary))">{{ f.user_id }}</div>
-                      <div class="text-(12px #666)">状态: {{ f.presence || 'unknown' }}</div>
+                      <div class="text-(12px var(--hula-gray-700))">状态: {{ f.presence || 'unknown' }}</div>
                     </div>
                   </div>
                   <n-space>
@@ -101,7 +101,7 @@
             <div>
               <div class="font-600">{{ p.requester_display_name || p.requester_id }}</div>
               <div class="text-(12px var(--hula-brand-primary))">{{ p.requester_id }}</div>
-              <div v-if="p.message" class="text-(12px #666) mt-4px">
+              <div v-if="p.message" class="text-(12px var(--hula-gray-700)) mt-4px">
                 {{ p.message }}
               </div>
             </div>

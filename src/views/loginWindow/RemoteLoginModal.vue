@@ -112,6 +112,6 @@ onUnmounted(async () => {
 }
 
 .confirm-button {
-  color: #fff;
+  color: var(--hula-white);
 }
 </style>

@@ -5,7 +5,7 @@
       :key="item.path"
       :to="item.path"
       class="tab-item flex flex-col flex-1 items-center no-underline relative"
-      :class="route.path === item.path ? 'color-[--tab-bar-icon-color]' : 'text-#000'">
+      :class="route.path === item.path ? 'color-[--tab-bar-icon-color]' : 'text-var(--hula-black)'">
       <n-badge
         class="flex flex-col w-55% flex-1 relative items-center"
         :offset="[-6, 6]"

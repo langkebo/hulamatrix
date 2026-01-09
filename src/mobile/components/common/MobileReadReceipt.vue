@@ -111,7 +111,7 @@ function formatReadTime(timestamp: number): string {
   gap: 4px;
   padding: 2px 6px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   cursor: pointer;
 
   &.unread {
@@ -124,7 +124,7 @@ function formatReadTime(timestamp: number): string {
 
     .avatar-item {
       margin-left: -8px;
-      border: 2px solid #fff;
+      border: 2px solid var(--hula-white);
       border-radius: 50%;
 
       &:first-child {

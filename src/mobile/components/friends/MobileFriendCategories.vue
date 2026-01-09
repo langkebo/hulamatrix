@@ -14,8 +14,7 @@
             round
             closable
             @close="handleDeleteCategory(category)"
-            @click="handleSelectCategory(category.categoryId)"
-          >
+            @click="handleSelectCategory(category.categoryId)">
             {{ category.name }}
           </n-tag>
           <n-tag
@@ -23,17 +22,10 @@
             :bordered="false"
             size="medium"
             round
-            @click="handleSelectCategory(null)"
-          >
+            @click="handleSelectCategory(null)">
             全部
           </n-tag>
-          <n-tag
-            type="info"
-            :bordered="false"
-            size="medium"
-            round
-            @click="showCreateDialog = true"
-          >
+          <n-tag type="info" :bordered="false" size="medium" round @click="showCreateDialog = true">
             <template #icon>
               <n-icon><Plus /></n-icon>
             </template>
@@ -62,13 +54,9 @@
           :key="category.categoryId"
           class="category-item"
           :class="{ active: selectedCategoryId === category.categoryId }"
-          @click="handleSelectCategory(category.categoryId)"
-        >
+          @click="handleSelectCategory(category.categoryId)">
           <div class="item-left">
-            <div
-              class="category-color"
-              :style="{ background: category.color }"
-            ></div>
+            <div class="category-color" :style="{ background: category.color }"></div>
             <div class="category-info">
               <div class="category-name">{{ category.name }}</div>
               <div v-if="category.description" class="category-desc">{{ category.description }}</div>
@@ -76,10 +64,7 @@
           </div>
           <div class="item-right">
             <n-tag size="small" round>{{ category.count || 0 }}</n-tag>
-            <n-dropdown
-              :options="getCategoryActions(category)"
-              @select="(key) => handleCategoryAction(key, category)"
-            >
+            <n-dropdown :options="getCategoryActions(category)" @select="(key) => handleCategoryAction(key, category)">
               <n-button text size="small">
                 <template #icon>
                   <n-icon><DotsVertical /></n-icon>
@@ -90,11 +75,7 @@
         </div>
 
         <!-- All Friends Option -->
-        <div
-          class="category-item"
-          :class="{ active: selectedCategoryId === null }"
-          @click="handleSelectCategory(null)"
-        >
+        <div class="category-item" :class="{ active: selectedCategoryId === null }" @click="handleSelectCategory(null)">
           <div class="item-left">
             <div class="category-color all-friends"></div>
             <div class="category-info">
@@ -121,19 +102,12 @@
           <n-color-picker v-model:value="createForm.color" :modes="['hex']" />
         </n-form-item>
         <n-form-item label="图标">
-          <n-select
-            v-model:value="createForm.icon"
-            :options="iconOptions"
-            clearable
-            placeholder="选择图标"
-          />
+          <n-select v-model:value="createForm.icon" :options="iconOptions" clearable placeholder="选择图标" />
         </n-form-item>
       </n-form>
       <template #action>
         <n-button @click="showCreateDialog = false">取消</n-button>
-        <n-button type="primary" :loading="isCreating" @click="handleCreateCategory">
-          创建
-        </n-button>
+        <n-button type="primary" :loading="isCreating" @click="handleCreateCategory">创建</n-button>
       </template>
     </n-modal>
 
@@ -150,44 +124,28 @@
           <n-color-picker v-model:value="editForm.color" :modes="['hex']" />
         </n-form-item>
         <n-form-item label="图标">
-          <n-select
-            v-model:value="editForm.icon"
-            :options="iconOptions"
-            clearable
-            placeholder="选择图标"
-          />
+          <n-select v-model:value="editForm.icon" :options="iconOptions" clearable placeholder="选择图标" />
         </n-form-item>
       </n-form>
       <template #action>
         <n-button @click="showEditDialog = false">取消</n-button>
-        <n-button type="primary" :loading="isEditing" @click="handleUpdateCategory">
-          保存
-        </n-button>
+        <n-button type="primary" :loading="isEditing" @click="handleUpdateCategory">保存</n-button>
       </template>
     </n-modal>
 
     <!-- Move Friends Dialog -->
     <n-modal v-model:show="showMoveDialog" preset="dialog" title="移动好友到分类">
       <div class="move-dialog-content">
-        <n-alert type="info" class="mb-3">
-          将 {{ selectedFriends.length }} 位好友移动到选定分类
-        </n-alert>
+        <n-alert type="info" class="mb-3">将 {{ selectedFriends.length }} 位好友移动到选定分类</n-alert>
 
         <n-radio-group v-model:value="targetCategoryId" name="category">
           <n-space vertical>
             <n-radio value="no-category">
               <span>无分类</span>
             </n-radio>
-            <n-radio
-              v-for="category in categories"
-              :key="category.categoryId"
-              :value="category.categoryId"
-            >
+            <n-radio v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
               <div class="category-radio-item">
-                <div
-                  class="category-color-dot"
-                  :style="{ background: category.color }"
-                ></div>
+                <div class="category-color-dot" :style="{ background: category.color }"></div>
                 <span>{{ category.name }}</span>
               </div>
             </n-radio>
@@ -196,9 +154,7 @@
       </div>
       <template #action>
         <n-button @click="showMoveDialog = false">取消</n-button>
-        <n-button type="primary" :loading="isMoving" @click="handleMoveFriends">
-          移动
-        </n-button>
+        <n-button type="primary" :loading="isMoving" @click="handleMoveFriends">移动</n-button>
       </template>
     </n-modal>
   </div>

@@ -3,7 +3,12 @@
   <div class="mobile-device-list">
     <!-- Security Status Banner -->
     <div v-if="showSecurityBanner" class="security-banner" :class="`security-${securityLevel}`">
-      <van-icon class="banner-icon" :name="getVantIconName(securityLevel === 'high' ? 'Shield' : securityLevel === 'medium' ? 'ShieldCheck' : 'ShieldX')" :size="20" />
+      <van-icon
+        class="banner-icon"
+        :name="
+          getVantIconName(securityLevel === 'high' ? 'Shield' : securityLevel === 'medium' ? 'ShieldCheck' : 'ShieldX')
+        "
+        :size="20" />
       <div class="banner-content">
         <div class="banner-title">{{ securityTitle }}</div>
         <div class="banner-desc">{{ securityDescription }}</div>
@@ -12,9 +17,7 @@
 
     <!-- Progress Bar -->
     <div v-if="progress > 0 && progress < 100" class="progress-section">
-      <div class="progress-label">
-        设备验证进度: {{ progress }}%
-      </div>
+      <div class="progress-label">设备验证进度: {{ progress }}%</div>
       <van-progress :percentage="progress" :show-pivot="false" stroke-width="4" />
     </div>
 
@@ -55,8 +58,7 @@
             v-for="device in verifiedDevices"
             :key="device.deviceId"
             class="device-item verified"
-            @click="openDeviceMenu(device)"
-          >
+            @click="openDeviceMenu(device)">
             <div class="device-main">
               <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
                 <template #error>
@@ -93,8 +95,7 @@
             v-for="device in unverifiedDevices"
             :key="device.deviceId"
             class="device-item unverified"
-            @click="openDeviceMenu(device)"
-          >
+            @click="openDeviceMenu(device)">
             <div class="device-main">
               <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
                 <template #error>
@@ -112,9 +113,7 @@
               </div>
             </div>
             <div class="device-status">
-              <van-button type="primary" size="small" round @click.stop="openVerifyDialog(device)">
-                验证
-              </van-button>
+              <van-button type="primary" size="small" round @click.stop="openVerifyDialog(device)">验证</van-button>
             </div>
           </div>
         </div>
@@ -133,8 +132,7 @@
             v-for="device in blockedDevices"
             :key="device.deviceId"
             class="device-item blocked"
-            @click="openDeviceMenu(device)"
-          >
+            @click="openDeviceMenu(device)">
             <div class="device-main">
               <van-image :width="44" :height="44" :src="getDeviceAvatar(device)" round>
                 <template #error>
@@ -167,11 +165,7 @@
     </div>
 
     <!-- Device Action Menu -->
-    <van-popup
-      v-model:show="showActionMenu"
-      position="bottom"
-      :style="{ borderRadius: '16px 16px 0 0' }"
-    >
+    <van-popup v-model:show="showActionMenu" position="bottom" :style="{ borderRadius: '16px 16px 0 0' }">
       <div class="action-menu-popup">
         <div class="handle-bar" @click="showActionMenu = false"></div>
         <div class="action-menu">
@@ -180,9 +174,12 @@
             :key="action.key"
             class="action-item"
             :class="{ danger: action.danger, disabled: action.disabled }"
-            @click="handleDeviceAction(action.key)"
-          >
-            <van-icon v-if="!action.disabled" :name="getVantIconName(getActionIconName(action.key))" :size="16" class="action-icon" />
+            @click="handleDeviceAction(action.key)">
+            <van-icon
+              v-if="!action.disabled"
+              :name="getVantIconName(getActionIconName(action.key))"
+              :size="16"
+              class="action-icon" />
             <span>{{ action.label }}</span>
           </div>
         </div>
@@ -194,27 +191,20 @@
       v-model:show="showVerifyDialog"
       :device="currentDevice ? { device_id: currentDevice.deviceId, display_name: currentDevice.displayName } : null"
       :user-id="userId"
-      @verified="handleDeviceVerified"
-    />
+      @verified="handleDeviceVerified" />
 
     <!-- Rename Dialog -->
     <van-popup
       v-model:show="showRenameDialog"
       position="center"
-      :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
-    >
+      :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }">
       <div class="rename-dialog">
         <div class="dialog-header">
           <span class="header-title">重命名设备</span>
           <van-icon name="cross" :size="18" @click="showRenameDialog = false" />
         </div>
         <div class="dialog-content">
-          <van-field
-            v-model="renameValue"
-            placeholder="请输入设备名称"
-            size="large"
-            @keyup.enter="confirmRename"
-          />
+          <van-field v-model="renameValue" placeholder="请输入设备名称" size="large" @keyup.enter="confirmRename" />
         </div>
         <div class="dialog-footer">
           <div class="button-group">
@@ -876,12 +866,12 @@ onMounted(() => {
     .header-title {
       font-size: 16px;
       font-weight: 600;
-      color: #333;
+      color: var(--hula-gray-900);
     }
 
     .van-icon {
       cursor: pointer;
-      color: #666;
+      color: var(--hula-gray-700);
       padding: 8px;
 
       &:active {

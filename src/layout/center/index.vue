@@ -147,7 +147,10 @@
             :render-target-label="renderLabel" />
 
           <n-flex align="center" justify="center" class="p-16px">
-            <n-button :disabled="selectedValue.length < 2" :color="'var(--hula-brand-primary)'" @click="handleCreateGroup">
+            <n-button
+              :disabled="selectedValue.length < 2"
+              :color="'var(--hula-brand-primary)'"
+              @click="handleCreateGroup">
               {{ t('home.create_group.action') }}
             </n-button>
           </n-flex>

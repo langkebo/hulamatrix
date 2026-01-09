@@ -7,11 +7,7 @@
     </div>
 
     <!-- Action Menu Bottom Sheet -->
-    <van-popup
-      v-model:show="showMenu"
-      position="bottom"
-      :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
-    >
+    <van-popup v-model:show="showMenu" position="bottom" :style="{ height: '70%', borderRadius: '16px 16px 0 0' }">
       <div class="actions-popup">
         <!-- Handle bar -->
         <div class="handle-bar"></div>
@@ -39,8 +35,7 @@
                 :key="action.key"
                 class="action-item"
                 :class="{ danger: action.danger }"
-                @click="handleAction(action.key)"
-              >
+                @click="handleAction(action.key)">
                 <div class="action-icon" :class="`action-icon-${action.key}`">
                   <van-icon :name="action.iconName" :size="24" />
                 </div>
@@ -58,8 +53,7 @@
                 :key="action.key"
                 class="action-list-item"
                 :class="{ danger: action.danger }"
-                @click="handleAction(action.key)"
-              >
+                @click="handleAction(action.key)">
                 <div class="action-item-left">
                   <van-icon :name="action.iconName" :size="18" class="list-icon" />
                   <span class="action-label">{{ action.label }}</span>
@@ -78,8 +72,7 @@
                 :key="action.key"
                 class="action-list-item"
                 :class="{ danger: action.danger }"
-                @click="handleAction(action.key)"
-              >
+                @click="handleAction(action.key)">
                 <div class="action-item-left">
                   <van-icon :name="action.iconName" :size="18" class="list-icon" />
                   <span class="action-label">{{ action.label }}</span>
@@ -105,8 +98,7 @@
       :room-id="props.message.roomId"
       :event-id="props.message.eventId"
       :original-content="props.message.content"
-      @edited="handleMessageEdited"
-    />
+      @edited="handleMessageEdited" />
 
     <!-- Reply Dialog -->
     <MobileMessageReplyDialog
@@ -114,8 +106,7 @@
       :room-id="props.message.roomId"
       :reply-to-event-id="props.message.eventId"
       :reply-to-content="props.message.content"
-      @sent="handleMessageReplied"
-    />
+      @sent="handleMessageReplied" />
 
     <!-- Forward Dialog -->
     <MobileMessageForwardDialog
@@ -123,8 +114,7 @@
       :room-id="props.message.roomId"
       :event-id="props.message.eventId"
       :content="props.message.content"
-      @forwarded="handleMessageForwarded"
-    />
+      @forwarded="handleMessageForwarded" />
   </div>
 </template>
 
@@ -514,12 +504,12 @@ defineExpose({
   span:first-child {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   .van-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {

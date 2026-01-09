@@ -15,8 +15,7 @@
       :checked-keys="checkedKeys"
       @update:checked-keys="onCheck"
       @drop="onDrop"
-      @update:selected-keys="onSelect"
-    />
+      @update:selected-keys="onSelect" />
   </div>
 </template>
 <script setup lang="ts">

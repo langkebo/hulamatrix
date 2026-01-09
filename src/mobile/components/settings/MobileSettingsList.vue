@@ -3,8 +3,7 @@
     <div
       v-for="(section, sectionIndex) in sections"
       :key="`section-${sectionIndex}`"
-      class="mobile-settings-list__section"
-    >
+      class="mobile-settings-list__section">
       <!-- Section Title -->
       <div v-if="section.title" class="mobile-settings-list__section-title">
         {{ section.title }}
@@ -17,8 +16,7 @@
           :key="`item-${item.key || itemIndex}`"
           :item="item"
           @change="handleChange"
-          @click="handleClick"
-        />
+          @click="handleClick" />
       </div>
     </div>
 
@@ -75,7 +73,7 @@ const handleClick = (item: SettingsItem) => {
   &__section-title {
     font-size: 12px;
     font-weight: 500;
-    color: #999;
+    color: var(--hula-gray-400);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 0 16px 8px;
@@ -117,7 +115,7 @@ const handleClick = (item: SettingsItem) => {
     align-items: center;
     justify-content: center;
     padding: 60px 20px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 
   &__empty-icon {

@@ -6,32 +6,21 @@
   <div class="sliding-sync-status-panel">
     <n-card title="Sliding Sync 状态" size="small">
       <template #header-extra>
-        <n-switch
-          v-model:value="enabled"
-          :disabled="!canToggle"
-          @update:value="handleToggle"
-        />
+        <n-switch v-model:value="enabled" :disabled="!canToggle" @update:value="handleToggle" />
       </template>
 
       <!-- Status Badge -->
       <div class="status-section">
         <div class="status-item">
           <span class="label">状态:</span>
-          <n-tag
-            :type="statusTagType"
-            :bordered="false"
-            size="small"
-          >
+          <n-tag :type="statusTagType" :bordered="false" size="small">
             {{ statusText }}
           </n-tag>
         </div>
 
         <div class="status-item">
           <span class="label">模式:</span>
-          <n-tag
-            :bordered="false"
-            size="small"
-          >
+          <n-tag :bordered="false" size="small">
             {{ syncModeText }}
           </n-tag>
         </div>
@@ -53,15 +42,13 @@
               <span class="label">初始化:</span>
               <n-icon
                 :component="isInitialized ? CircleCheck : CircleX"
-                :color="isInitialized ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
-              />
+                :color="isInitialized ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" />
             </div>
             <div class="info-item">
               <span class="label">运行中:</span>
               <n-icon
                 :component="isRunning ? CircleCheck : CircleX"
-                :color="isRunning ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
-              />
+                :color="isRunning ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" />
             </div>
           </div>
         </n-collapse-item>
@@ -71,37 +58,25 @@
           <div class="capabilities-list">
             <div class="capability-item">
               <span class="capability-name">Sliding Sync:</span>
-              <n-tag
-                :type="capabilities.slidingSync ? 'success' : 'default'"
-                size="tiny"
-              >
+              <n-tag :type="capabilities.slidingSync ? 'success' : 'default'" size="tiny">
                 {{ capabilities.slidingSync ? '支持' : '不支持' }}
               </n-tag>
             </div>
             <div class="capability-item">
               <span class="capability-name">传统同步:</span>
-              <n-tag
-                :type="capabilities.traditionalSync ? 'success' : 'default'"
-                size="tiny"
-              >
+              <n-tag :type="capabilities.traditionalSync ? 'success' : 'default'" size="tiny">
                 {{ capabilities.traditionalSync ? '支持' : '不支持' }}
               </n-tag>
             </div>
             <div class="capability-item">
               <span class="capability-name">懒加载:</span>
-              <n-tag
-                :type="capabilities.lazyLoading ? 'success' : 'default'"
-                size="tiny"
-              >
+              <n-tag :type="capabilities.lazyLoading ? 'success' : 'default'" size="tiny">
                 {{ capabilities.lazyLoading ? '支持' : '不支持' }}
               </n-tag>
             </div>
             <div class="capability-item">
               <span class="capability-name">E2EE:</span>
-              <n-tag
-                :type="capabilities.e2ee ? 'success' : 'default'"
-                size="tiny"
-              >
+              <n-tag :type="capabilities.e2ee ? 'success' : 'default'" size="tiny">
                 {{ capabilities.e2ee ? '支持' : '不支持' }}
               </n-tag>
             </div>
@@ -162,38 +137,16 @@
       </n-collapse>
 
       <!-- Error Display -->
-      <n-alert
-        v-if="error"
-        type="error"
-        title="错误"
-        :description="error"
-        closable
-        @close="handleClearError"
-      />
+      <n-alert v-if="error" type="error" title="错误" :description="error" closable @close="handleClearError" />
 
       <!-- Actions -->
       <template #footer>
         <div class="actions">
-          <n-button
-            size="small"
-            @click="handleRefresh"
-            :loading="refreshing"
-          >
-            刷新状态
-          </n-button>
-          <n-button
-            size="small"
-            @click="showDetails = !showDetails"
-          >
+          <n-button size="small" @click="handleRefresh" :loading="refreshing">刷新状态</n-button>
+          <n-button size="small" @click="showDetails = !showDetails">
             {{ showDetails ? '隐藏详情' : '显示详情' }}
           </n-button>
-          <n-button
-            size="small"
-            type="error"
-            @click="handleReset"
-          >
-            重置
-          </n-button>
+          <n-button size="small" type="error" @click="handleReset">重置</n-button>
         </div>
       </template>
     </n-card>

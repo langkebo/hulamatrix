@@ -95,7 +95,6 @@ const handleRoomNameClick = () => {
 <style lang="scss">
 @use '@/styles/scss/render-message';
 
-
 .typing-floating-mobile {
   position: fixed;
   left: 16px;

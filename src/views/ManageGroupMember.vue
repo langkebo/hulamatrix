@@ -60,7 +60,13 @@
                         {{ item.name }}
                       </span>
                       <div class="text-12px text-gray-500 flex items-center gap-4px truncate">
-                        <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
+                        <n-badge
+                          :color="
+                            item.activeStatus === OnlineEnum.ONLINE
+                              ? 'var(--hula-brand-primary)'
+                              : 'var(--hula-brand-primary)'
+                          "
+                          dot />
                         {{
                           item.activeStatus === OnlineEnum.ONLINE
                             ? t('home.friends_list.status.online')
@@ -146,7 +152,13 @@
                       {{ item.name }}
                     </span>
                     <div class="text-11px text-[--chat-text-color] flex items-center gap-4px truncate">
-                      <n-badge :color="item.activeStatus === OnlineEnum.ONLINE ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
+                      <n-badge
+                        :color="
+                          item.activeStatus === OnlineEnum.ONLINE
+                            ? 'var(--hula-brand-primary)'
+                            : 'var(--hula-brand-primary)'
+                        "
+                        dot />
                       {{
                         item.activeStatus === OnlineEnum.ONLINE
                           ? t('home.friends_list.status.online')

@@ -266,7 +266,7 @@ const handleCreate = async () => {
 .create-space-dialog {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, #ffffff);
+  background: var(--card-color, var(--hula-white)fff);
   max-height: 85vh;
   border-radius: 12px;
   overflow: hidden;
@@ -283,7 +283,7 @@ const handleCreate = async () => {
   .header-title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-color-1, #333);
+    color: var(--text-color-1, var(--hula-gray-900));
   }
 }
 
@@ -316,7 +316,7 @@ const handleCreate = async () => {
 .radio-option {
   margin-bottom: 12px;
   padding: 12px;
-  background: var(--bg-color, #f5f5f5);
+  background: var(--bg-color, var(--hula-gray-50));
   border-radius: 8px;
 
   &:last-child {

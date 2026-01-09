@@ -17,11 +17,7 @@
         :stroke="isValid ? 'currentColor' : 'var(--hula-gray-300)'"
         d="m16 24 6 6 12-12" />
     </svg>
-    <p
-      :class="[
-        'text-12px',
-        { 'text-brand': isValid, 'text-gray-400': !isValid }
-      ]">
+    <p :class="['text-12px', { 'text-brand': isValid, 'text-gray-400': !isValid }]">
       {{ message }}
     </p>
   </n-flex>

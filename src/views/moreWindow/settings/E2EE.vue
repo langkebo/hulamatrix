@@ -13,7 +13,13 @@
       <n-list hoverable clickable>
         <n-list-item>
           <template #prefix>
-            <n-icon size="24" :color="crossSigningReady ? 'var(--hula-success, var(--hula-brand-primary))' : 'var(--hula-warning, var(--hula-brand-primary))'">
+            <n-icon
+              size="24"
+              :color="
+                crossSigningReady
+                  ? 'var(--hula-success, var(--hula-brand-primary))'
+                  : 'var(--hula-warning, var(--hula-brand-primary))'
+              ">
               <CircleCheck v-if="crossSigningReady" />
               <AlertCircle v-else />
             </n-icon>

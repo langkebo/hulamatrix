@@ -1,15 +1,6 @@
 <template>
-  <n-modal
-    :show="visible"
-    :mask-closable="true"
-    @update:show="handleClose"
-  >
-    <n-card
-      :title="title"
-      :bordered="false"
-      size="small"
-      class="user-profile-card"
-    >
+  <n-modal :show="visible" :mask-closable="true" @update:show="handleClose">
+    <n-card :title="title" :bordered="false" size="small" class="user-profile-card">
       <template #header-extra>
         <n-button quaternary circle @click="handleClose">
           <n-icon :component="X" />
@@ -26,21 +17,10 @@
               </template>
             </n-avatar>
             <div class="avatar-actions">
-              <n-button
-                v-if="!isCurrentUser && canDirectMessage"
-                size="small"
-                type="primary"
-                @click="handleStartDM"
-              >
+              <n-button v-if="!isCurrentUser && canDirectMessage" size="small" type="primary" @click="handleStartDM">
                 发消息
               </n-button>
-              <n-button
-                v-if="!isCurrentUser && canKick"
-                size="small"
-                type="error"
-                ghost
-                @click="handleKick"
-              >
+              <n-button v-if="!isCurrentUser && canKick" size="small" type="error" ghost @click="handleKick">
                 移除
               </n-button>
             </div>
@@ -91,10 +71,7 @@
                   <div class="device-id">{{ device.deviceId }}</div>
                 </div>
                 <template #suffix>
-                  <n-tag
-                    :type="device.verified ? 'success' : 'warning'"
-                    size="small"
-                  >
+                  <n-tag :type="device.verified ? 'success' : 'warning'" size="small">
                     {{ device.verified ? '已验证' : '未验证' }}
                   </n-tag>
                 </template>
@@ -107,22 +84,8 @@
             <n-divider />
             <h4>管理操作</h4>
             <n-space>
-              <n-button
-                v-if="canModifyPower"
-                size="small"
-                @click="handleModifyPower"
-              >
-                修改权限
-              </n-button>
-              <n-button
-                v-if="canBan"
-                size="small"
-                type="error"
-                ghost
-                @click="handleBan"
-              >
-                封禁
-              </n-button>
+              <n-button v-if="canModifyPower" size="small" @click="handleModifyPower">修改权限</n-button>
+              <n-button v-if="canBan" size="small" type="error" ghost @click="handleBan">封禁</n-button>
             </n-space>
           </div>
         </div>

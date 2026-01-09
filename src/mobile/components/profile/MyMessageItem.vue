@@ -5,8 +5,8 @@
       class="w-full py-5px grid grid-cols-[40px_1fr_40px] gap-10px items-center">
       <div><n-avatar :size="40" src="#" fallback-src="/logo.png" round /></div>
       <div class="flex flex-col gap-10px">
-        <div class="text-14px text-#333 font-bold">苏小研</div>
-        <div class="text-12px text-#999">消息内容：{{ props.message.content }}</div>
+        <div class="text-14px text-var(--hula-gray-900) font-bold">苏小研</div>
+        <div class="text-12px text-var(--hula-gray-400)">消息内容：{{ props.message.content }}</div>
       </div>
       <div class="relative w-full aspect-square rounded-10px mask-rounded">
         <img

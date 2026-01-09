@@ -7,7 +7,7 @@
       :enable-shadow="false"
       room-name="忘记密码" />
 
-    <n-config-provider :theme="lightTheme" class="bg-#fff rounded-8px select-none cursor-default">
+    <n-config-provider :theme="lightTheme" class="bg-var(--hula-white) rounded-8px select-none cursor-default">
       <n-flex vertical class="w-full size-full">
         <!-- 步骤条 -->
         <n-steps size="small" class="w-full px-40px mt-20px" :current="currentStep" :status="stepStatus || 'process'">
@@ -47,7 +47,7 @@
                   autoCapitalize="off"
                   maxlength="6" />
                 <n-button
-                  :color="'#13987f'"
+                  :color="'var(--hula-brand-primary)'"
                   ghost
                   :disabled="sendBtnDisabled"
                   :loading="sendingEmailCode"
@@ -145,7 +145,7 @@
 
         <!-- 第三步：完成 -->
         <div v-if="currentStep === 3" class="w-full max-w-300px mx-auto mt-100px text-center">
-          <!-- <n-icon size="64" class="text-#13987f">
+          <!-- <n-icon size="64" class="text-var(--hula-brand-primary)">
           <svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" />
           </svg>
@@ -153,7 +153,7 @@
           <img class="size-98px" src="/emoji/party-popper.webp" alt="Success celebration party popper emoji" />
 
           <div class="mt-16px text-18px">密码修改成功</div>
-          <div class="mt-16px text-14px text-#666">您已成功重置密码，可以使用新密码登录</div>
+          <div class="mt-16px text-14px text-var(--hula-gray-700)">您已成功重置密码，可以使用新密码登录</div>
         </div>
       </n-flex>
     </n-config-provider>
@@ -469,6 +469,6 @@ onBeforeUnmount(() => {
 @use '@/styles/scss/login';
 
 .white-text {
-  color: #fff;
+  color: var(--hula-white);
 }
 </style>

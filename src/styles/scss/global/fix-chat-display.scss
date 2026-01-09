@@ -8,7 +8,7 @@
 .chat-wrapper {
   min-height: 100% !important;
   height: 100% !important;
-  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
 }
 
 /* 主布局容器 */
@@ -20,7 +20,7 @@
 /* 右侧面板 */
 .right-panel,
 .layout-right {
-  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-left: 1px solid rgba(100, 162, 156, 0.2);
@@ -39,7 +39,7 @@
 
 /* 聊天头部 */
 .chat-header {
-  background: var(--matrix-bg-primary, rgba(255, 255, 255, 0.95)) !important;
+  background: var(--matrix-bg-primary, rgba(var(--hula-white-rgb), 0.95)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--matrix-border, rgba(100, 162, 156, 0.2));
@@ -57,7 +57,7 @@
 /* 聊天输入区域 */
 .chat-footer,
 .chat-input-container {
-  background: var(--matrix-bg-primary, rgba(255, 255, 255, 0.95)) !important;
+  background: var(--matrix-bg-primary, rgba(var(--hula-white-rgb), 0.95)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--matrix-border, rgba(100, 162, 156, 0.2));
@@ -99,7 +99,7 @@ html[data-theme='dark'] {
 
 /* 加载状态修复 */
 .loading-state {
-  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
   display: flex !important;
   align-items: center;
   justify-content: center;
@@ -108,7 +108,7 @@ html[data-theme='dark'] {
 /* Naive UI 组件背景修复 */
 .n-card,
 .n-drawer-body {
-  background: var(--matrix-bg-primary, rgba(255, 255, 255, 0.95)) !important;
+  background: var(--matrix-bg-primary, rgba(var(--hula-white-rgb), 0.95)) !important;
 }
 
 html[data-theme='dark'] {

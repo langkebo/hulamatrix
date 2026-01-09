@@ -21,11 +21,8 @@
             v-model:value="audioSettings.microphoneId"
             :options="availableMicrophones"
             placeholder="选择麦克风"
-            @update:value="changeMicrophone"
-          />
-          <div class="setting-description">
-            选择用于通话的麦克风设备
-          </div>
+            @update:value="changeMicrophone" />
+          <div class="setting-description">选择用于通话的麦克风设备</div>
         </div>
 
         <!-- 扬声器选择 -->
@@ -35,11 +32,8 @@
             v-model:value="audioSettings.speakerId"
             :options="availableSpeakers"
             placeholder="选择扬声器"
-            @update:value="changeSpeaker"
-          />
-          <div class="setting-description">
-            选择用于播放音频的输出设备
-          </div>
+            @update:value="changeSpeaker" />
+          <div class="setting-description">选择用于播放音频的输出设备</div>
         </div>
 
         <!-- 音量调节 -->
@@ -51,8 +45,7 @@
               :min="0"
               :max="100"
               :step="1"
-              @update:value="changeInputVolume"
-            />
+              @update:value="changeInputVolume" />
             <span class="volume-value">{{ audioSettings.inputVolume }}%</span>
           </div>
           <div class="audio-visualizer">
@@ -61,8 +54,7 @@
               :key="index"
               class="audio-bar"
               :class="{ active: level > 0 }"
-              :style="{ height: `${level}%` }"
-            ></div>
+              :style="{ height: `${level}%` }"></div>
           </div>
         </div>
 
@@ -70,30 +62,21 @@
         <div class="setting-item">
           <label>音频增强</label>
           <div class="toggle-group">
-            <n-switch
-              v-model:value="audioSettings.noiseCancellation"
-              @update:value="toggleNoiseCancellation"
-            >
+            <n-switch v-model:value="audioSettings.noiseCancellation" @update:value="toggleNoiseCancellation">
               <template #checked>已开启</template>
               <template #unchecked>已关闭</template>
             </n-switch>
             <span class="toggle-label">降噪</span>
           </div>
           <div class="toggle-group">
-            <n-switch
-              v-model:value="audioSettings.echoCancellation"
-              @update:value="toggleEchoCancellation"
-            >
+            <n-switch v-model:value="audioSettings.echoCancellation" @update:value="toggleEchoCancellation">
               <template #checked>已开启</template>
               <template #unchecked>已关闭</template>
             </n-switch>
             <span class="toggle-label">回声消除</span>
           </div>
           <div class="toggle-group">
-            <n-switch
-              v-model:value="audioSettings.autoGainControl"
-              @update:value="toggleAutoGainControl"
-            >
+            <n-switch v-model:value="audioSettings.autoGainControl" @update:value="toggleAutoGainControl">
               <template #checked>已开启</template>
               <template #unchecked>已关闭</template>
             </n-switch>
@@ -113,11 +96,8 @@
             v-model:value="videoSettings.cameraId"
             :options="availableCameras"
             placeholder="选择摄像头"
-            @update:value="changeCamera"
-          />
-          <div class="setting-description">
-            选择用于视频通话的摄像头设备
-          </div>
+            @update:value="changeCamera" />
+          <div class="setting-description">选择用于视频通话的摄像头设备</div>
         </div>
 
         <!-- 视频分辨率 -->
@@ -126,31 +106,22 @@
           <n-select
             v-model:value="videoSettings.quality"
             :options="videoQualityOptions"
-            @update:value="changeVideoQuality"
-          />
-          <div class="setting-description">
-            更高的质量需要更多的网络带宽
-          </div>
+            @update:value="changeVideoQuality" />
+          <div class="setting-description">更高的质量需要更多的网络带宽</div>
         </div>
 
         <!-- 视频效果 -->
         <div class="setting-item">
           <label>视频增强</label>
           <div class="toggle-group">
-            <n-switch
-              v-model:value="videoSettings.beautification"
-              @update:value="toggleBeautification"
-            >
+            <n-switch v-model:value="videoSettings.beautification" @update:value="toggleBeautification">
               <template #checked>已开启</template>
               <template #unchecked>已关闭</template>
             </n-switch>
             <span class="toggle-label">美颜</span>
           </div>
           <div class="toggle-group">
-            <n-switch
-              v-model:value="videoSettings.backgroundBlur"
-              @update:value="toggleBackgroundBlur"
-            >
+            <n-switch v-model:value="videoSettings.backgroundBlur" @update:value="toggleBackgroundBlur">
               <template #checked>已开启</template>
               <template #unchecked>已关闭</template>
             </n-switch>
@@ -166,8 +137,7 @@
             :min="0"
             :max="100"
             :step="1"
-            @update:value="changeBeautificationLevel"
-          />
+            @update:value="changeBeautificationLevel" />
         </div>
       </div>
 
@@ -178,14 +148,8 @@
         <!-- 服务器选择 -->
         <div class="setting-item">
           <label>连接服务器</label>
-          <n-select
-            v-model:value="networkSettings.server"
-            :options="serverOptions"
-            @update:value="changeServer"
-          />
-          <div class="setting-description">
-            选择延迟最低的媒体服务器
-          </div>
+          <n-select v-model:value="networkSettings.server" :options="serverOptions" @update:value="changeServer" />
+          <div class="setting-description">选择延迟最低的媒体服务器</div>
         </div>
 
         <!-- 带宽限制 -->
@@ -194,11 +158,8 @@
           <n-select
             v-model:value="networkSettings.bandwidthLimit"
             :options="bandwidthOptions"
-            @update:value="changeBandwidthLimit"
-          />
-          <div class="setting-description">
-            根据网络状况限制视频带宽
-          </div>
+            @update:value="changeBandwidthLimit" />
+          <div class="setting-description">根据网络状况限制视频带宽</div>
         </div>
       </div>
 
@@ -257,12 +218,8 @@
 
     <div class="settings-footer">
       <n-space>
-        <n-button @click="resetToDefaults">
-          重置默认
-        </n-button>
-        <n-button type="primary" @click="saveSettings">
-          保存设置
-        </n-button>
+        <n-button @click="resetToDefaults">重置默认</n-button>
+        <n-button type="primary" @click="saveSettings">保存设置</n-button>
       </n-space>
     </div>
   </div>

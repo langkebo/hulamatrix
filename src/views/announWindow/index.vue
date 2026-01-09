@@ -80,7 +80,7 @@
                       round
                       :size="28"
                       :src="avatarSrc(announcement.uid)"
-                      :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+                      :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
                       :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                     <n-flex vertical :size="4">
                       <div class="text-(12px [--chat-text-color])">
@@ -93,7 +93,7 @@
                   </n-flex>
                   <div
                     v-if="announcement?.top"
-                    class="p-[3px_4px] bg-[var(--hula-brand-primary)] c-#fff rounded-3px text-[10px] flex-center">
+                    class="p-[3px_4px] bg-[var(--hula-brand-primary)] c-var(--hula-white) rounded-3px text-[10px] flex-center">
                     <span>{{ t('announcement.form.pinned') }}</span>
                   </div>
                 </n-flex>
@@ -505,8 +505,8 @@ onMounted(async () => {
 }
 .content-collapsed {
   max-height: 100px; // 设置为约200px的显示高度
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0));
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0));
+  mask-image: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 1) 60%, rgba(var(--hula-black-rgb), 0));
+  -webkit-mask-image: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 1) 60%, rgba(var(--hula-black-rgb), 0));
 }
 .expand-button {
   display: flex;

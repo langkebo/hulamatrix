@@ -5,8 +5,7 @@
     preset="dialog"
     title="加入工作区"
     class="join-space-modal"
-    :style="{ width: isMobile() ? '100%' : '500px' }"
-  >
+    :style="{ width: isMobile() ? '100%' : '500px' }">
     <div class="join-space-dialog" :class="{ 'is-mobile': isMobile }">
       <!-- 空间信息展示 -->
       <div class="space-info" v-if="space">
@@ -89,11 +88,7 @@
       <!-- 申请表单 -->
       <div v-if="joinMethod === 'request'" class="request-form">
         <h4>申请信息</h4>
-        <n-form
-          ref="requestFormRef"
-          :model="requestForm"
-          :rules="requestRules"
-          label-placement="top">
+        <n-form ref="requestFormRef" :model="requestForm" :rules="requestRules" label-placement="top">
           <n-form-item label="申请理由" path="reason">
             <n-input
               v-model:value="requestForm.reason"
@@ -105,17 +100,11 @@
           </n-form-item>
 
           <n-form-item label="您的角色" path="role">
-            <n-select
-              v-model:value="requestForm.role"
-              :options="roleOptions"
-              placeholder="选择您的角色" />
+            <n-select v-model:value="requestForm.role" :options="roleOptions" placeholder="选择您的角色" />
           </n-form-item>
 
           <n-form-item label="相关技能" path="skills">
-            <n-dynamic-tags
-              v-model:value="requestForm.skills"
-              :max="5"
-              placeholder="添加您的相关技能" />
+            <n-dynamic-tags v-model:value="requestForm.skills" :max="5" placeholder="添加您的相关技能" />
           </n-form-item>
         </n-form>
       </div>
@@ -123,17 +112,9 @@
       <!-- 邀请码输入 -->
       <div v-if="joinMethod === 'invite'" class="invite-form">
         <h4>输入邀请码</h4>
-        <n-form
-          ref="inviteFormRef"
-          :model="inviteForm"
-          :rules="inviteRules"
-          label-placement="top">
+        <n-form ref="inviteFormRef" :model="inviteForm" :rules="inviteRules" label-placement="top">
           <n-form-item label="邀请码" path="code">
-            <n-input
-              v-model:value="inviteForm.code"
-              placeholder="请输入邀请码"
-              maxlength="20"
-              show-password-on="click">
+            <n-input v-model:value="inviteForm.code" placeholder="请输入邀请码" maxlength="20" show-password-on="click">
               <template #prefix>
                 <n-icon><Key /></n-icon>
               </template>
@@ -164,7 +145,6 @@
         </n-alert>
       </div>
 
-
       <!-- 频率限制提示 -->
       <div v-if="joinAttempts > 0" class="rate-limit">
         <n-alert type="warning" :closable="false">
@@ -177,11 +157,7 @@
     <template #action>
       <n-space>
         <n-button @click="handleCancel">取消</n-button>
-        <n-button
-          type="primary"
-          @click="handleJoin"
-          :loading="isJoining"
-          :disabled="!canJoin">
+        <n-button type="primary" @click="handleJoin" :loading="isJoining" :disabled="!canJoin">
           {{ getJoinButtonText() }}
         </n-button>
       </n-space>
@@ -189,22 +165,17 @@
   </n-modal>
 
   <!-- 成功提示 -->
-  <n-modal
-    v-model:show="showSuccess"
-    preset="dialog"
-    type="success"
-    title="申请已提交"
-    class="success-modal">
+  <n-modal v-model:show="showSuccess" preset="dialog" type="success" title="申请已提交" class="success-modal">
     <div class="success-content">
       <n-result status="success" title="申请已成功提交">
         <template #footer>
           <div class="success-details">
             <p v-if="joinMethod === 'direct'">
-              您已成功加入工作区 <strong>{{ space?.name }}</strong>！
+              您已成功加入工作区
+              <strong>{{ space?.name }}</strong>
+              ！
             </p>
-            <p v-else>
-              您的加入申请已发送给工作区管理员，我们将在 24 小时内处理您的申请。
-            </p>
+            <p v-else>您的加入申请已发送给工作区管理员，我们将在 24 小时内处理您的申请。</p>
             <div class="next-steps">
               <h5>接下来您可以：</h5>
               <ul>
@@ -221,9 +192,7 @@
     <template #action>
       <n-space>
         <n-button @click="showSuccess = false">关闭</n-button>
-        <n-button v-if="joinMethod === 'direct'" type="primary" @click="handleGoToSpace">
-          进入空间
-        </n-button>
+        <n-button v-if="joinMethod === 'direct'" type="primary" @click="handleGoToSpace">进入空间</n-button>
       </n-space>
     </template>
   </n-modal>

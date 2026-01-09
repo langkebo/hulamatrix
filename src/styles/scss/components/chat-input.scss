@@ -290,13 +290,13 @@
 
   &:hover {
     background: var(--danger-color);
-    color: #fff;
+    color: var(--hula-white);
     transform: scale(1.05);
   }
 
   &.recording {
     background: var(--danger-color);
-    color: #fff;
+    color: var(--hula-white);
     animation: recording-pulse 1.5s ease-in-out infinite;
   }
 
@@ -314,8 +314,8 @@
   transform: translateX(-50%);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
+  background: rgba(var(--hula-black-rgb), 0.8);
+  color: var(--hula-white);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   white-space: nowrap;

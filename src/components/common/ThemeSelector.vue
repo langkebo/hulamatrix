@@ -1,9 +1,5 @@
 <template>
-  <n-dropdown
-    :options="themeOptions"
-    @select="handleThemeSelect"
-    trigger="click"
-  >
+  <n-dropdown :options="themeOptions" @select="handleThemeSelect" trigger="click">
     <n-button quaternary circle size="small">
       <template #icon>
         <n-icon :component="ThemeIcon" />

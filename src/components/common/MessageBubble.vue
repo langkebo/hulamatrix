@@ -1,12 +1,8 @@
 <template>
   <div
     class="h-message-wrapper"
-    :class="[
-      `h-message-wrapper--${position}`,
-      { 'h-message-wrapper--selected': selected }
-    ]"
-    @click="handleClick"
-  >
+    :class="[`h-message-wrapper--${position}`, { 'h-message-wrapper--selected': selected }]"
+    @click="handleClick">
     <!-- 消息时间戳（悬停时显示） -->
     <div class="h-message-timestamp" v-if="showTimestamp">
       {{ formatTime(sendTime) }}
@@ -26,8 +22,7 @@
         { 'h-message-bubble--selected': selected },
         { 'h-message-bubble--loading': loading }
       ]"
-      :style="{ maxWidth: customMaxWidth }"
-    >
+      :style="{ maxWidth: customMaxWidth }">
       <!-- 回复消息引用 -->
       <div v-if="replyMessage" class="h-message-reply">
         <div class="h-message-reply__content">
@@ -46,11 +41,7 @@
       <!-- 消息操作栏（悬停时显示） -->
       <div class="h-message-actions">
         <Tooltip v-for="action in actions" :key="action.key" :text="action.tooltip">
-          <button
-            class="h-message-action"
-            @click="action.handler"
-            :disabled="action.disabled"
-          >
+          <button class="h-message-action" @click="action.handler" :disabled="action.disabled">
             <Icon :icon="action.icon" />
           </button>
         </Tooltip>

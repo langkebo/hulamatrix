@@ -8,10 +8,10 @@
   -webkit-user-select: none;
   transition: background-color 0.3s ease, color 0.3s ease;
 
-  --agreement-heading-color: #333;
+  --agreement-heading-color: var(--hula-gray-900);
   --agreement-subheading-color: #444;
   --agreement-paragraph-color: #555;
-  --agreement-muted-color: #666;
+  --agreement-muted-color: var(--hula-gray-700);
   --agreement-accent-color: var(--hula-brand-primary)90;
   --agreement-scrollbar-track: var(--hula-brand-primary);
   --agreement-scrollbar-thumb: var(--hula-brand-primary);

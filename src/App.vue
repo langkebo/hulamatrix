@@ -13,8 +13,7 @@
         :ws-state="wsConnectionState"
         :matrix-state="matrixStore.syncState"
         :is-syncing="chatStore.syncLoading || matrixStore.isSyncing"
-        mode="mini"
-      />
+        mode="mini" />
     </NaiveProvider>
   </div>
   <component :is="mobileRtcCallFloatCell" v-if="mobileRtcCallFloatCell" />

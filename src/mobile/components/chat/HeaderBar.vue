@@ -176,12 +176,12 @@ const onlineCount = computed(() => {
   transition: all 0.2s ease;
 
   &:active {
-    color: #13987f;
+    color: var(--hula-brand-primary);
     transform: scale(0.95);
   }
 
   &:hover {
-    color: #13987f;
+    color: var(--hula-brand-primary);
   }
 }
 </style>

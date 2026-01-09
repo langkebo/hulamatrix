@@ -38,7 +38,7 @@ select:focus-visible {
   z-index: 99999;
   padding: 8px 16px;
   background: var(--hula-brand-primary, var(--hula-brand-primary));
-  color: #fff;
+  color: var(--hula-white);
   text-decoration: none;
   font-weight: 500;
   transition: top 0.3s ease;
@@ -278,7 +278,7 @@ label {
   z-index: 99998;
   padding: 2px 6px;
   background: var(--hula-brand-primary, var(--hula-brand-primary));
-  color: #fff;
+  color: var(--hula-white);
   font-size: 10px;
   font-family: monospace;
   pointer-events: none;
@@ -298,8 +298,8 @@ label {
   position: absolute;
   z-index: 10000;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.9);
-  color: #fff;
+  background: rgba(var(--hula-black-rgb), 0.9);
+  color: var(--hula-white);
   font-size: 12px;
   line-height: 1.4;
   white-space: nowrap;
@@ -336,7 +336,7 @@ label {
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
 
   &:focus-within {
     outline: none;

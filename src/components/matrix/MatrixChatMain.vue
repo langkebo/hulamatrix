@@ -1,41 +1,51 @@
 <template>
   <div class="matrix-chat-main">
     <!-- 通话状态栏 -->
-    <MatrixCallBar
-      v-if="activeCall"
-      :call="activeCall as never"
-      @click="handleCallBarClick"
-    />
+    <MatrixCallBar v-if="activeCall" :call="activeCall as never" @click="handleCallBarClick" />
 
     <!-- 消息列表 -->
     <div class="message-list" ref="messageListRef">
       <!-- 加载更多 -->
       <div v-if="hasMore" class="load-more">
-        <n-button
-          text
-          :loading="loadingHistory"
-          @click="loadHistory"
-        >
-          加载历史消息
-        </n-button>
+        <n-button text :loading="loadingHistory" @click="loadHistory">加载历史消息</n-button>
       </div>
 
-    <!-- 消息项 -->
-    <n-virtual-list
-      v-if="messages.length > 200"
-      :items="messages"
-      :item-size="72">
-      <template #default="{ item: message }">
+      <!-- 消息项 -->
+      <n-virtual-list v-if="messages.length > 200" :items="messages" :item-size="72">
+        <template #default="{ item: message }">
+          <div
+            :key="message.eventId"
+            class="message-item"
+            data-test="message-item"
+            :class="{
+              own: isOwnMessage(message),
+              highlight: (message as ExtendedMatrixMessage).highlighted,
+              bot: (message as ExtendedMatrixMessage).senderType === 'bot'
+            }">
+            <MatrixMessage
+              :message="matrixMessageToMsgType(message)"
+              :show-avatar="!isConsecutive(message)"
+              :show-timestamp="shouldShowTimestamp(message)"
+              @user-click="handleUserClick"
+              @react="(_msg, emoji) => handleReaction(message.eventId, emoji)"
+              @reply="handleReply"
+              @edit="handleEdit"
+              @delete="handleDelete"
+              @retry="handleRetry" />
+          </div>
+        </template>
+      </n-virtual-list>
+      <template v-else>
         <div
+          v-for="message in messages"
           :key="message.eventId"
           class="message-item"
           data-test="message-item"
           :class="{
-            'own': isOwnMessage(message),
-            'highlight': (message as ExtendedMatrixMessage).highlighted,
-            'bot': (message as ExtendedMatrixMessage).senderType === 'bot'
-          }"
-        >
+            own: isOwnMessage(message),
+            highlight: (message as ExtendedMatrixMessage).highlighted,
+            bot: (message as ExtendedMatrixMessage).senderType === 'bot'
+          }">
           <MatrixMessage
             :message="matrixMessageToMsgType(message)"
             :show-avatar="!isConsecutive(message)"
@@ -45,36 +55,9 @@
             @reply="handleReply"
             @edit="handleEdit"
             @delete="handleDelete"
-            @retry="handleRetry"
-          />
+            @retry="handleRetry" />
         </div>
       </template>
-    </n-virtual-list>
-    <template v-else>
-      <div
-        v-for="message in messages"
-        :key="message.eventId"
-        class="message-item"
-        data-test="message-item"
-        :class="{
-          'own': isOwnMessage(message),
-          'highlight': (message as ExtendedMatrixMessage).highlighted,
-          'bot': (message as ExtendedMatrixMessage).senderType === 'bot'
-        }"
-      >
-        <MatrixMessage
-          :message="matrixMessageToMsgType(message)"
-          :show-avatar="!isConsecutive(message)"
-          :show-timestamp="shouldShowTimestamp(message)"
-          @user-click="handleUserClick"
-          @react="(_msg, emoji) => handleReaction(message.eventId, emoji)"
-          @reply="handleReply"
-          @edit="handleEdit"
-          @delete="handleDelete"
-          @retry="handleRetry"
-        />
-      </div>
-    </template>
 
       <!-- 正在输入 -->
       <div v-if="typingUsers.length > 0" class="typing-indicator">
@@ -90,64 +73,49 @@
 
       <!-- 空状态 -->
       <div v-if="messages.length === 0 && !loadingHistory" class="empty-state">
-        <n-empty
-          description="暂无消息"
-          size="large"
-        >
+        <n-empty description="暂无消息" size="large">
           <template #icon>
             <n-icon :component="Messages" size="48" />
           </template>
-          <n-button @click="handleEmptyAction">
-            发送第一条消息
-          </n-button>
+          <n-button @click="handleEmptyAction">发送第一条消息</n-button>
         </n-empty>
       </div>
     </div>
 
     <!-- 消息回复预览 -->
-    <div
-      v-if="replyingTo"
-      class="message-reply-preview"
-    >
+    <div v-if="replyingTo" class="message-reply-preview">
       <div class="reply-content">
         <n-icon :component="ArrowLeft" />
-        <span>回复 {{ isMsgType(replyingTo) ? (replyingTo.fromUser?.uid || replyingTo.id) : ((replyingTo as ExtendedMatrixMessage).senderName || replyingTo.sender) }} 的消息</span>
+        <span>
+          回复
+          {{
+            isMsgType(replyingTo)
+              ? replyingTo.fromUser?.uid || replyingTo.id
+              : (replyingTo as ExtendedMatrixMessage).senderName || replyingTo.sender
+          }}
+          的消息
+        </span>
         <span class="reply-text">{{ truncateText(getReplyText(), 50) }}</span>
       </div>
-      <n-button
-        text
-        size="small"
-        @click="cancelReply"
-      >
+      <n-button text size="small" @click="cancelReply">
         <n-icon :component="X" />
       </n-button>
     </div>
 
     <!-- 消息编辑预览 -->
-    <div
-      v-if="editingMessage"
-      class="message-edit-preview"
-    >
+    <div v-if="editingMessage" class="message-edit-preview">
       <div class="edit-content">
         <n-icon :component="Edit" />
         <span>编辑消息</span>
         <span class="edit-text">{{ truncateText(getMatrixMessageText(editingMessage.content), 50) }}</span>
       </div>
-      <n-button
-        text
-        size="small"
-        @click="cancelEdit"
-      >
+      <n-button text size="small" @click="cancelEdit">
         <n-icon :component="X" />
       </n-button>
     </div>
 
     <!-- 未读消息分隔线 -->
-    <div
-      v-if="unreadMarker"
-      class="unread-divider"
-      :style="{ top: unreadMarker.top + 'px' }"
-    >
+    <div v-if="unreadMarker" class="unread-divider" :style="{ top: unreadMarker.top + 'px' }">
       <div class="unread-line"></div>
       <span class="unread-text">{{ unreadMarker.count }} 条未读消息</span>
       <div class="unread-line"></div>
@@ -155,11 +123,7 @@
 
     <!-- 跳转到底部 -->
     <Transition name="fade">
-      <div
-        v-if="showScrollToBottom"
-        class="scroll-to-bottom"
-        @click="scrollToBottom"
-      >
+      <div v-if="showScrollToBottom" class="scroll-to-bottom" @click="scrollToBottom">
         <n-badge :value="newMessageCount" :max="99" show-zero>
           <n-button circle type="primary">
             <n-icon :component="ChevronDown" />
@@ -169,40 +133,17 @@
     </Transition>
 
     <!-- 引用消息弹窗 -->
-    <n-modal
-      v-model:show="showQuoteModal"
-      preset="card"
-      class="quote-modal"
-      title="引用消息"
-    >
-      <MatrixMessageQuote
-        v-if="quotedMessage"
-        :message="quotedMessage"
-        @close="showQuoteModal = false"
-      />
+    <n-modal v-model:show="showQuoteModal" preset="card" class="quote-modal" title="引用消息">
+      <MatrixMessageQuote v-if="quotedMessage" :message="quotedMessage" @close="showQuoteModal = false" />
     </n-modal>
 
     <!-- 消息详情弹窗 -->
-    <n-modal
-      v-model:show="showMessageDetail"
-      preset="card"
-      class="message-detail-modal"
-      title="消息详情"
-    >
-      <MessageDetail
-        v-if="detailMessage"
-        :message="detailMessage"
-        @close="showMessageDetail = false"
-      />
+    <n-modal v-model:show="showMessageDetail" preset="card" class="message-detail-modal" title="消息详情">
+      <MessageDetail v-if="detailMessage" :message="detailMessage" @close="showMessageDetail = false" />
     </n-modal>
 
     <!-- 通话全屏覆盖 -->
-    <MatrixCallOptimized
-      v-if="activeCall"
-      :room-id="roomId"
-      :compact="false"
-      @call-ended="handleCallEnded"
-    />
+    <MatrixCallOptimized v-if="activeCall" :room-id="roomId" :compact="false" @call-ended="handleCallEnded" />
   </div>
 </template>
 
@@ -979,7 +920,9 @@ onUnmounted(() => {
 }
 
 @keyframes typing {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.5;
   }

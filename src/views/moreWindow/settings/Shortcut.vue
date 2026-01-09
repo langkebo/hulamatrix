@@ -7,7 +7,9 @@
       <n-flex class="item" align="center" justify="space-between">
         <n-flex vertical :size="8">
           <span>{{ t('setting.shortcut.enable_global_shortcuts') }}</span>
-          <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.enable_global_shortcuts_hint') }}</span>
+          <span class="text-(12px var(--hula-brand-primary))">
+            {{ t('setting.shortcut.enable_global_shortcuts_hint') }}
+          </span>
         </n-flex>
 
         <n-switch v-model:value="globalShortcutEnabled" @update:value="handleGlobalShortcutToggle" size="small" />
@@ -111,7 +113,9 @@
       <n-flex class="item" align="center" justify="space-between">
         <n-flex vertical :size="8">
           <span>{{ t('setting.shortcut.send_message_shortcut') }}</span>
-          <span class="text-(12px var(--hula-brand-primary))">{{ t('setting.shortcut.send_message_shortcut_hint') }}</span>
+          <span class="text-(12px var(--hula-brand-primary))">
+            {{ t('setting.shortcut.send_message_shortcut_hint') }}
+          </span>
         </n-flex>
 
         <n-flex align="center" :size="12">

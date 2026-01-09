@@ -2,7 +2,7 @@
   <MobileLayout :backgroundImage="'/login_bg.png'" :safeAreaTop="false" :safeAreaBottom="false">
     <div class="h-full flex-col-center gap-40px">
       <div class="flex-center absolute top-13vh left-36px">
-        <p class="text-(20px #333)">HI, 欢迎来到</p>
+        <p class="text-(20px var(--hula-gray-900))">HI, 欢迎来到</p>
         <img :src="brandSvg" alt="HuLa 品牌标志" class="w-80px h-20px" />
       </div>
 
@@ -13,7 +13,7 @@
             @click="activeTab = 'login'"
             :class="[
               'z-999 w-100px text-center transition-all duration-300 ease-out',
-              activeTab === 'login' ? 'text-(18px #000)' : 'text-(16px #666)'
+              activeTab === 'login' ? 'text-(18px var(--hula-black))' : 'text-(16px var(--hula-gray-700))'
             ]">
             登录
           </div>
@@ -21,7 +21,7 @@
             @click="activeTab = 'register'"
             :class="[
               'z-999 w-100px text-center transition-all duration-300 ease-out',
-              activeTab === 'register' ? 'text-(18px #000)' : 'text-(16px #666)'
+              activeTab === 'register' ? 'text-(18px var(--hula-black))' : 'text-(16px var(--hula-gray-700))'
             ]">
             注册
           </div>
@@ -40,7 +40,7 @@
       <!-- 登录表单 -->
       <n-flex v-if="activeTab === 'login'" class="text-center w-80%" vertical :size="16">
         <n-flex justify="center" class="mt--10px">
-          <n-button text :style="{ color: '#13987f' }" @click="toggleServerInput()">自定义服务器</n-button>
+          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="toggleServerInput()">自定义服务器</n-button>
         </n-flex>
         <n-collapse-transition :show="matrixStore.serverInputVisible">
           <n-flex vertical :size="8">
@@ -93,7 +93,7 @@
               v-for="item in loginHistories"
               :key="item.account"
               @click="giveAccount(item)"
-              class="p-8px hover:bg-#f3f3f3 hover:rounded-6px">
+              class="p-8px hover:bg-var(--hula-gray-100) hover:rounded-6px">
               <div class="flex-between-center">
                 <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" class="size-28px bg-#ccc rounded-50%" />
                 <p class="text-14px color-#505050">{{ item.account }}</p>
@@ -121,7 +121,7 @@
           clearable />
 
         <n-flex justify="flex-end" :size="6">
-          <n-button text :style="{ color: '#13987f' }" @click="handleForgetPassword">忘记密码</n-button>
+          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="handleForgetPassword">忘记密码</n-button>
         </n-flex>
 
         <n-button
@@ -667,7 +667,7 @@ onUnmounted(() => {
 
 /* HuLa 品牌色链接 */
 .brand-link {
-  color: #13987f;
+  color: var(--hula-brand-primary);
   cursor: pointer;
 
   &:hover {
@@ -681,7 +681,7 @@ onUnmounted(() => {
 
 /* HuLa 品牌色背景 */
 .brand-bg {
-  background: #13987f;
+  background: var(--hula-brand-primary);
 }
 
 /* 选项卡指示器 */
@@ -701,6 +701,6 @@ onUnmounted(() => {
 
 /* 登录/注册按钮 */
 .login-button {
-  color: #fff;
+  color: var(--hula-white);
 }
 </style>

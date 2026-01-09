@@ -399,8 +399,8 @@
   left: 0;
   z-index: 99999;
   padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
+  background: rgba(var(--hula-black-rgb), 0.8);
+  color: var(--hula-white);
   font-size: 10px;
   font-family: monospace;
 

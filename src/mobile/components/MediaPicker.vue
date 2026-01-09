@@ -425,7 +425,7 @@ function formatFileSize(bytes: number): string {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background-color: var(--color-bg-secondary, #f5f5f5);
+  background-color: var(--color-bg-secondary, var(--hula-gray-50));
   border-radius: 12px;
 }
 
@@ -473,7 +473,7 @@ function formatFileSize(bytes: number): string {
   justify-content: center;
   font-size: 18px;
   color: white;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(var(--hula-black-rgb), 0.6);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -489,7 +489,7 @@ function formatFileSize(bytes: number): string {
   left: 0;
   right: 0;
   padding: 4px 8px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.7), transparent);
   color: white;
   font-size: 10px;
 }
@@ -520,7 +520,7 @@ function formatFileSize(bytes: number): string {
   padding: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #333);
+  color: var(--color-text-primary, var(--hula-gray-900));
   background-color: white;
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: 12px;
@@ -545,7 +545,7 @@ function formatFileSize(bytes: number): string {
 .selection-counter {
   text-align: center;
   font-size: 12px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary, var(--hula-gray-700));
 }
 
 .error-message {
@@ -555,7 +555,7 @@ function formatFileSize(bytes: number): string {
   padding: 12px;
   font-size: 14px;
   color: var(--color-error, #ff4d4f);
-  background-color: var(--color-bg-error, #fff2f0);
+  background-color: var(--color-bg-error, var(--hula-white)2f0);
   border-radius: 8px;
 }
 
@@ -567,7 +567,7 @@ function formatFileSize(bytes: number): string {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(var(--hula-white-rgb), 0.9);
   border-radius: 12px;
 }
 
@@ -583,7 +583,7 @@ function formatFileSize(bytes: number): string {
 .processing-text {
   margin: 0;
   font-size: 14px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary, var(--hula-gray-700));
 }
 
 @keyframes spin {

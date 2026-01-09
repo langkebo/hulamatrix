@@ -12,25 +12,13 @@
       <div class="settings-section">
         <div class="section-header">
           <h4>{{ t('migration.settings.section_title') }}</h4>
-          <n-tag
-            v-if="currentArchitecture === 'matrix'"
-            type="success"
-            size="small"
-          >
+          <n-tag v-if="currentArchitecture === 'matrix'" type="success" size="small">
             {{ t('migration.settings.status.migrated') }}
           </n-tag>
-          <n-tag
-            v-else-if="isMigrating"
-            type="warning"
-            size="small"
-          >
+          <n-tag v-else-if="isMigrating" type="warning" size="small">
             {{ t('migration.settings.status.migrating') }}
           </n-tag>
-          <n-tag
-            v-else
-            type="default"
-            size="small"
-          >
+          <n-tag v-else type="default" size="small">
             {{ t('migration.settings.status.websocket') }}
           </n-tag>
         </div>
@@ -40,12 +28,7 @@
 
           <!-- 迁移进度 -->
           <div v-if="isMigrating" class="migration-progress-mini">
-            <n-progress
-              type="line"
-              :percentage="progress"
-              :height="8"
-              processing
-            />
+            <n-progress type="line" :percentage="progress" :height="8" processing />
             <p class="progress-text">{{ currentStep }}</p>
           </div>
 
@@ -67,30 +50,19 @@
                 v-if="!isMigrating && !isCompleted && canMigrate"
                 type="primary"
                 @click="handleStartMigration"
-                :loading="isLoading"
-              >
+                :loading="isLoading">
                 {{ t('migration.settings.start') }}
               </n-button>
 
-              <n-button
-                v-if="isMigrating"
-                @click="handleViewDetails"
-              >
+              <n-button v-if="isMigrating" @click="handleViewDetails">
                 {{ t('migration.settings.view_details') }}
               </n-button>
 
-              <n-button
-                v-if="isCompleted"
-                @click="handleViewReport"
-              >
+              <n-button v-if="isCompleted" @click="handleViewReport">
                 {{ t('migration.settings.view_report') }}
               </n-button>
 
-              <n-button
-                @click="handleLearnMore"
-                text
-                type="primary"
-              >
+              <n-button @click="handleLearnMore" text type="primary">
                 {{ t('migration.settings.learn_more') }}
               </n-button>
             </n-space>
@@ -105,8 +77,7 @@
                     v-for="item in migrationHistory"
                     :key="item.date"
                     :type="getHistoryItemType(item.status)"
-                    :title="formatHistoryDate(item.date)"
-                  >
+                    :title="formatHistoryDate(item.date)">
                     <span :class="`status-${item.status}`">
                       {{ getHistoryStatusText(item.status) }}
                     </span>
@@ -132,8 +103,7 @@
     <MigrationProgress
       v-model="showDetailsDialog"
       @migration-completed="handleMigrationCompleted"
-      @migration-failed="handleMigrationFailed"
-    />
+      @migration-failed="handleMigrationFailed" />
 
     <!-- 迁移报告对话框 -->
     <n-modal v-model:show="showReportDialog" preset="dialog" title="迁移报告">
@@ -159,21 +129,15 @@
             <n-descriptions-item label="失败房间">
               {{ stats.failedRooms }}
             </n-descriptions-item>
-            <n-descriptions-item label="成功率">
-              {{ stats.successRate }}%
-            </n-descriptions-item>
+            <n-descriptions-item label="成功率">{{ stats.successRate }}%</n-descriptions-item>
           </n-descriptions>
         </div>
       </div>
 
       <template #action>
         <n-space>
-          <n-button @click="showReportDialog = false">
-            关闭
-          </n-button>
-          <n-button type="primary" @click="handleExportReport">
-            导出报告
-          </n-button>
+          <n-button @click="showReportDialog = false">关闭</n-button>
+          <n-button type="primary" @click="handleExportReport">导出报告</n-button>
         </n-space>
       </template>
     </n-modal>

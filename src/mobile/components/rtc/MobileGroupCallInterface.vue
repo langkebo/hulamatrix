@@ -13,14 +13,14 @@
 
       <div class="setup-options">
         <div class="option-card" :class="{ selected: callType === 'voice' }" @click="callType = 'voice'">
-          <n-icon :size="40" :color="callType === 'voice' ? '#18a058' : '#666'">
+          <n-icon :size="40" :color="callType === 'voice' ? '#18a058' : 'var(--hula-gray-700)'">
             <Phone />
           </n-icon>
           <span>语音通话</span>
         </div>
 
         <div class="option-card" :class="{ selected: callType === 'video' }" @click="callType = 'video'">
-          <n-icon :size="40" :color="callType === 'video' ? '#18a058' : '#666'">
+          <n-icon :size="40" :color="callType === 'video' ? '#18a058' : 'var(--hula-gray-700)'">
             <Video />
           </n-icon>
           <span>视频通话</span>
@@ -33,11 +33,7 @@
         </div>
 
         <div v-if="participants.length > 0" class="participants-list">
-          <div
-            v-for="participant in participants"
-            :key="participant.userId"
-            class="participant-item"
-          >
+          <div v-for="participant in participants" :key="participant.userId" class="participant-item">
             <n-avatar :src="participant.avatar" :size="40" round>
               <template #fallback>
                 <span>{{ participant.displayName?.[0] || participant.userId[1] }}</span>
@@ -59,22 +55,14 @@
       </div>
 
       <div class="setup-actions">
-        <n-button
-          type="primary"
-          size="large"
-          block
-          :loading="joining"
-          @click="startCall"
-        >
+        <n-button type="primary" size="large" block :loading="joining" @click="startCall">
           <template #icon>
             <n-icon><PhoneCall /></n-icon>
           </template>
           开始通话
         </n-button>
 
-        <n-button block size="large" @click="handleCancel">
-          取消
-        </n-button>
+        <n-button block size="large" @click="handleCancel">取消</n-button>
       </div>
     </div>
 
@@ -86,9 +74,8 @@
           v-for="stream in videoStreams"
           :key="stream.id"
           class="video-tile"
-          :class="{ 'local-stream': stream.isLocal, 'speaking': stream.speaking }"
-        >
-          <video :ref="el => setVideoRef(el, stream.id)" autoplay muted playsinline />
+          :class="{ 'local-stream': stream.isLocal, speaking: stream.speaking }">
+          <video :ref="(el) => setVideoRef(el, stream.id)" autoplay muted playsinline />
           <div class="video-label">
             <span>{{ stream.name }}</span>
             <n-icon v-if="stream.muted" :size="16"><MicrophoneOff /></n-icon>
@@ -135,8 +122,7 @@
               :src="p.avatar"
               :size="48"
               round
-              :class="{ speaking: p.speaking, muted: p.muted }"
-            >
+              :class="{ speaking: p.speaking, muted: p.muted }">
               <template #fallback>
                 <span>{{ p.displayName?.[0] || p.userId[1] }}</span>
               </template>
@@ -152,9 +138,8 @@
           circle
           :style="{ width: '56px', height: '56px' }"
           :type="isMuted ? 'error' : 'default'"
-          :class="{ 'control-btn': true, 'muted': isMuted }"
-          @click="toggleMute"
-        >
+          :class="{ 'control-btn': true, muted: isMuted }"
+          @click="toggleMute">
           <template #icon>
             <n-icon :size="28">
               <Microphone v-if="!isMuted" />
@@ -170,8 +155,7 @@
           :style="{ width: '56px', height: '56px' }"
           :type="isVideoOff ? 'error' : 'default'"
           :class="{ 'control-btn': true, 'video-off': isVideoOff }"
-          @click="toggleVideo"
-        >
+          @click="toggleVideo">
           <template #icon>
             <n-icon :size="28">
               <Video v-if="!isVideoOff" />
@@ -186,8 +170,7 @@
           circle
           :style="{ width: '48px', height: '48px' }"
           class="control-btn secondary"
-          @click="switchCamera"
-        >
+          @click="switchCamera">
           <template #icon>
             <n-icon :size="24">
               <CameraRotate />
@@ -201,8 +184,7 @@
           :style="{ width: '64px', height: '64px' }"
           type="error"
           class="control-btn end-call"
-          @click="endCall"
-        >
+          @click="endCall">
           <template #icon>
             <n-icon :size="32">
               <PhoneOff />
@@ -216,8 +198,7 @@
           :style="{ width: '48px', height: '48px' }"
           :type="isSpeakerOn ? 'primary' : 'default'"
           class="control-btn secondary"
-          @click="toggleSpeaker"
-        >
+          @click="toggleSpeaker">
           <template #icon>
             <n-icon :size="24">
               <Volume v-if="isSpeakerOn" />
@@ -249,18 +230,12 @@
           </div>
         </div>
 
-        <n-button type="primary" size="large" block @click="handleClose">
-          返回
-        </n-button>
+        <n-button type="primary" size="large" block @click="handleClose">返回</n-button>
       </div>
     </div>
 
     <!-- Connection Status Banner -->
-    <div
-      v-if="isInCall && connectionStatus !== 'connected'"
-      class="connection-banner"
-      :class="connectionStatus"
-    >
+    <div v-if="isInCall && connectionStatus !== 'connected'" class="connection-banner" :class="connectionStatus">
       <n-spin v-if="connectionStatus === 'connecting'" :size="16" />
       <n-icon v-else :size="16">
         <AlertCircle />
@@ -756,7 +731,7 @@ watch(callType, (_newType) => {
   flex-direction: column;
 
   &.in-call {
-    background: #000;
+    background: var(--hula-black);
   }
 }
 
@@ -880,7 +855,7 @@ watch(callType, (_newType) => {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 1fr;
     gap: 2px;
-    background: #000;
+    background: var(--hula-black);
 
     .video-tile {
       position: relative;
@@ -910,7 +885,7 @@ watch(callType, (_newType) => {
         align-items: center;
         gap: 4px;
         padding: 4px 8px;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(var(--hula-black-rgb), 0.6);
         border-radius: 4px;
         color: white;
         font-size: 12px;
@@ -934,9 +909,9 @@ watch(callType, (_newType) => {
       right: 16px;
       width: 120px;
       height: 160px;
-      background: #000;
+      background: var(--hula-black);
       border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(var(--hula-white-rgb), 0.3);
       overflow: hidden;
       z-index: 10;
 
@@ -971,7 +946,7 @@ watch(callType, (_newType) => {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(var(--hula-white-rgb), 0.8);
       font-size: 14px;
       margin-bottom: 24px;
 
@@ -1027,15 +1002,15 @@ watch(callType, (_newType) => {
     justify-content: center;
     gap: 16px;
     padding: 24px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(var(--hula-black-rgb), 0.8);
     backdrop-filter: blur(10px);
 
     .control-btn {
       flex-shrink: 0;
 
       &.secondary {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(var(--hula-white-rgb), 0.1);
+        border: 1px solid rgba(var(--hula-white-rgb), 0.2);
       }
 
       &.muted,
@@ -1113,7 +1088,7 @@ watch(callType, (_newType) => {
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
   color: white;
   font-size: 14px;
   z-index: 100;
@@ -1128,7 +1103,8 @@ watch(callType, (_newType) => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

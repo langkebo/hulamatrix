@@ -14,17 +14,9 @@
 
       <!-- User List -->
       <div class="user-list">
-        <div
-          v-for="user in sortedUsers"
-          :key="user.userId"
-          class="user-item"
-        >
+        <div v-for="user in sortedUsers" :key="user.userId" class="user-item">
           <div class="user-info">
-            <n-avatar
-              :src="getAvatarUrl(user.avatarUrl)"
-              :size="40"
-              round
-            >
+            <n-avatar :src="getAvatarUrl(user.avatarUrl)" :size="40" round>
               {{ getInitials(user.displayName) }}
             </n-avatar>
             <div class="user-details">
@@ -41,17 +33,11 @@
               :step="10"
               size="small"
               style="width: 80px"
-              @update:value="(v) => handleUpdate(user.userId, v || 0)"
-            />
+              @update:value="(v) => handleUpdate(user.userId, v || 0)" />
           </div>
 
           <div class="user-actions">
-            <n-button
-              text
-              type="error"
-              size="small"
-              @click="handleRemove(user)"
-            >
+            <n-button text type="error" size="small" @click="handleRemove(user)">
               <template #icon>
                 <n-icon><X /></n-icon>
               </template>
@@ -63,19 +49,10 @@
       </div>
 
       <!-- Add User Modal -->
-      <n-modal
-        v-model:show="showAddModal"
-        preset="dialog"
-        title="添加用户权限"
-      >
+      <n-modal v-model:show="showAddModal" preset="dialog" title="添加用户权限">
         <n-form ref="formRef" :model="addForm" :rules="addRules">
           <n-form-item label="选择用户" path="userId">
-            <n-select
-              v-model:value="addForm.userId"
-              :options="availableUsers"
-              filterable
-              placeholder="搜索用户"
-            />
+            <n-select v-model:value="addForm.userId" :options="availableUsers" filterable placeholder="搜索用户" />
           </n-form-item>
           <n-form-item label="权限等级" path="powerLevel">
             <n-slider
@@ -83,15 +60,12 @@
               :min="0"
               :max="100"
               :step="10"
-              :marks="{ 0: '成员', 50: '版主', 100: '管理员' }"
-            />
+              :marks="{ 0: '成员', 50: '版主', 100: '管理员' }" />
           </n-form-item>
         </n-form>
         <template #action>
           <n-button @click="showAddModal = false">取消</n-button>
-          <n-button type="primary" @click="handleAdd">
-            添加
-          </n-button>
+          <n-button type="primary" @click="handleAdd">添加</n-button>
         </template>
       </n-modal>
     </n-spin>

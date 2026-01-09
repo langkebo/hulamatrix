@@ -268,17 +268,17 @@ onMounted(() => {
   letter-spacing: 0.5px;
 
   &.status-current {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(var(--hula-white-rgb), 0.25);
     color: white;
   }
 
   &.status-verified {
     background: #e6f7ef;
-    color: #13987f;
+    color: var(--hula-brand-primary);
   }
 
   &.status-unverified {
-    background: #fff4e6;
+    background: var(--hula-white)4e6;
     color: #fa8c16;
   }
 }
@@ -297,14 +297,14 @@ onMounted(() => {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .section-count {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .empty-state {
@@ -315,7 +315,7 @@ onMounted(() => {
   padding: 40px 20px;
   background: white;
   border-radius: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 
   p {
     margin-top: 12px;
@@ -340,7 +340,7 @@ onMounted(() => {
   border: 1px solid #f0f0f0;
 
   &.device-verified {
-    border-left: 3px solid #13987f;
+    border-left: 3px solid var(--hula-brand-primary);
   }
 }
 
@@ -352,7 +352,7 @@ onMounted(() => {
 
 .device-seen {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .device-actions {
@@ -377,7 +377,7 @@ onMounted(() => {
   transition: background-color 0.2s;
 
   &:active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   .item-content {
@@ -386,13 +386,13 @@ onMounted(() => {
 
   .item-label {
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 2px;
   }
 
   .item-description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 </style>

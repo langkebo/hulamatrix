@@ -25,7 +25,7 @@
   /* 悬停效果 */
   &:hover {
     transform: translateY(-1px);
-    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
 
   /* 点击涟漪效果 */
@@ -37,7 +37,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(var(--hula-white-rgb), 0.5);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
     pointer-events: none;
@@ -54,7 +54,7 @@
   background: var(--hula-bubble-received, var(--chat-left-bg, var(--hula-brand-primary)));
   color: var(--hula-bubble-received-text, var(--chat-text-color, var(--hula-brand-primary)));
   border-top-left-radius: var(--radius-sm, 4px);
-  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(var(--hula-black-rgb), 0.05));
 
   /* 小尾巴 */
   &::before {
@@ -67,7 +67,7 @@
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
     border-right: 8px solid var(--hula-bubble-received, var(--chat-left-bg, var(--hula-brand-primary)));
-    filter: drop-shadow(-2px 2px 2px rgba(0, 0, 0, 0.08));
+    filter: drop-shadow(-2px 2px 2px rgba(var(--hula-black-rgb), 0.08));
   }
 
   /* 悬停优化 */
@@ -85,7 +85,7 @@
   background: var(--hula-bubble-sent, var(--hula-brand-primary, var(--hula-brand-primary)));
   color: var(--hula-bubble-sent-text, var(--hula-brand-primary));
   border-top-right-radius: var(--radius-sm, 4px);
-  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(var(--hula-black-rgb), 0.05));
 
   /* 小尾巴 */
   &::before {
@@ -98,13 +98,13 @@
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
     border-left: 8px solid var(--hula-bubble-sent, var(--hula-brand-primary, var(--hula-brand-primary)));
-    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.08));
+    filter: drop-shadow(2px 2px 2px rgba(var(--hula-black-rgb), 0.08));
   }
 
   /* 选中文本时的背景 */
   &::selection,
   *::selection {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(var(--hula-white-rgb), 0.3);
   }
 
   /* 悬停优化 */
@@ -258,7 +258,7 @@
   left: 0;
   margin-bottom: 4px;
   padding: 2px 6px;
-  background: var(--hula-bg-elevated, rgba(0, 0, 0, 0.8));
+  background: var(--hula-bg-elevated, rgba(var(--hula-black-rgb), 0.8));
   color: var(--hula-brand-primary);
   font-size: 10px;
   border-radius: 4px;
@@ -281,7 +281,7 @@
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.15));
+    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(var(--hula-black-rgb), 0.15));
   }
 
   img {
@@ -296,13 +296,13 @@
   position: relative;
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
-  background: #000;
+  background: var(--hula-black);
   cursor: pointer;
   transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.15));
+    box-shadow: var(--hula-shadow-lg, 0 10px 15px rgba(var(--hula-black-rgb), 0.15));
 
     .play-icon {
       transform: scale(1.1);
@@ -322,7 +322,7 @@
     transform: translate(-50%, -50%);
     width: 48px;
     height: 48px;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(var(--hula-black-rgb), 0.6);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -333,7 +333,7 @@
       content: '';
       width: 0;
       height: 0;
-      border-left: 16px solid #fff;
+      border-left: 16px solid var(--hula-white);
       border-top: 10px solid transparent;
       border-bottom: 10px solid transparent;
       margin-left: 4px;
@@ -356,7 +356,7 @@
   &:hover {
     background: var(--hula-bg-hover, var(--hula-gray-50, var(--hula-brand-primary)));
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
 
   .file-icon {
@@ -367,7 +367,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--hula-white);
     font-size: var(--font-size-xl, 24px);
   }
 
@@ -424,7 +424,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--hula-white);
     font-size: var(--font-size-lg, 18px);
   }
 
@@ -489,7 +489,7 @@
   transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
-    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
 
   .location-map {
@@ -500,8 +500,8 @@
 
   .location-info {
     padding: var(--spacing-md, 16px);
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
+    background: rgba(var(--hula-black-rgb), 0.5);
+    color: var(--hula-white);
 
     .location-name {
       font-weight: 500;
@@ -564,7 +564,7 @@
 .h-message-ripple-effect {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(var(--hula-white-rgb), 0.4);
   transform: scale(0);
   animation: ripple-animation 0.6s ease-out;
   pointer-events: none;

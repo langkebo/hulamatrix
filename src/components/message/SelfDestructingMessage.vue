@@ -5,7 +5,10 @@
     :class="{ destroying: isDestroying, warning: isWarningState, compact: compactMode }"
     :data-message-id="messageId">
     <!-- 自毁倒计时显示 -->
-    <div v-if="showCountdown && remainingTime > 0" class="self-destruct-indicator" :class="{ 'indicator-compact': compactMode }">
+    <div
+      v-if="showCountdown && remainingTime > 0"
+      class="self-destruct-indicator"
+      :class="{ 'indicator-compact': compactMode }">
       <div class="countdown-circle" :style="countdownStyle">
         <Icon icon="mdi:timer-sand" class="timer-icon" :class="{ 'animate-pulse': remainingTime <= warningTime }" />
         <span class="countdown-text">{{ formatTime(remainingTime) }}</span>
@@ -34,7 +37,7 @@
             v-for="i in 12"
             :key="i"
             class="particle"
-            :style="{ 
+            :style="{
               transform: `rotate(${i * 30}deg) translateX(20px)`,
               '--rotation': `${i * 30}deg`
             }" />
@@ -475,27 +478,27 @@ defineExpose({
 .self-destructing-message-wrapper.compact {
   .self-destruct-indicator {
     top: -30px;
-    
+
     .countdown-circle {
       width: 24px;
       height: 24px;
-      
+
       &::before {
         width: 20px;
         height: 20px;
       }
-      
+
       .timer-icon {
         font-size: 10px;
         margin-bottom: 0;
       }
-      
+
       .countdown-text {
         font-size: 8px;
       }
     }
   }
-  
+
   &.indicator-compact {
     top: -24px;
   }
@@ -516,7 +519,7 @@ defineExpose({
   border-radius: 8px;
   font-size: 12px;
   z-index: 10;
-  
+
   .destroyed-icon {
     font-size: 16px;
     color: var(--hula-brand-primary);

@@ -1,36 +1,34 @@
 <template>
-  <div 
-    v-if="isSelfDestructMessage && !isDestroyed" 
+  <div
+    v-if="isSelfDestructMessage && !isDestroyed"
     class="self-destruct-countdown"
-    :class="{ 
-      'warning': isWarningState, 
-      'destroying': isDestroying,
-      'inline': inline 
+    :class="{
+      warning: isWarningState,
+      destroying: isDestroying,
+      inline: inline
     }">
     <!-- 倒计时指示器 -->
     <div class="countdown-badge" :style="{ borderColor: countdownColor }">
-      <Icon 
-        icon="mdi:timer-sand" 
-        class="timer-icon" 
+      <Icon
+        icon="mdi:timer-sand"
+        class="timer-icon"
         :class="{ 'animate-pulse': isWarningState }"
-        :style="{ color: countdownColor }" 
-      />
+        :style="{ color: countdownColor }" />
       <span class="countdown-text" :style="{ color: countdownColor }">
         {{ formattedRemainingTime }}
       </span>
     </div>
-    
+
     <!-- 进度条 (可选) -->
     <div v-if="showProgress" class="countdown-progress">
-      <div 
-        class="progress-bar" 
-        :style="{ 
+      <div
+        class="progress-bar"
+        :style="{
           width: countdownProgress + '%',
-          backgroundColor: countdownColor 
-        }" 
-      />
+          backgroundColor: countdownColor
+        }" />
     </div>
-    
+
     <!-- 警告提示 -->
     <Transition name="fade">
       <div v-if="isWarningState && showWarningText" class="warning-text">
@@ -39,7 +37,7 @@
       </div>
     </Transition>
   </div>
-  
+
   <!-- 已销毁提示 (Requirements 7.5) -->
   <Transition name="fade">
     <div v-if="isDestroyed && showDestroyedNotice" class="destroyed-notice">
@@ -138,16 +136,16 @@ watch(isDestroyed, (destroyed) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  
+
   &.inline {
     display: inline-flex;
     margin-left: 8px;
   }
-  
+
   &.warning {
     animation: warningPulse 1.5s infinite;
   }
-  
+
   &.destroying {
     animation: destroyingBlink 0.5s infinite;
   }
@@ -162,11 +160,11 @@ watch(isDestroyed, (destroyed) => {
   background: rgba(var(--hula-black-rgb), 0.05);
   border: 1px solid;
   font-size: 11px;
-  
+
   .timer-icon {
     font-size: 12px;
   }
-  
+
   .countdown-text {
     font-weight: 500;
     white-space: nowrap;
@@ -179,10 +177,12 @@ watch(isDestroyed, (destroyed) => {
   background: rgba(var(--hula-black-rgb), 0.1);
   border-radius: 1px;
   overflow: hidden;
-  
+
   .progress-bar {
     height: 100%;
-    transition: width 1s linear, background-color 0.3s ease;
+    transition:
+      width 1s linear,
+      background-color 0.3s ease;
   }
 }
 
@@ -195,7 +195,7 @@ watch(isDestroyed, (destroyed) => {
   border-radius: 4px;
   font-size: 10px;
   color: var(--hula-brand-primary);
-  
+
   .warning-icon {
     font-size: 12px;
   }
@@ -210,7 +210,7 @@ watch(isDestroyed, (destroyed) => {
   border-radius: 6px;
   font-size: 11px;
   color: white;
-  
+
   .destroyed-icon {
     font-size: 14px;
     color: var(--hula-brand-primary);
@@ -219,7 +219,8 @@ watch(isDestroyed, (destroyed) => {
 
 // 动画
 @keyframes warningPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -228,7 +229,8 @@ watch(isDestroyed, (destroyed) => {
 }
 
 @keyframes destroyingBlink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -252,11 +254,11 @@ watch(isDestroyed, (destroyed) => {
   .countdown-badge {
     background: rgba(var(--hula-white-rgb), 0.1);
   }
-  
+
   .countdown-progress {
     background: rgba(var(--hula-white-rgb), 0.1);
   }
-  
+
   .warning-text {
     background: rgba(239, 68, 68, 0.2);
   }

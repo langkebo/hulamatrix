@@ -6,7 +6,7 @@
           v-if="isMac()"
           @click="editInfo.show = false"
           class="mac-close size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% mt-6px select-none absolute left-6px">
-          <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+          <svg class="hidden size-7px color-var(--hula-black) select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
         </div>
@@ -29,9 +29,15 @@
           <n-popover trigger="hover" :delay="300" :duration="300" placement="bottom">
             <template #trigger>
               <div class="avatar-wrapper relative" @click="openAvatarCropper">
-                <n-avatar :size="80" :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)" round color="var(--hula-brand-primary)" />
+                <n-avatar
+                  :size="80"
+                  :src="AvatarUtils.getAvatarUrl(editInfo.content.avatar!)"
+                  round
+                  color="var(--hula-brand-primary)" />
                 <div class="avatar-hover absolute size-full rounded-50% flex-center">
-                  <span class="text-12px color-var(--hula-brand-primary)">{{ t('home.profile_edit.avatar.change') }}</span>
+                  <span class="text-12px color-var(--hula-brand-primary)">
+                    {{ t('home.profile_edit.avatar.change') }}
+                  </span>
                 </div>
               </div>
             </template>
@@ -199,7 +205,7 @@ onMounted(async () => {
 }
 
 .save-button {
-  color: #fff;
+  color: var(--hula-white);
 }
 
 .avatar-wrapper {

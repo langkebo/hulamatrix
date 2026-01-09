@@ -6,22 +6,22 @@
 /* ==================== Vant CSS 变量映射 ==================== */
 :root {
   /* 主要颜色 */
-  --van-primary-color: var(--hula-accent, #13987f);
-  --van-success-color: var(--hula-success, #13987f);
+  --van-primary-color: var(--hula-accent, var(--hula-brand-primary));
+  --van-success-color: var(--hula-success, var(--hula-brand-primary));
   --van-warning-color: var(--hula-warning, #ff976a);
   --van-danger-color: var(--hula-error, #ee0a24);
   --van-info-color: var(--hula-info, #1989fa);
 
   /* 文字颜色 */
   --van-text-color: var(--hula-text-primary, #18212c);
-  --van-text-color-link: var(--hula-accent, #13987f);
+  --van-text-color-link: var(--hula-accent, var(--hula-brand-primary));
   --van-text-color-base: var(--hula-text-primary, #18212c);
   --van-text-color-2: var(--hula-text-regular, #576b95);
   --van-text-color-3: var(--hula-text-secondary, #9fa1a9);
 
   /* 背景颜色 */
   --van-background-color: var(--hula-bg-page, #f7f8fa);
-  --van-background-color-light: var(--hula-bg-component, #ffffff);
+  --van-background-color-light: var(--hula-bg-component, var(--hula-white)fff);
 
   /* 边框颜色 */
   --van-border-color: var(--hula-border-light, #ebedf0);
@@ -36,10 +36,10 @@
   --van-disabled-opacity: 0.5;
 
   /* 白色（用于遮罩等） */
-  --van-white: #ffffff;
+  --van-white: var(--hula-white)fff;
 
   /* 黑色 */
-  --van-black: #000000;
+  --van-black: var(--hula-black)000;
 
   /* 圆角 */
   --van-radius-sm: var(--hula-radius-sm, 4px);
@@ -64,9 +64,9 @@
   --van-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* 阴影 */
-  --van-shadow-sm: var(--hula-shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.05));
-  --van-shadow-md: var(--hula-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
-  --van-shadow-lg: var(--hula-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.12));
+  --van-shadow-sm: var(--hula-shadow-sm, 0 2px 4px rgba(var(--hula-black-rgb), 0.05));
+  --van-shadow-md: var(--hula-shadow-md, 0 4px 12px rgba(var(--hula-black-rgb), 0.08));
+  --van-shadow-lg: var(--hula-shadow-lg, 0 8px 24px rgba(var(--hula-black-rgb), 0.12));
 }
 
 /* ==================== 深色模式 ==================== */
@@ -78,11 +78,11 @@ html[data-theme='dark'] {
   --van-danger-color: var(--hula-error, #f54a5f);
 
   /* 文字颜色（深色模式） */
-  --van-text-color: var(--hula-text-primary, #ffffff);
+  --van-text-color: var(--hula-text-primary, var(--hula-white)fff);
   --van-text-color-link: var(--hula-accent, #1ec29f);
-  --van-text-color-base: var(--hula-text-primary, #ffffff);
-  --van-text-color-2: var(--hula-text-regular, rgba(255, 255, 255, 0.75));
-  --van-text-color-3: var(--hula-text-secondary, rgba(255, 255, 255, 0.55));
+  --van-text-color-base: var(--hula-text-primary, var(--hula-white)fff);
+  --van-text-color-2: var(--hula-text-regular, rgba(var(--hula-white-rgb), 0.75));
+  --van-text-color-3: var(--hula-text-secondary, rgba(var(--hula-white-rgb), 0.55));
 
   /* 背景颜色（深色模式） */
   --van-background-color: var(--hula-bg-page, #1a1a1a);
@@ -96,7 +96,7 @@ html[data-theme='dark'] {
   --van-active-color: var(--hula-bg-component, #242424);
 
   /* 禁用状态（深色模式） */
-  --van-disabled-color: var(--hula-text-disabled, rgba(255, 255, 255, 0.25));
+  --van-disabled-color: var(--hula-text-disabled, rgba(var(--hula-white-rgb), 0.25));
 }
 
 /* ==================== Vant 组件特定样式覆盖 ==================== */
@@ -145,12 +145,12 @@ html[data-theme='dark'] {
 
 .van-toast--success {
   background: var(--hula-success) !important;
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 .van-toast--fail {
   background: var(--hula-error) !important;
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 /* Field 输入框 */
@@ -225,12 +225,12 @@ html[data-theme='dark'] {
 /* Tag 标签 */
 .van-tag--primary {
   background: var(--hula-accent) !important;
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 .van-tag--success {
   background: var(--hula-success) !important;
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 /* Switch 开关 */

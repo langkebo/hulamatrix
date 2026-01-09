@@ -1,11 +1,7 @@
 <template>
   <AutoFixHeightPage :show-footer="false">
     <template #header>
-      <HeaderBar
-        :isOfficial="false"
-        class="bg-white header-border"
-        :hidden-right="true"
-        room-name="群公告" />
+      <HeaderBar :isOfficial="false" class="bg-white header-border" :hidden-right="true" room-name="群公告" />
     </template>
 
     <template #container>
@@ -23,11 +19,7 @@
                     <span class="text-#717171">发布人:</span>
                     <span class="text-black">{{ groupStore.getUserInfo(item.uid)?.name }}</span>
                   </span>
-                  <span
-                    v-if="item.isTop"
-                    class="top-badge">
-                    置顶
-                  </span>
+                  <span v-if="item.isTop" class="top-badge">置顶</span>
                 </div>
                 <!-- 公告内容 -->
                 <div class="text-14px line-clamp-3 line-height-20px text-#717171 max-h-60px">
@@ -162,9 +154,9 @@ onActivated(() => {
 }
 
 .top-badge {
-  color: #13987F;
+  color: var(--hula-brand-primary);
   border: 1px solid;
-  border-color: #13987f;
+  border-color: var(--hula-brand-primary);
   border-radius: 15px;
   padding: 5px 7px;
   font-size: 12px;

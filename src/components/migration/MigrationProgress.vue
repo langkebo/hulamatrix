@@ -8,23 +8,14 @@
             v-for="step in steps"
             :key="step.name"
             :title="step.description"
-            :description="getStepDescription(step)"
-          />
+            :description="getStepDescription(step)" />
         </n-steps>
       </div>
 
       <!-- 进度条 -->
       <div class="progress-section">
-        <n-progress
-          type="line"
-          :percentage="state.progress"
-          :status="getProgressStatus()"
-          :height="24"
-          processing
-        >
-          <div class="progress-text">
-            {{ state.progress }}% - {{ state.currentStep }}
-          </div>
+        <n-progress type="line" :percentage="state.progress" :status="getProgressStatus()" :height="24" processing>
+          <div class="progress-text">{{ state.progress }}% - {{ state.currentStep }}</div>
         </n-progress>
       </div>
 
@@ -56,8 +47,7 @@
                 v-for="(item, index) in state.failedRooms"
                 :key="item.roomId"
                 :title="item.roomId"
-                :name="index"
-              >
+                :name="index">
                 {{ item.error }}
               </n-collapse-item>
             </n-collapse>
@@ -79,39 +69,23 @@
           v-if="!state.isMigrating && state.phase !== 'completed'"
           @click="handleStart"
           :loading="loading"
-          type="primary"
-        >
+          type="primary">
           {{ t('migration.start') }}
         </n-button>
 
-        <n-button
-          v-if="state.isMigrating"
-          @click="handleCancel"
-          :disabled="!canCancel"
-        >
+        <n-button v-if="state.isMigrating" @click="handleCancel" :disabled="!canCancel">
           {{ t('migration.cancel') }}
         </n-button>
 
-        <n-button
-          v-if="state.phase === 'completed'"
-          @click="handleClose"
-          type="primary"
-        >
+        <n-button v-if="state.phase === 'completed'" @click="handleClose" type="primary">
           {{ t('migration.close') }}
         </n-button>
 
-        <n-button
-          v-if="!state.isMigrating && state.phase === 'completed'"
-          @click="handleRollback"
-          :loading="loading"
-        >
+        <n-button v-if="!state.isMigrating && state.phase === 'completed'" @click="handleRollback" :loading="loading">
           {{ t('migration.rollback') }}
         </n-button>
 
-        <n-button
-          @click="toggleDetails"
-          :type="showDetails ? 'default' : 'tertiary'"
-        >
+        <n-button @click="toggleDetails" :type="showDetails ? 'default' : 'tertiary'">
           {{ showDetails ? t('migration.hide_details') : t('migration.show_details') }}
         </n-button>
       </n-space>

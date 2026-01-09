@@ -14,12 +14,7 @@
       </div>
 
       <div class="history-list">
-        <div
-          v-for="item in displayHistory"
-          :key="item.id"
-          class="history-item"
-          @click="handleSelectHistory(item)"
-        >
+        <div v-for="item in displayHistory" :key="item.id" class="history-item" @click="handleSelectHistory(item)">
           <div class="item-left">
             <n-icon size="18" class="history-icon">
               <Clock />
@@ -57,9 +52,7 @@
     <!-- Clear All Confirmation Dialog -->
     <n-modal v-model:show="showClearDialog" preset="dialog" title="清空搜索历史">
       <div class="clear-dialog-content">
-        <n-alert type="warning" class="mb-3">
-          确定要清空所有搜索历史吗？此操作不可撤销。
-        </n-alert>
+        <n-alert type="warning" class="mb-3">确定要清空所有搜索历史吗？此操作不可撤销。</n-alert>
         <div class="history-stats">
           <div class="stat-item">
             <span class="stat-label">总记录数</span>
@@ -81,9 +74,7 @@
       </div>
       <template #action>
         <n-button @click="showClearDialog = false">取消</n-button>
-        <n-button type="error" :loading="isClearing" @click="confirmClearAll">
-          清空全部
-        </n-button>
+        <n-button type="error" :loading="isClearing" @click="confirmClearAll">清空全部</n-button>
       </template>
     </n-modal>
 
@@ -94,8 +85,7 @@
           <n-select
             v-model:value="settings.retentionDays"
             :options="retentionOptions"
-            @update:value="handleUpdateSettings"
-          />
+            @update:value="handleUpdateSettings" />
         </n-form-item>
         <n-form-item label="最大记录数量">
           <n-input-number
@@ -103,8 +93,7 @@
             :min="10"
             :max="500"
             :step="10"
-            @update:value="handleUpdateSettings"
-          />
+            @update:value="handleUpdateSettings" />
         </n-form-item>
         <n-checkbox v-model:checked="settings.saveMessageSearch" @update:checked="handleUpdateSettings">
           保存消息搜索历史

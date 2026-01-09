@@ -20,7 +20,9 @@
 
         <!-- 好友申请列表 - 仅处理好友请求，群通知已移除 -->
         <ApplyList
-          v-else-if="detailsContent && isDetails && isDetailsContent(detailsContent) && detailsContent.applyType === 'friend'"
+          v-else-if="
+            detailsContent && isDetails && isDetailsContent(detailsContent) && detailsContent.applyType === 'friend'
+          "
           type="friend" />
 
         <!-- 聊天界面背景图标 (only show when not in standard layout mode) -->
@@ -141,7 +143,7 @@ onMounted(() => {
 
 <style scoped>
 .main-layout {
-  background: var(--right-theme-bg-color, rgba(255, 255, 255, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }

@@ -5,23 +5,12 @@
     <div v-if="callType === 'video'" class="video-layout">
       <!-- Remote Video (Full Screen) -->
       <div class="remote-video-container">
-        <video
-          ref="remoteVideoRef"
-          class="remote-video"
-          :srcObject="remoteStream"
-          autoplay
-          playsinline
-          muted
-        />
+        <video ref="remoteVideoRef" class="remote-video" :srcObject="remoteStream" autoplay playsinline muted />
 
         <!-- Remote Overlay (Top) -->
         <div class="remote-overlay-top">
           <div class="participant-info">
-            <n-avatar
-              :src="remoteParticipant?.avatar || ''"
-              :size="40"
-              round
-            >
+            <n-avatar :src="remoteParticipant?.avatar || ''" :size="40" round>
               <template #fallback>
                 <span>{{ remoteParticipant?.name?.charAt(0) || '?' }}</span>
               </template>
@@ -42,12 +31,11 @@
         <div
           v-if="localStream && !isLocalVideoHidden"
           class="local-video-container"
-          :class="{ 'dragging': isDraggingLocal }"
+          :class="{ dragging: isDraggingLocal }"
           @touchstart="startDragLocal"
           @touchmove="onDragLocal"
           @touchend="stopDragLocal"
-          @click="toggleLocalVideo"
-        >
+          @click="toggleLocalVideo">
           <video
             ref="localVideoRef"
             class="local-video"
@@ -55,8 +43,7 @@
             autoplay
             playsinline
             muted
-            :style="localVideoStyle"
-          />
+            :style="localVideoStyle" />
           <div v-if="isCameraOff" class="camera-off-indicator">
             <n-icon :size="32"><CameraOff /></n-icon>
           </div>
@@ -65,11 +52,7 @@
         <!-- Waiting Screen -->
         <div v-if="callState === 'calling'" class="waiting-screen">
           <div class="caller-info">
-            <n-avatar
-              :src="remoteParticipant?.avatar || ''"
-              :size="100"
-              round
-            >
+            <n-avatar :src="remoteParticipant?.avatar || ''" :size="100" round>
               <template #fallback>
                 <span style="font-size: 40px">{{ remoteParticipant?.name?.charAt(0) || '?' }}</span>
               </template>
@@ -87,12 +70,7 @@
       <div class="call-controls-bottom">
         <div class="primary-controls">
           <!-- Mute -->
-          <n-button
-            circle
-            :type="isMuted ? 'error' : 'default'"
-            :style="controlButtonStyle"
-            @click="toggleMicrophone"
-          >
+          <n-button circle :type="isMuted ? 'error' : 'default'" :style="controlButtonStyle" @click="toggleMicrophone">
             <template #icon>
               <n-icon :size="24">
                 <MicrophoneOff v-if="isMuted" />
@@ -102,12 +80,7 @@
           </n-button>
 
           <!-- Camera Toggle -->
-          <n-button
-            circle
-            :type="isCameraOff ? 'error' : 'default'"
-            :style="controlButtonStyle"
-            @click="toggleCamera"
-          >
+          <n-button circle :type="isCameraOff ? 'error' : 'default'" :style="controlButtonStyle" @click="toggleCamera">
             <template #icon>
               <n-icon :size="24">
                 <VideoOff v-if="isCameraOff" />
@@ -117,12 +90,7 @@
           </n-button>
 
           <!-- End Call -->
-          <n-button
-            circle
-            type="error"
-            :style="endCallButtonStyle"
-            @click="endCall"
-          >
+          <n-button circle type="error" :style="endCallButtonStyle" @click="endCall">
             <template #icon>
               <n-icon :size="28"><PhoneOff /></n-icon>
             </template>
@@ -133,8 +101,7 @@
             circle
             :type="isSpeakerOn ? 'default' : 'warning'"
             :style="controlButtonStyle"
-            @click="toggleSpeaker"
-          >
+            @click="toggleSpeaker">
             <template #icon>
               <n-icon :size="24">
                 <Volume v-if="!isSpeakerOn" />
@@ -144,11 +111,7 @@
           </n-button>
 
           <!-- Switch Camera -->
-          <n-button
-            circle
-            :style="controlButtonStyle"
-            @click="switchCamera"
-          >
+          <n-button circle :style="controlButtonStyle" @click="switchCamera">
             <template #icon>
               <n-icon :size="24"><CameraRotate /></n-icon>
             </template>
@@ -157,11 +120,7 @@
 
         <div class="secondary-controls">
           <!-- Hide Local Video -->
-          <n-button
-            text
-            :style="{ color: 'white' }"
-            @click="toggleLocalVideo"
-          >
+          <n-button text :style="{ color: 'white' }" @click="toggleLocalVideo">
             <template #icon>
               <n-icon :size="20">
                 <EyeOff v-if="!isLocalVideoHidden" />
@@ -185,11 +144,7 @@
       <div class="audio-content">
         <!-- Avatar -->
         <div class="avatar-container">
-          <n-avatar
-            :src="remoteParticipant?.avatar || ''"
-            :size="150"
-            round
-          >
+          <n-avatar :src="remoteParticipant?.avatar || ''" :size="150" round>
             <template #fallback>
               <span style="font-size: 60px">{{ remoteParticipant?.name?.charAt(0) || '?' }}</span>
             </template>
@@ -213,12 +168,7 @@
         <!-- Controls -->
         <div class="audio-controls">
           <!-- Mute -->
-          <n-button
-            circle
-            :type="isMuted ? 'error' : 'default'"
-            :style="audioControlStyle"
-            @click="toggleMicrophone"
-          >
+          <n-button circle :type="isMuted ? 'error' : 'default'" :style="audioControlStyle" @click="toggleMicrophone">
             <template #icon>
               <n-icon :size="28">
                 <MicrophoneOff v-if="isMuted" />
@@ -232,8 +182,7 @@
             circle
             :type="isSpeakerOn ? 'default' : 'warning'"
             :style="audioControlStyle"
-            @click="toggleSpeaker"
-          >
+            @click="toggleSpeaker">
             <template #icon>
               <n-icon :size="28">
                 <Volume v-if="!isSpeakerOn" />
@@ -243,12 +192,7 @@
           </n-button>
 
           <!-- End Call -->
-          <n-button
-            circle
-            type="error"
-            :style="audioEndCallStyle"
-            @click="endCall"
-          >
+          <n-button circle type="error" :style="audioEndCallStyle" @click="endCall">
             <template #icon>
               <n-icon :size="32"><PhoneOff /></n-icon>
             </template>
@@ -260,11 +204,7 @@
     <!-- Incoming Call Sheet (if not initiator) -->
     <div v-if="showIncomingSheet" class="incoming-call-sheet">
       <div class="sheet-content">
-        <n-avatar
-          :src="remoteParticipant?.avatar || ''"
-          :size="80"
-          round
-        >
+        <n-avatar :src="remoteParticipant?.avatar || ''" :size="80" round>
           <template #fallback>
             <span style="font-size: 32px">{{ remoteParticipant?.name?.charAt(0) || '?' }}</span>
           </template>
@@ -273,22 +213,12 @@
         <div class="call-type-text">{{ callType === 'video' ? '视频通话' : '语音通话' }}</div>
 
         <div class="incoming-actions">
-          <n-button
-            circle
-            type="error"
-            :style="incomingActionStyle"
-            @click="rejectCall"
-          >
+          <n-button circle type="error" :style="incomingActionStyle" @click="rejectCall">
             <template #icon>
               <n-icon :size="28"><PhoneOff /></n-icon>
             </template>
           </n-button>
-          <n-button
-            circle
-            type="success"
-            :style="incomingActionStyle"
-            @click="acceptCall"
-          >
+          <n-button circle type="success" :style="incomingActionStyle" @click="acceptCall">
             <template #icon>
               <n-icon :size="28"><Phone /></n-icon>
             </template>
@@ -390,7 +320,7 @@ const dragStartVideoPos = ref({ x: 0, y: 0 })
 const controlButtonStyle = {
   width: '56px',
   height: '56px',
-  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  backgroundColor: 'rgba(var(--hula-white-rgb), 0.2)',
   border: 'none',
   color: 'white'
 }
@@ -404,7 +334,7 @@ const endCallButtonStyle = {
 const audioControlStyle = {
   width: '64px',
   height: '64px',
-  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  backgroundColor: 'rgba(var(--hula-white-rgb), 0.15)',
   border: 'none',
   color: 'white'
 }
@@ -559,7 +489,7 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  background: #000;
+  background: var(--hula-black);
   z-index: 1000;
   overflow: hidden;
 
@@ -593,7 +523,7 @@ defineExpose({
     right: 0;
     padding: 16px;
     padding-top: max(16px, env(safe-area-inset-top));
-    background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+    background: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 0.6), transparent);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -611,7 +541,7 @@ defineExpose({
         }
 
         .call-status {
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(var(--hula-white-rgb), 0.7);
           font-size: 12px;
         }
       }
@@ -630,7 +560,7 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(var(--hula-black-rgb), 0.7);
 
     .caller-info {
       display: flex;
@@ -658,10 +588,10 @@ defineExpose({
   height: 160px;
   bottom: 180px;
   right: 16px;
-  background: #333;
+  background: var(--hula-gray-900);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(var(--hula-black-rgb), 0.3);
   touch-action: none;
 
   &.dragging {
@@ -681,7 +611,7 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(var(--hula-black-rgb), 0.5);
     color: white;
   }
 }
@@ -693,7 +623,7 @@ defineExpose({
   right: 0;
   padding: 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
 
   .primary-controls {
     display: flex;
@@ -734,7 +664,7 @@ defineExpose({
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--hula-white-rgb), 0.1);
     animation: pulse-audio 2s infinite;
 
     &:nth-child(2) {
@@ -805,7 +735,8 @@ defineExpose({
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -817,7 +748,7 @@ defineExpose({
 .incoming-call-sheet {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(var(--hula-black-rgb), 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -843,7 +774,7 @@ defineExpose({
     }
 
     .call-type-text {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(var(--hula-white-rgb), 0.7);
       font-size: 16px;
     }
 

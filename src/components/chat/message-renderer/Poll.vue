@@ -29,12 +29,8 @@
         <div class="poll-answer-text">{{ answer.text }}</div>
 
         <!-- Progress Bar (shown after voting or when poll is ended) -->
-        <div
-          v-if="showResults || poll?.isEnded"
-          class="poll-answer-bar">
-          <div
-            class="poll-answer-fill"
-            :style="{ width: `${getAnswerPercentage(answer.id)}%` }" />
+        <div v-if="showResults || poll?.isEnded" class="poll-answer-bar">
+          <div class="poll-answer-fill" :style="{ width: `${getAnswerPercentage(answer.id)}%` }" />
         </div>
 
         <!-- Vote Count / Percentage -->
@@ -73,11 +69,7 @@
         @click.stop="handleSubmitVote">
         {{ t('message.poll.submit') }}
       </n-button>
-      <n-button
-        v-if="isPollCreator"
-        size="small"
-        tertiary
-        @click.stop="handleEndPoll">
+      <n-button v-if="isPollCreator" size="small" tertiary @click.stop="handleEndPoll">
         {{ t('message.poll.end') }}
       </n-button>
     </div>

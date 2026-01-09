@@ -63,11 +63,11 @@ const typingText = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   font-size: 12px;
-  color: #fff;
+  color: var(--hula-white);
 
   .typing-dots {
     display: flex;
@@ -77,7 +77,7 @@ const typingText = computed(() => {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #fff;
+      background: var(--hula-white);
       animation: typing-bounce 1.4s infinite ease-in-out;
 
       &:nth-child(1) {

@@ -13,7 +13,7 @@
               <Transition mode="out-in">
                 <svg
                   v-if="plugin.state === PluginEnum.NOT_INSTALLED || plugin.state === PluginEnum.DOWNLOADING"
-                  class="size-34px color-#999">
+                  class="size-34px color-var(--hula-gray-400)">
                   <use :href="`#${plugin.icon}`"></use>
                 </svg>
                 <template v-else>
@@ -26,10 +26,10 @@
 
             <n-flex vertical :size="10">
               <n-flex align="center" :size="6">
-                <p class="text-(14px #666) pl-4px">{{ plugin.title }}</p>
+                <p class="text-(14px var(--hula-gray-700)) pl-4px">{{ plugin.title }}</p>
 
                 <Transition>
-                  <svg v-if="plugin.isAdd && plugin.state !== PluginEnum.BUILTIN" class="color-#666 size-14px">
+                  <svg v-if="plugin.isAdd && plugin.state !== PluginEnum.BUILTIN" class="color-var(--hula-gray-700) size-14px">
                     <use href="#notOnTop"></use>
                   </svg>
                 </Transition>
@@ -39,7 +39,9 @@
                 <n-flex
                   v-if="plugin.state === PluginEnum.UNINSTALLING"
                   class="relative rounded-22px bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
-                  <p class="text-(12px var(--hula-brand-primary) center)">{{ t('home.plugins.status.uninstalling') }}</p>
+                  <p class="text-(12px var(--hula-brand-primary) center)">
+                    {{ t('home.plugins.status.uninstalling') }}
+                  </p>
                 </n-flex>
 
                 <n-flex

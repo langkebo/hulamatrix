@@ -3,13 +3,7 @@ import { msg } from '@/utils/SafeUI'
   <div class="emoji-picker" :class="{ 'is-inline': inline }">
     <!-- 搜索栏 -->
     <div class="emoji-search">
-      <n-input
-        v-model:value="searchQuery"
-        placeholder="搜索表情..."
-        size="small"
-        clearable
-        @input="searchEmojis"
-      >
+      <n-input v-model:value="searchQuery" placeholder="搜索表情..." size="small" clearable @input="searchEmojis">
         <template #prefix>
           <n-icon><Search /></n-icon>
         </template>
@@ -23,8 +17,7 @@ import { msg } from '@/utils/SafeUI'
         :key="category.id"
         class="category-tab"
         :class="{ active: activeCategory === category.id }"
-        @click="selectCategory(category.id)"
-      >
+        @click="selectCategory(category.id)">
         <span class="category-icon">{{ category.icon }}</span>
         <span class="category-name">{{ category.name }}</span>
       </div>
@@ -39,8 +32,7 @@ import { msg } from '@/utils/SafeUI'
         :class="{ 'is-recent': isRecentEmoji(emoji.unicode) }"
         @click="selectEmoji(emoji)"
         @mouseenter="(event) => showEmojiInfo(emoji, event)"
-        @mouseleave="hideEmojiInfo"
-      >
+        @mouseleave="hideEmojiInfo">
         <span class="emoji-char">{{ emoji.unicode }}</span>
         <div v-if="emoji.shortcodes && emoji.shortcodes.length > 0" class="emoji-shortcode">
           :{{ emoji.shortcodes[0] }}:
@@ -58,19 +50,14 @@ import { msg } from '@/utils/SafeUI'
           class="skin-tone"
           :class="{ active: selectedSkinTone === tone.value }"
           :style="{ backgroundColor: tone.color }"
-          @click="selectSkinTone(tone.value)"
-        >
+          @click="selectSkinTone(tone.value)">
           <span>{{ tone.preview }}</span>
         </div>
       </div>
     </div>
 
     <!-- 浮动提示 -->
-    <div
-      v-if="hoveredEmoji"
-      class="emoji-tooltip"
-      :style="tooltipStyle"
-    >
+    <div v-if="hoveredEmoji" class="emoji-tooltip" :style="tooltipStyle">
       <div class="tooltip-content">
         <div class="emoji-preview">{{ hoveredEmoji.unicode }}</div>
         <div class="emoji-details">

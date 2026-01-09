@@ -267,7 +267,7 @@
     &--active {
       background: var(--primary-color);
       border-color: var(--primary-color);
-      color: #fff;
+      color: var(--hula-white);
     }
   }
 }
@@ -328,11 +328,11 @@ html[data-theme='dark'] {
   }
 
   .n-modal-mask {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(var(--hula-black-rgb), 0.7);
   }
 
   .n-drawer-mask {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(var(--hula-black-rgb), 0.5);
   }
 
   .n-message,

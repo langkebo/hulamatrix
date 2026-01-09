@@ -14,7 +14,9 @@
       <div class="p-8px flex items-center gap-10px">
         <n-button size="tiny" secondary @click="joinPublicRoom">加入公共大厅</n-button>
         <n-input v-model:value="mxid" size="tiny" class="w-240px" placeholder="输入完整 MXID 如 @user:domain" />
-        <n-button size="tiny" tertiary type="primary" class="mxid-dm-btn" @click="startDmByMxid">按MXID发起私聊</n-button>
+        <n-button size="tiny" tertiary type="primary" class="mxid-dm-btn" @click="startDmByMxid">
+          按MXID发起私聊
+        </n-button>
         <n-button size="tiny" tertiary type="error" @click="handleDeleteCurrent">删除选中会话</n-button>
       </div>
       <!-- 统一的会话列表组件 -->
@@ -523,8 +525,8 @@ onMounted(async () => {
 <style lang="scss" scoped>
 @use '@/styles/scss/message';
 
-:deep(.mxid-dm-btn .n-button__content){
-  color:#fff !important;
+:deep(.mxid-dm-btn .n-button__content) {
+  color: var(--hula-white) !important;
 }
 
 #image-no-data {

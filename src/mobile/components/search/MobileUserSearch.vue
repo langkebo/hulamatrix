@@ -10,23 +10,14 @@
         clearable
         :loading="searching"
         @keyup.enter="handleSearch"
-        @input="handleInput"
-      >
+        @input="handleInput">
         <template #prefix>
           <n-icon>
             <Search />
           </n-icon>
         </template>
         <template #suffix>
-          <n-button
-            v-if="searchQuery"
-            text
-            type="primary"
-            :loading="searching"
-            @click="handleSearch"
-          >
-            搜索
-          </n-button>
+          <n-button v-if="searchQuery" text type="primary" :loading="searching" @click="handleSearch">搜索</n-button>
         </template>
       </n-input>
     </div>
@@ -35,17 +26,10 @@
     <div v-if="!hasSearched && searchHistory.length > 0" class="search-history-section">
       <div class="section-header">
         <span class="section-title">最近搜索</span>
-        <n-button text size="small" @click="clearHistory">
-          清除
-        </n-button>
+        <n-button text size="small" @click="clearHistory">清除</n-button>
       </div>
       <div class="history-list">
-        <div
-          v-for="item in searchHistory"
-          :key="item.userId"
-          class="history-item"
-          @click="searchFromHistory(item)"
-        >
+        <div v-for="item in searchHistory" :key="item.userId" class="history-item" @click="searchFromHistory(item)">
           <n-icon size="16">
             <History />
           </n-icon>
@@ -71,9 +55,7 @@
           <AlertCircle />
         </n-icon>
         <p>{{ error }}</p>
-        <n-button type="primary" @click="handleSearch">
-          重试
-        </n-button>
+        <n-button type="primary" @click="handleSearch">重试</n-button>
       </div>
 
       <!-- Empty State -->
@@ -87,22 +69,10 @@
 
       <!-- Results List -->
       <div v-else class="results-list">
-        <div class="results-count">
-          找到 {{ searchResults.length }} 个用户
-        </div>
+        <div class="results-count">找到 {{ searchResults.length }} 个用户</div>
 
-        <div
-          v-for="user in searchResults"
-          :key="user.userId"
-          class="user-item"
-          @click="handleUserClick(user)"
-        >
-          <n-avatar
-            :src="getAvatarUrl(user.avatarUrl)"
-            :size="48"
-            round
-            class="user-avatar"
-          >
+        <div v-for="user in searchResults" :key="user.userId" class="user-item" @click="handleUserClick(user)">
+          <n-avatar :src="getAvatarUrl(user.avatarUrl)" :size="48" round class="user-avatar">
             {{ getInitials(user.displayName) }}
           </n-avatar>
 
@@ -121,19 +91,13 @@
               type="primary"
               size="small"
               :loading="addingFriend === user.userId"
-              @click.stop="handleAddFriend(user)"
-            >
+              @click.stop="handleAddFriend(user)">
               <template #icon>
                 <n-icon><UserPlus /></n-icon>
               </template>
               添加
             </n-button>
-            <n-button
-              v-else
-              secondary
-              size="small"
-              @click.stop="handleStartChat(user)"
-            >
+            <n-button v-else secondary size="small" @click.stop="handleStartChat(user)">
               <template #icon>
                 <n-icon><Message /></n-icon>
               </template>
@@ -149,15 +113,10 @@
       v-model:show="showUserDetail"
       preset="card"
       :style="{ maxWidth: '400px' }"
-      :title="selectedUser?.displayName || '用户详情'"
-    >
+      :title="selectedUser?.displayName || '用户详情'">
       <div v-if="selectedUser" class="user-detail">
         <div class="detail-header">
-          <n-avatar
-            :src="getAvatarUrl(selectedUser.avatarUrl)"
-            :size="80"
-            round
-          >
+          <n-avatar :src="getAvatarUrl(selectedUser.avatarUrl)" :size="80" round>
             {{ getInitials(selectedUser.displayName) }}
           </n-avatar>
           <div class="header-info">
@@ -180,31 +139,20 @@
             block
             size="large"
             :loading="addingFriend === selectedUser.userId"
-            @click="handleAddFriend(selectedUser)"
-          >
+            @click="handleAddFriend(selectedUser)">
             <template #icon>
               <n-icon><UserPlus /></n-icon>
             </template>
             添加为好友
           </n-button>
           <template v-else>
-            <n-button
-              secondary
-              block
-              size="large"
-              @click="handleStartChat(selectedUser)"
-            >
+            <n-button secondary block size="large" @click="handleStartChat(selectedUser)">
               <template #icon>
                 <n-icon><Message /></n-icon>
               </template>
               发送消息
             </n-button>
-            <n-button
-              tertiary
-              block
-              size="large"
-              @click="handleViewProfile(selectedUser)"
-            >
+            <n-button tertiary block size="large" @click="handleViewProfile(selectedUser)">
               <template #icon>
                 <n-icon><User /></n-icon>
               </template>

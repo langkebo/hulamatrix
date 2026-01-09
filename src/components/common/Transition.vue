@@ -11,8 +11,7 @@
     @before-leave="handleBeforeLeave"
     @leave="handleLeave"
     @after-leave="handleAfterLeave"
-    @leave-cancelled="handleLeaveCancelled"
-  >
+    @leave-cancelled="handleLeaveCancelled">
     <slot />
   </transition>
 </template>

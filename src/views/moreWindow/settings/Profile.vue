@@ -25,7 +25,9 @@
               <span class="text-16px font-600">{{ userStore.userInfo.name || '未设置昵称' }}</span>
               <n-tag v-if="userStore.userInfo.uid" size="small" type="info">MXID</n-tag>
             </n-flex>
-            <span v-if="userStore.userInfo.uid" class="text-(12px var(--hula-brand-primary))">{{ userStore.userInfo.uid }}</span>
+            <span v-if="userStore.userInfo.uid" class="text-(12px var(--hula-brand-primary))">
+              {{ userStore.userInfo.uid }}
+            </span>
           </n-flex>
         </n-flex>
 
@@ -68,7 +70,9 @@
         <n-flex align="center" justify="space-between">
           <n-flex vertical :size="4">
             <span>{{ t('setting.general.profile.email') }}</span>
-            <span class="text-(12px var(--hula-brand-primary))">{{ email || t('setting.general.profile.no_email') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">
+              {{ email || t('setting.general.profile.no_email') }}
+            </span>
           </n-flex>
           <n-button size="small" @click="handleAddEmail">
             {{ email ? t('setting.general.profile.edit') : t('setting.general.profile.add_email') }}
@@ -81,7 +85,9 @@
         <n-flex align="center" justify="space-between">
           <n-flex vertical :size="4">
             <span>{{ t('setting.general.profile.phone') }}</span>
-            <span class="text-(12px var(--hula-brand-primary))">{{ phone || t('setting.general.profile.no_phone') }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">
+              {{ phone || t('setting.general.profile.no_phone') }}
+            </span>
           </n-flex>
           <n-button size="small" @click="handleAddPhone">
             {{ phone ? t('setting.general.profile.edit') : t('setting.general.profile.add_phone') }}

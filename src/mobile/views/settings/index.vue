@@ -1,9 +1,6 @@
 <template>
   <SettingsLayout :title="t('settings.title')">
-    <MobileSettingsList
-      :sections="settingsSections"
-      @change="handleSettingChange"
-    />
+    <MobileSettingsList :sections="settingsSections" @change="handleSettingChange" />
   </SettingsLayout>
 </template>
 

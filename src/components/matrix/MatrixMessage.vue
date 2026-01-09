@@ -1,19 +1,14 @@
 <template>
   <div
     class="matrix-message"
-    :class="[
-      `message-${message.type}`,
-      { 'is-own': isOwnMessage, 'is-reply': isReply, 'is-encrypted': isEncrypted }
-    ]"
-  >
+    :class="[`message-${message.type}`, { 'is-own': isOwnMessage, 'is-reply': isReply, 'is-encrypted': isEncrypted }]">
     <!-- Sender Avatar (not for own messages) -->
     <div v-if="!isOwnMessage && showAvatar" class="message-avatar">
       <n-avatar
         v-bind="senderAvatar !== undefined ? { src: senderAvatar } : {}"
         :fallback-src="'/default-avatar.png'"
         round
-        size="medium"
-      >
+        size="medium">
         {{ senderInitials }}
       </n-avatar>
     </div>
@@ -23,14 +18,7 @@
       <!-- Sender Info (for group messages) -->
       <div v-if="!isOwnMessage && showSenderInfo" class="message-sender">
         <span class="sender-name">{{ senderDisplayName }}</span>
-        <n-tag
-          v-if="isModerator"
-          size="tiny"
-          type="warning"
-          round
-        >
-          管理员
-        </n-tag>
+        <n-tag v-if="isModerator" size="tiny" type="warning" round>管理员</n-tag>
       </div>
 
       <!-- Reply Indicator -->
@@ -55,8 +43,7 @@
               :alt="message.body.text ?? '图片'"
               :previewed-img-props="{ alt: message.body.text ?? '图片' }"
               lazy
-              object-fit="cover"
-            >
+              object-fit="cover">
               <template #placeholder>
                 <div class="image-placeholder">
                   <n-icon size="24" :component="Photo" />
@@ -73,12 +60,7 @@
         <!-- Video Message -->
         <div v-else-if="message.type === MsgEnum.VIDEO" class="video-message">
           <div class="video-container">
-            <video
-              :src="message.body.url"
-              :poster="message.body.thumbnailUrl"
-              controls
-              preload="metadata"
-            >
+            <video :src="message.body.url" :poster="message.body.thumbnailUrl" controls preload="metadata">
               您的浏览器不支持视频播放
             </video>
             <div v-if="message.body.duration" class="video-duration">
@@ -93,25 +75,13 @@
         <!-- Audio/Voice Message -->
         <div v-else-if="message.type === MsgEnum.VOICE" class="voice-message">
           <div class="voice-player">
-            <n-button
-              circle
-              type="primary"
-              @click="toggleVoicePlayback"
-            >
-              <n-icon
-                :component="isPlaying ? PlayerPause : PlayerPlay"
-                size="20"
-              />
+            <n-button circle type="primary" @click="toggleVoicePlayback">
+              <n-icon :component="isPlaying ? PlayerPause : PlayerPlay" size="20" />
             </n-button>
             <div class="voice-info">
               <div class="voice-waveform">
                 <!-- Simple waveform visualization -->
-                <div
-                  v-for="i in 20"
-                  :key="i"
-                  class="wave-bar"
-                  :style="{ height: `${Math.random() * 100}%` }"
-                ></div>
+                <div v-for="i in 20" :key="i" class="wave-bar" :style="{ height: `${Math.random() * 100}%` }"></div>
               </div>
               <div class="voice-duration">
                 {{ formatDurationMs(message.body.duration ?? 0) }}
@@ -140,8 +110,7 @@
             <div class="location-map">
               <img
                 :src="`https://maps.googleapis.com/maps/api/staticmap?center=${message.body.latitude},${message.body.longitude}&zoom=15&size=400x200&markers=${message.body.latitude},${message.body.longitude}`"
-                :alt="message.body.description || '位置'"
-              />
+                :alt="message.body.description || '位置'" />
             </div>
             <div class="location-info">
               <n-icon :component="MapPin" />
@@ -160,14 +129,7 @@
         <div v-else-if="isEncrypted" class="encrypted-message">
           <n-icon :component="Lock" />
           <span>{{ isDecrypted ? message.body.text : '[加密消息]' }}</span>
-          <n-button
-            v-if="!isDecrypted"
-            text
-            size="tiny"
-            @click="decryptMessage"
-          >
-            解密
-          </n-button>
+          <n-button v-if="!isDecrypted" text size="tiny" @click="decryptMessage">解密</n-button>
         </div>
 
         <!-- Reaction Emojis -->
@@ -176,8 +138,7 @@
             v-for="(reaction, key) in reactions"
             :key="key"
             class="reaction-item"
-            @click="toggleReaction(String(key))"
-          >
+            @click="toggleReaction(String(key))">
             <span class="reaction-emoji">{{ key }}</span>
             <span class="reaction-count">{{ reaction.count }}</span>
           </div>
@@ -187,12 +148,7 @@
       <!-- Message Status -->
       <div class="message-status">
         <span class="message-time">{{ formatTime(message.sendTime) }}</span>
-        <n-icon
-          v-if="isOwnMessage"
-          :component="getStatusIcon"
-          :class="`status-${message.status}`"
-          size="14"
-        />
+        <n-icon v-if="isOwnMessage" :component="getStatusIcon" :class="`status-${message.status}`" size="14" />
       </div>
     </div>
 
@@ -202,8 +158,7 @@
         v-bind="currentUserAvatar !== undefined ? { src: currentUserAvatar } : {}"
         :fallback-src="'/default-avatar.png'"
         round
-        size="medium"
-      />
+        size="medium" />
     </div>
   </div>
 </template>

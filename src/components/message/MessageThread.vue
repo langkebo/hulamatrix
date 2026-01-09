@@ -1,11 +1,7 @@
 <template>
   <div class="message-thread" :class="{ 'is-expanded': isExpanded, 'is-inline': inline }">
     <!-- 线程触发器 -->
-    <div
-      v-if="!isExpanded"
-      class="thread-trigger"
-      @click="expandThread"
-    >
+    <div v-if="!isExpanded" class="thread-trigger" @click="expandThread">
       <div class="thread-info">
         <n-icon class="thread-icon"><Message /></n-icon>
         <span class="thread-text">
@@ -14,14 +10,8 @@
         <span class="thread-count">{{ messageCount }} 条回复</span>
       </div>
       <div class="thread-participants">
-        <n-avatar-group
-          :options="avatarGroupOptions"
-          :size="20"
-          :max="3"
-        />
-        <span v-if="threadParticipants.length > 3" class="more-participants">
-          +{{ threadParticipants.length - 3 }}
-        </span>
+        <n-avatar-group :options="avatarGroupOptions" :size="20" :max="3" />
+        <span v-if="threadParticipants.length > 3" class="more-participants">+{{ threadParticipants.length - 3 }}</span>
       </div>
     </div>
 
@@ -58,11 +48,7 @@
             </div>
             <div class="message-body">
               <div v-html="sanitizeContent(rootMessage.content)"></div>
-              <MessageReactions
-                :room-id="roomId"
-                :event-id="rootMessage.id"
-                :compact-mode="true"
-              />
+              <MessageReactions :room-id="roomId" :event-id="rootMessage.id" :compact-mode="true" />
             </div>
           </div>
         </div>
@@ -74,8 +60,7 @@
           v-for="message in threadMessages"
           :key="message.id"
           class="thread-message"
-          :class="{ 'is-own': message.isOwn }"
-        >
+          :class="{ 'is-own': message.isOwn }">
           <div class="message-avatar">
             <n-avatar :src="message.senderAvatar" :size="28" round />
           </div>
@@ -87,11 +72,7 @@
             </div>
             <div class="message-body">
               <div v-html="sanitizeContent(message.content)"></div>
-              <MessageReactions
-                :room-id="roomId"
-                :event-id="message.id"
-                :compact-mode="true"
-              />
+              <MessageReactions :room-id="roomId" :event-id="message.id" :compact-mode="true" />
             </div>
             <div class="message-actions">
               <n-button quaternary size="tiny" @click="replyToMessage(message)">
@@ -106,10 +87,7 @@
                 </template>
                 编辑
               </n-button>
-              <n-dropdown
-                :options="getMessageActions(message)"
-                @select="handleMessageAction($event, message)"
-              >
+              <n-dropdown :options="getMessageActions(message)" @select="handleMessageAction($event, message)">
                 <n-button quaternary circle size="tiny">
                   <template #icon>
                     <n-icon><DotsVertical /></n-icon>
@@ -122,16 +100,12 @@
 
         <!-- 加载更多按钮 -->
         <div v-if="hasMoreMessages" class="load-more">
-          <n-button @click="loadMoreMessages" :loading="isLoadingMore">
-            加载更多消息
-          </n-button>
+          <n-button @click="loadMoreMessages" :loading="isLoadingMore">加载更多消息</n-button>
         </div>
 
         <!-- 新消息指示器 -->
         <div v-if="hasNewMessages" class="new-messages-indicator">
-          <n-button @click="scrollToNewMessages" type="primary" size="small">
-            {{ newMessagesCount }} 条新消息
-          </n-button>
+          <n-button @click="scrollToNewMessages" type="primary" size="small">{{ newMessagesCount }} 条新消息</n-button>
         </div>
       </div>
 
@@ -154,16 +128,12 @@
           :inline="true"
           :initial-content="replyContent"
           @message-sent="handleThreadReply"
-          @closed="cancelReply"
-        />
+          @closed="cancelReply" />
       </div>
 
       <!-- 线程设置 -->
       <div class="thread-settings">
-        <n-dropdown
-          :options="threadSettingsOptions"
-          @select="handleThreadSetting"
-        >
+        <n-dropdown :options="threadSettingsOptions" @select="handleThreadSetting">
           <n-button quaternary size="small">
             <template #icon>
               <n-icon><Settings /></n-icon>
@@ -204,20 +174,14 @@
       <div class="join-thread-content">
         <p>您是否要加入这个线程讨论？加入后您将收到所有新消息的通知。</p>
         <div class="join-options">
-          <n-checkbox v-model:checked="joinOptions.notifications">
-            接收新消息通知
-          </n-checkbox>
-          <n-checkbox v-model:checked="joinOptions.pinToTop">
-            将线程固定在顶部
-          </n-checkbox>
+          <n-checkbox v-model:checked="joinOptions.notifications">接收新消息通知</n-checkbox>
+          <n-checkbox v-model:checked="joinOptions.pinToTop">将线程固定在顶部</n-checkbox>
         </div>
       </div>
       <template #action>
         <n-space>
           <n-button @click="showJoinDialog = false">取消</n-button>
-          <n-button type="primary" @click="joinThread">
-            加入线程
-          </n-button>
+          <n-button type="primary" @click="joinThread">加入线程</n-button>
         </n-space>
       </template>
     </n-modal>

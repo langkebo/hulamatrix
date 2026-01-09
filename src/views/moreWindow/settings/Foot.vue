@@ -16,7 +16,7 @@
             <n-flex :size="10" class="ml-auto">
               <div
                 @click="isStar = false"
-                class="border-(1px solid #999) cursor-pointer w-40px h-30px rounded-8px flex-center text-(12px [--text-color])">
+                class="border-(1px solid var(--hula-gray-400)) cursor-pointer w-40px h-30px rounded-8px flex-center text-(12px [--text-color])">
                 {{ t('setting.footer.later') }}
               </div>
 
@@ -49,7 +49,7 @@
             <n-flex :size="10" class="ml-auto">
               <div
                 @click="isIssue = false"
-                class="border-(1px solid #999) cursor-pointer w-40px h-30px rounded-8px flex-center text-(12px [--text-color])">
+                class="border-(1px solid var(--hula-gray-400)) cursor-pointer w-40px h-30px rounded-8px flex-center text-(12px [--text-color])">
                 {{ t('setting.footer.later') }}
               </div>
 

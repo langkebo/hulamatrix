@@ -10,9 +10,9 @@
   --left-text-color: var(--hula-brand-primary);
   --left-icon-color: var(--hula-brand-primary);
   --left-active-hover: var(--hula-brand-primary);
-  --left-bg-hover: rgba(255, 255, 255, 0.2);
+  --left-bg-hover: rgba(var(--hula-white-rgb), 0.2);
   --left-active-icon-color: var(--hula-brand-primary);
-  --left-win-icon-color: rgba(255, 255, 255, 0.4);
+  --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
 
   /* 选中状态 */
   --border-active-color: var(--hula-primary);
@@ -29,19 +29,19 @@
   /* 聊天框样式 */
   --chat-reply-color: var(--hula-brand-primary);
   --chat-reply-active: var(--bg-selected);
-  --chat-footer-border: rgba(0, 0, 0, 0.1);
+  --chat-footer-border: rgba(var(--hula-black-rgb), 0.1);
 
   /* 消息列表 */
   --msg-list-active: var(--primary-color);
 
   /* 群公告 */
-  --group-notice-bg: rgba(255, 255, 255, 0.9);
+  --group-notice-bg: rgba(var(--hula-white-rgb), 0.9);
 
   /* 列表hover */
   --list-hover: var(--bg-hover);
 
   /* 图标hover */
-  --icon-hover-bg: rgba(0, 0, 0, 0.05);
+  --icon-hover-bg: rgba(var(--hula-black-rgb), 0.05);
 }
 
 /* 暗色模式 - HuLa主题 */
@@ -72,14 +72,14 @@ html[data-theme='dark'][data-theme-style="default"] {
   /* 聊天框样式 */
   --chat-reply-color: var(--hula-brand-primary);
   --chat-reply-active: rgba(19, 152, 127, 0.15);
-  --chat-footer-border: rgba(255, 255, 255, 0.1);
+  --chat-footer-border: rgba(var(--hula-white-rgb), 0.1);
 
   /* 群公告 */
   --group-notice-bg: rgba(38, 38, 38, 0.9);
 
   /* 列表hover */
-  --list-hover: rgba(255, 255, 255, 0.05);
+  --list-hover: rgba(var(--hula-white-rgb), 0.05);
 
   /* 图标hover */
-  --icon-hover-bg: rgba(255, 255, 255, 0.05);
+  --icon-hover-bg: rgba(var(--hula-white-rgb), 0.05);
 }

@@ -27,12 +27,7 @@
     <div v-else class="room-list-container">
       <!-- Search Bar -->
       <div v-if="showSearch" class="search-bar">
-        <n-input
-          v-model:value="searchQuery"
-          placeholder="搜索房间..."
-          clearable
-          @input="handleSearchDebounced"
-        >
+        <n-input v-model:value="searchQuery" placeholder="搜索房间..." clearable @input="handleSearchDebounced">
           <template #prefix>
             <n-icon :component="Search" />
           </template>
@@ -56,8 +51,7 @@
                 :key="room.room_id"
                 :room="room"
                 :selected="selectedRoomId === room.room_id"
-                @select="handleSelectRoom"
-              />
+                @select="handleSelectRoom" />
             </div>
           </n-collapse-transition>
         </div>
@@ -77,8 +71,7 @@
                 :key="room.room_id"
                 :room="room"
                 :selected="selectedRoomId === room.room_id"
-                @select="handleSelectRoom"
-              />
+                @select="handleSelectRoom" />
             </div>
           </n-collapse-transition>
         </div>
@@ -98,21 +91,14 @@
                 :key="room.room_id"
                 :room="room"
                 :selected="selectedRoomId === room.room_id"
-                @select="handleSelectRoom"
-              />
+                @select="handleSelectRoom" />
             </div>
           </n-collapse-transition>
         </div>
 
         <!-- Load More Button -->
         <div v-if="hasMore" class="load-more-container">
-          <n-button
-            :loading="loadingMore"
-            @click="handleLoadMore"
-            block
-            secondary
-            strong
-          >
+          <n-button :loading="loadingMore" @click="handleLoadMore" block secondary strong>
             加载更多 ({{ safeRooms.length }} / {{ totalCount }})
           </n-button>
         </div>

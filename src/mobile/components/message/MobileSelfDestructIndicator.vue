@@ -137,7 +137,7 @@ const ringColor = computed(() => {
 const iconColor = computed(() => {
   if (isCritical.value) return '#d03050'
   if (isWarning.value) return '#f0a020'
-  return '#13987f'
+  return 'var(--hula-brand-primary)'
 })
 
 const formattedTime = computed(() => {
@@ -372,7 +372,7 @@ watch(
   position: relative;
   width: 100%;
   height: 4px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(var(--hula-black-rgb), 0.1);
   border-radius: 2px;
   overflow: hidden;
 

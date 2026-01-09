@@ -11,21 +11,21 @@
           </n-spin>
         </div>
         <template v-else>
-        <n-split
-          direction="vertical"
-          :resize-trigger-size="8"
-          class="h-full"
-          :min="0.55"
-          :max="0.74"
-          :default-size="0.74">
-          <template #1>
-            <ChatMain />
-          </template>
-          <template #2>
-            <!-- 输入框和操作列表 -->
-            <ChatFooter :detail-id="currentSession?.detailId" />
-          </template>
-        </n-split>
+          <n-split
+            direction="vertical"
+            :resize-trigger-size="8"
+            class="h-full"
+            :min="0.55"
+            :max="0.74"
+            :default-size="0.74">
+            <template #1>
+              <ChatMain />
+            </template>
+            <template #2>
+              <!-- 输入框和操作列表 -->
+              <ChatFooter :detail-id="currentSession?.detailId" />
+            </template>
+          </n-split>
         </template>
       </div>
       <!-- 右侧栏占位：群聊时预留宽度直至 Sidebar 挂载完成，随后由子组件控制宽度（含折叠） -->

@@ -7,9 +7,9 @@
     --left-text-color: var(--hula-brand-primary);
     --left-icon-color: var(--hula-brand-primary);
     --left-active-hover: var(--hula-brand-primary);
-    --left-bg-hover: rgba(255, 255, 255, 0.2);
+    --left-bg-hover: rgba(var(--hula-white-rgb), 0.2);
     --left-active-icon-color: var(--hula-brand-primary);
-    --left-win-icon-color: rgba(255, 255, 255, 0.4);
+    --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
 
     // 包含边框的选中样式
     --border-active-color: var(--hula-brand-primary);
@@ -29,7 +29,7 @@
     // 消息列表样式
     --msg-active-color: var(--hula-brand-primary);
     // 群公告消息背景色
-    --group-notice-bg: #fff;
+    --group-notice-bg: var(--hula-white);
 
     // 列表通用hover
     --list-hover-color: rgba(99, 99, 99, 0.1);
@@ -62,8 +62,8 @@ html[data-theme='dark'] {
     );
 
     // 聊天框主体样式
-    --right-chat-reply-color: #666;
-    --right-chat-reply-active-color: rgba(255, 255, 255, 0.1);
+    --right-chat-reply-color: var(--hula-gray-700);
+    --right-chat-reply-active-color: rgba(var(--hula-white-rgb), 0.1);
     --right-chat-footer-line-color: #555;
 
     // 消息列表样式

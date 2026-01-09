@@ -23,7 +23,9 @@
         <ContextMenu @contextmenu="showMenu($event)" @select="handleSelect($event.label)" :menu="menuList">
           <n-collapse-item :title="t('home.friends_list.collapse.friend')" name="1">
             <template #header-extra>
-              <span class="text-(10px var(--hula-brand-primary))">{{ onlineCount }}/{{ friendsStore.friends.length }}</span>
+              <span class="text-(10px var(--hula-brand-primary))">
+                {{ onlineCount }}/{{ friendsStore.friends.length }}
+              </span>
             </template>
             <n-space class="px-8px md:px-12px pb-8px" align="center" :size="8">
               <n-input size="small" v-model:value="searchQuery" placeholder="搜索用户ID" clearable />
@@ -122,7 +124,11 @@
                             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                           <n-flex vertical justify="space-between" class="h-fit flex-1 truncate">
                             <span class="text-13px leading-tight flex-1 truncate">
-                              <n-badge :color="isOnline(item.user_id!) ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
+                              <n-badge
+                                :color="
+                                  isOnline(item.user_id!) ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'
+                                "
+                                dot />
                               {{ item.display_name || item.name || item.user_id }}
                             </span>
                             <span class="text-10px text-gray-500 truncate">
@@ -410,9 +416,9 @@ onUnmounted(() => {
 .active {
   background: var(--msg-active-color);
   border-radius: 12px;
-  color: #fff;
+  color: var(--hula-white);
   .text {
-    color: #fff;
+    color: var(--hula-white);
   }
 }
 

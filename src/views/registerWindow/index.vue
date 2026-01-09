@@ -153,7 +153,9 @@
           {{ loading ? '注册中...' : '注册' }}
         </n-button>
 
-        <n-button text size="small" @click="closeWindow" class="mt-10px color-var(--hula-brand-primary)">返回登录</n-button>
+        <n-button text size="small" @click="closeWindow" class="mt-10px color-var(--hula-brand-primary)">
+          返回登录
+        </n-button>
       </n-flex>
     </n-flex>
   </n-config-provider>
@@ -351,7 +353,7 @@ onMounted(() => {
   transition: all 0.3s ease;
 
   &.register-button {
-    color: #fff;
+    color: var(--hula-white);
   }
 
   &:hover {

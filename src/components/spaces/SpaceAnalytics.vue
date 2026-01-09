@@ -40,7 +40,9 @@
           <n-gi>
             <n-statistic label="加密房间" :value="analytics.encryptedRooms">
               <template #suffix>
-                <n-icon size="20" :color="analytics.encryptedRooms > 0 ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'">
+                <n-icon
+                  size="20"
+                  :color="analytics.encryptedRooms > 0 ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'">
                   <Lock />
                 </n-icon>
               </template>

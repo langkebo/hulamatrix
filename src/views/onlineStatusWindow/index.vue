@@ -1,5 +1,5 @@
 <template>
-  <main class="size-full bg-#fff select-none">
+  <main class="size-full bg-var(--hula-white) select-none">
     <ActionBar class="absolute right-0 w-full" :shrink="false" :max-w="false" :min-w="false" />
 
     <n-flex vertical :size="130" class="main-container size-full p-20px box-border" data-tauri-drag-region>
@@ -153,7 +153,7 @@ onMounted(async () => {
   border-radius: 8px;
   cursor: pointer;
   span {
-    color: #fff;
+    color: var(--hula-white);
   }
 }
 

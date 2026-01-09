@@ -12,9 +12,7 @@
       <n-alert v-if="encrypted" type="info" title="端到端加密">
         此房间已启用端到端加密，只有房间成员可以解密消息
       </n-alert>
-      <n-button v-else type="primary" :loading="enabling" @click="$emit('enable')">
-        启用端到端加密
-      </n-button>
+      <n-button v-else type="primary" :loading="enabling" @click="$emit('enable')">启用端到端加密</n-button>
     </div>
   </div>
 </template>

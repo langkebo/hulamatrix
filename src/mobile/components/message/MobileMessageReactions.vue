@@ -8,8 +8,7 @@
         :key="reaction.key"
         class="reaction-chip"
         :class="{ 'user-reacted': reaction.userMarked }"
-        @click="handleToggleReaction(reaction.key)"
-      >
+        @click="handleToggleReaction(reaction.key)">
         <span class="reaction-emoji">{{ reaction.key }}</span>
         <span v-if="reaction.count > 1" class="reaction-count">{{ reaction.count }}</span>
       </div>
@@ -21,11 +20,7 @@
     </div>
 
     <!-- Reaction Picker Bottom Sheet -->
-    <van-popup
-      v-model:show="showPicker"
-      position="bottom"
-      :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
-    >
+    <van-popup v-model:show="showPicker" position="bottom" :style="{ height: '70%', borderRadius: '16px 16px 0 0' }">
       <div class="reaction-picker-popup">
         <!-- Handle bar -->
         <div class="handle-bar"></div>
@@ -45,8 +40,7 @@
               :key="category.name"
               class="category-tab"
               :class="{ active: activeCategory === category.name }"
-              @click="activeCategory = category.name"
-            >
+              @click="activeCategory = category.name">
               {{ category.name }}
             </div>
           </div>
@@ -58,8 +52,7 @@
               :key="emoji"
               class="emoji-item"
               :class="{ 'has-reaction': hasUserReactionLocal(emoji) }"
-              @click="selectEmoji(emoji)"
-            >
+              @click="selectEmoji(emoji)">
               <span class="emoji">{{ emoji }}</span>
               <div v-if="hasUserReactionLocal(emoji)" class="check-indicator">
                 <van-icon name="success" :size="12" />
@@ -73,15 +66,13 @@
               v-model="customEmoji"
               :placeholder="t('reaction.custom')"
               :maxlength="4"
-              @keyup.enter="selectEmoji(customEmoji)"
-            >
+              @keyup.enter="selectEmoji(customEmoji)">
               <template #button>
                 <van-button
                   type="primary"
                   size="small"
                   :disabled="!customEmoji.trim()"
-                  @click="selectEmoji(customEmoji)"
-                >
+                  @click="selectEmoji(customEmoji)">
                   {{ t('common.add') }}
                 </van-button>
               </template>
@@ -92,12 +83,7 @@
           <div v-if="userReactions.length > 0" class="user-reactions-section">
             <div class="section-title">{{ t('reaction.yourReactions') }}</div>
             <div class="user-reactions-list">
-              <div
-                v-for="emoji in userReactions"
-                :key="emoji"
-                class="user-reaction-item"
-                @click="selectEmoji(emoji)"
-              >
+              <div v-for="emoji in userReactions" :key="emoji" class="user-reaction-item" @click="selectEmoji(emoji)">
                 <span class="emoji">{{ emoji }}</span>
                 <van-icon name="cross" :size="16" />
               </div>
@@ -325,12 +311,12 @@ defineExpose({
   span:first-child {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   .van-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {

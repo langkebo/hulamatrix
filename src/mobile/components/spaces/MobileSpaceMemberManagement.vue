@@ -25,12 +25,7 @@
 
     <!-- Search and Filter -->
     <div class="search-filter-section">
-      <van-field
-        v-model="searchQuery"
-        placeholder="搜索成员..."
-        clearable
-        @input="handleSearch"
-      >
+      <van-field v-model="searchQuery" placeholder="搜索成员..." clearable @input="handleSearch">
         <template #left-icon>
           <van-icon name="search" />
         </template>
@@ -42,8 +37,7 @@
           :key="option.value"
           :type="currentFilter === option.value ? 'primary' : 'default'"
           round
-          @click="setFilter(option.value)"
-        >
+          @click="setFilter(option.value)">
           {{ option.label }}
         </van-tag>
       </div>
@@ -62,64 +56,33 @@
           v-for="member in filteredMembers"
           :key="member.userId"
           class="member-item"
-          @click="handleMemberClick(member)"
-        >
+          @click="handleMemberClick(member)">
           <div class="member-left">
             <div class="avatar-wrapper">
-              <van-image
-                :src="getAvatarUrl(member.avatarUrl)"
-                width="48"
-                height="48"
-                round
-                @error="handleAvatarError"
-              >
+              <van-image :src="getAvatarUrl(member.avatarUrl)" width="48" height="48" round @error="handleAvatarError">
                 <template #error>
                   <div class="avatar-fallback">
                     {{ getInitials(member.displayName) }}
                   </div>
                 </template>
               </van-image>
-              <div
-                v-if="member.presence === 'online'"
-                class="presence-indicator online"
-              />
-              <div
-                v-else
-                class="presence-indicator offline"
-              />
+              <div v-if="member.presence === 'online'" class="presence-indicator online" />
+              <div v-else class="presence-indicator offline" />
             </div>
 
             <div class="member-info">
               <div class="member-name">{{ member.displayName }}</div>
               <div class="member-id">{{ formatUserId(member.userId) }}</div>
               <div class="member-roles">
-                <van-tag
-                  v-if="member.powerLevel >= 100"
-                  type="danger"
-                >
-                  管理员
-                </van-tag>
-                <van-tag
-                  v-else-if="member.powerLevel >= 50"
-                  type="warning"
-                >
-                  版主
-                </van-tag>
-                <van-tag
-                  v-if="member.membership === 'invite'"
-                  type="primary"
-                >
-                  已邀请
-                </van-tag>
+                <van-tag v-if="member.powerLevel >= 100" type="danger">管理员</van-tag>
+                <van-tag v-else-if="member.powerLevel >= 50" type="warning">版主</van-tag>
+                <van-tag v-if="member.membership === 'invite'" type="primary">已邀请</van-tag>
               </div>
             </div>
           </div>
 
           <div class="member-right">
-            <van-button
-              icon="ellipsis"
-              @click.stop="showActionSheet(member)"
-            />
+            <van-button icon="ellipsis" @click.stop="showActionSheet(member)" />
           </div>
         </div>
       </div>
@@ -130,8 +93,7 @@
       :show="showMemberDetail"
       position="center"
       :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
-      @update:show="handleDetailClose"
-    >
+      @update:show="handleDetailClose">
       <div v-if="selectedMember" class="member-detail-popup">
         <div class="detail-header">
           <span class="header-title">成员详情</span>
@@ -140,21 +102,14 @@
 
         <div class="member-detail">
           <div class="detail-avatar">
-            <van-image
-              :src="getAvatarUrl(selectedMember.avatarUrl)"
-              width="80"
-              height="80"
-              round
-            >
+            <van-image :src="getAvatarUrl(selectedMember.avatarUrl)" width="80" height="80" round>
               <template #error>
                 <div class="avatar-fallback-large">
                   {{ getInitials(selectedMember.displayName) }}
                 </div>
               </template>
             </van-image>
-            <div
-              :class="['presence-badge', selectedMember.presence || 'offline']"
-            >
+            <div :class="['presence-badge', selectedMember.presence || 'offline']">
               {{ getPresenceLabel(selectedMember.presence) }}
             </div>
           </div>
@@ -167,10 +122,7 @@
           <div class="detail-section">
             <div class="section-label">权限等级</div>
             <div class="power-level-bar">
-              <van-progress
-                :percentage="Math.min(100, (selectedMember.powerLevel / 100) * 100)"
-                :show-pivot="false"
-              />
+              <van-progress :percentage="Math.min(100, (selectedMember.powerLevel / 100) * 100)" :show-pivot="false" />
               <div class="power-value">{{ selectedMember.powerLevel }}</div>
             </div>
           </div>
@@ -178,36 +130,20 @@
           <div class="detail-section">
             <div class="section-label">操作</div>
             <div class="action-buttons">
-              <van-button
-                v-if="canChangeRole(selectedMember)"
-                type="primary"
-                block
-                @click="showRoleModal = true"
-              >
+              <van-button v-if="canChangeRole(selectedMember)" type="primary" block @click="showRoleModal = true">
                 修改角色
               </van-button>
               <van-button
                 v-if="selectedMember.membership === 'invite'"
                 type="success"
                 block
-                @click="handleResendInvite"
-              >
+                @click="handleResendInvite">
                 重新发送邀请
               </van-button>
-              <van-button
-                v-if="canKick(selectedMember)"
-                type="warning"
-                block
-                @click="handleKick(selectedMember)"
-              >
+              <van-button v-if="canKick(selectedMember)" type="warning" block @click="handleKick(selectedMember)">
                 移除成员
               </van-button>
-              <van-button
-                v-if="canBan(selectedMember)"
-                type="danger"
-                block
-                @click="handleBan(selectedMember)"
-              >
+              <van-button v-if="canBan(selectedMember)" type="danger" block @click="handleBan(selectedMember)">
                 封禁用户
               </van-button>
             </div>
@@ -220,8 +156,7 @@
     <van-popup
       :show="showRoleModal"
       position="center"
-      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }"
-    >
+      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }">
       <div class="role-modal-popup">
         <div class="role-modal-header">
           <span class="header-title">修改角色</span>
@@ -230,32 +165,17 @@
         <div class="role-modal-content">
           <van-radio-group v-model="newRole">
             <van-cell-group inset :border="true">
-              <van-cell
-                title="管理员"
-                label="完全权限 (100)"
-                clickable
-                @click="newRole = 'admin'"
-              >
+              <van-cell title="管理员" label="完全权限 (100)" clickable @click="newRole = 'admin'">
                 <template #right-icon>
                   <van-radio name="admin" />
                 </template>
               </van-cell>
-              <van-cell
-                title="版主"
-                label="管理权限 (50)"
-                clickable
-                @click="newRole = 'moderator'"
-              >
+              <van-cell title="版主" label="管理权限 (50)" clickable @click="newRole = 'moderator'">
                 <template #right-icon>
                   <van-radio name="moderator" />
                 </template>
               </van-cell>
-              <van-cell
-                title="成员"
-                label="普通权限 (0)"
-                clickable
-                @click="newRole = 'member'"
-              >
+              <van-cell title="成员" label="普通权限 (0)" clickable @click="newRole = 'member'">
                 <template #right-icon>
                   <van-radio name="member" />
                 </template>
@@ -266,9 +186,7 @@
 
         <div class="role-modal-actions">
           <van-button @click="showRoleModal = false">取消</van-button>
-          <van-button type="primary" :loading="isChangingRole" @click="confirmRoleChange">
-            确定
-          </van-button>
+          <van-button type="primary" :loading="isChangingRole" @click="confirmRoleChange">确定</van-button>
         </div>
       </div>
     </van-popup>
@@ -277,8 +195,7 @@
     <van-popup
       :show="showInviteModal"
       position="center"
-      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }"
-    >
+      :style="{ width: '85%', maxWidth: '350px', borderRadius: '12px' }">
       <div class="invite-modal-popup">
         <div class="invite-modal-header">
           <span class="header-title">邀请新成员</span>
@@ -291,16 +208,13 @@
               name="userId"
               label="用户ID"
               placeholder="@username:server.com"
-              :rules="[{ required: true, message: '请输入用户ID' }]"
-            />
+              :rules="[{ required: true, message: '请输入用户ID' }]" />
           </van-cell-group>
         </van-form>
 
         <div class="invite-modal-actions">
           <van-button @click="showInviteModal = false">取消</van-button>
-          <van-button type="primary" :loading="isInviting" @click="handleInvite">
-            邀请
-          </van-button>
+          <van-button type="primary" :loading="isInviting" @click="handleInvite">邀请</van-button>
         </div>
       </div>
     </van-popup>
@@ -309,8 +223,7 @@
     <van-action-sheet
       v-model:show="showActionSheetVisible"
       :actions="currentMemberActions"
-      @select="handleMemberAction"
-    />
+      @select="handleMemberAction" />
 
     <!-- Floating Action Button -->
     <van-floating-bubble
@@ -318,8 +231,7 @@
       magnetic="x"
       :style="{ right: '20px', bottom: '20px' }"
       icon="plus"
-      @click="showInviteModal = true"
-    />
+      @click="showInviteModal = true" />
   </div>
 </template>
 

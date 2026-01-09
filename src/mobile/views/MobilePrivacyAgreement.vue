@@ -173,7 +173,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--hula-white);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -190,13 +190,13 @@
     h1 {
       font-size: 24px;
       font-weight: bold;
-      color: #333;
+      color: var(--hula-gray-900);
       margin-bottom: 10px;
     }
 
     .update-time {
       font-size: 14px;
-      color: #666;
+      color: var(--hula-gray-700);
     }
   }
 
@@ -211,10 +211,10 @@
       h2 {
         font-size: 18px;
         font-weight: bold;
-        color: #333;
+        color: var(--hula-gray-900);
         width: fit-content;
         margin-bottom: 15px;
-        border-bottom: 2px solid #13987f;
+        border-bottom: 2px solid var(--hula-brand-primary);
         padding-bottom: 5px;
       }
 

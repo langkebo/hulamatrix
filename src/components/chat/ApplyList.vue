@@ -21,11 +21,7 @@
             :size="10"
             class="bg-[--center-bg-color] rounded-10px p-20px box-border border-(1px solid [--bg-popover])">
             <n-flex align="center" :size="10" class="min-w-0 flex-1">
-              <n-avatar
-                round
-                size="large"
-                :src="avatarSrc(getUserInfo(item)?.avatar || '')"
-                class="mr-10px" />
+              <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" class="mr-10px" />
               <n-flex vertical :size="12" class="min-w-0 flex-1">
                 <n-flex align="center" :size="10" class="min-w-0 flex-1 gap-10px">
                   <p
@@ -39,7 +35,9 @@
                       {{ applyMsg(item) }}
                     </p>
 
-                    <p class="text-(10px [--hula-gray-500,var(--hula-brand-primary)]) shrink-0 whitespace-nowrap">{{ formatTimestamp(item.createTime) }}</p>
+                    <p class="text-(10px [--hula-gray-500,var(--hula-brand-primary)]) shrink-0 whitespace-nowrap">
+                      {{ formatTimestamp(item.createTime) }}
+                    </p>
                   </div>
                 </n-flex>
                 <p
@@ -78,13 +76,19 @@
                   </n-icon>
                 </n-dropdown>
               </n-flex>
-              <span class="text-(12px var(--hula-brand-primary))" v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
+              <span
+                class="text-(12px var(--hula-brand-primary))"
+                v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
                 {{ t('home.apply_list.status.accepted') }}
               </span>
-              <span class="text-(12px var(--hula-brand-primary))" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
+              <span
+                class="text-(12px var(--hula-brand-primary))"
+                v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
                 {{ t('home.apply_list.status.rejected') }}
               </span>
-              <span class="text-(12px [--hula-gray-500,var(--hula-brand-primary)])" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
+              <span
+                class="text-(12px [--hula-gray-500,var(--hula-brand-primary)])"
+                v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
                 {{ t('home.apply_list.status.ignored') }}
               </span>
               <span

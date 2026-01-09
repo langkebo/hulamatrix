@@ -37,7 +37,7 @@
       </div>
 
       <div class="absolute bottom-20px left-60px select-none cursor-default flex items-center gap-10px">
-        <p class="text-(12px #666)">{{ t('setting.common.provider_label') }}:</p>
+        <p class="text-(12px var(--hula-gray-700))">{{ t('setting.common.provider_label') }}:</p>
         <a
           target="_blank"
           rel="noopener noreferrer"
@@ -232,7 +232,7 @@ onUnmounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--hula-black-rgb), 0.5);
   z-index: 998;
 }
 

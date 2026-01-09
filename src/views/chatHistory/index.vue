@@ -66,8 +66,12 @@
                       class="rounded-10px mr-12px"
                       fallback-src="/default-avatar.png" />
                     <div class="flex-y-center gap-12px h-fit">
-                      <p class="text-(14px var(--hula-brand-primary))">{{ getUserDisplayName(item.payload.fromUser.uid) }}</p>
-                      <p class="text-(12px var(--hula-brand-primary))">{{ formatTime(item.payload.message.sendTime) }}</p>
+                      <p class="text-(14px var(--hula-brand-primary))">
+                        {{ getUserDisplayName(item.payload.fromUser.uid) }}
+                      </p>
+                      <p class="text-(12px var(--hula-brand-primary))">
+                        {{ formatTime(item.payload.message.sendTime) }}
+                      </p>
                     </div>
                   </div>
                   <ContextMenu

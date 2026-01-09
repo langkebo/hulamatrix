@@ -199,7 +199,7 @@
 .h-button--danger {
   background: var(--danger-color);
   border-color: var(--danger-color);
-  color: #fff;
+  color: var(--hula-white);
 
   &:hover:not(:disabled) {
     background: var(--hula-brand-primary);
@@ -219,7 +219,7 @@
 .h-button--warning {
   background: var(--warning-color);
   border-color: var(--warning-color);
-  color: #fff;
+  color: var(--hula-white);
 
   &:hover:not(:disabled) {
     background: var(--hula-brand-primary);
@@ -239,7 +239,7 @@
 .h-button--success {
   background: var(--success-color);
   border-color: var(--success-color);
-  color: #fff;
+  color: var(--hula-white);
 
   &:hover:not(:disabled) {
     background: var(--hula-brand-primary);
@@ -370,14 +370,14 @@
   border: none;
   border-radius: 50%;
   box-shadow: var(--shadow-lg);
-  color: #fff;
+  color: var(--hula-white);
   cursor: pointer;
   transition: all var(--transition-base);
   z-index: 1000;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 25px rgba(var(--hula-black-rgb), 0.2);
   }
 
   &:active {
@@ -412,7 +412,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(var(--hula-white-rgb), 0.5);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
   }

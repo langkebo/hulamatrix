@@ -1,11 +1,7 @@
 <template>
   <AutoFixHeightPage :show-footer="false">
     <template #header>
-      <HeaderBar
-        :is-official="false"
-        :room-name="title"
-        @back="handleBack"
-      />
+      <HeaderBar :is-official="false" :room-name="title" @back="handleBack" />
     </template>
 
     <template #container>
@@ -48,7 +44,7 @@ const handleBack = () => {
 .mobile-settings-layout {
   height: 100%;
   overflow: auto;
-  background: #f5f5f5;
+  background: var(--hula-gray-50);
 
   &__loading {
     display: flex;

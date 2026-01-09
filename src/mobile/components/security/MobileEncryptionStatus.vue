@@ -16,11 +16,7 @@
     </div>
 
     <!-- Details Modal -->
-    <van-popup
-      v-model:show="showDetails"
-      position="bottom"
-      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
-    >
+    <van-popup v-model:show="showDetails" position="bottom" :style="{ height: '80%', borderRadius: '16px 16px 0 0' }">
       <div class="encryption-details-popup">
         <!-- Handle bar -->
         <div class="handle-bar" @click="showDetails = false"></div>
@@ -113,8 +109,7 @@
                 type="primary"
                 block
                 @click="handleSetupCrossSigning"
-                class="mb-2"
-              >
+                class="mb-2">
                 <van-icon name="key" :size="18" />
                 设置交叉签名
               </van-button>
@@ -436,12 +431,12 @@ defineExpose({
   .header-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   .van-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {
@@ -534,7 +529,7 @@ defineExpose({
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: #fff7e6;
+    background: var(--hula-white)7e6;
     border: 1px solid #ffd591;
     border-radius: 8px;
     color: #d46b08;

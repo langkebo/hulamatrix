@@ -1,21 +1,13 @@
 <template>
   <div class="matrix-invite-member">
     <n-modal v-bind="show !== undefined ? { show } : {}" @update:show="$emit('update:show', $event)">
-      <n-card
-        title="邀请成员"
-        :bordered="false"
-        size="huge"
-        role="dialog"
-        aria-modal="true"
-      >
+      <n-card title="邀请成员" :bordered="false" size="huge" role="dialog" aria-modal="true">
         <n-space vertical>
           <n-input
             placeholder="输入用户 ID (例: @username:server.com)"
             v-model:value="userIdInput"
             @keyup.enter="handleInvite" />
-          <n-text depth="3">
-            输入要邀请的用户 Matrix ID。用户必须是已注册的 Matrix 用户。
-          </n-text>
+          <n-text depth="3">输入要邀请的用户 Matrix ID。用户必须是已注册的 Matrix 用户。</n-text>
         </n-space>
         <template #footer>
           <n-space justify="end">

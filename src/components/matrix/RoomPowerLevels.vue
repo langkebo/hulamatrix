@@ -7,7 +7,7 @@
           :value="powerLevels.usersDefault"
           :min="0"
           :max="100"
-          @update:value="val => val !== null && $emit('updatePowerLevels', { ...powerLevels, usersDefault: val })" />
+          @update:value="(val) => val !== null && $emit('updatePowerLevels', { ...powerLevels, usersDefault: val })" />
       </n-form-item>
 
       <n-form-item label="默认事件权限">
@@ -15,7 +15,7 @@
           :value="powerLevels.eventsDefault"
           :min="0"
           :max="100"
-          @update:value="val => val !== null && $emit('updatePowerLevels', { ...powerLevels, eventsDefault: val })" />
+          @update:value="(val) => val !== null && $emit('updatePowerLevels', { ...powerLevels, eventsDefault: val })" />
       </n-form-item>
 
       <n-form-item label="踢出权限">
@@ -23,7 +23,7 @@
           :value="powerLevels.kick"
           :min="0"
           :max="100"
-          @update:value="val => val !== null && $emit('updatePowerLevels', { ...powerLevels, kick: val })" />
+          @update:value="(val) => val !== null && $emit('updatePowerLevels', { ...powerLevels, kick: val })" />
       </n-form-item>
 
       <n-form-item label="封禁权限">
@@ -31,7 +31,7 @@
           :value="powerLevels.ban"
           :min="0"
           :max="100"
-          @update:value="val => val !== null && $emit('updatePowerLevels', { ...powerLevels, ban: val })" />
+          @update:value="(val) => val !== null && $emit('updatePowerLevels', { ...powerLevels, ban: val })" />
       </n-form-item>
     </n-form>
   </div>

@@ -7,11 +7,7 @@
         <div class="event-section">
           <div class="section-title">常用事件</div>
 
-          <div
-            v-for="event in commonEvents"
-            :key="event.type"
-            class="event-item"
-          >
+          <div v-for="event in commonEvents" :key="event.type" class="event-item">
             <div class="event-header">
               <div class="event-info">
                 <n-icon size="20" class="event-icon">
@@ -32,8 +28,7 @@
               :max="100"
               :step="10"
               :marks="{ 0: '0', 50: '50', 100: '100' }"
-              @update:value="(v) => emit('update', event.type, v)"
-            />
+              @update:value="(v) => emit('update', event.type, v)" />
           </div>
         </div>
 
@@ -45,25 +40,14 @@
             <n-input
               v-model:value="customEventType"
               placeholder="例如: m.room.custom"
-              @keyup.enter="handleAddCustomEvent"
-            />
+              @keyup.enter="handleAddCustomEvent" />
           </n-form-item>
 
           <n-form-item label="权限等级">
-            <n-slider
-              v-model:value="customEventLevel"
-              :min="0"
-              :max="100"
-              :step="10"
-            />
+            <n-slider v-model:value="customEventLevel" :min="0" :max="100" :step="10" />
           </n-form-item>
 
-          <n-button
-            type="primary"
-            block
-            :disabled="!customEventType.trim()"
-            @click="handleAddCustomEvent"
-          >
+          <n-button type="primary" block :disabled="!customEventType.trim()" @click="handleAddCustomEvent">
             添加自定义事件
           </n-button>
         </div>
@@ -72,21 +56,12 @@
         <div v-if="customEventsList.length > 0" class="custom-events-list">
           <div class="section-title">已添加的自定义事件</div>
 
-          <div
-            v-for="event in customEventsList"
-            :key="event.type"
-            class="custom-event-item"
-          >
+          <div v-for="event in customEventsList" :key="event.type" class="custom-event-item">
             <div class="custom-event-info">
               <div class="custom-event-type">{{ event.type }}</div>
               <div class="custom-event-level">权限: {{ event.level }}</div>
             </div>
-            <n-button
-              text
-              type="error"
-              size="small"
-              @click="handleRemoveCustomEvent(event.type)"
-            >
+            <n-button text type="error" size="small" @click="handleRemoveCustomEvent(event.type)">
               <template #icon>
                 <n-icon><X /></n-icon>
               </template>

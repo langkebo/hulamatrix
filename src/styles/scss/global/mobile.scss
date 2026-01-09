@@ -109,16 +109,16 @@
   display: flex;
   gap: 12px;
   background-color: var(--chat-bg-color);
-  box-shadow: 0 -3px 6px -4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -3px 6px -4px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .mobile-primary-btn {
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(var(--hula-black-rgb), 0.15);
 }
 
 [data-theme='dark'] .mobile-primary-btn {
-  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 8px rgba(var(--hula-white-rgb), 0.06);
 }
 [data-theme='dark'] .n-dialog,
 [data-theme='dark'] .n-modal,

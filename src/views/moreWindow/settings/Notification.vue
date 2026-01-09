@@ -34,7 +34,9 @@
       </n-flex>
 
       <n-flex class="item" :size="0" vertical>
-        <div v-if="filteredGroupSessions.length === 0" class="text-(12px var(--hula-brand-primary)) text-center py-20px">
+        <div
+          v-if="filteredGroupSessions.length === 0"
+          class="text-(12px var(--hula-brand-primary)) text-center py-20px">
           {{ searchKeyword ? '未找到匹配的群聊' : '暂无群聊' }}
         </div>
 

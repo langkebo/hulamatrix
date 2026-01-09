@@ -2,100 +2,108 @@
   <div class="spaces-page p-16px box-border flex">
     <TreeSidebar />
     <div class="flex-1 pl-16px">
-    <n-page-header title="空间管理">
-      <template #extra>
-        <n-space>
-          <n-button type="primary" @click="openCreate">创建空间</n-button>
-          <n-button tertiary @click="refresh">刷新</n-button>
-        </n-space>
-      </template>
-  </n-page-header>
+      <n-page-header title="空间管理">
+        <template #extra>
+          <n-space>
+            <n-button type="primary" @click="openCreate">创建空间</n-button>
+            <n-button tertiary @click="refresh">刷新</n-button>
+          </n-space>
+        </template>
+      </n-page-header>
 
-    <n-card size="small" class="mt-12px" hoverable>
-      <n-form label-placement="left" label-width="80">
-        <n-grid cols="1 s:2 m:4" x-gap="12" y-gap="8">
-          <n-form-item label="关键字"><n-input v-model:value="search.query" placeholder="房间名称/ID" clearable /></n-form-item>
-          <n-form-item label="模式">
-            <n-select v-model:value="search.mode" :options="searchModeOptions" />
-          </n-form-item>
-          <n-form-item label="排序">
-            <n-select v-model:value="search.sortBy" :options="sortOptions" />
-          </n-form-item>
-          <n-form-item label="筛选">
-            <n-select v-model:value="search.filter" multiple :options="filterOptions" />
-          </n-form-item>
+      <n-card size="small" class="mt-12px" hoverable>
+        <n-form label-placement="left" label-width="80">
+          <n-grid cols="1 s:2 m:4" x-gap="12" y-gap="8">
+            <n-form-item label="关键字">
+              <n-input v-model:value="search.query" placeholder="房间名称/ID" clearable />
+            </n-form-item>
+            <n-form-item label="模式">
+              <n-select v-model:value="search.mode" :options="searchModeOptions" />
+            </n-form-item>
+            <n-form-item label="排序">
+              <n-select v-model:value="search.sortBy" :options="sortOptions" />
+            </n-form-item>
+            <n-form-item label="筛选">
+              <n-select v-model:value="search.filter" multiple :options="filterOptions" />
+            </n-form-item>
+          </n-grid>
+          <n-space>
+            <n-button type="primary" :loading="searching" @click="doSearch">搜索房间</n-button>
+            <n-button tertiary @click="resetSearch">重置</n-button>
+          </n-space>
+        </n-form>
+      </n-card>
+
+      <n-alert v-if="error" type="warning" :show-icon="true" class="mt-12px">{{ error }}</n-alert>
+
+      <n-spin :show="isLoading">
+        <n-grid cols="1 s:2 m:3 l:4" x-gap="16" y-gap="16" class="mt-16px">
+          <n-grid-item v-for="space in userSpaces" :key="space.id">
+            <n-card size="small" hoverable>
+              <n-flex align="center" :size="10">
+                <n-avatar round :size="36" :src="space.avatar || ''" :fallback-src="fallbackAvatar" />
+                <div class="flex-1 truncate">
+                  <div class="text-14px truncate">{{ space.name }}</div>
+                  <div class="text-12px text-var(--hula-brand-primary) truncate">{{ space.topic || '' }}</div>
+                </div>
+                <n-badge :value="getUnread(space.id).highlight + getUnread(space.id).notification" :max="99" />
+              </n-flex>
+              <n-divider class="my-8px" />
+              <n-space>
+                <n-button size="small" @click="view(space.id)">查看</n-button>
+                <n-button size="small" @click="openCreateRoom(space.id)">在空间内创建房间</n-button>
+                <n-button size="small" tertiary @click="invite(space.id)">邀请成员</n-button>
+                <n-popconfirm @positive-click="handleLeaveSpace(space.id)">
+                  <template #trigger>
+                    <n-button size="small" type="error" tertiary>退出</n-button>
+                  </template>
+                  确认退出该空间？
+                </n-popconfirm>
+              </n-space>
+            </n-card>
+          </n-grid-item>
         </n-grid>
-        <n-space>
-          <n-button type="primary" :loading="searching" @click="doSearch">搜索房间</n-button>
-          <n-button tertiary @click="resetSearch">重置</n-button>
-        </n-space>
-      </n-form>
-    </n-card>
+      </n-spin>
 
-    <n-alert v-if="error" type="warning" :show-icon="true" class="mt-12px">{{ error }}</n-alert>
+      <n-card size="small" class="mt-16px" hoverable>
+        <template #header>房间搜索结果</template>
+        <n-data-table :columns="columns" :data="pagedResults" :pagination="pagination" />
+      </n-card>
 
-    <n-spin :show="isLoading">
-      <n-grid cols="1 s:2 m:3 l:4" x-gap="16" y-gap="16" class="mt-16px">
-        <n-grid-item v-for="space in userSpaces" :key="space.id">
-          <n-card size="small" hoverable>
-            <n-flex align="center" :size="10">
-              <n-avatar round :size="36" :src="space.avatar || ''" :fallback-src="fallbackAvatar" />
-              <div class="flex-1 truncate">
-                <div class="text-14px truncate">{{ space.name }}</div>
-                <div class="text-12px text-var(--hula-brand-primary) truncate">{{ space.topic || '' }}</div>
-              </div>
-              <n-badge :value="getUnread(space.id).highlight + getUnread(space.id).notification" :max="99" />
-            </n-flex>
-            <n-divider class="my-8px" />
-            <n-space>
-              <n-button size="small" @click="view(space.id)">查看</n-button>
-              <n-button size="small" @click="openCreateRoom(space.id)">在空间内创建房间</n-button>
-              <n-button size="small" tertiary @click="invite(space.id)">邀请成员</n-button>
-              <n-popconfirm @positive-click="handleLeaveSpace(space.id)">
-                <template #trigger>
-                  <n-button size="small" type="error" tertiary>退出</n-button>
-                </template>
-                确认退出该空间？
-              </n-popconfirm>
-            </n-space>
-          </n-card>
-        </n-grid-item>
-      </n-grid>
-    </n-spin>
+      <n-modal v-model:show="showCreate" preset="card" title="创建空间" class="w-480px">
+        <n-form :model="createForm" :rules="rules" label-placement="left" label-width="80">
+          <n-form-item label="名称" path="name"><n-input v-model:value="createForm.name" /></n-form-item>
+          <n-form-item label="主题" path="topic"><n-input v-model:value="createForm.topic" /></n-form-item>
+          <n-form-item label="公开"><n-switch v-model:value="createForm.isPublic" /></n-form-item>
+        </n-form>
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="showCreate = false">取消</n-button>
+            <n-button type="primary" :loading="isLoading" @click="doCreate">创建</n-button>
+          </n-space>
+        </template>
+      </n-modal>
 
-    <n-card size="small" class="mt-16px" hoverable>
-      <template #header>房间搜索结果</template>
-      <n-data-table :columns="columns" :data="pagedResults" :pagination="pagination" />
-    </n-card>
-
-    <n-modal v-model:show="showCreate" preset="card" title="创建空间" class="w-480px">
-      <n-form :model="createForm" :rules="rules" label-placement="left" label-width="80">
-        <n-form-item label="名称" path="name"><n-input v-model:value="createForm.name" /></n-form-item>
-        <n-form-item label="主题" path="topic"><n-input v-model:value="createForm.topic" /></n-form-item>
-        <n-form-item label="公开"><n-switch v-model:value="createForm.isPublic" /></n-form-item>
-      </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showCreate=false">取消</n-button>
-          <n-button type="primary" :loading="isLoading" @click="doCreate">创建</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-
-    <n-modal v-model:show="showCreateRoom" preset="card" title="创建房间" class="w-520px">
-      <n-form :model="createRoomForm" :rules="roomRules" label-placement="left" label-width="100">
-        <n-form-item label="房间名称" path="name"><n-input v-model:value="createRoomForm.name" /></n-form-item>
-        <n-form-item label="类型"><n-select v-model:value="createRoomForm.type" :options="roomTypeOptions" /></n-form-item>
-        <n-form-item label="最大人数"><n-input-number v-model:value="createRoomForm.maxMembers" :min="1" :max="10000" /></n-form-item>
-        <n-form-item label="密码保护"><n-input v-model:value="createRoomForm.password" type="password" placeholder="留空则不启用" /></n-form-item>
-      </n-form>
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="showCreateRoom=false">取消</n-button>
-          <n-button type="primary" :loading="isLoading" @click="doCreateRoom">创建</n-button>
-        </n-space>
-      </template>
-    </n-modal>
+      <n-modal v-model:show="showCreateRoom" preset="card" title="创建房间" class="w-520px">
+        <n-form :model="createRoomForm" :rules="roomRules" label-placement="left" label-width="100">
+          <n-form-item label="房间名称" path="name"><n-input v-model:value="createRoomForm.name" /></n-form-item>
+          <n-form-item label="类型">
+            <n-select v-model:value="createRoomForm.type" :options="roomTypeOptions" />
+          </n-form-item>
+          <n-form-item label="最大人数">
+            <n-input-number v-model:value="createRoomForm.maxMembers" :min="1" :max="10000" />
+          </n-form-item>
+          <n-form-item label="密码保护">
+            <n-input v-model:value="createRoomForm.password" type="password" placeholder="留空则不启用" />
+          </n-form-item>
+        </n-form>
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="showCreateRoom = false">取消</n-button>
+            <n-button type="primary" :loading="isLoading" @click="doCreateRoom">创建</n-button>
+          </n-space>
+        </template>
+      </n-modal>
     </div>
   </div>
 </template>
@@ -329,5 +337,7 @@ const doCreateRoom = async () => {
 </script>
 
 <style scoped>
-.spaces-page { padding-right: 24px; }
+.spaces-page {
+  padding-right: 24px;
+}
 </style>

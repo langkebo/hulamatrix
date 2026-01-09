@@ -112,7 +112,7 @@
   /* 背景颜色 */
   --hula-bg-page: var(--hula-brand-primary);
   --hula-bg-component: var(--hula-brand-primary);
-  --hula-bg-overlay: rgba(0, 0, 0, 0.5);
+  --hula-bg-overlay: rgba(var(--hula-black-rgb), 0.5);
 
   /* 边框颜色 */
   --hula-border-light: var(--hula-brand-primary);
@@ -132,10 +132,10 @@
   --hula-gradient-primary: linear-gradient(135deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 
   /* ==================== 阴影 ==================== */
-  --hula-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --hula-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --hula-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --hula-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  --hula-shadow-sm: 0 2px 4px rgba(var(--hula-black-rgb), 0.05);
+  --hula-shadow-md: 0 4px 12px rgba(var(--hula-black-rgb), 0.08);
+  --hula-shadow-lg: 0 8px 24px rgba(var(--hula-black-rgb), 0.12);
+  --hula-shadow-xl: 0 16px 48px rgba(var(--hula-black-rgb), 0.16);
 
   /* ==================== 圆角 ==================== */
   --hula-radius-sm: 4px;
@@ -202,15 +202,15 @@ html[data-theme='dark'] {
   /* ==================== 中性色（深色模式）==================== */
   /* 文字颜色（深色模式反转） */
   --hula-text-primary: var(--hula-brand-primary);
-  --hula-text-regular: rgba(255, 255, 255, 0.75);
-  --hula-text-secondary: rgba(255, 255, 255, 0.55);
-  --hula-text-placeholder: rgba(255, 255, 255, 0.35);
-  --hula-text-disabled: rgba(255, 255, 255, 0.25);
+  --hula-text-regular: rgba(var(--hula-white-rgb), 0.75);
+  --hula-text-secondary: rgba(var(--hula-white-rgb), 0.55);
+  --hula-text-placeholder: rgba(var(--hula-white-rgb), 0.35);
+  --hula-text-disabled: rgba(var(--hula-white-rgb), 0.25);
 
   /* 背景颜色（深色模式） */
   --hula-bg-page: var(--hula-brand-primary);
   --hula-bg-component: var(--hula-brand-primary);
-  --hula-bg-overlay: rgba(0, 0, 0, 0.7);
+  --hula-bg-overlay: rgba(var(--hula-black-rgb), 0.7);
 
   /* 边框颜色（深色模式） */
   --hula-border-light: var(--hula-brand-primary);
@@ -225,10 +225,10 @@ html[data-theme='dark'] {
   );
 
   /* ==================== 阴影（深色模式）==================== */
-  --hula-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --hula-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --hula-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --hula-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --hula-shadow-sm: 0 2px 4px rgba(var(--hula-black-rgb), 0.2);
+  --hula-shadow-md: 0 4px 12px rgba(var(--hula-black-rgb), 0.3);
+  --hula-shadow-lg: 0 8px 24px rgba(var(--hula-black-rgb), 0.4);
+  --hula-shadow-xl: 0 16px 48px rgba(var(--hula-black-rgb), 0.5);
 }
 
 /* ==================== 全局应用 ==================== */

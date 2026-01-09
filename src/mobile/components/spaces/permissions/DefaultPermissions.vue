@@ -23,8 +23,7 @@
             :max="100"
             :step="10"
             :marks="{ 0: '0', 50: '50', 100: '100' }"
-            @update:value="(v) => emit('update', 'users_default', v)"
-          />
+            @update:value="(v) => emit('update', 'users_default', v)" />
         </div>
 
         <!-- Events Default -->
@@ -47,8 +46,7 @@
             :max="100"
             :step="10"
             :marks="{ 0: '0', 50: '50', 100: '100' }"
-            @update:value="(v) => emit('update', 'events_default', v)"
-          />
+            @update:value="(v) => emit('update', 'events_default', v)" />
         </div>
 
         <!-- State Default -->
@@ -71,8 +69,7 @@
             :max="100"
             :step="10"
             :marks="{ 0: '0', 50: '50', 100: '100' }"
-            @update:value="(v) => emit('update', 'state_default', v)"
-          />
+            @update:value="(v) => emit('update', 'state_default', v)" />
         </div>
 
         <!-- Special Permissions -->
@@ -98,8 +95,7 @@
               :max="100"
               :step="10"
               :marks="{ 0: '0', 50: '50', 100: '100' }"
-              @update:value="(v) => emit('update', 'kick', v)"
-            />
+              @update:value="(v) => emit('update', 'kick', v)" />
           </div>
 
           <div class="permission-item">
@@ -121,8 +117,7 @@
               :max="100"
               :step="10"
               :marks="{ 0: '0', 50: '50', 100: '100' }"
-              @update:value="(v) => emit('update', 'ban', v)"
-            />
+              @update:value="(v) => emit('update', 'ban', v)" />
           </div>
 
           <div class="permission-item">
@@ -144,8 +139,7 @@
               :max="100"
               :step="10"
               :marks="{ 0: '0', 50: '50', 100: '100' }"
-              @update:value="(v) => emit('update', 'redact', v)"
-            />
+              @update:value="(v) => emit('update', 'redact', v)" />
           </div>
 
           <div class="permission-item">
@@ -167,8 +161,7 @@
               :max="100"
               :step="10"
               :marks="{ 0: '0', 50: '50', 100: '100' }"
-              @update:value="(v) => emit('update', 'invite', v)"
-            />
+              @update:value="(v) => emit('update', 'invite', v)" />
           </div>
         </div>
 

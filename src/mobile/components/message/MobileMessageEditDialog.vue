@@ -1,10 +1,6 @@
 <!-- Mobile Message Edit Dialog - Edit previously sent messages -->
 <template>
-  <van-popup
-    v-model:show="showDialog"
-    position="bottom"
-    :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
-  >
+  <van-popup v-model:show="showDialog" position="bottom" :style="{ height: '80%', borderRadius: '16px 16px 0 0' }">
     <div class="mobile-message-edit-popup">
       <!-- Handle bar -->
       <div class="handle-bar" @click="handleClose"></div>
@@ -34,8 +30,7 @@
               :maxlength="maxLength"
               rows="3"
               ref="inputRef"
-              @keyup.ctrl.enter="saveEdit"
-            />
+              @keyup.ctrl.enter="saveEdit" />
             <div class="char-count">{{ editContent.length }}/{{ maxLength }}</div>
           </div>
 
@@ -43,21 +38,12 @@
           <div v-if="editHistory.length > 0" class="edit-history">
             <div class="history-header">
               <span class="history-label">{{ t('message.edit.editHistory') }}</span>
-              <van-button
-                type="primary"
-                size="small"
-                plain
-                @click="showHistory = !showHistory"
-              >
+              <van-button type="primary" size="small" plain @click="showHistory = !showHistory">
                 {{ showHistory ? t('common.hide') : t('common.show') }}
               </van-button>
             </div>
             <div v-if="showHistory" class="history-list">
-              <div
-                v-for="(edit, index) in editHistory"
-                :key="index"
-                class="history-item"
-              >
+              <div v-for="(edit, index) in editHistory" :key="index" class="history-item">
                 <span class="history-time">{{ formatTime(edit.timestamp) }}</span>
                 <span class="history-content">{{ edit.content }}</span>
               </div>
@@ -79,8 +65,7 @@
           block
           :loading="saving"
           :disabled="!editContent.trim() || editContent === originalContent"
-          @click="saveEdit"
-        >
+          @click="saveEdit">
           <template #icon>
             <van-icon name="success" />
           </template>
@@ -255,12 +240,12 @@ watch(
   .header-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   .van-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {

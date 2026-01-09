@@ -20,8 +20,7 @@
         :key="tab.key"
         class="nav-tab"
         :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
+        @click="activeTab = tab.key">
         <Icon :icon="tab.icon" class="tab-icon" />
         <span>{{ tab.label }}</span>
       </button>
@@ -209,21 +208,10 @@
             <h3>ARIA 属性</h3>
             <p class="demo-desc">正确使用 ARIA 属性提升辅助技术支持</p>
             <div class="aria-demo">
-              <button
-                :aria-expanded="isExpanded"
-                aria-controls="demo-panel"
-                @click="isExpanded = !isExpanded"
-              >
+              <button :aria-expanded="isExpanded" aria-controls="demo-panel" @click="isExpanded = !isExpanded">
                 {{ isExpanded ? '收起' : '展开' }}内容
               </button>
-              <div
-                v-show="isExpanded"
-                id="demo-panel"
-                role="region"
-                aria-live="polite"
-              >
-                这是可展开的内容区域
-              </div>
+              <div v-show="isExpanded" id="demo-panel" role="region" aria-live="polite">这是可展开的内容区域</div>
 
               <!-- 开关示例 -->
               <label class="switch-label">
@@ -234,8 +222,7 @@
                   @click="notificationEnabled = !notificationEnabled"
                   role="switch"
                   :aria-checked="notificationEnabled"
-                  tabindex="0"
-                ></div>
+                  tabindex="0"></div>
               </label>
             </div>
           </div>
@@ -566,7 +553,7 @@ const neutralColors = [
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
     transform: translateY(-2px);
   }
 
@@ -575,7 +562,7 @@ const neutralColors = [
     height: 80px;
     border-radius: 8px;
     margin-bottom: 12px;
-    box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+    box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(var(--hula-black-rgb), 0.05));
   }
 
   .color-info {
@@ -760,7 +747,7 @@ const neutralColors = [
     flex-direction: column;
     gap: 16px;
 
-    button[aria-controls="demo-panel"] {
+    button[aria-controls='demo-panel'] {
       margin-bottom: 8px;
     }
 
@@ -878,7 +865,7 @@ const neutralColors = [
   z-index: 99999;
   padding: 8px 16px;
   background: var(--hula-brand-primary, var(--hula-brand-primary));
-  color: #fff;
+  color: var(--hula-white);
   text-decoration: none;
   font-weight: 500;
   transition: top 0.3s ease;

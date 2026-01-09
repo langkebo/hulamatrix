@@ -34,10 +34,10 @@
                     :max="4"
                     disabled>
                     <div class="upload-trigger">
-                      <svg class="size-24px text-#999">
+                      <svg class="size-24px text-var(--hula-gray-400)">
                         <use href="#plus"></use>
                       </svg>
-                      <span class="text-12px text-#999 mt-5px">点击上传</span>
+                      <span class="text-12px text-var(--hula-gray-400) mt-5px">点击上传</span>
                     </div>
                   </n-upload>
                 </div>

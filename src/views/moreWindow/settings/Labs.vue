@@ -24,7 +24,9 @@
                 <n-tag v-if="feature.new" size="small" type="success">新</n-tag>
                 <n-tag v-if="feature.beta" size="small" type="warning">测试版</n-tag>
               </n-flex>
-              <span v-if="feature.description" class="text-(12px var(--hula-brand-primary))">{{ feature.description }}</span>
+              <span v-if="feature.description" class="text-(12px var(--hula-brand-primary))">
+                {{ feature.description }}
+              </span>
             </n-flex>
 
             <n-switch

@@ -3,34 +3,16 @@
   Individual room item for Sliding Sync room list
 -->
 <template>
-  <div
-    class="sliding-sync-room-item"
-    :class="{ active, unread: hasUnread }"
-    @click="handleClick"
-  >
+  <div class="sliding-sync-room-item" :class="{ active, unread: hasUnread }" @click="handleClick">
     <!-- Avatar -->
     <div class="room-avatar">
-      <n-avatar
-        v-if="room.avatar_url"
-        :src="room.avatar_url"
-        :fallback-src="fallbackAvatar"
-        round
-        size="medium"
-      />
-      <n-avatar
-        v-else
-        round
-        size="medium"
-        :style="{ backgroundColor: avatarColor }"
-      >
+      <n-avatar v-if="room.avatar_url" :src="room.avatar_url" :fallback-src="fallbackAvatar" round size="medium" />
+      <n-avatar v-else round size="medium" :style="{ backgroundColor: avatarColor }">
         {{ initials }}
       </n-avatar>
 
       <!-- Online Status (for DMs) -->
-      <div
-        v-if="room.is_dm && isOnline"
-        class="online-indicator"
-      />
+      <div v-if="room.is_dm && isOnline" class="online-indicator" />
     </div>
 
     <!-- Room Info -->
@@ -61,19 +43,13 @@
           :value="unreadCount"
           :max="99"
           :type="unreadHighlight ? 'error' : 'default'"
-          class="unread-badge"
-        />
+          class="unread-badge" />
       </div>
     </div>
 
     <!-- Room Tags -->
     <div v-if="showTags && tags.length > 0" class="room-tags">
-      <n-tag
-        v-for="tag in tags"
-        :key="tag"
-        size="tiny"
-        :bordered="false"
-      >
+      <n-tag v-for="tag in tags" :key="tag" size="tiny" :bordered="false">
         {{ tag }}
       </n-tag>
     </div>
@@ -305,15 +281,27 @@ const handleClick = () => {
     border-radius: 50%;
     animation: typing 1.4s infinite ease-in-out;
 
-    &:nth-child(1) { animation-delay: 0s; }
-    &:nth-child(2) { animation-delay: 0.2s; }
-    &:nth-child(3) { animation-delay: 0.4s; }
+    &:nth-child(1) {
+      animation-delay: 0s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
   }
 }
 
 @keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
 }
 
 .last-message {

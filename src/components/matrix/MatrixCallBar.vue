@@ -5,40 +5,27 @@
       <n-icon
         :component="call.type === 'video' ? Video : Phone"
         :size="20"
-        :color="call.isActive ? 'var(--n-success-color)' : 'var(--n-warning-color)'"
-      />
+        :color="call.isActive ? 'var(--n-success-color)' : 'var(--n-warning-color)'" />
     </div>
 
     <!-- 通话信息 -->
     <div class="call-info">
       <div class="call-title">
         <span>{{ call.type === 'video' ? '视频通话' : '语音通话' }}</span>
-        <n-tag
-          :type="getCallStateTagType(call.state)"
-          size="small"
-          round
-        >
+        <n-tag :type="getCallStateTagType(call.state)" size="small" round>
           {{ getCallStateText(call.state) }}
         </n-tag>
       </div>
       <div class="call-details">
         <span class="call-duration">{{ formatDuration(call.duration) }}</span>
-        <span v-if="call.participantCount > 0" class="call-participants">
-          {{ call.participantCount }} 位参与者
-        </span>
+        <span v-if="call.participantCount > 0" class="call-participants">{{ call.participantCount }} 位参与者</span>
       </div>
     </div>
 
     <!-- 通话控制按钮 -->
     <div class="call-controls" @click.stop>
       <!-- 静音按钮 -->
-      <n-button
-        quaternary
-        circle
-        size="small"
-        :type="call.isMuted ? 'error' : 'default'"
-        @click="handleToggleMute"
-      >
+      <n-button quaternary circle size="small" :type="call.isMuted ? 'error' : 'default'" @click="handleToggleMute">
         <n-icon :component="call.isMuted ? MicrophoneOff : Microphone" />
       </n-button>
 
@@ -49,8 +36,7 @@
         circle
         size="small"
         :type="call.isCameraOff ? 'error' : 'default'"
-        @click="handleToggleCamera"
-      >
+        @click="handleToggleCamera">
         <n-icon :component="call.isCameraOff ? CameraOff : Camera" />
       </n-button>
 
@@ -60,8 +46,7 @@
         circle
         size="small"
         :type="call.isSpeakerOn ? 'primary' : 'default'"
-        @click="handleToggleSpeaker"
-      >
+        @click="handleToggleSpeaker">
         <n-icon :component="call.isSpeakerOn ? Volume : Volume2" />
       </n-button>
 
@@ -69,35 +54,17 @@
       <n-divider vertical />
 
       <!-- 接听按钮（仅邀请中） -->
-      <n-button
-        v-if="call.state === 'invite_received'"
-        type="success"
-        circle
-        size="small"
-        @click="handleAccept"
-      >
+      <n-button v-if="call.state === 'invite_received'" type="success" circle size="small" @click="handleAccept">
         <n-icon :component="PhoneIncoming" />
       </n-button>
 
       <!-- 拒绝按钮（仅邀请中） -->
-      <n-button
-        v-if="call.state === 'invite_received'"
-        type="error"
-        circle
-        size="small"
-        @click="handleReject"
-      >
+      <n-button v-if="call.state === 'invite_received'" type="error" circle size="small" @click="handleReject">
         <n-icon :component="PhoneIncoming" />
       </n-button>
 
       <!-- 结束通话按钮 -->
-      <n-button
-        v-else
-        type="error"
-        circle
-        size="small"
-        @click="handleEnd"
-      >
+      <n-button v-else type="error" circle size="small" @click="handleEnd">
         <n-icon :component="PhoneOff" />
       </n-button>
     </div>
@@ -106,11 +73,7 @@
     <div class="call-quality" v-if="call.isActive && call.quality">
       <n-tooltip>
         <template #trigger>
-          <n-icon
-            :component="getQualityIcon(call.quality)"
-            :size="16"
-            :color="getQualityColor(call.quality)"
-          />
+          <n-icon :component="getQualityIcon(call.quality)" :size="16" :color="getQualityColor(call.quality)" />
         </template>
         {{ getQualityText(call.quality) }}
       </n-tooltip>
@@ -121,12 +84,7 @@
       <n-tooltip>
         <template #trigger>
           <n-icon :component="Radio" color="var(--n-error-color)" size="16">
-            <animate
-              attributeName="opacity"
-              values="0.3;1;0.3"
-              dur="1.5s"
-              repeatCount="indefinite"
-            />
+            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" />
           </n-icon>
         </template>
         通话录制中
@@ -405,7 +363,8 @@ const handleEnd = async () => {
 
 /* 动画效果 */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
   }
   50% {
@@ -451,12 +410,7 @@ const handleEnd = async () => {
   content: '';
   position: absolute;
   inset: -1px;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(var(--n-success-color-rgb), 0.3) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(45deg, transparent 30%, rgba(var(--n-success-color-rgb), 0.3) 50%, transparent 70%);
   border-radius: 8px;
   animation: shimmer 2s infinite;
   pointer-events: none;

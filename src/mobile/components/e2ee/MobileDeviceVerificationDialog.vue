@@ -6,8 +6,7 @@
       v-model:show="showDialog"
       :close-on-click-overlay="false"
       position="bottom"
-      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
-    >
+      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }">
       <div class="verification-dialog">
         <!-- Handle bar -->
         <div class="handle-bar" @click="handleClose"></div>
@@ -41,7 +40,11 @@
           <!-- Verification Steps -->
           <div class="steps-section">
             <div class="custom-steps">
-              <div v-for="(step, index) in ['请求', '验证', '完成']" :key="index" class="step-item" :class="{ active: index === currentStep, completed: index < currentStep }">
+              <div
+                v-for="(step, index) in ['请求', '验证', '完成']"
+                :key="index"
+                class="step-item"
+                :class="{ active: index === currentStep, completed: index < currentStep }">
                 <div class="step-circle">
                   <van-icon v-if="index < currentStep" name="success" :size="16" />
                   <span v-else>{{ index + 1 }}</span>
@@ -55,11 +58,7 @@
           <div v-if="showEmojiVerification" class="emoji-section">
             <div class="section-title">验证表情符号</div>
             <div class="emoji-grid">
-              <div
-                v-for="(item, index) in verificationEmoji"
-                :key="index"
-                class="emoji-item"
-              >
+              <div v-for="(item, index) in verificationEmoji" :key="index" class="emoji-item">
                 <span class="emoji">{{ item.emoji }}</span>
                 <span class="number">{{ item.number }}</span>
               </div>
@@ -79,9 +78,7 @@
                 <p>显示二维码供对方扫描</p>
               </div>
             </div>
-            <van-button block plain @click="switchToEmoji">
-              改用表情符号验证
-            </van-button>
+            <van-button block plain @click="switchToEmoji">改用表情符号验证</van-button>
           </div>
 
           <!-- Trust Level -->
@@ -136,17 +133,10 @@
             size="large"
             block
             @click="handleAccept"
-            :loading="verifying"
-          >
+            :loading="verifying">
             确认匹配
           </van-button>
-          <van-button
-            v-if="currentStep === 0"
-            type="primary"
-            size="large"
-            block
-            @click="handleClose"
-          >
+          <van-button v-if="currentStep === 0" type="primary" size="large" block @click="handleClose">
             稍后验证
           </van-button>
         </div>
@@ -158,8 +148,7 @@
       v-model:show="showSuccess"
       :close-on-click-overlay="true"
       position="center"
-      :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }"
-    >
+      :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }">
       <div class="success-dialog">
         <div class="success-header">
           <van-icon name="success" :size="48" color="#18a058" />
@@ -168,9 +157,7 @@
           <h3>验证成功!</h3>
           <p>{{ successMessage }}</p>
         </div>
-        <van-button type="primary" size="large" block @click="showSuccess = false">
-          完成
-        </van-button>
+        <van-button type="primary" size="large" block @click="showSuccess = false">完成</van-button>
       </div>
     </van-popup>
   </div>
@@ -580,7 +567,7 @@ defineExpose({
 
   .close-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {

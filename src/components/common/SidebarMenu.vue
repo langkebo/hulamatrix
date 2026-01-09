@@ -7,12 +7,7 @@
       </div>
 
       <ul class="h-sidebar-menu__list">
-        <li
-          v-for="item in group.items"
-          :key="item.key"
-          :class="getItemClasses(item)"
-          @click="handleItemClick(item)"
-        >
+        <li v-for="item in group.items" :key="item.key" :class="getItemClasses(item)" @click="handleItemClick(item)">
           <!-- 普通菜单项 -->
           <template v-if="!item.children || item.children.length === 0">
             <component
@@ -20,8 +15,7 @@
               :to="item.to"
               :href="item.href"
               class="h-sidebar-menu__link"
-              :target="item.href ? '_blank' : undefined"
-            >
+              :target="item.href ? '_blank' : undefined">
               <span class="h-sidebar-menu__icon" v-if="item.icon">
                 <Icon :icon="item.icon" />
               </span>
@@ -32,48 +26,42 @@
 
           <!-- 有子菜单的项 -->
           <template v-else>
-            <button
-              class="h-sidebar-menu__link"
-              @click.stop="toggleSubmenu(item.key)"
-            >
+            <button class="h-sidebar-menu__link" @click.stop="toggleSubmenu(item.key)">
               <span class="h-sidebar-menu__icon" v-if="item.icon">
                 <Icon :icon="item.icon" />
               </span>
               <span class="h-sidebar-menu__text">{{ item.label }}</span>
-              <span class="h-sidebar-menu__arrow" :class="{ 'h-sidebar-menu__arrow--expanded': expandedSubmenus.has(item.key) }">
+              <span
+                class="h-sidebar-menu__arrow"
+                :class="{ 'h-sidebar-menu__arrow--expanded': expandedSubmenus.has(item.key) }">
                 <Icon icon="material-symbols:chevron-right" />
               </span>
             </button>
 
             <transition name="submenu">
-              <ul
-                v-show="expandedSubmenus.has(item.key)"
-                class="h-sidebar-menu__submenu"
-              >
+              <ul v-show="expandedSubmenus.has(item.key)" class="h-sidebar-menu__submenu">
                 <li
                   v-for="child in item.children"
                   :key="child.key"
                   :class="getItemClasses(child, true)"
-                  @click="handleItemClick(child)"
-                >
-              <component
-                :is="child.to ? 'router-link' : child.href ? 'a' : 'button'"
-                :to="child.to"
-                :href="child.href"
-                class="h-sidebar-menu__link"
-                :target="child.href ? '_blank' : undefined"
-              >
-                <span class="h-sidebar-menu__text">{{ child.label }}</span>
-                <span class="h-sidebar-menu__badge" v-if="child.badge">{{ child.badge }}</span>
-              </component>
-            </li>
-          </ul>
-        </transition>
-      </template>
-    </li>
-  </ul>
-  </template>
-</nav>
+                  @click="handleItemClick(child)">
+                  <component
+                    :is="child.to ? 'router-link' : child.href ? 'a' : 'button'"
+                    :to="child.to"
+                    :href="child.href"
+                    class="h-sidebar-menu__link"
+                    :target="child.href ? '_blank' : undefined">
+                    <span class="h-sidebar-menu__text">{{ child.label }}</span>
+                    <span class="h-sidebar-menu__badge" v-if="child.badge">{{ child.badge }}</span>
+                  </component>
+                </li>
+              </ul>
+            </transition>
+          </template>
+        </li>
+      </ul>
+    </template>
+  </nav>
 </template>
 
 <script setup lang="ts">
@@ -448,7 +436,7 @@ const toggleSubmenu = (key: string) => {
 }
 
 // 暗色模式适配
-[data-theme-content="dark"] {
+[data-theme-content='dark'] {
   .h-sidebar-menu {
     &__link {
       color: var(--sidebar-text-color-dark);

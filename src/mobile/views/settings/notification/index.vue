@@ -199,7 +199,7 @@ onMounted(async () => {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0 4px 8px;
@@ -228,7 +228,7 @@ onMounted(async () => {
   transition: background-color 0.2s;
 
   &:active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   .item-content {
@@ -237,13 +237,13 @@ onMounted(async () => {
 
   .item-label {
     font-size: 16px;
-    color: #333;
+    color: var(--hula-gray-900);
     margin-bottom: 2px;
   }
 
   .item-description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 }
 
@@ -279,7 +279,7 @@ onMounted(async () => {
   align-items: center;
   gap: 4px;
   padding: 12px;
-  background: #f5f5f5;
+  background: var(--hula-gray-50);
   border-radius: 8px;
   cursor: pointer;
 
@@ -290,7 +290,7 @@ onMounted(async () => {
 
 .time-label {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
   text-transform: uppercase;
 }
 
@@ -302,7 +302,7 @@ onMounted(async () => {
 
 .time-separator {
   font-size: 20px;
-  color: #999;
+  color: var(--hula-gray-400);
   font-weight: 500;
 }
 
@@ -325,7 +325,7 @@ onMounted(async () => {
 }
 
 .empty-keywords {
-  color: #999;
+  color: var(--hula-gray-400);
   font-size: 14px;
   text-align: center;
   padding: 16px;
@@ -338,7 +338,7 @@ onMounted(async () => {
 }
 
 .keywords-editor {
-  background: #f5f5f5;
+  background: var(--hula-gray-50);
   border-radius: 12px;
   padding: 12px;
   margin-top: 8px;
@@ -361,6 +361,6 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 </style>

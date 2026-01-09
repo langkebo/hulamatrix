@@ -243,13 +243,17 @@ watch(
           <span class="icon">🔍</span>
         </template>
         <template #suffix>
-          <NButton secondary type="primary" :disabled="loading" @click="handleSearch">{{ t('matrix.roomDirectory.searchRooms') }}</NButton>
+          <NButton secondary type="primary" :disabled="loading" @click="handleSearch">
+            {{ t('matrix.roomDirectory.searchRooms') }}
+          </NButton>
         </template>
       </NInput>
     </div>
 
     <!-- Results Count -->
-    <div v-if="hasRooms" class="room-directory__count">{{ t('matrix.roomDirectory.foundRooms', { count: totalCount }) }}</div>
+    <div v-if="hasRooms" class="room-directory__count">
+      {{ t('matrix.roomDirectory.foundRooms', { count: totalCount }) }}
+    </div>
 
     <!-- Room List -->
     <div class="room-directory__list">
@@ -287,14 +291,22 @@ watch(
               <!-- Room Tags -->
               <div class="room-card__tags">
                 <NTag v-if="room.worldReadable" type="info" size="small">{{ t('matrix.roomDirectory.public') }}</NTag>
-                <NTag v-if="room.guestCanJoin" type="success" size="small">{{ t('matrix.roomDirectory.guestsAllowed') }}</NTag>
-                <NTag type="default" size="small">{{ t('matrix.roomDirectory.members', { count: room.numJoinedMembers || 0 }) }}</NTag>
+                <NTag v-if="room.guestCanJoin" type="success" size="small">
+                  {{ t('matrix.roomDirectory.guestsAllowed') }}
+                </NTag>
+                <NTag type="default" size="small">
+                  {{ t('matrix.roomDirectory.members', { count: room.numJoinedMembers || 0 }) }}
+                </NTag>
               </div>
 
               <!-- Actions -->
               <div class="room-card__actions">
-                <NButton size="small" type="default" @click="handlePreviewRoom(room.roomId)">{{ t('matrix.roomDirectory.preview') }}</NButton>
-                <NButton size="small" type="primary" @click="handleJoinRoom(room.roomId, room.name)">{{ t('matrix.roomDirectory.joinRoom') }}</NButton>
+                <NButton size="small" type="default" @click="handlePreviewRoom(room.roomId)">
+                  {{ t('matrix.roomDirectory.preview') }}
+                </NButton>
+                <NButton size="small" type="primary" @click="handleJoinRoom(room.roomId, room.name)">
+                  {{ t('matrix.roomDirectory.joinRoom') }}
+                </NButton>
               </div>
             </div>
           </NCard>

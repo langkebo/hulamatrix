@@ -10,7 +10,7 @@
   --bg-color-tertiary: var(--hula-brand-primary);
   --bg-color-elevated: var(--hula-brand-primary);
   --bg-color-surface: var(--hula-brand-primary);
-  --bg-color-overlay: rgba(0, 0, 0, 0.8);
+  --bg-color-overlay: rgba(var(--hula-black-rgb), 0.8);
 
   // 文本色
   --text-color: var(--hula-brand-primary);
@@ -32,21 +32,21 @@
   --input-placeholder: var(--hula-brand-primary);
 
   // 阴影
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(var(--hula-black-rgb), 0.3);
+  --shadow-md: 0 4px 6px rgba(var(--hula-black-rgb), 0.3);
+  --shadow-lg: 0 10px 15px rgba(var(--hula-black-rgb), 0.3);
+  --shadow-xl: 0 20px 25px rgba(var(--hula-black-rgb), 0.3);
 
   // 滚动条
   --scrollbar-bg: transparent;
   --scrollbar-color: var(--hula-brand-primary);
 
   // 选择文本
-  --selection-bg: rgba(255, 255, 255, 0.2);
+  --selection-bg: rgba(var(--hula-white-rgb), 0.2);
   --selection-text: var(--hula-brand-primary);
 
   // 焦点环
-  --focus-ring-color: rgba(255, 255, 255, 0.3);
+  --focus-ring-color: rgba(var(--hula-white-rgb), 0.3);
 
   // 状态色
   --success-bg: rgba(16, 185, 129, 0.1);
@@ -55,9 +55,9 @@
   --info-bg: rgba(59, 130, 246, 0.1);
 
   // 悬停状态
-  --hover-bg: rgba(255, 255, 255, 0.05);
-  --hover-border: rgba(255, 255, 255, 0.1);
-  --active-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: rgba(var(--hula-white-rgb), 0.05);
+  --hover-border: rgba(var(--hula-white-rgb), 0.1);
+  --active-bg: rgba(var(--hula-white-rgb), 0.1);
 
   // 侧边栏
   --sidebar-bg: var(--hula-brand-primary);
@@ -65,7 +65,7 @@
   --sidebar-text-color: var(--hula-brand-primary);
   --sidebar-text-color-secondary: var(--hula-brand-primary);
   --sidebar-text-color-hover: var(--hula-brand-primary);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-hover-bg: rgba(var(--hula-white-rgb), 0.05);
   --sidebar-footer-bg: var(--hula-brand-primary);
 
   // 聊天
@@ -81,12 +81,12 @@
   --message-text-color: var(--hula-brand-primary);
   --message-border-color: var(--hula-brand-primary);
   --message-selected-bg: rgba(19, 152, 127, 0.1);
-  --reply-bg: rgba(255, 255, 255, 0.05);
-  --reply-hover-bg: rgba(255, 255, 255, 0.08);
+  --reply-bg: rgba(var(--hula-white-rgb), 0.05);
+  --reply-hover-bg: rgba(var(--hula-white-rgb), 0.08);
 
   // 弹出层
   --popover-bg: var(--hula-brand-primary);
-  --tooltip-bg: rgba(0, 0, 0, 0.9);
+  --tooltip-bg: rgba(var(--hula-black-rgb), 0.9);
   --tooltip-text: var(--hula-brand-primary);
 
   // 按钮增强
@@ -98,7 +98,7 @@
   // 增强的对比度和可读性
   --enhanced-border-color: var(--hula-brand-primary);
   --enhanced-text-color: var(--hula-brand-primary);
-  --enhanced-bg-hover: rgba(255, 255, 255, 0.08);
+  --enhanced-bg-hover: rgba(var(--hula-white-rgb), 0.08);
 }
 
 // 全局增强样式

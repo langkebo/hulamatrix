@@ -2,7 +2,7 @@
   <div v-if="show" class="space-detail-drawer">
     <slot />
   </div>
-<div v-else></div>
+  <div v-else></div>
 </template>
 
 <script setup lang="ts">

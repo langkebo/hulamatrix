@@ -118,9 +118,9 @@ function formatLastActive(timestamp: number): string {
 
   .presence-tooltip {
     padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(var(--hula-black-rgb), 0.8);
     border-radius: 4px;
-    color: #fff;
+    color: var(--hula-white);
     white-space: nowrap;
 
     .tooltip-text {

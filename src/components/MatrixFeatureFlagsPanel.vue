@@ -6,7 +6,7 @@
     </ul>
     <button @click="copySummary">复制摘要</button>
   </div>
-  </template>
+</template>
 <script setup lang="ts">
 import { flags, flagSummary } from '@/utils/envFlags'
 function copySummary() {
@@ -14,7 +14,15 @@ function copySummary() {
 }
 </script>
 <style scoped>
-.matrix-flags-panel { padding: 12px }
-.matrix-flags-panel ul { list-style: none; padding: 0; margin: 8px 0 }
-.matrix-flags-panel li { font-family: monospace }
+.matrix-flags-panel {
+  padding: 12px;
+}
+.matrix-flags-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.matrix-flags-panel li {
+  font-family: monospace;
+}
 </style>

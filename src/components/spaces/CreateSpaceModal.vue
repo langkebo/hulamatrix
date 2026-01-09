@@ -44,11 +44,7 @@
 
       <!-- Space avatar -->
       <n-form-item label="空间头像">
-        <n-upload
-          :max="1"
-          accept="image/*"
-          :show-file-list="false"
-          @change="handleAvatarChange">
+        <n-upload :max="1" accept="image/*" :show-file-list="false" @change="handleAvatarChange">
           <n-button>选择图片</n-button>
         </n-upload>
         <div v-if="avatarPreview" class="mt-8px">

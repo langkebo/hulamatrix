@@ -296,7 +296,7 @@ onMounted(() => {
 
   .page-header {
     padding: 16px;
-    background: #fff;
+    background: var(--hula-white);
 
     h1 {
       margin: 0;
@@ -308,7 +308,7 @@ onMounted(() => {
   .status-card {
     margin: 16px;
     padding: 20px;
-    background: #fff;
+    background: var(--hula-white);
     border-radius: 12px;
     display: flex;
     align-items: center;

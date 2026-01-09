@@ -13,10 +13,10 @@
               :size="8"
               :class="{ 'filter-shadow': page.shadow }"
               class="box bg-[--plugin-bg-color]">
-              <svg class="size-38px color-#999">
+              <svg class="size-38px color-var(--hula-gray-400)">
                 <use :href="`#${plugin.icon}`"></use>
               </svg>
-              <p class="text-(12px #666)">{{ plugin.title }}</p>
+              <p class="text-(12px var(--hula-gray-700))">{{ plugin.title }}</p>
 
               <!-- 在下载中进度条 -->
               <n-flex
@@ -38,7 +38,9 @@
                   <p class="absolute-center text-(12px var(--hula-brand-primary))">{{ plugin.progress ?? 0 }}%</p>
                 </div>
 
-                <p v-else class="text-(12px var(--hula-brand-primary) center)">{{ t('home.plugins.actions.install') }}</p>
+                <p v-else class="text-(12px var(--hula-brand-primary) center)">
+                  {{ t('home.plugins.actions.install') }}
+                </p>
               </n-flex>
 
               <!-- 闪光效果 -->
@@ -66,7 +68,7 @@
               <svg class="size-38px color-#555">
                 <use :href="`#${plugin.iconAction || plugin.icon}`"></use>
               </svg>
-              <p class="text-(12px #666)">{{ plugin.title }}</p>
+              <p class="text-(12px var(--hula-gray-700))">{{ plugin.title }}</p>
 
               <n-flex
                 v-if="plugin.state === PluginEnum.UNINSTALLING"
@@ -92,7 +94,7 @@
               <Transition>
                 <svg
                   v-if="plugin.isAdd && plugin.state !== PluginEnum.BUILTIN"
-                  class="absolute color-#666 left-2px top-2px size-14px">
+                  class="absolute color-var(--hula-gray-700) left-2px top-2px size-14px">
                   <use href="#notOnTop"></use>
                 </svg>
               </Transition>
@@ -106,7 +108,7 @@
                 trigger="click"
                 placement="bottom">
                 <template #trigger>
-                  <svg @click.stop="isCurrently = index" class="absolute color-#666 right-0 top-0 size-18px rotate-90">
+                  <svg @click.stop="isCurrently = index" class="absolute color-var(--hula-gray-700) right-0 top-0 size-18px rotate-90">
                     <use href="#more"></use>
                   </svg>
                 </template>
@@ -296,7 +298,7 @@ onUnmounted(() => {
     top: 0;
     width: 100px;
     height: 100px;
-    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(90deg, rgba(var(--hula-white-rgb), 0), rgba(var(--hula-white-rgb), 0.5), rgba(var(--hula-white-rgb), 0));
     transform: skew(-30deg);
     pointer-events: none;
   }
@@ -341,7 +343,7 @@ onUnmounted(() => {
 }
 
 .filter-shadow {
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 0 2px rgba(var(--hula-black-rgb), 0.2));
 }
 
 .v-enter-active,

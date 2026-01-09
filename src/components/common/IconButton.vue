@@ -9,8 +9,7 @@
     v-bind="tooltipPlacement !== undefined ? { tooltipPlacement } : {}"
     v-bind="ripple !== undefined ? { ripple } : {}"
     v-bind="$attrs"
-    @click="handleClick"
-  >
+    @click="handleClick">
     <template #icon>
       <slot />
     </template>
@@ -134,7 +133,7 @@ const handleClick = (event: Event) => {
 }
 
 // 暗色模式适配
-[data-theme-content="dark"] {
+[data-theme-content='dark'] {
   .h-icon-button {
     &--pulse :deep(.h-button) {
       animation: icon-button-pulse-dark 2s infinite;

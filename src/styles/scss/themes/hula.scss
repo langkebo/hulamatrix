@@ -13,7 +13,7 @@
     --left-active-hover: var(--hula-brand-primary);                /* 亮绿色悬停（PC强调色） */
     --left-bg-hover: rgba(0, 191, 165, 0.15);    /* 亮绿色悬停背景 */
     --left-active-icon-color: var(--hula-brand-primary);           /* 激活图标：亮绿色 */
-    --left-win-icon-color: rgba(255, 255, 255, 0.4);
+    --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
     --left-gradient-bg: linear-gradient(180deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 
     // ==================== 选中状态 ====================
@@ -31,7 +31,7 @@
     // ==================== 聊天框样式 ====================
     --right-chat-reply-color: var(--hula-brand-primary);           /* 回复背景：灰色 */
     --right-chat-reply-active-color: rgba(0, 191, 165, 0.2); /* 回复激活 */
-    --right-chat-footer-line-color: rgba(255, 255, 255, 0.1);
+    --right-chat-footer-line-color: rgba(var(--hula-white-rgb), 0.1);
 
     // ==================== 消息列表样式 ====================
     --msg-active-color: var(--hula-brand-primary);                 /* 选中：亮绿色 */
@@ -122,7 +122,7 @@ html[data-theme='dark'] {
     --left-active-hover: var(--hula-brand-primary);                /* 亮绿色悬停 */
     --left-bg-hover: rgba(0, 191, 165, 0.2);     /* 亮绿色悬停背景 */
     --left-active-icon-color: var(--hula-brand-primary);           /* 激活图标：亮绿色 */
-    --left-win-icon-color: rgba(255, 255, 255, 0.4);
+    --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
     --left-gradient-bg: linear-gradient(180deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
 
     // ==================== 选中状态 ====================
@@ -139,7 +139,7 @@ html[data-theme='dark'] {
     // ==================== 聊天框样式 ====================
     --right-chat-reply-color: rgba(74, 74, 74, 0.8);
     --right-chat-reply-active-color: rgba(0, 191, 165, 0.2);
-    --right-chat-footer-line-color: rgba(255, 255, 255, 0.1);
+    --right-chat-footer-line-color: rgba(var(--hula-white-rgb), 0.1);
 
     // ==================== 消息列表样式 ====================
     --msg-active-color: var(--hula-brand-primary);                 /* 选中：亮绿色 */

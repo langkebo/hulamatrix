@@ -4,11 +4,7 @@
     <n-spin :show="loading">
       <!-- Room List -->
       <div class="room-list">
-        <div
-          v-for="room in roomPermissions"
-          :key="room.roomId"
-          class="room-item"
-        >
+        <div v-for="room in roomPermissions" :key="room.roomId" class="room-item">
           <div class="room-info">
             <n-avatar :size="40" round>
               <n-icon><Door /></n-icon>
@@ -25,15 +21,11 @@
               :options="powerLevelOptions"
               size="small"
               style="width: 120px"
-              @update:value="(v) => handleUpdate(room.roomId, v)"
-            />
+              @update:value="(v) => handleUpdate(room.roomId, v)" />
           </div>
         </div>
 
-        <n-empty
-          v-if="roomPermissions.length === 0"
-          description="暂无房间权限设置"
-        >
+        <n-empty v-if="roomPermissions.length === 0" description="暂无房间权限设置">
           <template #icon>
             <n-icon size="48"><Door /></n-icon>
           </template>
@@ -42,12 +34,7 @@
 
       <!-- Add Room Button -->
       <div class="add-section">
-        <n-button
-          type="primary"
-          block
-          dashed
-          @click="showAddModal = true"
-        >
+        <n-button type="primary" block dashed @click="showAddModal = true">
           <template #icon>
             <n-icon><Plus /></n-icon>
           </template>
@@ -56,19 +43,10 @@
       </div>
 
       <!-- Add Room Modal -->
-      <n-modal
-        v-model:show="showAddModal"
-        preset="dialog"
-        title="添加房间权限"
-      >
+      <n-modal v-model:show="showAddModal" preset="dialog" title="添加房间权限">
         <n-form ref="formRef" :model="addForm" :rules="addRules">
           <n-form-item label="选择房间" path="roomId">
-            <n-select
-              v-model:value="addForm.roomId"
-              :options="availableRooms"
-              filterable
-              placeholder="搜索房间"
-            />
+            <n-select v-model:value="addForm.roomId" :options="availableRooms" filterable placeholder="搜索房间" />
           </n-form-item>
           <n-form-item label="所需权限等级" path="permissionLevel">
             <n-slider
@@ -76,18 +54,13 @@
               :min="0"
               :max="100"
               :step="10"
-              :marks="{ 0: '公开', 50: '受限', 100: '私密' }"
-            />
+              :marks="{ 0: '公开', 50: '受限', 100: '私密' }" />
           </n-form-item>
-          <n-alert type="info" style="margin-top: 12px;">
-            设置后，只有权限等级≥此值的成员才能访问该房间
-          </n-alert>
+          <n-alert type="info" style="margin-top: 12px">设置后，只有权限等级≥此值的成员才能访问该房间</n-alert>
         </n-form>
         <template #action>
           <n-button @click="showAddModal = false">取消</n-button>
-          <n-button type="primary" @click="handleAdd">
-            添加
-          </n-button>
+          <n-button type="primary" @click="handleAdd">添加</n-button>
         </template>
       </n-modal>
     </n-spin>

@@ -4,7 +4,7 @@
       <n-avatar
         :size="34"
         :src="avatarSrc"
-        :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+        :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
         :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
         round />
       <div

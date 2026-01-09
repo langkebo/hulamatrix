@@ -11,7 +11,7 @@
         <n-form-item label="操作" path="action">
           <n-select v-model:value="form.action" :options="actionOptions" />
         </n-form-item>
-        <n-form-item v-if="form.action==='report'" label="原因" path="reason">
+        <n-form-item v-if="form.action === 'report'" label="原因" path="reason">
           <n-input v-model:value="form.reason" type="textarea" rows="3" placeholder="请输入举报原因" />
         </n-form-item>
         <n-space>

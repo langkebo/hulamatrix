@@ -383,7 +383,7 @@ watch(
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  background-color: #000;
+  background-color: var(--hula-black);
   touch-action: none;
 }
 
@@ -392,7 +392,7 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+  background: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 0.5), transparent);
 }
 
 .icon-button {
@@ -403,7 +403,7 @@ watch(
   justify-content: center;
   font-size: 24px;
   color: white;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--hula-white-rgb), 0.1);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -468,7 +468,7 @@ watch(
   justify-content: center;
   font-size: 32px;
   color: white;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--hula-white-rgb), 0.1);
   border: none;
   border-radius: 50%;
   cursor: pointer;

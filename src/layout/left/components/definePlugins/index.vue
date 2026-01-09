@@ -17,7 +17,7 @@
           v-if="isMac()"
           @click="isShow = false"
           class="mac-close z-10 relative size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none">
-          <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+          <svg class="hidden size-7px color-var(--hula-black) select-none absolute top-3px left-3px">
             <use href="#close"></use>
           </svg>
         </div>
@@ -25,7 +25,7 @@
         <svg
           v-if="isWindows()"
           @click="isShow = false"
-          class="z-10 color-#333 w-12px h-12px absolute top-6px right-6px cursor-pointer select-none">
+          class="z-10 color-var(--hula-gray-900) w-12px h-12px absolute top-6px right-6px cursor-pointer select-none">
           <use href="#close"></use>
         </svg>
       </div>
@@ -41,11 +41,7 @@
           </div>
         </n-flex>
 
-        <n-tabs
-          :value="viewMode"
-          class="w-76px h-28px mr-22px flex-shrink-0"
-          type="segment"
-          animated>
+        <n-tabs :value="viewMode" class="w-76px h-28px mr-22px flex-shrink-0" type="segment" animated>
           <n-tab name="card">
             <template #default>
               <svg class="size-16px"><use href="#view-grid-card"></use></svg>

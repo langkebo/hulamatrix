@@ -18,9 +18,7 @@
           opacity: 0.6
         }">
         <template #extra>
-          <n-button size="small" @click="handleStartChat">
-            开始聊天
-          </n-button>
+          <n-button size="small" @click="handleStartChat">开始聊天</n-button>
         </template>
       </n-empty>
       <div class="empty-tips">
@@ -32,10 +30,7 @@
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="error-container">
-      <n-result
-        status="error"
-        title="加载失败"
-        :description="errorMessage">
+      <n-result status="error" title="加载失败" :description="errorMessage">
         <template #footer>
           <n-space>
             <n-button @click="handleRetry">重试</n-button>
@@ -52,13 +47,9 @@
       <!-- 加载更多 -->
       <div v-if="hasMore" class="load-more" ref="loadMoreRef">
         <n-spin v-if="loadingMore" size="small" />
-        <n-button v-else text @click="handleLoadMore">
-          加载更多
-        </n-button>
+        <n-button v-else text @click="handleLoadMore">加载更多</n-button>
       </div>
     </div>
-
-    
   </div>
 </template>
 
@@ -208,6 +199,4 @@ onMounted(() => {
   color: var(--text-color-3);
   font-size: 14px;
 }
-
- 
 </style>

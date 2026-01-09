@@ -14,13 +14,13 @@
 
           <div class="flex items-center gap-18px">
             <div class="rtc-action-button reject" @click="handleReject">
-              <svg class="size-20px color-#fff">
+              <svg class="size-20px color-var(--hula-white)">
                 <use href="#PhoneHangup"></use>
               </svg>
             </div>
 
             <div class="rtc-action-button accept" @click="handleAccept">
-              <svg class="size-20px color-#fff">
+              <svg class="size-20px color-var(--hula-white)">
                 <use href="#phone-telephone-entity"></use>
               </svg>
             </div>
@@ -201,15 +201,15 @@ useMitt.on(WsResponseMessageType.RoomClosed, handleCallEnd)
 .rtc-call-card {
   background: linear-gradient(135deg, rgba(34, 34, 38, 0.95), rgba(18, 18, 22, 0.92));
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--hula-white-rgb), 0.08);
   border-radius: 18px;
   padding: 12px 16px;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
+  box-shadow: 0 18px 38px rgba(var(--hula-black-rgb), 0.34);
 }
 
 .avatar-shell {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(var(--hula-white-rgb), 0.08);
+  border: 1px solid rgba(var(--hula-white-rgb), 0.14);
   backdrop-filter: blur(14px);
 }
 

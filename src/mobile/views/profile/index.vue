@@ -30,6 +30,6 @@ onMounted(async () => {
 .custom-rounded {
   border-radius: 20px 20px 0 0;
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(var(--hula-white-rgb), 0.85);
 }
 </style>

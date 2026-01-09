@@ -7,7 +7,7 @@
 
 // ========== 文本颜色 ==========
 .text-white {
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 .text-color-primary {
@@ -15,16 +15,16 @@
 }
 
 .text-color-secondary {
-  color: var(--color-text-secondary, #666) !important;
+  color: var(--color-text-secondary, var(--hula-gray-700)) !important;
 }
 
 .text-color-tertiary {
-  color: var(--color-text-tertiary, #999) !important;
+  color: var(--color-text-tertiary, var(--hula-gray-400)) !important;
 }
 
 // ========== 背景颜色 ==========
 .bg-white {
-  background-color: #fff !important;
+  background-color: var(--hula-white) !important;
 }
 
 .bg-transparent {
@@ -252,15 +252,15 @@
 
 // ========== 阴影 ==========
 .shadow-sm {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(var(--hula-black-rgb), 0.05);
 }
 
 .shadow-md {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 15px rgba(var(--hula-black-rgb), 0.1);
 }
 
 // ========== Z-index ==========
@@ -283,12 +283,12 @@
 // ========== 特殊用途 ==========
 // 按钮白色文字
 .btn-white-text {
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 // 渐变按钮白色文字
 .gradient-button-white {
-  color: #fff !important;
+  color: var(--hula-white) !important;
 }
 
 // 禁用状态

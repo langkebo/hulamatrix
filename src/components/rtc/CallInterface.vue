@@ -6,14 +6,7 @@
       <div class="video-area">
         <!-- 远程视频 -->
         <div class="remote-video-container" v-if="callType === 'video' || remoteStream">
-          <video
-            ref="remoteVideoRef"
-            class="remote-video"
-            :srcObject="remoteStream"
-            autoplay
-            playsinline
-            muted
-          />
+          <video ref="remoteVideoRef" class="remote-video" :srcObject="remoteStream" autoplay playsinline muted />
 
           <!-- 远程用户信息叠加层 -->
           <div class="remote-overlay">
@@ -22,8 +15,7 @@
                 :src="remoteParticipant?.avatar || ''"
                 :size="48"
                 round
-                :fallback="remoteParticipant?.name?.charAt(0) || '?'"
-              />
+                :fallback="remoteParticipant?.name?.charAt(0) || '?'" />
               <div class="participant-details">
                 <div class="participant-name">{{ remoteParticipant?.name || 'Unknown' }}</div>
                 <div class="call-status">{{ getCallStatusText() }}</div>
@@ -32,11 +24,7 @@
 
             <!-- 网络质量指示器 -->
             <div class="network-quality">
-              <n-tag
-                :type="networkQuality.type"
-                size="small"
-                round
-              >
+              <n-tag :type="networkQuality.type" size="small" round>
                 {{ networkQuality.text }}
               </n-tag>
             </div>
@@ -47,24 +35,11 @@
         <div
           v-if="callType === 'video' && localStream && !isLocalVideoHidden"
           class="local-video-container"
-          :class="{ 'dragging': isDraggingLocal }"
-          @mousedown="startDragLocalVideo"
-        >
-          <video
-            ref="localVideoRef"
-            class="local-video"
-            :srcObject="localStream"
-            autoplay
-            playsinline
-            muted
-          />
+          :class="{ dragging: isDraggingLocal }"
+          @mousedown="startDragLocalVideo">
+          <video ref="localVideoRef" class="local-video" :srcObject="localStream" autoplay playsinline muted />
           <div class="local-video-controls">
-            <n-button
-              quaternary
-              circle
-              size="tiny"
-              @click="toggleLocalVideo"
-            >
+            <n-button quaternary circle size="tiny" @click="toggleLocalVideo">
               <template #icon>
                 <n-icon><EyeOff /></n-icon>
               </template>
@@ -79,8 +54,7 @@
               :src="remoteParticipant?.avatar || ''"
               :size="120"
               round
-              :fallback="remoteParticipant?.name?.charAt(0) || '?'"
-            />
+              :fallback="remoteParticipant?.name?.charAt(0) || '?'" />
           </div>
           <div class="participant-name">{{ remoteParticipant?.name || 'Unknown' }}</div>
           <div class="call-duration">{{ formatCallDuration(callDuration) }}</div>
@@ -104,8 +78,7 @@
             circle
             size="large"
             @click="toggleMicrophone"
-            :disabled="!localStream"
-          >
+            :disabled="!localStream">
             <template #icon>
               <n-icon>
                 <MicrophoneOff v-if="isMuted" />
@@ -121,8 +94,7 @@
             circle
             size="large"
             @click="toggleCamera"
-            :disabled="!localStream"
-          >
+            :disabled="!localStream">
             <template #icon>
               <n-icon>
                 <VideoOff v-if="isCameraOff" />
@@ -132,26 +104,20 @@
           </n-button>
 
           <!-- 结束通话 -->
-          <n-button
-            type="error"
-            circle
-            size="large"
-            @click="endCall"
-          >
+          <n-button type="error" circle size="large" @click="endCall">
             <template #icon>
               <n-icon><PhoneOff /></n-icon>
             </template>
           </n-button>
 
           <!-- 切换摄像头 (仅移动端视频通话) -->
-  <n-button
+          <n-button
             v-if="callType === 'video' && isMobile()"
             quaternary
             circle
             size="large"
             @click="switchCamera"
-            :disabled="!localStream"
-          >
+            :disabled="!localStream">
             <template #icon>
               <n-icon><CameraRotate /></n-icon>
             </template>
@@ -160,12 +126,7 @@
 
         <div class="secondary-controls">
           <!-- 扬声器开关 -->
-          <n-button
-            quaternary
-            circle
-            @click="toggleSpeaker"
-            :type="isSpeakerOn ? 'default' : 'warning'"
-          >
+          <n-button quaternary circle @click="toggleSpeaker" :type="isSpeakerOn ? 'default' : 'warning'">
             <template #icon>
               <n-icon>
                 <Volume v-if="!isSpeakerOn" />
@@ -181,8 +142,7 @@
             circle
             @click="toggleScreenShare"
             :type="isScreenSharing ? 'primary' : 'default'"
-            :loading="isTogglingScreenShare"
-          >
+            :loading="isTogglingScreenShare">
             <template #icon>
               <n-icon><DeviceComputerCamera /></n-icon>
             </template>
@@ -194,41 +154,28 @@
             circle
             @click="toggleRecording"
             :type="isRecording ? 'error' : 'default'"
-            :loading="isTogglingRecording"
-          >
+            :loading="isTogglingRecording">
             <template #icon>
               <n-icon><Radio /></n-icon>
             </template>
           </n-button>
 
           <!-- 通话设置 -->
-          <n-button
-            quaternary
-            circle
-            @click="showCallSettings = true"
-          >
+          <n-button quaternary circle @click="showCallSettings = true">
             <template #icon>
               <n-icon><Settings /></n-icon>
             </template>
           </n-button>
 
           <!-- 最小化 -->
-          <n-button
-            quaternary
-            circle
-            @click="minimizeCall"
-          >
+          <n-button quaternary circle @click="minimizeCall">
             <template #icon>
               <n-icon><ArrowsDiagonalMinimize2 /></n-icon>
             </template>
           </n-button>
 
           <!-- 全屏 -->
-          <n-button
-            quaternary
-            circle
-            @click="toggleFullscreen"
-          >
+          <n-button quaternary circle @click="toggleFullscreen">
             <template #icon>
               <n-icon>
                 <Minimize v-if="isFullscreen" />
@@ -254,12 +201,7 @@
           <div class="call-duration">{{ formatCallDuration(callDuration) }}</div>
         </div>
       </div>
-      <n-button
-        quaternary
-        circle
-        size="small"
-        @click.stop="endCall"
-      >
+      <n-button quaternary circle size="small" @click.stop="endCall">
         <template #icon>
           <n-icon><PhoneOff /></n-icon>
         </template>
@@ -267,16 +209,8 @@
     </div>
 
     <!-- 通话设置抽屉 -->
-    <n-drawer
-      v-model:show="showCallSettings"
-      :width="400"
-      placement="right"
-    >
-      <CallSettings
-        :call-type="callType"
-        :local-stream="localStream"
-        @closed="showCallSettings = false"
-      />
+    <n-drawer v-model:show="showCallSettings" :width="400" placement="right">
+      <CallSettings :call-type="callType" :local-stream="localStream" @closed="showCallSettings = false" />
     </n-drawer>
 
     <!-- 录制指示器 -->
@@ -738,7 +672,7 @@ onUnmounted(() => {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+      background: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 0.5), transparent);
 
       .participant-info {
         display: flex;
@@ -920,7 +854,8 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

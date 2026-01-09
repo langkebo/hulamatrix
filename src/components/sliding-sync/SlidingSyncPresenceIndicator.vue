@@ -10,12 +10,7 @@
       </template>
       <div class="presence-tooltip">
         <div class="user-info">
-          <n-avatar
-            v-if="userInfo?.avatar_url"
-            :src="userInfo.avatar_url"
-            size="small"
-            round
-          />
+          <n-avatar v-if="userInfo?.avatar_url" :src="userInfo.avatar_url" size="small" round />
           <span class="username">{{ displayName }}</span>
         </div>
         <div class="status-info">
@@ -226,7 +221,8 @@ defineExpose({
 
 // Animation for status changes
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

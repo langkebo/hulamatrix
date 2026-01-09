@@ -22,7 +22,7 @@ const { t } = useI18n()
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #999;
+  color: var(--hula-gray-400);
 
   p {
     margin-top: 16px;

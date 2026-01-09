@@ -1,9 +1,12 @@
 <template>
   <div
     v-if="item.visible !== false"
-    :class="['mobile-settings-item', `mobile-settings-item--${item.type}`, { 'mobile-settings-item--disabled': item.disabled }]"
-    @click="handleClick"
-  >
+    :class="[
+      'mobile-settings-item',
+      `mobile-settings-item--${item.type}`,
+      { 'mobile-settings-item--disabled': item.disabled }
+    ]"
+    @click="handleClick">
     <!-- Navigation / Action Item -->
     <template v-if="item.type === SettingsItemType.NAVIGATION || item.type === SettingsItemType.ACTION">
       <div v-if="item.icon" class="mobile-settings-item__icon">
@@ -28,11 +31,7 @@
         <div v-if="item.description" class="mobile-settings-item__description">{{ item.description }}</div>
       </div>
       <div class="mobile-settings-item__control" @click.stop>
-        <n-switch
-          v-model:value="localValue as boolean"
-          :disabled="item.disabled"
-          size="medium"
-        />
+        <n-switch v-model:value="localValue as boolean" :disabled="item.disabled" size="medium" />
       </div>
     </template>
 
@@ -50,8 +49,7 @@
           :disabled="item.disabled"
           placeholder=""
           size="medium"
-          @update:value="handleInputChange"
-        />
+          @update:value="handleInputChange" />
       </div>
     </template>
 
@@ -69,8 +67,7 @@
           :disabled="item.disabled"
           :options="(item.options || []) as Array<{ label: string; value: string | number }>"
           size="medium"
-          @update:value="handleSelectChange"
-        />
+          @update:value="handleSelectChange" />
       </div>
     </template>
 
@@ -157,7 +154,7 @@ watch(localValue, (newValue) => {
   transition: background-color 0.2s;
 
   &:not(&--divider):not(&--section):active {
-    background: #f5f5f5;
+    background: var(--hula-gray-50);
   }
 
   &--disabled {
@@ -173,7 +170,7 @@ watch(localValue, (newValue) => {
     align-items: center;
     justify-content: center;
     margin-right: 12px;
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   &__content {
@@ -184,13 +181,13 @@ watch(localValue, (newValue) => {
   &__label {
     font-size: 16px;
     font-weight: 400;
-    color: #333;
+    color: var(--hula-gray-900);
     line-height: 1.4;
   }
 
   &__description {
     font-size: 12px;
-    color: #999;
+    color: var(--hula-gray-400);
     margin-top: 2px;
     line-height: 1.3;
   }
@@ -198,7 +195,7 @@ watch(localValue, (newValue) => {
   &__chevron {
     flex-shrink: 0;
     margin-left: 8px;
-    color: #999;
+    color: var(--hula-gray-400);
   }
 
   &__control {
@@ -215,7 +212,7 @@ watch(localValue, (newValue) => {
   &__section {
     font-size: 12px;
     font-weight: 500;
-    color: #999;
+    color: var(--hula-gray-400);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 8px 4px;

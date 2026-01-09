@@ -29,7 +29,7 @@
 }
 .bubble-oneself {
   @include bubble;
-  @apply rounded-[var(--sz-chat-bubble-radius)_2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] color-#fff;
+  @apply rounded-[var(--sz-chat-bubble-radius)_2px_var(--sz-chat-bubble-radius)_var(--sz-chat-bubble-radius)] color-var(--hula-white);
   background-color: var(--bg-active-msg);
 }
 
@@ -40,7 +40,7 @@
 }
 .bubble-oneself::selection,
 .bubble-oneself *::selection {
-  background: var(--select-bg-color-self, rgba(255, 255, 255, 0.3));
+  background: var(--select-bg-color-self, rgba(var(--hula-white-rgb), 0.3));
 }
 .photo-wall {
   @extend .bubble-oneself;
@@ -56,7 +56,7 @@
   background-color: var(--right-bg-color);
   border-radius: 50px;
   padding: 6px 8px;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.16);
+  box-shadow: 0 2px 8px 0 rgba(var(--hula-black-rgb), 0.16);
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
     background-color: var(--float-hover-bg-color);

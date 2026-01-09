@@ -253,10 +253,10 @@ onUnmounted(() => {
 
 .password-input {
   width: 320px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(var(--hula-white-rgb), 0.1);
   border-bottom-color: rgba(19, 152, 127, 1);
   background-color: var(--hula-brand-primary);
-  color: #fff;
+  color: var(--hula-white);
 }
 
 .options {
@@ -274,7 +274,7 @@ onUnmounted(() => {
 :deep(.hover-box),
 :deep(.action-close) {
   svg {
-    color: #fff;
+    color: var(--hula-white);
   }
 }
 :deep(.hover-box) {
@@ -283,7 +283,7 @@ onUnmounted(() => {
   }
 }
 :deep(.n-input .n-input__input-el, .n-input .n-input__textarea-el) {
-  color: #fff;
+  color: var(--hula-white);
 }
 /*
   进入和离开动画可以使用不同

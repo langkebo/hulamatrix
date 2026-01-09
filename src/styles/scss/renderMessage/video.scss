@@ -9,7 +9,7 @@
 
 .video-overlay {
   @apply: absolute top-0 left-0 right-0 bottom-0 opacity-100 flex-center rounded-8px cursor-default select-none;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 100%);
+  background: linear-gradient(to bottom, rgba(var(--hula-black-rgb), 0) 0%, rgba(var(--hula-black-rgb), 0.6) 100%);
   pointer-events: none;
 }
 
@@ -19,19 +19,19 @@
   pointer-events: auto;
 
   &:hover:not(.loading) {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(var(--hula-black-rgb), 0.4);
     transform: translate(-50%, -50%) scale(1.1);
   }
 
   &.loading {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(var(--hula-black-rgb), 0.6);
     cursor: not-allowed;
   }
 }
 
 .loading-spinner {
   @apply: size-20px rounded-full;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(var(--hula-white-rgb), 0.3);
   border-top: 2px solid white;
   animation: spin 1s linear infinite;
 }
@@ -75,7 +75,7 @@
 
 .loading-tip {
   @apply: absolute top-8px right-8px color-white px-8px py-4px rounded-4px text-10px backdrop-blur-4px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
 }
 
 .upload-tip {
@@ -99,7 +99,7 @@
 
 .video-info {
   @apply: absolute bottom-8px left-8px color-white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 2px rgba(var(--hula-black-rgb), 0.8);
 }
 
 .video-filename {

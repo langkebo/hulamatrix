@@ -1,10 +1,6 @@
 <!-- Mobile Message Reply Dialog - Reply to a message on mobile -->
 <template>
-  <van-popup
-    v-model:show="showDialog"
-    position="bottom"
-    :style="{ height: '70%', borderRadius: '16px 16px 0 0' }"
-  >
+  <van-popup v-model:show="showDialog" position="bottom" :style="{ height: '70%', borderRadius: '16px 16px 0 0' }">
     <div class="mobile-message-reply-popup">
       <!-- Handle bar -->
       <div class="handle-bar" @click="handleClose"></div>
@@ -34,8 +30,7 @@
               :maxlength="maxLength"
               rows="3"
               ref="inputRef"
-              @keyup.ctrl.enter="sendReply"
-            />
+              @keyup.ctrl.enter="sendReply" />
             <div class="char-count">{{ replyText.length }}/{{ maxLength }}</div>
           </div>
 
@@ -49,13 +44,7 @@
 
       <!-- Footer Actions -->
       <div class="popup-footer">
-        <van-button
-          type="primary"
-          block
-          :loading="sending"
-          :disabled="!replyText.trim()"
-          @click="sendReply"
-        >
+        <van-button type="primary" block :loading="sending" :disabled="!replyText.trim()" @click="sendReply">
           <template #icon>
             <van-icon name="send" />
           </template>
@@ -212,12 +201,12 @@ watch(
   .header-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--hula-gray-900);
   }
 
   .van-icon {
     cursor: pointer;
-    color: #666;
+    color: var(--hula-gray-700);
     padding: 8px;
 
     &:active {

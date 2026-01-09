@@ -5,8 +5,7 @@
     :render-label="renderLabel"
     :render-icon="renderIcon"
     placement="bottom-start"
-    @select="onSelect"
-  >
+    @select="onSelect">
     <slot>
       <div class="user-avatar-trigger">
         <n-avatar :size="34" :src="userInfo?.avatar" round />
@@ -129,7 +128,9 @@ const onSelect = async (key: string) => {
   height: 34px;
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: scale(1.05);

@@ -27,16 +27,14 @@
             <n-statistic
               label="内存使用"
               :value="formatBytes(metrics.memoryUsage || 0)"
-              :value-style="{ color: memoryColor }"
-            />
+              :value-style="{ color: memoryColor }" />
           </n-grid-item>
           <n-grid-item>
             <n-statistic
               label="帧率"
               :value="metrics.frameRate"
               suffix="fps"
-              :value-style="{ color: frameRateColor }"
-            />
+              :value-style="{ color: frameRateColor }" />
           </n-grid-item>
           <n-grid-item>
             <n-statistic label="资源数量" :value="metrics.resourceCount" />
@@ -51,15 +49,9 @@
           <n-descriptions-item label="连接类型">
             {{ metrics.connectionType }}
           </n-descriptions-item>
-          <n-descriptions-item label="带宽">
-            {{ metrics.effectiveBandwidth }} Mbps
-          </n-descriptions-item>
-          <n-descriptions-item label="延迟">
-            {{ metrics.rtt }} ms
-          </n-descriptions-item>
-          <n-descriptions-item label="API响应时间">
-            {{ metrics.apiResponseTime }} ms
-          </n-descriptions-item>
+          <n-descriptions-item label="带宽">{{ metrics.effectiveBandwidth }} Mbps</n-descriptions-item>
+          <n-descriptions-item label="延迟">{{ metrics.rtt }} ms</n-descriptions-item>
+          <n-descriptions-item label="API响应时间">{{ metrics.apiResponseTime }} ms</n-descriptions-item>
         </n-descriptions>
 
         <!-- 错误统计 -->
