@@ -409,6 +409,7 @@ import Photo from '@vicons/tabler/Photo'
 import EmojiPicker from './EmojiPicker.vue'
 import { logger } from '@/utils/logger'
 import DOMPurify from 'dompurify'
+import { formatFileSize } from '@/utils/formatUtils'
 //
 //
 
@@ -553,19 +554,6 @@ const historyOptions = computed(() => {
 })
 
 // ========== 方法 ==========
-
-const formatFileSize = (bytes: number): string => {
-  const units = ['B', 'KB', 'MB', 'GB']
-  let size = bytes
-  let unitIndex = 0
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024
-    unitIndex++
-  }
-
-  return `${size.toFixed(1)} ${units[unitIndex]}`
-}
 
 const getRoomName = (roomId: string): string => {
   // 从store中获取房间名称

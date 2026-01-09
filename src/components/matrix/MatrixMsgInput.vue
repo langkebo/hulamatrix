@@ -134,7 +134,7 @@
             round
             :size="24"
           >
-            {{ getMemberInitials(member) }}
+            {{ getNameInitials(member.displayName || member.userId) }}
           </n-avatar>
           <span>{{ member.displayName || member.userId }}</span>
         </div>
@@ -281,6 +281,7 @@ import { useUserStore } from '@/stores/user'
 import { useMatrixStore } from '@/stores/matrix'
 import type { MatrixMessage as MatrixMessageType, MatrixMember } from '@/types/matrix'
 import { getMatrixMessageText } from '@/types/matrix'
+import { getNameInitials } from '@/utils/formatUtils'
 
 // Components
 import EmojiPicker from '@/components/message/EmojiPicker.vue'
@@ -431,17 +432,6 @@ const commands = [
 ]
 
 // Methods
-const getMemberInitials = (member: MatrixMember): string => {
-  const name = member.displayName || member.userId
-  if (!name) return '?'
-
-  const names = name.split(' ')
-  if (names.length >= 2) {
-    return (names[0]?.[0] || '') + (names[1]?.[0] || '')
-  }
-  return name.substring(0, 2).toUpperCase()
-}
-
 const handleEditorInput = () => {
   const content = editorRef.value?.textContent || ''
 

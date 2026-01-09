@@ -1,9 +1,9 @@
-# HuLa 项目优化方案 V3.2
+# HuLa 项目优化方案 V3.3
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 13 完成)
-**版本**: v3.2
-**总体进度**: 89%
+**最后更新**: 2026-01-09 (Phase 14 完成)
+**版本**: v3.3
+**总体进度**: 90%
 
 ---
 
@@ -64,6 +64,17 @@
 - ✅ 创建 groupCallUtils.ts (158 行)
 - ✅ GroupCallInterface.vue 减少 54 行 (1,504 → 1,450)
 - ✅ 提高代码可测试性和可复用性
+
+**Phase 14**: 通用格式化工具模块 ✅
+- ✅ 创建 formatUtils.ts (263 行)
+  - 文件大小、时间戳、持续时间格式化
+  - 名称首字母、文本截断、数字格式化
+  - Markdown 文本格式化
+  - 文件类型检测（图片、视频、音频）
+- ✅ MessageEditor.vue 减少 12 行 (1,265 → 1,253)
+- ✅ MatrixMsgInput.vue 减少 10 行 (1,281 → 1,271)
+- ✅ 消除 getMemberInitials 重复定义
+- ✅ 提供跨组件复用的通用工具函数
 
 ### 待处理的优化任务
 
@@ -126,14 +137,14 @@
 |------|------|------|------|
 | `client.ts` | 1,478 | 核心模块 | 保持现状 |
 | `useChatMain.ts` | 1,449 | Composable | 拆分为多个 composables |
-| `RoomSettings.vue` | 1,401 | 组件 | 拆分子组件 |
+| `RoomSettings.vue` | 1,303 | 组件 | 拆分子组件 |
 | `search.ts` | 1,397 | 集成 | 保持现状 |
 | `error-handler.ts` | 1,366 | 工具 | 保持现状 |
 | `spaces.ts` | 1,305 | 核心模块 | 保持现状 |
 | `ChatHeader.vue` | 1,304 | 组件 | 拆分工具栏组件 |
-| `MatrixMsgInput.vue` | 1,281 | 组件 | 拆分输入逻辑 |
+| `MatrixMsgInput.vue` | 1,271 | 组件 | 拆分输入逻辑 |
 | `useWebRtc.ts` | 1,276 | Composable | 提取 useCallControls |
-| `MessageEditor.vue` | 1,265 | 组件 | 保持现状 |
+| `MessageEditor.vue` | 1,253 | 组件 | 保持现状 |
 
 ---
 
@@ -284,7 +295,8 @@ src/components/matrix/
 | Phase 10 | ~1,561 | 删除旧文件, 更新导入 |
 | Phase 12 | ~98 行 | RoomSettings 工具模块化 |
 | Phase 13 | ~54 行 | GroupCall 工具模块化 |
-| **总计** | **~11,798** | **~97%** |
+| Phase 14 | ~22 行 | 通用格式化工具模块 |
+| **总计** | **~11,820** | **~97%** |
 
 ---
 
@@ -345,6 +357,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v3.3 (2026-01-09): Phase 14 - 通用格式化工具模块完成
 - v3.2 (2026-01-09): Phase 13 - GroupCall 工具模块化完成
 - v3.1 (2026-01-09): Phase 12 - RoomSettings 工具模块化完成
 - v3.0 (2026-01-09): 全面重新审查项目，更新为当前实际状态
