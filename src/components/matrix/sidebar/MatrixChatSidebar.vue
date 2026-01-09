@@ -35,43 +35,44 @@
           class="members-virtual-list"
           @scroll="handleMemberScroll">
           <template #default="{ item }">
-            <!-- Group header -->
-            <div v-if="item.type === 'header'" :key="item.id" class="member-group-header">
-              <n-icon
-                :component="item.id === 'header-online' ? Radio : Circle"
-                :color="item.id === 'header-online' ? 'var(--n-success-color)' : 'var(--n-text-color-3)'" />
-              <span>{{ item.label }}</span>
-            </div>
+            <template :key="item.id">
+              <!-- Group header -->
+              <div v-if="item.type === 'header'" class="member-group-header">
+                <n-icon
+                  :component="item.id === 'header-online' ? Radio : Circle"
+                  :color="item.id === 'header-online' ? 'var(--n-success-color)' : 'var(--n-text-color-3)'" />
+                <span>{{ item.label }}</span>
+              </div>
 
-            <!-- Member item -->
-            <div
-              v-else-if="item.type === 'member' && item.data"
-              :key="item.id"
-              class="member-item"
-              :class="{ online: item.data.presence === 'online', offline: item.data.presence !== 'online' }"
-              @click="handleMemberClick(item.data)">
-              <n-avatar
-                :src="item.data.avatarUrl"
-                round
-                :size="32"
-                @error="(e) => ((e.target as HTMLImageElement).src = '')">
-                {{ getMemberInitials(item.data) }}
-              </n-avatar>
-              <div class="member-info">
-                <span class="member-name">{{ item.data.displayName || item.data.userId }}</span>
-                <span class="member-status">{{ item.data.presence === 'online' ? '在线' : '离线' }}</span>
+              <!-- Member item -->
+              <div
+                v-else-if="item.type === 'member' && item.data"
+                class="member-item"
+                :class="{ online: item.data.presence === 'online', offline: item.data.presence !== 'online' }"
+                @click="handleMemberClick(item.data)">
+                <n-avatar
+                  :src="item.data.avatarUrl"
+                  round
+                  :size="32"
+                  @error="(e) => ((e.target as HTMLImageElement).src = '')">
+                  {{ getMemberInitials(item.data) }}
+                </n-avatar>
+                <div class="member-info">
+                  <span class="member-name">{{ item.data.displayName || item.data.userId }}</span>
+                  <span class="member-status">{{ item.data.presence === 'online' ? '在线' : '离线' }}</span>
+                </div>
+                <div class="member-actions">
+                  <n-dropdown
+                    :options="getMemberMenuOptions(item.data)"
+                    placement="bottom-end"
+                    @select="(key: string) => handleMemberAction(key, item.data)">
+                    <n-button quaternary size="small">
+                      <n-icon :component="DotsVertical" />
+                    </n-button>
+                  </n-dropdown>
+                </div>
               </div>
-              <div class="member-actions">
-                <n-dropdown
-                  :options="getMemberMenuOptions(item.data)"
-                  placement="bottom-end"
-                  @select="(key: string) => handleMemberAction(key, item.data)">
-                  <n-button quaternary size="small">
-                    <n-icon :component="DotsVertical" />
-                  </n-button>
-                </n-dropdown>
-              </div>
-            </div>
+            </template>
           </template>
         </n-virtual-list>
 
@@ -240,7 +241,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, h } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import {
   NTabs,
   NTabPane,
@@ -254,8 +255,7 @@ import {
   NModal,
   NSpin,
   NEmpty,
-  NVirtualList,
-  type DropdownOption
+  NVirtualList
 } from 'naive-ui'
 import { X, Search, InfoCircle, Radio, Circle, DotsVertical, UserPlus, Download } from '@vicons/tabler'
 import { useMatrixChatSidebar } from './useMatrixChatSidebar'
@@ -339,11 +339,10 @@ const fileFilterOptions: { label: string; value: FileFilter }[] = [
   { label: '文档', value: 'file' }
 ]
 
-const getFileIconColor = (mimeType?: string): string => {
-  const mt = mimeType || ''
-  if (mt.startsWith('image/')) return '#4CAF50'
-  if (mt.startsWith('video/')) return '#2196F3'
-  if (mt.startsWith('audio/')) return '#FF9800'
+const getFileIconColor = (mimeType = ''): string => {
+  if (mimeType.startsWith('image/')) return '#4CAF50'
+  if (mimeType.startsWith('video/')) return '#2196F3'
+  if (mimeType.startsWith('audio/')) return '#FF9800'
   return '#607D8B'
 }
 
