@@ -3,12 +3,7 @@
     <!-- 输入工具栏 -->
     <div class="input-toolbar">
       <!-- 表情按钮 -->
-      <n-popover
-        v-model:show="showEmojiPicker"
-        trigger="click"
-        placement="top-start"
-        class="emoji-picker-popover"
-      >
+      <n-popover v-model:show="showEmojiPicker" trigger="click" placement="top-start" class="emoji-picker-popover">
         <template #trigger>
           <n-button quaternary circle size="small">
             <n-icon :component="MoodHappy" />
@@ -23,8 +18,7 @@
         directory-dnd
         :show-file-list="false"
         :custom-request="handleFileUpload"
-        @before-upload="handleBeforeUpload"
-      >
+        @before-upload="handleBeforeUpload">
         <n-button quaternary circle size="small">
           <n-icon :component="Paperclip" />
         </n-button>
@@ -35,26 +29,16 @@
         accept="image/*"
         :show-file-list="false"
         :custom-request="handleImageUpload"
-        @before-upload="handleBeforeImageUpload"
-      >
+        @before-upload="handleBeforeImageUpload">
         <n-button quaternary circle size="small">
           <n-icon :component="Photo" />
         </n-button>
       </n-upload>
 
       <!-- 录音按钮 -->
-      <n-popover
-        v-model:show="showVoiceRecorder"
-        trigger="click"
-        placement="top-start"
-      >
+      <n-popover v-model:show="showVoiceRecorder" trigger="click" placement="top-start">
         <template #trigger>
-          <n-button
-            quaternary
-            circle
-            size="small"
-            :disabled="disabled"
-          >
+          <n-button quaternary circle size="small" :disabled="disabled">
             <n-icon :component="Microphone" />
           </n-button>
         </template>
@@ -62,12 +46,7 @@
       </n-popover>
 
       <!-- 代码块 -->
-      <n-button
-        quaternary
-        circle
-        size="small"
-        @click="insertCodeBlock"
-      >
+      <n-button quaternary circle size="small" @click="insertCodeBlock">
         <n-icon :component="Code" />
       </n-button>
 
@@ -76,25 +55,13 @@
 
       <!-- 格式化工具 -->
       <n-button-group size="small">
-        <n-button
-          quaternary
-          :type="formatBold ? 'primary' : 'default'"
-          @click="toggleFormat('bold')"
-        >
+        <n-button quaternary :type="formatBold ? 'primary' : 'default'" @click="toggleBold">
           <n-icon :component="FileText" />
         </n-button>
-        <n-button
-          quaternary
-          :type="formatItalic ? 'primary' : 'default'"
-          @click="toggleFormat('italic')"
-        >
+        <n-button quaternary :type="formatItalic ? 'primary' : 'default'" @click="toggleItalic">
           <n-icon :component="Italic" />
         </n-button>
-        <n-button
-          quaternary
-          :type="formatStrike ? 'primary' : 'default'"
-          @click="toggleFormat('strike')"
-        >
+        <n-button quaternary :type="formatStrike ? 'primary' : 'default'" @click="toggleStrike">
           <n-icon :component="Strikethrough" />
         </n-button>
       </n-button-group>
@@ -108,32 +75,25 @@
         class="message-editor"
         :contenteditable="!disabled"
         :placeholder="inputPlaceholder"
-        @input="handleEditorInput"
+        @input="handleEditorInputWrapper"
         @paste="handlePaste"
-        @keydown="handleKeyDown"
+        @keydown="handleKeyDownWrapper"
         @compositionstart="handleCompositionStart"
-        @compositionend="handleCompositionEnd"
-      ></div>
+        @compositionend="handleCompositionEnd"></div>
 
       <!-- 提及建议 -->
       <div
         v-if="mentionSuggestions.length > 0"
         class="mention-suggestions"
-        :style="{ top: mentionPosition.top + 'px', left: mentionPosition.left + 'px' }"
-      >
+        :style="{ top: mentionPosition.top + 'px', left: mentionPosition.left + 'px' }">
         <div
           v-for="(member, index) in mentionSuggestions"
           :key="member.userId"
           class="mention-item"
           :class="{ active: index === activeMentionIndex }"
-          @click="selectMention(member)"
-          @mouseenter="activeMentionIndex = index"
-        >
-          <n-avatar
-            v-bind="member.avatarUrl !== undefined ? { src: member.avatarUrl } : {}"
-            round
-            :size="24"
-          >
+          @click="selectMentionWrapper(member)"
+          @mouseenter="activeMentionIndex = index">
+          <n-avatar v-bind="member.avatarUrl !== undefined ? { src: member.avatarUrl } : {}" round :size="24">
             {{ getNameInitials(member.displayName || member.userId) }}
           </n-avatar>
           <span>{{ member.displayName || member.userId }}</span>
@@ -144,16 +104,14 @@
       <div
         v-if="commandSuggestions.length > 0"
         class="command-suggestions"
-        :style="{ top: commandPosition.top + 'px', left: commandPosition.left + 'px' }"
-      >
+        :style="{ top: commandPosition.top + 'px', left: commandPosition.left + 'px' }">
         <div
           v-for="(cmd, index) in commandSuggestions"
           :key="cmd.name"
           class="command-item"
           :class="{ active: index === activeCommandIndex }"
           @click="selectCommand(cmd)"
-          @mouseenter="activeCommandIndex = index"
-        >
+          @mouseenter="activeCommandIndex = index">
           <div class="command-info">
             <span class="command-name">/{{ cmd.name }}</span>
             <span class="command-desc">{{ cmd.description }}</span>
@@ -171,30 +129,19 @@
       </div>
 
       <!-- 字数统计 -->
-      <div v-if="messageLength > 0" class="char-count">
-        {{ messageLength }}/{{ maxLength }}
-      </div>
+      <div v-if="messageLength > 0" class="char-count">{{ messageLength }}/{{ maxLength }}</div>
 
       <!-- 发送按钮 -->
       <div class="send-actions">
         <!-- 快捷回复 -->
-        <n-dropdown
-          :options="quickReplyOptions"
-          placement="top-end"
-          @select="handleQuickReply"
-        >
+        <n-dropdown :options="quickReplyOptions" placement="top-end" @select="handleQuickReply">
           <n-button quaternary size="small">
             <n-icon :component="Bolt" />
           </n-button>
         </n-dropdown>
 
         <!-- 发送按钮 -->
-        <n-button
-          type="primary"
-          :disabled="!canSend"
-          :loading="sending"
-          @click="sendMessage"
-        >
+        <n-button type="primary" :disabled="!canSend" :loading="sending" @click="handleSendMessage">
           <template #icon>
             <n-icon :component="Send" />
           </template>
@@ -204,12 +151,7 @@
     </div>
 
     <!-- 拖拽上传覆盖层 -->
-    <div
-      v-if="isDragOver"
-      class="drag-overlay"
-      @dragover.prevent
-      @drop.prevent="handleDrop"
-    >
+    <div v-if="isDragOver" class="drag-overlay" @dragover.prevent @drop.prevent="handleDrop">
       <div class="drag-content">
         <n-icon :component="CloudUpload" size="48" />
         <p>松开以上传文件</p>
@@ -217,26 +159,15 @@
     </div>
 
     <!-- 消息预览 -->
-    <div
-      v-if="previewMessage"
-      class="message-preview"
-    >
+    <div v-if="previewMessage" class="message-preview">
       <div class="preview-header">
         <span>消息预览</span>
-        <n-button
-          text
-          size="small"
-          @click="previewMessage = null"
-        >
+        <n-button text size="small" @click="previewMessage = null">
           <n-icon :component="X" />
         </n-button>
       </div>
       <div class="preview-content">
-        <MatrixMessage
-          :message="previewMessage"
-          :show-avatar="false"
-          :show-timestamp="false"
-        />
+        <MatrixMessage :message="previewMessage" :show-avatar="false" :show-timestamp="false" />
       </div>
     </div>
   </div>
@@ -244,19 +175,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import {
-  NButton,
-  NButtonGroup,
-  NIcon,
-  NPopover,
-  NUpload,
-  NDivider,
-  NDropdown,
-  NAvatar,
-  useMessage,
-  type UploadCustomRequestOptions,
-  type UploadFileInfo
-} from 'naive-ui'
+import { NButton, NButtonGroup, NIcon, NPopover, NUpload, NDivider, NDropdown, NAvatar } from 'naive-ui'
 import {
   MoodHappy,
   Paperclip,
@@ -272,8 +191,6 @@ import {
   CloudUpload,
   X
 } from '@vicons/tabler'
-import { matrixClientService } from '@/integrations/matrix/client'
-import { logger } from '@/utils/logger'
 import type { MsgType } from '@/services/types'
 import { MsgEnum, MessageStatusEnum } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
@@ -283,25 +200,15 @@ import type { MatrixMessage as MatrixMessageType, MatrixMember } from '@/types/m
 import { getMatrixMessageText } from '@/types/matrix'
 import { getNameInitials } from '@/utils/formatUtils'
 
+// Composables
+import { useMessageEditor } from '@/composables/useMessageEditor'
+import { useMessageAttachments, type VoiceData } from '@/composables/useMessageAttachments'
+import { useMessageSender } from '@/composables/useMessageSender'
+
 // Components
 import EmojiPicker from '@/components/message/EmojiPicker.vue'
 import VoiceRecorder from '@/components/chat/VoiceRecorder.vue'
 import MatrixMessage from './MatrixMessage.vue'
-
-// Type definitions
-interface CommandSuggestion {
-  name: string
-  description: string
-  action: () => void
-}
-
-interface VoiceData {
-  localPath: string
-  size: number
-  duration: number
-  filename: string
-  type: string
-}
 
 interface MessageContent {
   eventId?: string
@@ -327,8 +234,6 @@ const emit = defineEmits<{
   preview: [content: MsgType]
 }>()
 
-const message = useMessage()
-
 // Stores
 const chatStore = useChatStore()
 const userStore = useUserStore()
@@ -338,33 +243,80 @@ const matrixStore = useMatrixStore()
 const editorRef = ref<HTMLElement>()
 const showEmojiPicker = ref(false)
 const showVoiceRecorder = ref(false)
-const isComposing = ref(false)
-const isDragOver = ref(false)
-const sending = ref(false)
 const previewMessage = ref<MsgType | null>(null)
 
-// Format states
-const formatBold = ref(false)
-const formatItalic = ref(false)
-const formatStrike = ref(false)
+// Initialize message editor composable with lazy command initialization
+const messageEditor = useMessageEditor({
+  maxLength: 65536,
+  members: () => matrixStore.currentRoomMembers,
+  commands: [] // Will be set after destructuring
+})
 
-// Store formatting ranges for generating formatted_body
-interface FormatRange {
-  start: number
-  end: number
-  type: 'bold' | 'italic' | 'strike'
-}
-const formatRanges = ref<FormatRange[]>([])
+// Initialize message attachments composable
+const attachments = useMessageAttachments({
+  roomId: computed(() => props.roomId),
+  onSend: (event) => emit('send', event),
+  onClearEditor: () => messageEditor.clearEditor(editorRef.value!)
+})
 
-// Mention state
-const mentionSuggestions = ref<MatrixMember[]>([])
-const activeMentionIndex = ref(0)
-const mentionPosition = ref({ top: 0, left: 0 })
+// Initialize message sender composable
+const messageSender = useMessageSender({
+  roomId: computed(() => props.roomId),
+  editingMessage: computed(() => props.editingMessage),
+  formatRanges: messageEditor.formatRanges,
+  onSend: (event) => emit('send', event),
+  onEdit: (messageId, content) => emit('edit', messageId, content),
+  onClearEditor: () => messageEditor.clearEditor(editorRef.value!)
+})
 
-// Command state
-const commandSuggestions = ref<CommandSuggestion[]>([])
-const activeCommandIndex = ref(0)
-const commandPosition = ref({ top: 0, left: 0 })
+// Destructure from composables
+const {
+  formatBold,
+  formatItalic,
+  formatStrike,
+  formatRanges,
+  mentionSuggestions,
+  activeMentionIndex,
+  mentionPosition,
+  commandSuggestions,
+  activeCommandIndex,
+  commandPosition,
+  isComposing,
+  handleEditorInput,
+  handleKeyDown,
+  handlePaste,
+  handleCompositionStart,
+  handleCompositionEnd,
+  toggleFormat,
+  insertText,
+  insertCodeBlock,
+  selectMention,
+  selectCommand,
+  clearEditor,
+  getMessageLength,
+  getCaretPosition
+} = messageEditor
+
+const {
+  isDragOver,
+  sending: attachmentsSending,
+  handleBeforeUpload,
+  handleFileUpload,
+  handleBeforeImageUpload,
+  handleImageUpload,
+  handleVoiceSend,
+  handleDrop,
+  handleDragOver,
+  handleDragLeave
+} = attachments
+
+const { sending: senderSending, sendMessage } = messageSender
+
+// Set commands after insertText is available (lazy initialization)
+// Commands will be handled internally by the composable
+
+// Combined sending state
+const sending = computed(() => attachmentsSending.value || senderSending.value)
 
 // Computed
 const inputPlaceholder = computed(() => {
@@ -373,387 +325,23 @@ const inputPlaceholder = computed(() => {
   return '输入消息... (Enter发送，Shift+Enter换行)'
 })
 
-const messageLength = computed(() => {
-  return editorRef.value?.textContent?.length || 0
-})
+const messageLength = computed(() => getMessageLength(editorRef.value!))
 
-const maxLength = computed(() => {
-  return 65536 // Matrix message limit
-})
+const maxLength = computed(() => 65536)
 
 const canSend = computed(() => {
   return messageLength.value > 0 && messageLength.value <= maxLength.value && !sending.value
 })
 
 const quickReplyOptions = computed(() => [
-  {
-    label: '好的',
-    key: 'ok'
-  },
-  {
-    label: '收到',
-    key: 'received'
-  },
-  {
-    label: '谢谢',
-    key: 'thanks'
-  },
-  {
-    label: '没问题',
-    key: 'noProblem'
-  },
-  {
-    label: '稍等',
-    key: 'wait'
-  }
+  { label: '好的', key: 'ok' },
+  { label: '收到', key: 'received' },
+  { label: '谢谢', key: 'thanks' },
+  { label: '没问题', key: 'noProblem' },
+  { label: '稍等', key: 'wait' }
 ])
 
-const members = computed(() => matrixStore.currentRoomMembers || [])
-
 // Helper functions
-const clearEditor = () => {
-  if (editorRef.value) {
-    editorRef.value.textContent = ''
-  }
-  // Clear formatting ranges
-  formatRanges.value = []
-  formatBold.value = false
-  formatItalic.value = false
-  formatStrike.value = false
-}
-
-// Commands
-const commands = [
-  { name: 'shrug', description: '¯\\_(ツ)_/¯', action: () => insertText('¯\\_(ツ)_/¯') },
-  { name: 'tableflip', description: '(╯°□°）╯︵ ┻━┻', action: () => insertText('(╯°□°）╯︵ ┻━┻') },
-  { name: 'unflip', description: '┬─┬ ノ( ゜-゜ノ)', action: () => insertText('┬─┬ ノ( ゜-゜ノ)') },
-  { name: 'lenny', description: '( ͡° ͜ʖ ͡°)', action: () => insertText('( ͡° ͜ʖ ͡°)') },
-  { name: 'clear', description: '清空输入', action: clearEditor }
-]
-
-// Methods
-const handleEditorInput = () => {
-  const content = editorRef.value?.textContent || ''
-
-  // Check for mentions
-  const cursorPos = getCaretPosition()
-  const beforeCursor = content.substring(0, cursorPos)
-  const mentionMatch = beforeCursor.match(/@(\w*)$/)
-
-  if (mentionMatch) {
-    const query = mentionMatch[1] ?? ''
-    showMentionSuggestions(query, cursorPos)
-  } else {
-    mentionSuggestions.value = []
-  }
-
-  // Check for commands
-  const commandMatch = beforeCursor.match(/\/(\w*)$/)
-  if (commandMatch && beforeCursor.trim() === commandMatch[0]) {
-    const query = commandMatch[1] ?? ''
-    showCommandSuggestions(query, cursorPos)
-  } else {
-    commandSuggestions.value = []
-  }
-
-  // Update preview
-  updatePreview()
-}
-
-const handleKeyDown = (e: KeyboardEvent) => {
-  if (isComposing.value) return
-
-  // Enter to send, Shift+Enter for new line
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault()
-    sendMessage()
-    return
-  }
-
-  // Escape to cancel suggestions
-  if (e.key === 'Escape') {
-    mentionSuggestions.value = []
-    commandSuggestions.value = []
-    return
-  }
-
-  // Navigate suggestions
-  if (mentionSuggestions.value.length > 0) {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      activeMentionIndex.value = Math.max(0, activeMentionIndex.value - 1)
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      activeMentionIndex.value = Math.min(mentionSuggestions.value.length - 1, activeMentionIndex.value + 1)
-    } else if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault()
-      const member = mentionSuggestions.value[activeMentionIndex.value]
-      if (member) selectMention(member)
-    }
-  }
-
-  if (commandSuggestions.value.length > 0) {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      activeCommandIndex.value = Math.max(0, activeCommandIndex.value - 1)
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      activeCommandIndex.value = Math.min(commandSuggestions.value.length - 1, activeCommandIndex.value + 1)
-    } else if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault()
-      const cmd = commandSuggestions.value[activeCommandIndex.value]
-      if (cmd) selectCommand(cmd)
-    }
-  }
-}
-
-const handlePaste = async (e: ClipboardEvent) => {
-  e.preventDefault()
-
-  const items = Array.from(e.clipboardData?.items || [])
-
-  for (const item of items) {
-    if (item.type.indexOf('image') !== -1) {
-      const file = item.getAsFile()
-      if (file) {
-        await handleImageFile(file)
-      }
-      return
-    }
-  }
-
-  // Paste text
-  const text = e.clipboardData?.getData('text/plain') || ''
-  document.execCommand('insertText', false, text)
-}
-
-const handleCompositionStart = () => {
-  isComposing.value = true
-}
-
-const handleCompositionEnd = () => {
-  isComposing.value = false
-}
-
-const getCaretPosition = (): number => {
-  if (!editorRef.value) return 0
-
-  const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0) return 0
-
-  const range = selection.getRangeAt(0)
-  const preCaretRange = range.cloneRange()
-  preCaretRange.selectNodeContents(editorRef.value)
-  preCaretRange.setEnd(range.endContainer, range.endOffset)
-
-  return preCaretRange.toString().length
-}
-
-const showMentionSuggestions = (query: string, _cursorPos: number) => {
-  const filtered = members.value
-    .filter((member: MatrixMember) => (member.displayName || member.userId).toLowerCase().includes(query.toLowerCase()))
-    .slice(0, 5)
-
-  mentionSuggestions.value = filtered
-  activeMentionIndex.value = 0
-
-  // Calculate position
-  const rect = editorRef.value?.getBoundingClientRect()
-  if (rect) {
-    mentionPosition.value = {
-      top: rect.bottom,
-      left: rect.left
-    }
-  }
-}
-
-const showCommandSuggestions = (query: string, _cursorPos: number) => {
-  const filtered = commands.filter((cmd) => cmd.name.toLowerCase().includes(query.toLowerCase()))
-
-  commandSuggestions.value = filtered
-  activeCommandIndex.value = 0
-
-  // Calculate position
-  const rect = editorRef.value?.getBoundingClientRect()
-  if (rect) {
-    commandPosition.value = {
-      top: rect.bottom,
-      left: rect.left
-    }
-  }
-}
-
-const selectMention = (member: MatrixMember) => {
-  const content = editorRef.value?.textContent || ''
-  const cursorPos = getCaretPosition()
-  const beforeCursor = content.substring(0, cursorPos)
-  const afterCursor = content.substring(cursorPos)
-
-  // Replace @mention with formatted text
-  const mentionText = `@${member.displayName || member.userId}`
-  const newContent = beforeCursor.replace(/@\w*$/, mentionText) + afterCursor
-
-  editorRef.value!.textContent = newContent
-  mentionSuggestions.value = []
-
-  // Set cursor position
-  const newCursorPos = beforeCursor.replace(/@\w*$/, mentionText).length
-  setCaretPosition(newCursorPos)
-}
-
-const selectCommand = (cmd: CommandSuggestion) => {
-  commandSuggestions.value = []
-  cmd.action()
-}
-
-const setCaretPosition = (position: number) => {
-  if (!editorRef.value) return
-
-  const range = document.createRange()
-  const selection = window.getSelection()
-
-  const walker = document.createTreeWalker(editorRef.value, NodeFilter.SHOW_TEXT, null)
-
-  let charCount = 0
-  let found = false
-
-  while (walker.nextNode()) {
-    const node = walker.currentNode
-    const text = node.textContent || ''
-
-    if (charCount + text.length >= position) {
-      range.setStart(node, position - charCount)
-      range.collapse(true)
-      found = true
-      break
-    }
-
-    charCount += text.length
-  }
-
-  if (found && selection) {
-    selection.removeAllRanges()
-    selection.addRange(range)
-  }
-}
-
-const insertText = (text: string) => {
-  document.execCommand('insertText', false, text)
-}
-
-const insertCodeBlock = () => {
-  insertText('\n```\n代码\n```\n')
-}
-
-const toggleFormat = (format: 'bold' | 'italic' | 'strike') => {
-  if (!editorRef.value) return
-
-  const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0) {
-    // No selection, toggle format state for next input
-    switch (format) {
-      case 'bold':
-        formatBold.value = !formatBold.value
-        break
-      case 'italic':
-        formatItalic.value = !formatItalic.value
-        break
-      case 'strike':
-        formatStrike.value = !formatStrike.value
-        break
-    }
-    return
-  }
-
-  // Get selected text range
-  const range = selection.getRangeAt(0)
-  const preCaretRange = range.cloneRange()
-  preCaretRange.selectNodeContents(editorRef.value)
-  preCaretRange.setEnd(range.startContainer, range.startOffset)
-  const start = preCaretRange.toString().length
-
-  preCaretRange.setEnd(range.endContainer, range.endOffset)
-  const end = preCaretRange.toString().length
-
-  // Check if format already exists at this range
-  const existingIndex = formatRanges.value.findIndex((r) => r.type === format && r.start === start && r.end === end)
-
-  if (existingIndex !== -1) {
-    // Remove format
-    formatRanges.value.splice(existingIndex, 1)
-  } else {
-    // Add format
-    formatRanges.value.push({ start, end, type: format })
-  }
-
-  // Update toggle state
-  switch (format) {
-    case 'bold':
-      formatBold.value = !formatBold.value
-      break
-    case 'italic':
-      formatItalic.value = !formatItalic.value
-      break
-    case 'strike':
-      formatStrike.value = !formatStrike.value
-      break
-  }
-
-  // Update preview
-  updatePreview()
-}
-
-/**
- * Generate Matrix formatted_body from plain text and format ranges
- * Converts formatting to HTML according to Matrix spec
- */
-const generateFormattedBody = (plainText: string): string => {
-  if (formatRanges.value.length === 0) {
-    // No formatting, just escape HTML and convert line breaks
-    return escapeHtml(plainText).replace(/\n/g, '<br>')
-  }
-
-  // Sort ranges by start position
-  const sortedRanges = [...formatRanges.value].sort((a, b) => a.start - b.start)
-
-  // Build HTML with formatting tags
-  let html = ''
-  let lastIndex = 0
-
-  // Merge overlapping ranges and apply tags
-  for (const range of sortedRanges) {
-    // Add text before this format
-    if (range.start > lastIndex) {
-      html += escapeHtml(plainText.substring(lastIndex, range.start)).replace(/\n/g, '<br>')
-    }
-
-    // Get the text for this range
-    const text = plainText.substring(range.start, range.end)
-
-    // Apply format tag
-    const tag = range.type === 'bold' ? 'strong' : range.type === 'italic' ? 'em' : 'del'
-    html += `<${tag}>${escapeHtml(text).replace(/\n/g, '<br>')}</${tag}>`
-
-    lastIndex = range.end
-  }
-
-  // Add remaining text
-  if (lastIndex < plainText.length) {
-    html += escapeHtml(plainText.substring(lastIndex)).replace(/\n/g, '<br>')
-  }
-
-  return html
-}
-
-/**
- * Escape HTML special characters
- */
-const escapeHtml = (text: string): string => {
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
-}
-
 const updatePreview = () => {
   if (!editorRef.value) return
 
@@ -779,307 +367,55 @@ const handleEmojiSelect = (emoji: string) => {
   showEmojiPicker.value = false
 }
 
-const handleBeforeUpload = (data: { file: UploadFileInfo }) => {
-  const file = data.file.file
-  if (!file) return false
-
-  // Check file size (100MB limit)
-  if (file.size > 100 * 1024 * 1024) {
-    message.error('文件大小不能超过 100MB')
-    return false
-  }
-
-  return true
-}
-
-const handleFileUpload = async (options: UploadCustomRequestOptions) => {
-  try {
-    sending.value = true
-    const fileObj = options.file.file
-    if (!fileObj) return
-
-    await uploadFile(fileObj)
-  } catch (error) {
-    message.error('文件上传失败')
-  } finally {
-    sending.value = false
-  }
-}
-
-const handleBeforeImageUpload = (data: { file: UploadFileInfo }) => {
-  const file = data.file.file
-  if (!file) return false
-
-  // Check if it's an image
-  if (!file.type.startsWith('image/')) {
-    message.error('请选择图片文件')
-    return false
-  }
-
-  // Check file size (10MB limit)
-  if (file.size > 10 * 1024 * 1024) {
-    message.error('图片大小不能超过 10MB')
-    return false
-  }
-
-  return true
-}
-
-const handleImageUpload = async (options: UploadCustomRequestOptions) => {
-  try {
-    sending.value = true
-    const imageFile = options.file.file
-    if (!imageFile) return
-
-    await handleImageFile(imageFile)
-  } catch (error) {
-    message.error('图片上传失败')
-  } finally {
-    sending.value = false
-  }
-}
-
-const handleImageFile = async (file: File) => {
-  try {
-    sending.value = true
-
-    // Get file extension to determine MIME type
-    const mimeType = file.type || 'image/jpeg'
-
-    // Send image message through Matrix service
-    const eventId = await matrixClientService.sendMediaMessage(props.roomId, file, file.name, mimeType)
-
-    emit('send', {
-      eventId,
-      type: 'm.image',
-      body: file.name,
-      url: '', // Will be filled by the server response
-      fileInfo: {
-        name: file.name,
-        size: file.size,
-        mimeType
-      }
-    })
-
-    clearEditor()
-  } catch (error) {
-    logger.error('[MatrixMsgInput] 图片发送失败:', error)
-    message.error('图片发送失败：' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    sending.value = false
-  }
-}
-
-const handleVoiceSend = async (voiceData: VoiceData) => {
-  try {
-    sending.value = true
-
-    // Convert local path to File object
-    // For Tauri, we need to read the file and create a Blob
-    let audioFile: File
-    if (voiceData.localPath.startsWith('blob:') || voiceData.localPath.startsWith('data:')) {
-      // It's already a blob URL or data URL
-      const response = await fetch(voiceData.localPath)
-      const blob = await response.blob()
-      audioFile = new File([blob], `voice_${Date.now()}.ogg`, { type: 'audio/ogg' })
-    } else {
-      // It's a local file path, need to read it through Tauri
-      // For now, create a mock file object
-      audioFile = new File([''], `voice_${Date.now()}.ogg`, { type: 'audio/ogg' })
-    }
-
-    // Send voice message through Matrix service
-    const eventId = await matrixClientService.sendMediaMessage(
-      props.roomId,
-      audioFile,
-      `voice_${Date.now()}.ogg`,
-      'audio/ogg'
-    )
-
-    emit('send', {
-      eventId,
-      type: 'm.audio',
-      body: '[语音]',
-      duration: voiceData.duration,
-      fileInfo: {
-        name: `voice_${Date.now()}.ogg`,
-        size: voiceData.size,
-        mimeType: 'audio/ogg'
-      }
-    })
-
-    clearEditor()
-  } catch (error) {
-    logger.error('[MatrixMsgInput] 语音发送失败:', error)
-    message.error('语音发送失败：' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    sending.value = false
-    showVoiceRecorder.value = false
-  }
-}
-
 const handleQuickReply = (reply: string) => {
-  const replies = {
+  const replies: Record<string, string> = {
     ok: '好的',
     received: '收到',
     thanks: '谢谢',
     noProblem: '没问题',
     wait: '稍等'
   }
-
-  insertText(replies[reply as keyof typeof replies])
+  insertText(replies[reply])
 }
 
-const sendMessage = async () => {
+const handleSendMessage = async () => {
   if (!canSend.value) return
-
   const content = editorRef.value?.textContent || ''
   if (!content.trim()) return
+  await sendMessage(content, messageEditor.generateFormattedBody)
+}
 
-  sending.value = true
+// Wrapper functions that pass editorRef
+const toggleBold = () => {
+  if (editorRef.value) toggleFormat('bold', editorRef.value)
+}
 
-  try {
-    const client = matrixClientService.getClient()
-    if (!client) {
-      throw new Error('Matrix 客户端未初始化')
-    }
+const toggleItalic = () => {
+  if (editorRef.value) toggleFormat('italic', editorRef.value)
+}
 
-    const sendEventMethod = client.sendEvent as
-      | ((
-          roomId: string,
-          eventType: string,
-          content: Record<string, unknown>
-        ) => Promise<{ event_id?: string } | string>)
-      | undefined
+const toggleStrike = () => {
+  if (editorRef.value) toggleFormat('strike', editorRef.value)
+}
 
-    if (!sendEventMethod) {
-      throw new Error('发送功能不可用')
-    }
+// Wrapper for keyboard handler with editor reference
+const handleKeyDownWrapper = (e: KeyboardEvent) => {
+  handleKeyDown(e, editorRef.value!, handleSendMessage)
+}
 
-    if (props.editingMessage) {
-      // Edit existing message using Matrix SDK
-      const formattedBody = generateFormattedBody(content)
-      const editContent = {
-        msgtype: 'm.text',
-        body: content,
-        format: 'org.matrix.custom.html',
-        formatted_body: formattedBody,
-        'm.new_content': {
-          msgtype: 'm.text',
-          body: content,
-          format: 'org.matrix.custom.html',
-          formatted_body: formattedBody
-        },
-        'm.relates_to': {
-          event_id: props.editingMessage.eventId,
-          rel_type: 'm.replace'
-        }
-      }
-
-      const result = await sendEventMethod(props.roomId, 'm.room.message', editContent)
-      const eventId = typeof result === 'string' ? result : result?.event_id || ''
-
-      emit('edit', props.editingMessage.eventId, content)
-      logger.info('[MatrixMsgInput] 消息已编辑', { eventId: props.editingMessage.eventId, newEventId: eventId })
-    } else {
-      // Send new message with formatting support
-      const formattedBody = generateFormattedBody(content)
-      const messageContent: Record<string, unknown> = {
-        msgtype: 'm.text',
-        body: content
-      }
-
-      // Only add formatted fields if there's actual formatting
-      if (formatRanges.value.length > 0) {
-        messageContent.format = 'org.matrix.custom.html'
-        messageContent.formatted_body = formattedBody
-      }
-
-      const result = await sendEventMethod(props.roomId, 'm.room.message', messageContent)
-      const eventId = typeof result === 'string' ? result : result?.event_id || ''
-
-      emit('send', {
-        eventId,
-        type: 'm.text',
-        body: content,
-        formattedBody: formatRanges.value.length > 0 ? formattedBody : undefined
-      })
-
-      logger.info('[MatrixMsgInput] 消息已发送', { eventId, hasFormatting: formatRanges.value.length > 0 })
-    }
-
-    clearEditor()
-  } catch (error) {
-    logger.error('[MatrixMsgInput] 发送消息失败:', error)
-    message.error(props.editingMessage ? '编辑消息失败' : '发送消息失败')
-  } finally {
-    sending.value = false
+// Wrapper for input handler with editor reference
+const handleEditorInputWrapper = () => {
+  if (editorRef.value) {
+    handleEditorInput(editorRef.value)
+    updatePreview()
   }
 }
 
-const uploadFile = async (file: File) => {
-  try {
-    sending.value = true
-
-    // Determine MIME type
-    const mimeType = file.type || 'application/octet-stream'
-    let msgType = 'm.file'
-
-    // Determine message type based on MIME type
-    if (mimeType.startsWith('image/')) {
-      msgType = 'm.image'
-    } else if (mimeType.startsWith('video/')) {
-      msgType = 'm.video'
-    } else if (mimeType.startsWith('audio/')) {
-      msgType = 'm.audio'
-    }
-
-    // Send file message through Matrix service
-    const eventId = await matrixClientService.sendMediaMessage(props.roomId, file, file.name, mimeType)
-
-    emit('send', {
-      eventId,
-      type: msgType,
-      body: file.name,
-      url: '', // Will be filled by the server response
-      fileInfo: {
-        name: file.name,
-        size: file.size,
-        mimeType
-      }
-    })
-
-    clearEditor()
-  } catch (error) {
-    logger.error('[MatrixMsgInput] 文件发送失败:', error)
-    message.error('文件发送失败：' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    sending.value = false
+// Wrapper for selectMention with editor reference
+const selectMentionWrapper = (member: MatrixMember) => {
+  if (editorRef.value) {
+    selectMention(member, editorRef.value)
   }
-}
-
-const handleDrop = async (e: DragEvent) => {
-  isDragOver.value = false
-
-  const files = Array.from(e.dataTransfer?.files || [])
-  for (const file of files) {
-    if (file.type.startsWith('image/')) {
-      await handleImageFile(file)
-    } else {
-      await uploadFile(file)
-    }
-  }
-}
-
-// Event listeners
-const handleDragOver = (e: DragEvent) => {
-  e.preventDefault()
-  isDragOver.value = true
-}
-
-const handleDragLeave = (e: DragEvent) => {
-  e.preventDefault()
-  isDragOver.value = false
 }
 
 // Lifecycle
@@ -1087,7 +423,6 @@ onMounted(() => {
   if (editorRef.value && props.editingMessage) {
     editorRef.value.textContent = getMatrixMessageText(props.editingMessage.content)
   }
-
   // Add drag listeners
   document.addEventListener('dragover', handleDragOver)
   document.addEventListener('dragleave', handleDragLeave)
