@@ -116,6 +116,7 @@ import { writeImage } from '@tauri-apps/plugin-clipboard-manager'
 import type { Ref } from 'vue'
 import { useCanvasTool } from '@/hooks/useCanvasTool'
 import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
+import { useScreenshotMagnifier } from '@/composables/useScreenshotMagnifier'
 import { isMac } from '@/utils/PlatformConstants'
 import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 
@@ -178,9 +179,6 @@ const canUndo = ref(false)
 const magnifier: Ref<HTMLDivElement | null> = ref(null)
 const magnifierCanvas: Ref<HTMLCanvasElement | null> = ref(null)
 const magnifierCtx: Ref<CanvasRenderingContext2D | null> = ref(null)
-const magnifierWidth: number = 120 // 放大镜的宽度
-const magnifierHeight: number = 120 // 放大镜的高度
-const zoomFactor: number = 3 // 放大的倍数
 
 // 按钮组
 const buttonGroup: Ref<HTMLDivElement | null> = ref(null)
@@ -321,9 +319,7 @@ const resetDrawTools = () => {
  */
 const initCanvas = async () => {
   // 在截图前隐藏放大镜，避免被截进去
-  if (magnifier.value) {
-    magnifier.value.style.display = 'none'
-  }
+  hideMagnifier()
   // 重置绘图工具状态
   resetDrawTools()
 
@@ -484,92 +480,6 @@ const initCanvas = async () => {
   document.addEventListener('mousedown', handleGlobalMouseDown)
 }
 
-const handleMagnifierMouseMove = (event: MouseEvent) => {
-  if (!magnifier.value || !imgCanvas.value || !imgCtx.value) return
-
-  // 在拖动选区时隐藏放大镜，仅在调整大小和绘制时显示
-  if (isDragging.value) {
-    magnifier.value.style.display = 'none'
-    return
-  }
-
-  // 如果已经选择了区域，但当前不在拖动或调整大小，则隐藏放大镜
-  if (showButtonGroup.value && !isDragging.value && !isResizing.value) {
-    magnifier.value.style.display = 'none'
-    return
-  }
-
-  // 确保图像已加载
-  if (!isImageLoaded) {
-    magnifier.value.style.display = 'none'
-    return
-  }
-
-  // 初始化放大镜画布
-  if (magnifierCanvas.value && magnifierCtx.value === null) {
-    magnifierCanvas.value.width = magnifierWidth
-    magnifierCanvas.value.height = magnifierHeight
-    magnifierCtx.value = magnifierCanvas.value.getContext('2d')
-  }
-
-  if (!magnifierCtx.value) return
-
-  magnifier.value.style.display = 'block'
-
-  // 统一使用 clientX/clientY + canvas 的 boundingClientRect 计算相对画布的坐标
-  const clientX = (event as MouseEvent).clientX
-  const clientY = (event as MouseEvent).clientY
-  const rect = imgCanvas.value.getBoundingClientRect()
-  const mouseX = clientX - rect.left
-  const mouseY = clientY - rect.top
-
-  // 定位放大镜（使用视口坐标放置，避免偏移）
-  let magnifierTop = clientY + 20
-  let magnifierLeft = clientX + 20
-
-  if (magnifierTop + magnifierHeight > window.innerHeight) {
-    magnifierTop = clientY - magnifierHeight - 20
-  }
-  if (magnifierLeft + magnifierWidth > window.innerWidth) {
-    magnifierLeft = clientX - magnifierWidth - 20
-  }
-
-  magnifier.value.style.top = `${magnifierTop}px`
-  magnifier.value.style.left = `${magnifierLeft}px`
-
-  // 计算源图像中的采样区域（相对画布坐标再乘缩放因子）
-  const sourceX = mouseX * screenConfig.value.scaleX - magnifierWidth / zoomFactor / 2
-  const sourceY = mouseY * screenConfig.value.scaleY - magnifierHeight / zoomFactor / 2
-  const sourceWidth = magnifierWidth / zoomFactor
-  const sourceHeight = magnifierHeight / zoomFactor
-
-  // 清除放大镜画布
-  magnifierCtx.value.clearRect(0, 0, magnifierWidth, magnifierHeight)
-
-  // 绘制放大的图像
-  magnifierCtx.value.drawImage(
-    imgCanvas.value,
-    sourceX,
-    sourceY,
-    sourceWidth,
-    sourceHeight,
-    0,
-    0,
-    magnifierWidth,
-    magnifierHeight
-  )
-
-  // 在放大镜中心绘制十字线
-  magnifierCtx.value.strokeStyle = '#13987f'
-  magnifierCtx.value.lineWidth = 1
-  magnifierCtx.value.beginPath()
-  magnifierCtx.value.moveTo(magnifierWidth / 2, 0)
-  magnifierCtx.value.lineTo(magnifierWidth / 2, magnifierHeight)
-  magnifierCtx.value.moveTo(0, magnifierHeight / 2)
-  magnifierCtx.value.lineTo(magnifierWidth, magnifierHeight / 2)
-  magnifierCtx.value.stroke()
-}
-
 const handleMaskMouseDown = (event: MouseEvent) => {
   // 如果已经显示按钮组，则不执行任何操作
   if (showButtonGroup.value) return
@@ -675,9 +585,7 @@ const handleMaskMouseUp = (event: MouseEvent) => {
   // 判断矩形区域是否有效
   if (screenConfig.value.width > 5 && screenConfig.value.height > 5) {
     // 隐藏放大镜，避免干扰后续操作
-    if (magnifier.value) {
-      magnifier.value.style.display = 'none'
-    }
+    hideMagnifier()
 
     // 重绘蒙版
     redrawSelection()
@@ -793,13 +701,36 @@ const redrawSelection = () => {
   maskCtx.value.clearRect(x, y, width, height)
 }
 
-// Initialize selection composable after redrawSelection is defined
+// Initialize magnifier composable before selection (selection needs handleMagnifierMouseMove)
+const magnifierComp = useScreenshotMagnifier({
+  imgCanvas,
+  imgCtx,
+  screenConfig,
+  isDragging: ref(false), // Will be overridden by selection composable
+  isResizing: ref(false), // Will be overridden by selection composable
+  showButtonGroup,
+  isImageLoaded: ref(false),
+  magnifier,
+  magnifierCanvas,
+  magnifierCtx
+})
+
+// Destructure magnifier functions
+const { initMagnifier, handleMagnifierMouseMove, hideMagnifier } = magnifierComp
+
+// Create refs for isDragging and isResizing to share between composables
+const sharedIsDragging = ref(false)
+const sharedIsResizing = ref(false)
+
+// Initialize selection composable after redrawSelection and magnifier are defined
 const selection = useScreenshotSelection({
   screenConfig,
   currentDrawTool,
   buttonGroup,
   showButtonGroup,
   selectionArea,
+  isDragging: sharedIsDragging,
+  isResizing: sharedIsResizing,
   onRedrawSelection: redrawSelection,
   onMagnifierUpdate: handleMagnifierMouseMove
 })
@@ -822,22 +753,9 @@ const {
   handleBorderRadiusChange
 } = selection
 
-/**
- * 初始化放大镜
- */
-const initMagnifier = () => {
-  if (magnifierCanvas.value) {
-    magnifierCanvas.value.width = magnifierWidth
-    magnifierCanvas.value.height = magnifierHeight
-    magnifierCtx.value = magnifierCanvas.value.getContext('2d', { willReadFrequently: true })
-  }
-}
-
 const confirmSelection = async () => {
   // 立即隐藏放大镜，防止被截取到
-  if (magnifier.value) {
-    magnifier.value.style.display = 'none'
-  }
+  hideMagnifier()
 
   // 检查图像是否已加载
   if (!isImageLoaded) {
@@ -1021,9 +939,7 @@ const resetScreenshot = async () => {
     }
 
     // 隐藏放大镜
-    if (magnifier.value) {
-      magnifier.value.style.display = 'none'
-    }
+    hideMagnifier()
 
     // 恢复窗口状态（macOS需要退出全屏）
     await restoreWindowState()
