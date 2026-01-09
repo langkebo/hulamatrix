@@ -127,8 +127,8 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .self-destruct-message {
   position: relative;
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(var(--hula-error-rgb), 0.05);
+  border: 1px solid rgba(var(--hula-error-rgb), 0.2);
   border-radius: 8px;
   padding: 12px;
   margin: 4px 0;
@@ -136,8 +136,8 @@ onUnmounted(() => {
 
   &.is-destroying {
     animation: pulse 1s infinite;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(var(--hula-error-rgb), 0.1);
+    border-color: rgba(var(--hula-error-rgb), 0.4);
   }
 
   .message-content {
@@ -184,7 +184,7 @@ onUnmounted(() => {
     gap: 6px;
     margin-top: 8px;
     padding: 6px 10px;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(var(--hula-error-rgb), 0.1);
     border-radius: 6px;
     font-size: 12px;
     color: var(--hula-brand-primary);
@@ -219,12 +219,12 @@ onUnmounted(() => {
 // 暗色主题适配
 .dark {
   .self-destruct-message {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(var(--hula-error-rgb), 0.1);
+    border-color: rgba(var(--hula-error-rgb), 0.3);
 
     &.is-destroying {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.5);
+      background: rgba(var(--hula-error-rgb), 0.15);
+      border-color: rgba(var(--hula-error-rgb), 0.5);
     }
 
     .destruct-timer {
@@ -232,7 +232,7 @@ onUnmounted(() => {
     }
 
     .destruct-hint {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(var(--hula-error-rgb), 0.2);
     }
   }
 }

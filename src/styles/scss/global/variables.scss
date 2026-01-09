@@ -104,7 +104,7 @@
   --warning-bg: rgba(247, 182, 104, 0.1);
 
   --danger-color: var(--hula-brand-primary);
-  --danger-bg: rgba(193, 64, 83, 0.1);
+  --danger-bg: rgba(var(--hula-error-rgb), 0.1);
 
   --info-color: var(--hula-brand-primary);
   --info-bg: rgba(23, 162, 184, 0.1);

@@ -267,7 +267,7 @@ defineExpose({
 
   &:hover {
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-    background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.05));
+    background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.05));
     transform: translateY(-2px);
     box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
@@ -278,8 +278,8 @@ defineExpose({
 
   &.active {
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-    background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
-    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(0, 191, 165, 0.2));
+    background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
+    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(var(--hula-success-rgb), 0.2));
 
     .theme-icon {
       color: var(--hula-brand-primary, var(--hula-brand-primary));

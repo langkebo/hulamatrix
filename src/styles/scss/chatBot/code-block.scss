@@ -55,7 +55,7 @@
 
 .code-block-dark {
   --code-block-bg: var(--hula-brand-primary);
-  --code-block-header-bg: rgba(44, 55, 66, 0.95);
+  --code-block-header-bg: rgba(var(--hula-gray-700-rgb), 0.95);
   --code-block-border-color: rgba(var(--hula-white-rgb), 0.08);
   --code-block-toolbar-color: var(--hula-brand-primary);
   --code-block-toolbar-hover-bg: rgba(148, 163, 184, 0.15);
@@ -72,7 +72,7 @@
 .code-block-light {
   --code-block-bg: var(--hula-brand-primary);
   --code-block-header-bg: rgba(var(--hula-white-rgb), 0.95);
-  --code-block-border-color: rgba(15, 23, 42, 0.08);
+  --code-block-border-color: rgba(var(--hula-gray-900-rgb), 0.08);
   --code-block-toolbar-color: var(--hula-brand-primary);
   --code-block-toolbar-hover-bg: rgba(var(--hula-brand-rgb), 0.08);
   --code-block-toolbar-active-bg: rgba(var(--hula-brand-rgb), 0.14);

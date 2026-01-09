@@ -220,7 +220,7 @@ html[data-theme='dark'] {
   /* ==================== 渐变色（深色模式）==================== */
   --hula-gradient-bg: radial-gradient(
     circle at top left,
-    rgba(26, 178, 146, 0.15) 0%,
+    rgba(var(--hula-brand-rgb), 0.15) 0%,
     rgba(62, 101, 100, 0.15) 150%
   );
 

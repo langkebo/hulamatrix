@@ -167,12 +167,12 @@ const formatDestructTime = (seconds: number): string => {
     }
 
     &.medium {
-      background: rgba(59, 130, 246, 0.1);
+      background: rgba(var(--hula-info-rgb), 0.1);
       color: var(--hula-brand-primary);
     }
 
     &.low {
-      background: rgba(239, 68, 68, 0.1);
+      background: rgba(var(--hula-error-rgb), 0.1);
       color: var(--hula-brand-primary);
     }
   }
@@ -187,11 +187,11 @@ const formatDestructTime = (seconds: number): string => {
       }
 
       &.medium {
-        background: rgba(59, 130, 246, 0.2);
+        background: rgba(var(--hula-info-rgb), 0.2);
       }
 
       &.low {
-        background: rgba(239, 68, 68, 0.2);
+        background: rgba(var(--hula-error-rgb), 0.2);
       }
     }
   }

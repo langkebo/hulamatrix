@@ -449,25 +449,25 @@ html[data-theme='dark'] {
 /* 动画定义 */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0.4);
+    box-shadow: 0 0 0 0 rgba(var(--hula-error-rgb), 0.4);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(193, 64, 83, 0);
+    box-shadow: 0 0 0 10px rgba(var(--hula-error-rgb), 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0);
+    box-shadow: 0 0 0 0 rgba(var(--hula-error-rgb), 0);
   }
 }
 
 @keyframes recording-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0.4);
+    box-shadow: 0 0 0 0 rgba(var(--hula-error-rgb), 0.4);
   }
   50% {
-    box-shadow: 0 0 0 15px rgba(193, 64, 83, 0);
+    box-shadow: 0 0 0 15px rgba(var(--hula-error-rgb), 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(193, 64, 83, 0);
+    box-shadow: 0 0 0 0 rgba(var(--hula-error-rgb), 0);
   }
 }
 

@@ -24,7 +24,7 @@
   background: linear-gradient(to left, var(--hula-brand-primary), var(--hula-brand-primary));
   box-shadow:
     inset 0px 3px 16px 0px rgba(var(--hula-white-rgb), 0.5),
-    inset 0px -2px 27px 0px rgba(105, 187, 157, 0.76),
+    inset 0px -2px 27px 0px rgba(var(--hula-success-rgb), 0.76),
     inset 0px 2px 6px 0px rgba(254, 254, 254, 0.5);
   &:span {
     color: var(--hula-white);
@@ -34,6 +34,6 @@
 [data-theme='dark'] {
   .gradient-button {
     background: linear-gradient(to left, var(--hula-brand-primary), var(--hula-brand-primary));
-    box-shadow: 0 0 8px rgba(98, 147, 151, 0.4), inset 0 1px 3px rgba(var(--hula-black-rgb), 0.1);
+    box-shadow: 0 0 8px rgba(var(--hula-brand-rgb), 0.4), inset 0 1px 3px rgba(var(--hula-black-rgb), 0.1);
   }
 }

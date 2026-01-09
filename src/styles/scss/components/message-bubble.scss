@@ -19,7 +19,7 @@
 
   /* 防止选中文本时触发点击 */
   &::selection {
-    background: var(--selection-bg, rgba(0, 191, 165, 0.3));
+    background: var(--selection-bg, rgba(var(--hula-success-rgb), 0.3));
   }
 
   /* 悬停效果 */
@@ -121,7 +121,7 @@
 /* 选中状态 */
 .h-message-bubble--selected {
   border: 2px solid var(--hula-brand-primary, var(--hula-brand-primary));
-  box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(0, 191, 165, 0.2));
+  box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(var(--hula-success-rgb), 0.2));
 }
 
 /* 加载状态 */
@@ -175,7 +175,7 @@
 
 /* 回复消息样式 */
 .h-message-reply {
-  background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+  background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
   border-radius: var(--radius-md, 8px);
   padding: var(--spacing-sm, 8px);
   margin-bottom: var(--spacing-sm, 8px);
@@ -184,7 +184,7 @@
   transition: all var(--transition-fast, 0.3s ease);
 
   &:hover {
-    background: var(--hula-brand-rgba-20, rgba(0, 191, 165, 0.2));
+    background: var(--hula-brand-rgba-20, rgba(var(--hula-success-rgb), 0.2));
     transform: translateX(2px);
   }
 
@@ -539,7 +539,7 @@
   margin: var(--spacing-md, 16px) 0;
 
   .system-content {
-    background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+    background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
     color: var(--hula-text-tertiary, var(--hula-gray-500, var(--hula-brand-primary)));
     font-size: var(--font-size-sm, 14px);
     padding: var(--spacing-xs, 4px) var(--spacing-md, 16px);

@@ -298,7 +298,7 @@ const createRipple = (event: Event) => {
     &:hover:not(:disabled) {
       background: var(--danger-hover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+      box-shadow: 0 4px 12px rgba(var(--hula-error-rgb), 0.3);
     }
   }
 
@@ -310,7 +310,7 @@ const createRipple = (event: Event) => {
     &:hover:not(:disabled) {
       background: var(--warning-hover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 12px rgba(var(--hula-warning-rgb), 0.3);
     }
   }
 
@@ -322,7 +322,7 @@ const createRipple = (event: Event) => {
     &:hover:not(:disabled) {
       background: var(--success-hover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 12px rgba(var(--hula-success-rgb), 0.3);
     }
   }
 

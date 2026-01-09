@@ -32,5 +32,5 @@
 /* 深色模式 */
 html[data-theme='dark'] .right-panel,
 html[data-theme='dark'] .layout-right {
-  background: var(--right-theme-bg-color, rgba(24, 24, 28, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-gray-900-rgb), 0.9)) !important;
 }

@@ -49,10 +49,10 @@
   --focus-ring-color: rgba(var(--hula-white-rgb), 0.3);
 
   // 状态色
-  --success-bg: rgba(16, 185, 129, 0.1);
-  --warning-bg: rgba(245, 158, 11, 0.1);
-  --danger-bg: rgba(220, 38, 38, 0.1);
-  --info-bg: rgba(59, 130, 246, 0.1);
+  --success-bg: rgba(var(--hula-success-rgb), 0.1);
+  --warning-bg: rgba(var(--hula-warning-rgb), 0.1);
+  --danger-bg: rgba(var(--hula-error-rgb), 0.1);
+  --info-bg: rgba(var(--hula-info-rgb), 0.1);
 
   // 悬停状态
   --hover-bg: rgba(var(--hula-white-rgb), 0.05);

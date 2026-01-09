@@ -347,7 +347,7 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(239, 68, 68, 0.9);
+  background: rgba(var(--hula-error-rgb), 0.9);
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -418,10 +418,10 @@ defineExpose({
 @keyframes warningPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 0 rgba(var(--hula-error-rgb), 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 8px rgba(var(--hula-error-rgb), 0);
   }
 }
 

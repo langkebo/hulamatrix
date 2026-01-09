@@ -155,7 +155,7 @@ const progress = ref(0)
 
 /* 暗色模式适配 */
 .dark .loading-content {
-  background: rgba(24, 24, 28, 0.95);
+  background: rgba(var(--hula-gray-900-rgb), 0.95);
   border: 1px solid rgba(var(--hula-white-rgb), 0.1);
 }
 

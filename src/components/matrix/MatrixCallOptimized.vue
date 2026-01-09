@@ -1117,7 +1117,7 @@ watch(
   }
 
   .call-bar {
-    background: rgba(24, 24, 28, 0.95);
+    background: rgba(var(--hula-gray-900-rgb), 0.95);
     backdrop-filter: blur(20px);
   }
 }

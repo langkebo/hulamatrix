@@ -68,13 +68,13 @@
 html[data-theme='dark'] {
   .right-panel,
   .layout-right {
-    background: var(--right-theme-bg-color, rgba(24, 24, 28, 0.9)) !important;
+    background: var(--right-theme-bg-color, rgba(var(--hula-gray-900-rgb), 0.9)) !important;
     color: white;
   }
 
   .chat-header,
   .chat-footer {
-    background: var(--matrix-bg-primary, rgba(24, 24, 28, 0.95)) !important;
+    background: var(--matrix-bg-primary, rgba(var(--hula-gray-900-rgb), 0.95)) !important;
     color: white;
   }
 
@@ -114,7 +114,7 @@ html[data-theme='dark'] {
 html[data-theme='dark'] {
   .n-card,
   .n-drawer-body {
-    background: var(--matrix-bg-primary, rgba(24, 24, 28, 0.95)) !important;
+    background: var(--matrix-bg-primary, rgba(var(--hula-gray-900-rgb), 0.95)) !important;
     color: white;
   }
 }

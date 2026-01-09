@@ -6,7 +6,7 @@
 :root[data-theme-style="default"] {
   /* 左侧栏样式 - 使用HuLa的青色系 */
   --left-bg-color: var(--hula-primary);
-  --left-active-bg-color: rgba(222, 222, 222, 0.2);
+  --left-active-bg-color: rgba(var(--hula-gray-200-rgb), 0.2);
   --left-text-color: var(--hula-brand-primary);
   --left-icon-color: var(--hula-brand-primary);
   --left-active-hover: var(--hula-brand-primary);
@@ -48,11 +48,11 @@
 html[data-theme='dark'][data-theme-style="default"] {
   /* 左侧栏样式 - 深色青色系 */
   --left-bg-color: rgba(62, 101, 100, 0.9);
-  --left-active-bg-color: rgba(222, 222, 222, 0.1);
+  --left-active-bg-color: rgba(var(--hula-gray-200-rgb), 0.1);
   --left-text-color: var(--hula-brand-primary);
   --left-icon-color: var(--hula-brand-primary);
-  --left-active-hover: rgba(26, 178, 146, 0.8);
-  --left-bg-hover: rgba(133, 133, 133, 0.2);
+  --left-active-hover: rgba(var(--hula-brand-rgb), 0.8);
+  --left-bg-hover: rgba(var(--hula-gray-500-rgb), 0.2);
   --left-active-icon-color: var(--hula-brand-primary);
   --left-win-icon-color: var(--hula-brand-primary);
 
@@ -64,7 +64,7 @@ html[data-theme='dark'][data-theme-style="default"] {
   /* 右侧区域渐变背景 - 深色HuLa风格 */
   --right-theme-bg: radial-gradient(
     circle at top left,
-    rgba(26, 178, 146, 0.15) 0%,
+    rgba(var(--hula-brand-rgb), 0.15) 0%,
     rgba(62, 101, 100, 0.15) 150%
   );
   --right-theme-bg-color: var(--right-theme-bg);
@@ -75,7 +75,7 @@ html[data-theme='dark'][data-theme-style="default"] {
   --chat-footer-border: rgba(var(--hula-white-rgb), 0.1);
 
   /* 群公告 */
-  --group-notice-bg: rgba(38, 38, 38, 0.9);
+  --group-notice-bg: rgba(var(--hula-gray-800-rgb), 0.9);
 
   /* 列表hover */
   --list-hover: rgba(var(--hula-white-rgb), 0.05);

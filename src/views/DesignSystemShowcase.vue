@@ -398,7 +398,7 @@ const brandColors = [
   { name: '主色', value: 'var(--hula-brand-primary)', variable: '--hula-brand-primary' },
   { name: '悬停', value: 'var(--hula-brand-primary)', variable: '--hula-brand-hover' },
   { name: '激活', value: 'var(--hula-brand-primary)', variable: '--hula-brand-active' },
-  { name: '柔和', value: 'rgba(0, 191, 165, 0.1)', variable: '--hula-brand-subtle' }
+  { name: '柔和', value: 'rgba(var(--hula-success-rgb), 0.1)', variable: '--hula-brand-subtle' }
 ]
 
 const functionalColors = [
@@ -456,7 +456,7 @@ const neutralColors = [
       span {
         font-size: 12px;
         padding: 4px 12px;
-        background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+        background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
         color: var(--hula-brand-primary, var(--hula-brand-primary));
         border-radius: 9999px;
         font-weight: 500;
@@ -585,7 +585,7 @@ const neutralColors = [
       font-size: 11px;
       font-family: monospace;
       color: var(--hula-brand-primary, var(--hula-brand-primary));
-      background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+      background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
       padding: 2px 6px;
       border-radius: 4px;
       align-self: flex-start;
@@ -674,7 +674,7 @@ const neutralColors = [
       align-items: center;
       gap: 8px;
       font-size: 14px;
-      background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+      background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
       color: var(--hula-brand-primary, var(--hula-brand-primary));
       border: 1px solid var(--hula-brand-primary, var(--hula-brand-primary));
     }

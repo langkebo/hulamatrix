@@ -191,7 +191,7 @@ watch(isDestroyed, (destroyed) => {
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(var(--hula-error-rgb), 0.1);
   border-radius: 4px;
   font-size: 10px;
   color: var(--hula-brand-primary);
@@ -260,7 +260,7 @@ watch(isDestroyed, (destroyed) => {
   }
 
   .warning-text {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(var(--hula-error-rgb), 0.2);
   }
 }
 </style>

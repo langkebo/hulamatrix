@@ -291,7 +291,7 @@ const handleSubmit = () => {
   &:focus {
     outline: none;
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-    box-shadow: 0 0 0 3px var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+    box-shadow: 0 0 0 3px var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
   }
 
   &:disabled {
@@ -463,7 +463,7 @@ const handleSubmit = () => {
   input:checked ~ .checkbox-indicator,
   input:checked ~ .radio-brand-indicator {
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-    background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+    background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
 
     &::after {
       display: block;
@@ -619,7 +619,7 @@ textarea:focus-visible,
 select:focus-visible {
   outline: none;
   border-color: var(--hula-brand-primary, var(--hula-brand-primary));
-  box-shadow: 0 0 0 3px var(--hula-brand-subtle, rgba(0, 191, 165, 0.1));
+  box-shadow: 0 0 0 3px var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.1));
 }
 
 /* 暗色模式适配 */

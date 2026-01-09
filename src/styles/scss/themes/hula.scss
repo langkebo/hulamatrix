@@ -11,7 +11,7 @@
     --left-text-color: var(--hula-brand-primary);                  /* 浅灰色文字 */
     --left-icon-color: var(--hula-brand-primary);                  /* 浅灰色图标 */
     --left-active-hover: var(--hula-brand-primary);                /* 亮绿色悬停（PC强调色） */
-    --left-bg-hover: rgba(0, 191, 165, 0.15);    /* 亮绿色悬停背景 */
+    --left-bg-hover: rgba(var(--hula-success-rgb), 0.15);    /* 亮绿色悬停背景 */
     --left-active-icon-color: var(--hula-brand-primary);           /* 激活图标：亮绿色 */
     --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
     --left-gradient-bg: linear-gradient(180deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
@@ -30,20 +30,20 @@
 
     // ==================== 聊天框样式 ====================
     --right-chat-reply-color: var(--hula-brand-primary);           /* 回复背景：灰色 */
-    --right-chat-reply-active-color: rgba(0, 191, 165, 0.2); /* 回复激活 */
+    --right-chat-reply-active-color: rgba(var(--hula-success-rgb), 0.2); /* 回复激活 */
     --right-chat-footer-line-color: rgba(var(--hula-white-rgb), 0.1);
 
     // ==================== 消息列表样式 ====================
     --msg-active-color: var(--hula-brand-primary);                 /* 选中：亮绿色 */
-    --msg-hover-bg: rgba(0, 191, 165, 0.15);     /* 悬停背景 */
+    --msg-hover-bg: rgba(var(--hula-success-rgb), 0.15);     /* 悬停背景 */
     --msg-selected-bg: var(--hula-brand-primary);                  /* 选中背景：深红色 */
 
     // ==================== 群公告 ====================
     --group-notice-bg: var(--hula-brand-primary);                  /* 群公告背景 */
 
     // ==================== 通用悬停样式 ====================
-    --list-hover-color: rgba(0, 191, 165, 0.1);  /* 列表悬停 */
-    --icon-hover-color: rgba(0, 191, 165, 0.15); /* 图标悬停 */
+    --list-hover-color: rgba(var(--hula-success-rgb), 0.1);  /* 列表悬停 */
+    --icon-hover-color: rgba(var(--hula-success-rgb), 0.15); /* 图标悬停 */
 
     // Naive UI组件主题覆盖
     --n-color: var(--hula-brand-primary);
@@ -98,10 +98,10 @@
     --matrix-bg-primary: var(--hula-brand-primary);
     --matrix-bg-secondary: var(--hula-brand-primary);
     --matrix-bg-chat: var(--hula-brand-primary);
-    --matrix-border: rgba(0, 191, 165, 0.2);
+    --matrix-border: rgba(var(--hula-success-rgb), 0.2);
     --matrix-text: var(--hula-brand-primary);
     --matrix-text-secondary: var(--hula-brand-primary);
-    --matrix-avatar-border: rgba(0, 191, 165, 0.3);
+    --matrix-avatar-border: rgba(var(--hula-success-rgb), 0.3);
     --matrix-bubble-sent: var(--hula-brand-primary);
     --matrix-bubble-received: var(--hula-brand-primary);
     --matrix-typing-indicator: var(--hula-brand-primary);
@@ -120,7 +120,7 @@ html[data-theme='dark'] {
     --left-text-color: var(--hula-brand-primary);                  /* 浅灰色文字 */
     --left-icon-color: var(--hula-brand-primary);                  /* 浅灰色图标 */
     --left-active-hover: var(--hula-brand-primary);                /* 亮绿色悬停 */
-    --left-bg-hover: rgba(0, 191, 165, 0.2);     /* 亮绿色悬停背景 */
+    --left-bg-hover: rgba(var(--hula-success-rgb), 0.2);     /* 亮绿色悬停背景 */
     --left-active-icon-color: var(--hula-brand-primary);           /* 激活图标：亮绿色 */
     --left-win-icon-color: rgba(var(--hula-white-rgb), 0.4);
     --left-gradient-bg: linear-gradient(180deg, var(--hula-brand-primary) 0%, var(--hula-brand-primary) 100%);
@@ -138,25 +138,25 @@ html[data-theme='dark'] {
 
     // ==================== 聊天框样式 ====================
     --right-chat-reply-color: rgba(74, 74, 74, 0.8);
-    --right-chat-reply-active-color: rgba(0, 191, 165, 0.2);
+    --right-chat-reply-active-color: rgba(var(--hula-success-rgb), 0.2);
     --right-chat-footer-line-color: rgba(var(--hula-white-rgb), 0.1);
 
     // ==================== 消息列表样式 ====================
     --msg-active-color: var(--hula-brand-primary);                 /* 选中：亮绿色 */
-    --msg-hover-bg: rgba(0, 191, 165, 0.15);     /* 悬停背景 */
+    --msg-hover-bg: rgba(var(--hula-success-rgb), 0.15);     /* 悬停背景 */
     --msg-selected-bg: var(--hula-brand-primary);                  /* 选中背景：深红色 */
 
     // ==================== 群公告 ====================
     --group-notice-bg: rgba(58, 58, 58, 0.9);
 
     // ==================== 通用悬停样式 ====================
-    --list-hover-color: rgba(0, 191, 165, 0.1);
-    --icon-hover-color: rgba(0, 191, 165, 0.15);
+    --list-hover-color: rgba(var(--hula-success-rgb), 0.1);
+    --icon-hover-color: rgba(var(--hula-success-rgb), 0.15);
 
     // Naive UI组件主题覆盖 - 深色
     --n-color: var(--hula-brand-primary);
-    --n-color-modal: rgba(24, 24, 28, 0.95);
-    --n-color-popover: rgba(24, 24, 28, 0.95);
+    --n-color-modal: rgba(var(--hula-gray-900-rgb), 0.95);
+    --n-color-popover: rgba(var(--hula-gray-900-rgb), 0.95);
     --n-color-embedded: var(--hula-brand-primary);
 
     --n-text-color: var(--hula-brand-primary);
@@ -183,13 +183,13 @@ html[data-theme='dark'] {
     --n-scrollbar-color-hover: var(--hula-brand-primary);
 
     // Matrix组件特定样式 - 深色
-    --matrix-bg-primary: rgba(24, 24, 28, 0.95);
+    --matrix-bg-primary: rgba(var(--hula-gray-900-rgb), 0.95);
     --matrix-bg-secondary: rgba(36, 36, 40, 0.95);
-    --matrix-bg-chat: rgba(24, 24, 28, 0.9);
-    --matrix-border: rgba(26, 178, 146, 0.3);
+    --matrix-bg-chat: rgba(var(--hula-gray-900-rgb), 0.9);
+    --matrix-border: rgba(var(--hula-brand-rgb), 0.3);
     --matrix-text: var(--hula-brand-primary);
     --matrix-text-secondary: var(--hula-brand-primary);
-    --matrix-avatar-border: rgba(26, 178, 146, 0.4);
+    --matrix-avatar-border: rgba(var(--hula-brand-rgb), 0.4);
     --matrix-bubble-sent: var(--hula-brand-primary);
     --matrix-bubble-received: var(--hula-brand-primary);
     --matrix-typing-indicator: var(--hula-brand-primary);

@@ -71,14 +71,14 @@ html[data-theme='dark'] body {
   &.sent {
     background: var(--hula-brand-primary) !important;
     color: white !important;
-    box-shadow: 0 2px 4px rgba(0, 191, 165, 0.2);
+    box-shadow: 0 2px 4px rgba(var(--hula-success-rgb), 0.2);
   }
 
   &.received {
     background: var(--hula-brand-primary) !important;
     color: var(--text-color, var(--hula-brand-primary)) !important;
     box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.1);
-    border: 1px solid rgba(0, 191, 165, 0.2);
+    border: 1px solid rgba(var(--hula-success-rgb), 0.2);
   }
 }
 
@@ -94,7 +94,7 @@ html[data-theme='dark'] body {
 
   &:focus {
     border-color: var(--hula-brand-primary) !important;
-    box-shadow: 0 0 0 2px rgba(0, 191, 165, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(var(--hula-success-rgb), 0.2) !important;
   }
 
   &::placeholder {
@@ -121,7 +121,7 @@ html[data-theme='dark'] body {
 /* 头像边框 */
 .n-avatar,
 .avatar {
-  border: 2px solid rgba(0, 191, 165, 0.3) !important;
+  border: 2px solid rgba(var(--hula-success-rgb), 0.3) !important;
   box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.1);
 }
 
@@ -138,7 +138,7 @@ html[data-theme='dark'] body {
   background: var(--hula-brand-primary) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 191, 165, 0.2) !important;
+  border: 1px solid rgba(var(--hula-success-rgb), 0.2) !important;
   box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
   color: var(--hula-brand-primary);
 }
@@ -162,7 +162,7 @@ html[data-theme='dark'] {
     &.received {
       background: var(--hula-brand-primary) !important;
       color: var(--hula-brand-primary);
-      border: 1px solid rgba(0, 191, 165, 0.3);
+      border: 1px solid rgba(var(--hula-success-rgb), 0.3);
     }
   }
 
@@ -170,7 +170,7 @@ html[data-theme='dark'] {
   .chat-input {
     background: var(--hula-brand-primary) !important;
     color: var(--hula-brand-primary);
-    border: 1px solid rgba(0, 191, 165, 0.3);
+    border: 1px solid rgba(var(--hula-success-rgb), 0.3);
 
     &::placeholder {
       color: rgba(224, 224, 224, 0.5);
@@ -182,7 +182,7 @@ html[data-theme='dark'] {
   .chat-header {
     background: var(--hula-brand-primary) !important;
     color: var(--hula-brand-primary);
-    border: 1px solid rgba(0, 191, 165, 0.3);
+    border: 1px solid rgba(var(--hula-success-rgb), 0.3);
   }
 }
 

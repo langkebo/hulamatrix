@@ -114,7 +114,7 @@ $breakpoints: (
 
   // 深色模式适配
   @include dark-mode {
-    --matrix-bg-primary: rgba(24, 24, 28, 0.95);
+    --matrix-bg-primary: rgba(var(--hula-gray-900-rgb), 0.95);
     --matrix-bg-secondary: rgba(36, 36, 40, 0.95);
     --matrix-border: rgba(var(--hula-white-rgb), 0.1);
     --matrix-text: rgba(var(--hula-white-rgb), 0.9);

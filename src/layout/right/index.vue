@@ -150,7 +150,7 @@ onMounted(() => {
 
 /* 深色模式 */
 html[data-theme='dark'] .main-layout {
-  background: var(--right-theme-bg-color, rgba(24, 24, 28, 0.9)) !important;
+  background: var(--right-theme-bg-color, rgba(var(--hula-gray-900-rgb), 0.9)) !important;
 }
 
 /* 确保聊天组件显示 */

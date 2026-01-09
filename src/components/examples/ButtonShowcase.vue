@@ -168,7 +168,7 @@ import { Icon } from '@iconify/vue'
   &:hover:not(:disabled) {
     background: var(--hula-brand-hover, var(--hula-brand-primary));
     transform: translateY(-1px);
-    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(0, 191, 165, 0.3));
+    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(var(--hula-success-rgb), 0.3));
   }
 
   &:active:not(:disabled) {
@@ -232,7 +232,7 @@ import { Icon } from '@iconify/vue'
     background: var(--hula-brand-primary, var(--hula-brand-primary));
     color: var(--hula-brand-primary);
     transform: translateY(-1px);
-    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(0, 191, 165, 0.3));
+    box-shadow: var(--hula-shadow-brand, 0 4px 12px rgba(var(--hula-success-rgb), 0.3));
   }
 
   &:active:not(:disabled) {
