@@ -39,12 +39,8 @@ export class SessionStateManager {
   /** Current session room ID reference */
   private getCurrentRoomId: () => string
 
-  /** User store reference */
-  private userStore: { userInfo?: { uid?: string } }
-
-  constructor(getCurrentRoomId: () => string, userStore: { userInfo?: { uid?: string } }) {
+  constructor(getCurrentRoomId: () => string) {
     this.getCurrentRoomId = getCurrentRoomId
-    this.userStore = userStore
     this.sessionList = ref<SessionItem[]>([])
     this.sessionMap = ref<Record<string, SessionItem>>({})
     this.sessionOptions = reactive({ isLast: false, isLoading: false, cursor: '' })

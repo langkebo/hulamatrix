@@ -23,7 +23,7 @@ import { isMobile } from '@/utils/PlatformConstants'
 import App from '@/App.vue'
 import { provideMatrixClientManager } from '@/integrations/matrix/client-manager'
 import { Perf } from '@/utils/Perf'
-import { flagSummary, validateEnvFlags, flags } from '@/utils/envFlags'
+import { flagSummary, validateEnvFlags } from '@/utils/envFlags'
 import { msg } from '@/utils/SafeUI'
 import type { ComponentInternalInstance } from 'vue'
 
@@ -509,29 +509,28 @@ app.config.errorHandler = (err, instance, info) => {
   }
 }
 
-if (true) {
-  try {
-    const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
-    const auth = useMatrixAuthStore()
-    const baseUrl = auth.getHomeserverBaseUrl()
-    const token = auth.accessToken
-    const uid = auth.userId
-    if (baseUrl && token && uid) {
-      await (await import('@/integrations/matrix/client')).matrixClientService.initialize({
-        baseUrl,
-        accessToken: token,
-        userId: uid
-      })
-      ;(await import('@/integrations/matrix/client')).initializeMatrixBridges()
-      await (await import('@/integrations/matrix/client')).matrixClientService.startClient({
-        initialSyncLimit: 5,
-        pollTimeout: 15000
-      })
-    }
-  } catch (error) {
-    logger.error('[Main] Matrix client initialization failed:', error)
-    msg.warning('Matrix 服务初始化失败,部分功能可能不可用')
+// Initialize Matrix client
+try {
+  const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
+  const auth = useMatrixAuthStore()
+  const baseUrl = auth.getHomeserverBaseUrl()
+  const token = auth.accessToken
+  const uid = auth.userId
+  if (baseUrl && token && uid) {
+    await (await import('@/integrations/matrix/client')).matrixClientService.initialize({
+      baseUrl,
+      accessToken: token,
+      userId: uid
+    })
+    ;(await import('@/integrations/matrix/client')).initializeMatrixBridges()
+    await (await import('@/integrations/matrix/client')).matrixClientService.startClient({
+      initialSyncLimit: 5,
+      pollTimeout: 15000
+    })
   }
+} catch (error) {
+  logger.error('[Main] Matrix client initialization failed:', error)
+  msg.warning('Matrix 服务初始化失败,部分功能可能不可用')
 }
 
 if (import.meta.env.VITE_MATRIX_DEV_SYNC === 'true') {

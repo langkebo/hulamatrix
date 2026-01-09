@@ -30,11 +30,9 @@ import { unifiedMessageService } from '@/services/unified-message-service'
 import { useRoomStore } from '@/stores/room'
 import { useUserStore } from '@/stores/user'
 import { runInBatches, MESSAGES_POLICY } from '@/services/messages'
-import { flags } from '@/utils/envFlags'
 import { renderReplyContent } from '@/utils/RenderReplyContent'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useSessionUnreadStore } from '@/stores/sessionUnread'
-import { requestUnreadUpdate as requestUnreadUpdateSvc } from '@/services/session'
 import { useMitt } from '@/hooks/useMitt'
 import { prefetchShallowHistory, tryBackfillWhenNoPagination } from '@/integrations/matrix/history'
 import { useMatrixClient } from '@/composables'
@@ -65,7 +63,7 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
   const currentSessionRoomId = ref('')
 
   // Initialize state managers
-  const sessionState = new SessionStateManager(() => currentSessionRoomId.value, userStore)
+  const sessionState = new SessionStateManager(() => currentSessionRoomId.value)
 
   const messageState = new MessageStateManager(() => currentSessionRoomId.value)
 
@@ -122,7 +120,9 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
 
   const syncLoading = computed<boolean>({
     get: () => sessionState.syncLoading.value,
-    set: (val) => { sessionState.syncLoading.value = val }
+    set: (val) => {
+      sessionState.syncLoading.value = val
+    }
   })
 
   // ============================================================
@@ -175,11 +175,9 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
     } catch (error) {
       logger.warn('无法加载消息::', { data: error, component: 'chatStore' })
       try {
-        if (true) {
-          await tryBackfillWhenNoPagination(roomId, PAGE_SIZE)
-          const desired = Math.ceil(PAGE_SIZE * 1.2)
-          await prefetchShallowHistory(roomId, desired)
-        }
+        await tryBackfillWhenNoPagination(roomId, PAGE_SIZE)
+        const desired = Math.ceil(PAGE_SIZE * 1.2)
+        await prefetchShallowHistory(roomId, desired)
       } catch (e) {
         logger.warn('消息回填失败:', e)
       }
