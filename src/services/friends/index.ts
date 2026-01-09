@@ -242,20 +242,6 @@ export class EnhancedFriendsService {
   }
 
   /**
-   * 重置Synapse可用性检查
-   */
-  resetSynapseAvailability(): void {
-    this.categories.resetSynapseAvailability()
-  }
-
-  /**
-   * 检查Synapse扩展是否可用
-   */
-  isSynapseExtensionAvailable(): boolean {
-    return this.categories.isSynapseExtensionAvailable()
-  }
-
-  /**
    * 列出所有分类
    */
   async listCategories(): Promise<FriendCategory[]> {

@@ -11,9 +11,6 @@ import type { FriendCategory, FriendCategoriesContent, Friend } from './types'
  * Friend Categories Manager
  */
 export class CategoriesManager {
-  private synapseAvailable = false
-  private synapseAvailabilityChecked = false
-
   /**
    * 列出所有好友分类
    */
@@ -409,21 +406,5 @@ export class CategoriesManager {
     }
 
     return grouped
-  }
-
-  /**
-   * 重置Synapse可用性检查
-   */
-  resetSynapseAvailability(): void {
-    this.synapseAvailabilityChecked = false
-    this.synapseAvailable = false
-    logger.debug('[Categories] Synapse availability reset')
-  }
-
-  /**
-   * 检查Synapse扩展是否可用
-   */
-  isSynapseExtensionAvailable(): boolean {
-    return this.synapseAvailable
   }
 }
