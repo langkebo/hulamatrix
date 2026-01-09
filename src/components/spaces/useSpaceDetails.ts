@@ -20,7 +20,24 @@ import type {
 } from './types'
 import type { Space } from '@/hooks/useMatrixSpaces'
 
-export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
+// Emit type for space details events
+export interface SpaceDetailsEmits {
+  (e: 'join', spaceId: string): void
+  (e: 'leave', spaceId: string): void
+  (e: 'archive', spaceId: string): void
+  (e: 'unarchive', spaceId: string): void
+  (e: 'toggle-favorite', spaceId: string): void
+  (e: 'invite', spaceId: string): void
+  (e: 'invite-members', spaceId: string): void
+  (e: 'view-room', roomId: string): void
+  (e: 'create-room', data: Record<string, unknown>): void
+  (e: 'save-settings', data: Record<string, unknown>): void
+  (e: 'room-action', data: Record<string, unknown>): void
+  (e: 'member-action', data: Record<string, unknown>): void
+  (e: 'close'): void
+}
+
+export function useSpaceDetails(space: Ref<Space | null>, emit: SpaceDetailsEmits) {
   // ==================== Composables ====================
   const dialog = useDialog()
   const message = useMessage()

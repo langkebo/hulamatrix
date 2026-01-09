@@ -29,6 +29,22 @@ import { logger } from '@/utils/logger'
 import type { AuthDict } from 'matrix-js-sdk'
 
 /**
+ * Matrix API Error type
+ */
+interface MatrixApiError {
+  errcode?: string
+  error?: string
+  [key: string]: unknown
+}
+
+/**
+ * Type guard to check if error is a MatrixApiError
+ */
+function isMatrixApiError(error: unknown): error is MatrixApiError {
+  return typeof error === 'object' && error !== null && 'errcode' in error
+}
+
+/**
  * 密码重置请求状态
  */
 export enum PasswordResetStatus {
@@ -148,8 +164,8 @@ export class MatrixPasswordResetService {
 
         logger.info('[MatrixPasswordReset] Password reset email sent', { email })
         return true
-      } catch (error: any) {
-        if (error.errcode === 'M_UNRECOGNIZED') {
+      } catch (error: unknown) {
+        if (isMatrixApiError(error) && error.errcode === 'M_UNRECOGNIZED') {
           // 服务器不支持密码重置 API
           logger.warn('[MatrixPasswordReset] Server does not support password reset API')
           throw new Error('当前服务器不支持密码重置功能，请联系管理员')
@@ -190,8 +206,8 @@ export class MatrixPasswordResetService {
 
         logger.info('[MatrixPasswordReset] Reset token verified', { email })
         return true
-      } catch (error: any) {
-        if (error.errcode === 'M_UNRECOGNIZED') {
+      } catch (error: unknown) {
+        if (isMatrixApiError(error) && error.errcode === 'M_UNRECOGNIZED') {
           // 服务器不支持验证 API
           logger.warn('[MatrixPasswordReset] Server does not support token validation API')
           // 尝试直接重置密码

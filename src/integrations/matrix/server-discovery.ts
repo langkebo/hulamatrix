@@ -8,6 +8,14 @@ import { AutoDiscovery, type ClientConfig } from 'matrix-js-sdk'
 import { logger } from '@/utils/logger'
 
 /**
+ * Matrix 版本信息
+ */
+interface MatrixVersion {
+  version: string
+  [key: string]: unknown
+}
+
+/**
  * 服务发现结果
  */
 export interface DiscoveryResult {
@@ -191,7 +199,7 @@ export class MatrixServerDiscovery {
         version: versions[0]?.version || 'unknown',
         responseTime,
         capabilities: {
-          versions: versions.map((v: any) => v.version),
+          versions: versions.map((v: MatrixVersion) => v.version),
           unstableFeatures,
           roomVersions: data?.['m.room_versions']
         }

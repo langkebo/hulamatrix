@@ -121,12 +121,21 @@ export interface SpaceChild {
   name?: string
   topic?: string
   avatar?: string
+  via?: string[]
   memberCount?: number
   worldReadable?: boolean
   guestCanJoin?: boolean
   suggested?: boolean
   order?: string
-  via: string[]
+}
+
+// Type for SDK getSpaceHierarchy response
+interface SpaceHierarchyRoom {
+  room_id: string
+  name?: string
+  room_type?: string
+  via?: string[]
+  [key: string]: unknown
 }
 
 export interface SpaceMember {
@@ -721,7 +730,7 @@ export class MatrixSpacesService {
 
           return {
             space,
-            children: sdkResult.rooms.map((r: any) => ({
+            children: sdkResult.rooms.map((r: SpaceHierarchyRoom) => ({
               roomId: r.room_id,
               name: r.name,
               type: r.room_type === 'm.space' ? 'space' : 'room',
@@ -743,7 +752,7 @@ export class MatrixSpacesService {
           roomId: child.roomId,
           name: child.name,
           type: child.type,
-          via: child.via
+          via: child.via || []
         }))
       }
     } catch (error) {
@@ -759,7 +768,7 @@ export class MatrixSpacesService {
           roomId: child.roomId,
           name: child.name,
           type: child.type,
-          via: child.via
+          via: child.via || []
         }))
       }
     }

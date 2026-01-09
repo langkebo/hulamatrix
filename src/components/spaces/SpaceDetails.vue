@@ -120,10 +120,10 @@ const emit = defineEmits<{
   (e: 'invite', spaceId: string): void
   (e: 'invite-members', spaceId: string): void
   (e: 'view-room', roomId: string): void
-  (e: 'create-room', data: any): void
-  (e: 'save-settings', data: any): void
-  (e: 'room-action', data: any): void
-  (e: 'member-action', data: any): void
+  (e: 'create-room', data: Record<string, unknown>): void
+  (e: 'save-settings', data: Record<string, unknown>): void
+  (e: 'room-action', data: Record<string, unknown>): void
+  (e: 'member-action', data: Record<string, unknown>): void
   (e: 'close'): void
 }>()
 
