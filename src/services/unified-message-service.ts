@@ -30,8 +30,6 @@ export interface SendMessageOptions {
   encrypted?: boolean
   /** 优先级 */
   priority?: 'low' | 'normal' | 'high'
-  /** 强制路由 */
-  forceRoute?: 'matrix' | 'websocket' | 'hybrid'
   /** 回复的消息 ID */
   replyTo?: string
   /** 事务 ID（用于幂等性） */
@@ -173,7 +171,6 @@ export class UnifiedMessageService {
         transactionId: options.transactionId
       },
       {
-        forceRoute: options.forceRoute,
         encrypted: options.encrypted
       }
     )

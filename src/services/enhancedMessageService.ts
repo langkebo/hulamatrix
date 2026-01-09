@@ -1,4 +1,3 @@
-import { messageRouter, type RouteDecision } from './message-router'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { useChatStore } from '@/stores/chat'
 import { logger } from '@/utils/logger'
@@ -103,14 +102,13 @@ export class EnhancedMessageService {
   }
 
   /**
-   * 发送消息 - 使用路由器智能选择传输方式
+   * 发送消息 - 使用 Matrix SDK
    * 集成消息状态管理 (Requirements: 5.3)
    */
   async sendMessage(
     roomId: string,
     msg: SendMessageParams,
-    options?: {
-      forceRoute?: RouteDecision
+    _options?: {
       encrypted?: boolean
       priority?: 'low' | 'normal' | 'high'
     }
@@ -127,43 +125,11 @@ export class EnhancedMessageService {
         roomId,
         msgType: msg.type,
         hasContent: !!msg.body,
-        route: options?.forceRoute || 'auto',
         tempMsgId
       })
 
-      // 构建消息内容
-      const messageContent = this.buildMessageContent(msg)
-
-      // 决定路由策略
-      let routeDecision: RouteDecision
-      if (options?.forceRoute) {
-        routeDecision = options.forceRoute
-      } else {
-        // 使用路由器自动决策
-        routeDecision = messageRouter.decideRoute(messageContent, {
-          encrypted: options?.encrypted || this.shouldEncrypt(msg),
-          fileSize: this.getFileSize(msg),
-          priority: options?.priority || 'normal'
-        })
-      }
-
-      logger.info('[EnhancedMessageService] 选择路由策略:', routeDecision)
-
-      // 根据路由策略发送消息
-      let result
-      switch (routeDecision) {
-        case 'matrix':
-          result = await this.sendViaMatrix(roomId, msg)
-          break
-        case 'websocket':
-          result = await this.sendViaWebSocket(roomId, msg)
-          break
-        case 'hybrid':
-          result = await this.sendHybrid(roomId, msg, options)
-          break
-        default:
-          throw new Error(`未知的路由策略: ${routeDecision}`)
-      }
+      // 通过 Matrix SDK 发送消息
+      const result = await this.sendViaMatrix(roomId, msg)
 
       // 更新消息状态为sent (Requirements: 5.3)
       messageSyncService.markAsSent(result.id || tempMsgId)
@@ -171,8 +137,7 @@ export class EnhancedMessageService {
       // 记录发送成功
       logger.info('[EnhancedMessageService] 消息发送成功', {
         roomId,
-        msgId: result.id,
-        route: routeDecision
+        msgId: result.id
       })
 
       return result
@@ -195,20 +160,6 @@ export class EnhancedMessageService {
         status: MessageStatusEnum.FAILED
       }
       messageSyncService.addToRetryQueue(failedMessage, errorMsg)
-
-      // 尝试回退到混合模式
-      if (!options?.forceRoute || options.forceRoute !== 'hybrid') {
-        logger.info('[EnhancedMessageService] 尝试回退到混合模式')
-        try {
-          const result = await this.sendHybrid(roomId, msg, options)
-          // 如果回退成功，从重试队列移除
-          messageSyncService.removeFromRetryQueue(tempMsgId)
-          messageSyncService.markAsSent(result.id || tempMsgId)
-          return result
-        } catch (fallbackError) {
-          logger.error('[EnhancedMessageService] 回退发送也失败:', fallbackError)
-        }
-      }
 
       throw error
     }
@@ -304,102 +255,6 @@ export class EnhancedMessageService {
   }
 
   /**
-   * 通过WebSocket发送消息
-   */
-
-  /**
-   * 混合模式发送（Matrix + WebSocket）
-   */
-  private async sendHybrid(
-    roomId: string,
-    msg: SendMessageParams,
-    _options?: { encrypted?: boolean }
-  ): Promise<MsgType> {
-    logger.info('[EnhancedMessageService] 使用混合模式发送消息')
-
-    // 并行尝试两种方式
-    const matrixPromise = this.sendViaMatrix(roomId, msg).catch((error) => ({ error, source: 'matrix' }))
-    const wsPromise = this.sendViaWebSocket(roomId, msg).catch((error) => ({ error, source: 'websocket' }))
-
-    try {
-      // 尝试Matrix发送
-      const matrixResult = await matrixPromise
-      if (typeof matrixResult === 'object' && matrixResult && 'error' in matrixResult) {
-        // 有错误
-        logger.warn('[EnhancedMessageService] Matrix发送失败:', matrixResult.error)
-      } else {
-        // 成功
-        logger.info('[EnhancedMessageService] Matrix发送成功')
-        return matrixResult as MsgType
-      }
-    } catch (error) {
-      logger.warn('[EnhancedMessageService] Matrix发送失败:', error)
-    }
-
-    try {
-      // 尝试WebSocket发送
-      const wsResult = await wsPromise
-      if (typeof wsResult === 'object' && wsResult && 'error' in wsResult) {
-        // 有错误
-        logger.warn('[EnhancedMessageService] WebSocket发送失败:', wsResult.error)
-      } else {
-        // 成功
-        logger.info('[EnhancedMessageService] WebSocket发送成功')
-        return wsResult as MsgType
-      }
-    } catch (error) {
-      logger.warn('[EnhancedMessageService] WebSocket发送失败:', error)
-    }
-
-    // 如果都失败了，抛出错误
-    throw new Error('混合模式发送失败: 所有通道都失败')
-  }
-
-  /**
-   * 构建标准化的消息内容
-   */
-  private buildMessageContent(msg: SendMessageParams): Record<string, unknown> {
-    return {
-      type: msg.type,
-      body: msg.body,
-      timestamp: Date.now()
-    }
-  }
-
-  /**
-   * 判断是否应该加密消息
-   */
-  private shouldEncrypt(msg: SendMessageParams): boolean {
-    // 根据消息类型和内容判断是否需要加密
-    switch (msg.type) {
-      case MsgEnum.TEXT:
-        return true // 文本消息默认加密
-      case MsgEnum.FILE:
-      case MsgEnum.IMAGE:
-      case MsgEnum.VIDEO:
-      case MsgEnum.VOICE:
-        return false // 媒体文件暂不加密
-      default:
-        return false
-    }
-  }
-
-  /**
-   * 获取文件大小
-   */
-  private getFileSize(msg: SendMessageParams): number {
-    switch (msg.type) {
-      case MsgEnum.FILE:
-      case MsgEnum.IMAGE:
-      case MsgEnum.VIDEO:
-      case MsgEnum.VOICE:
-        return typeof msg.body?.fileSize === 'number' ? msg.body.fileSize : 0
-      default:
-        return 0
-    }
-  }
-
-  /**
    * 判断是否为媒体消息
    */
   private isMediaMessage(type: MsgEnum): boolean {
@@ -472,15 +327,6 @@ export class EnhancedMessageService {
       logger.error('[EnhancedMessageService] Media upload failed:', error)
       throw new Error(`Media upload failed: ${error instanceof Error ? error.message : String(error)}`)
     }
-  }
-
-  /**
-   * 通过WebSocket发送消息
-   * @deprecated WebSocket 支持已移除，现在完全使用 Matrix SDK
-   */
-  private async sendViaWebSocket(_roomId: string, _msg: SendMessageParams): Promise<MsgType> {
-    // WebSocket 已移除，抛出错误引导使用 Matrix
-    throw new Error('WebSocket support has been removed. Please use Matrix SDK instead.')
   }
 
   /**
