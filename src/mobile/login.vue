@@ -3,7 +3,7 @@
     <div class="h-full flex-col-center gap-40px">
       <div class="flex-center absolute top-13vh left-36px">
         <p class="text-(20px #333)">HI, 欢迎来到</p>
-        <img :src="brandSvg" alt="" class="w-80px h-20px" />
+        <img :src="brandSvg" alt="HuLa 品牌标志" class="w-80px h-20px" />
       </div>
 
       <!-- 选项卡导航 -->

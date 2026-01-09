@@ -130,7 +130,7 @@
           <div v-else class="items-list">
             <div v-for="item in paginatedItems" :key="item.url" class="cache-item" @click="handlePreview(item)">
               <div class="item-preview">
-                <img v-if="item.type === 'image'" :src="item.preview" alt="" />
+                <img v-if="item.type === 'image'" :src="item.preview" :alt="'图片预览: ' + item.name" />
                 <n-icon v-else :size="32" :color="getTypeColor(item.type)">
                   <component :is="getTypeIcon(item.type)" />
                 </n-icon>

@@ -5,7 +5,7 @@
     <n-flex vertical align="center" :size="20" class="size-full pt-100px" data-tauri-drag-region>
       <div @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" class="box" data-tauri-drag-region>
         <div id="computer" class="computer" v-once>
-          <img class="w-224px h-158px relative" src="../../assets/img/win.png" alt="" />
+          <img class="w-224px h-158px relative" src="../../assets/img/win.png" alt="HuLa 应用窗口" />
           <div
             class="screen-overlay w-170px h-113px absolute top-9% left-51% transform -translate-x-51% -translate-y-9%"></div>
           <picture class="drop-shadow-md absolute top-30% left-1/2 transform -translate-x-1/2 -translate-y-30%">
@@ -13,7 +13,7 @@
               srcset="/hula.png 1x, /hula.png 2x"
               type="image/png"
               sizes="(max-width:640px) 120px, (max-width:1024px) 140px, 160px" />
-            <img class="w-140px h-60px" src="/hula.png" srcset="/hula.png 1x, /hula.png 2x" alt="" />
+            <img class="w-140px h-60px" src="/hula.png" srcset="/hula.png 1x, /hula.png 2x" alt="HuLa 品牌标志" />
           </picture>
         </div>
       </div>

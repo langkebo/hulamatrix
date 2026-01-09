@@ -240,97 +240,97 @@
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 77,
+      "line": 81,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"startRtcCall(CallTypeEnum.AUDIO)\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 89,
+      "line": 93,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"startRtcCall(CallTypeEnum.VIDEO)\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 100,
+      "line": 104,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleMedia\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 111,
+      "line": 115,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleAssist\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 119,
+      "line": 123,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"!isChannel && currentSession?.roomId !== '1'\" class=\"options-box\" @click=\"handleCreateGroupOrInvite\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 133,
+      "line": 137,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"options-box\" @click=\"sidebarShow = !sidebarShow\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 191,
+      "line": 195,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"isGroupOwner\" class=\"avatar-wrapper relative\" @click=\"handleUploadAvatar\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 225,
+      "line": 229,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"isGroupOwner && startEditGroupName()\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 256,
+      "line": 260,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleCopy\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 268,
+      "line": 272,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showQRCodeModal = true\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 379,
+      "line": 387,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleManageGroupMember\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 390,
+      "line": 398,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\""
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 422,
+      "line": 430,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"modalShow = false\""
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 450,
+      "line": 458,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showQRCodeModal = false\""
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 485,
+      "line": 495,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showManageGroupMemberModal = false\""
     },
     {
       "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 494,
+      "line": 504,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showManageGroupMemberModal = false\""
     },
@@ -480,25 +480,25 @@
     },
     {
       "file": "src/components/chat/message-renderer/index.vue",
-      "line": 148,
+      "line": 150,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleMsgClick(message)\">"
     },
     {
       "file": "src/components/chat/message-renderer/index.vue",
-      "line": 208,
+      "line": 212,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleCopyTranslation(message.message.body.translatedText.text)\">"
     },
     {
       "file": "src/components/chat/message-renderer/index.vue",
-      "line": 217,
+      "line": 221,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"delete (message.message.body as Record<string, unknown>).translatedText\">"
     },
     {
       "file": "src/components/chat/message-renderer/index.vue",
-      "line": 251,
+      "line": 255,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"emit('jump2Reply', message.message.body.reply.id)\""
     },
@@ -531,6 +531,12 @@
       "line": 11,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleClick\""
+    },
+    {
+      "file": "src/components/common/ButtonShowcase.vue",
+      "line": 14,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/components/common/ChatList.vue",
@@ -765,6 +771,12 @@
       "line": 104,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<span :title=\"t('message.screenshot.cancel')\" @click=\"cancelSelection\">"
+    },
+    {
+      "file": "src/components/common/ShowcaseContainer.vue",
+      "line": 17,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "<button type=\"button\" class=\"showcase__retry-button\" @click=\"retry\" aria-label=\"重试\">重试</button>"
     },
     {
       "file": "src/components/common/SidebarMenu.vue",
@@ -4235,127 +4247,6 @@
       "code": "<div @click=\"nextVideo\" class=\"bottom-operation\">"
     }
   ],
-  "empty-alt": [
-    {
-      "file": "src/components/chat/chatBox/ChatHeader.vue",
-      "line": 45,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img v-if=\"hasCustomState && statusIcon\" :src=\"statusIcon\" class=\"size-18px rounded-50%\" alt=\"\" />"
-    },
-    {
-      "file": "src/components/chat/chatBox/ChatSidebar.vue",
-      "line": 173,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-12px\" :src=\"getUserState(item.userStateId)?.url\" alt=\"\" />"
-    },
-    {
-      "file": "src/components/chat/message-renderer/index.vue",
-      "line": 228,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-16px\" src=\"@/assets/img/loading-one.svg\" alt=\"\" />"
-    },
-    {
-      "file": "src/components/common/VirtualList.vue",
-      "line": 13,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-16px\" src=\"@/assets/img/loading.svg\" alt=\"\" />"
-    },
-    {
-      "file": "src/layout/left/components/LeftAvatar.vue",
-      "line": 13,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img :src=\"statusIcon\" alt=\"\" class=\"rounded-50% size-full\" />"
-    },
-    {
-      "file": "src/mobile/components/PullToRefresh.vue",
-      "line": 23,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-18px\" :src=\"loadingSvg\" alt=\"\" />"
-    },
-    {
-      "file": "src/mobile/components/profile/PersonalInfo.vue",
-      "line": 39,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"w-14px h-14px\" :src=\"qrCodeImage\" alt=\"\" />"
-    },
-    {
-      "file": "src/mobile/components/profile/PersonalInfo.vue",
-      "line": 48,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"block w-full\" :src=\"medalImage\" alt=\"\" />"
-    },
-    {
-      "file": "src/mobile/login.vue",
-      "line": 6,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img :src=\"brandSvg\" alt=\"\" class=\"w-80px h-20px\" />"
-    },
-    {
-      "file": "src/mobile/views/ConfirmQRLogin.vue",
-      "line": 7,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"w-100px h-100px\" :src=\"qrCodeIcon\" alt=\"\" />"
-    },
-    {
-      "file": "src/mobile/views/media/MediaCache.vue",
-      "line": 133,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img v-if=\"item.type === 'image'\" :src=\"item.preview\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/LockScreen.vue",
-      "line": 73,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-42px\" src=\"@/assets/img/loading-one.svg\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/Tray.vue",
-      "line": 12,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-14px\" :src=\"item.url\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/aboutWindow/index.vue",
-      "line": 8,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"w-224px h-158px relative\" src=\"../../assets/img/win.png\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/aboutWindow/index.vue",
-      "line": 16,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"w-140px h-60px\" src=\"/hula.png\" srcset=\"/hula.png 1x, /hula.png 2x\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/announWindow/index.vue",
-      "line": 181,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img v-if=\"isLoading\" class=\"size-16px\" src=\"@/assets/img/loading.svg\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/loginWindow/Login.vue",
-      "line": 144,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img src=\"/hula.png\" class=\"w-140px h-60px\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/moreWindow/settings/Versatile.vue",
-      "line": 26,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-34px\" src=\"../../../assets/img/hula_bg_l.png\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/onlineStatusWindow/index.vue",
-      "line": 12,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"w-34px h-34px\" :src=\"statusIcon\" alt=\"\" />"
-    },
-    {
-      "file": "src/views/onlineStatusWindow/index.vue",
-      "line": 38,
-      "issue": "图片 alt 属性为空，建议提供描述性文本",
-      "code": "<img class=\"size-24px\" :src=\"item.url\" alt=\"\" />"
-    }
-  ],
+  "empty-alt": [],
   "old-classname": []
 }

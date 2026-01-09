@@ -2,19 +2,18 @@
   <main class="size-full bg-#fff select-none">
     <ActionBar class="absolute right-0 w-full" :shrink="false" :max-w="false" :min-w="false" />
 
-    <n-flex
-      vertical
-      :size="130"
-      class="main-container size-full p-20px box-border"
-      data-tauri-drag-region>
+    <n-flex vertical :size="130" class="main-container size-full p-20px box-border" data-tauri-drag-region>
       <!-- 当前选中的状态 -->
       <n-flex justify="center" align="center" class="pt-80px" data-tauri-drag-region>
-        <img class="w-34px h-34px" :src="statusIcon" alt="" />
+        <img class="w-34px h-34px" :src="statusIcon" :alt="'当前状态: ' + displayStatusTitle" />
         <span class="text-22px ml-8px" :title="statusTitle">{{ displayStatusTitle }}</span>
       </n-flex>
 
       <!-- 状态 -->
-      <n-flex vertical class="w-full h-100vh bg-var(--hula-brand-primary) rounded-6px box-border p-13px" data-tauri-drag-region>
+      <n-flex
+        vertical
+        class="w-full h-100vh bg-var(--hula-brand-primary) rounded-6px box-border p-13px"
+        data-tauri-drag-region>
         <n-scrollbar class="status-scrollbar">
           <n-flex align="center" :size="10">
             <n-flex @click="handleResetState" vertical justify="center" align="center" :size="8" class="status-item">
@@ -35,7 +34,7 @@
               align="center"
               :size="8"
               class="status-item">
-              <img class="size-24px" :src="item.url" alt="" />
+              <img class="size-24px" :src="item.url" :alt="'状态: ' + translateStateTitle(item.title)" />
               <span class="text-11px" :title="translateStateTitle(item.title)">
                 {{ translateStateTitle(item.title) }}
               </span>

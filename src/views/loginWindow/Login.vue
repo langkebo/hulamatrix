@@ -32,10 +32,14 @@
           clearable>
           <template #suffix>
             <n-flex v-if="loginHistories.length > 0" @click="arrowStatus = !arrowStatus">
-              <svg v-if="!arrowStatus" class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
+              <svg
+                v-if="!arrowStatus"
+                class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
                 <use href="#down"></use>
               </svg>
-              <svg v-else class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
+              <svg
+                v-else
+                class="down w-18px h-18px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary) cursor-pointer">
                 <use href="#up"></use>
               </svg>
             </n-flex>
@@ -55,7 +59,9 @@
               class="p-8px cursor-pointer hover:bg-var(--hula-brand-primary)20 dark:hover:bg-var(--hula-brand-primary)30 hover:rounded-6px">
               <div class="flex-between-center">
                 <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" color="#fff" class="size-28px rounded-50%" />
-                <p class="text-14px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary)">{{ item.account }}</p>
+                <p class="text-14px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary)">
+                  {{ item.account }}
+                </p>
                 <svg @click.stop="delAccount(item)" class="w-12px h-12px dark:color-var(--hula-brand-primary)">
                   <use href="#close"></use>
                 </svg>
@@ -89,7 +95,8 @@
           justify="center"
           class="text-12px px-8px py-4px rounded-4px"
           :class="{
-            'bg-brand! dark:bg-brand!': accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
+            'bg-brand! dark:bg-brand!':
+              accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
             'bg-gray-100! dark:bg-gray-800!':
               !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
           }">
@@ -97,8 +104,10 @@
           <span
             v-if="accountCheckStatus.reason"
             :class="{
-              'text-brand!': accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
-              'text-gray-600! dark:text-gray-400!': !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
+              'text-brand!':
+                accountCheckStatus.suggestedAction === 'login' || accountCheckStatus.suggestedAction === 'register',
+              'text-gray-600! dark:text-gray-400!':
+                !accountCheckStatus.suggestedAction || accountCheckStatus.suggestedAction === 'none'
             }">
             {{ accountCheckStatus.reason }}
           </span>
@@ -141,7 +150,7 @@
     <!-- 自动登录样式 -->
     <n-flex v-else-if="uiState === 'auto'" vertical :size="29" data-tauri-drag-region>
       <n-flex justify="center" class="mt-15px">
-        <img src="/hula.png" class="w-140px h-60px" alt="" />
+        <img src="/hula.png" class="w-140px h-60px" alt="HuLa 品牌标志" />
       </n-flex>
       <n-flex :size="30" vertical>
         <!-- 头像 -->

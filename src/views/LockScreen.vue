@@ -70,7 +70,7 @@
           </n-config-provider>
           <!-- 登录时显示的文字 -->
           <n-flex vertical align="center" justify="center" :size="30" v-if="isLogining && !isWrongPassword">
-            <img class="size-42px" src="@/assets/img/loading-one.svg" alt="" />
+            <img class="size-42px" src="@/assets/img/loading-one.svg" alt="解锁中..." />
             <p class="text-(20px [--chat-text-color])">{{ t('message.lock_screen.unlocking') }}</p>
           </n-flex>
           <!-- 密码不正常时显示 -->

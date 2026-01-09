@@ -55,9 +55,7 @@
       </div>
       <!--暂无数据-->
       <div v-if="!announList || announList.length === 0" class="flex-center">
-        <n-empty
-          class="empty-state"
-          :description="t('announcement.list.empty')">
+        <n-empty class="empty-state" :description="t('announcement.list.empty')">
           <template #icon>
             <n-icon>
               <svg>
@@ -178,7 +176,7 @@
         <!-- 加载更多 -->
         <div v-if="announList.length > 0" class="w-full h-40px flex-center mt-10px">
           <!-- <n-button v-if="!isLast" class="bg-[--button-bg]" @click="handleLoadMore">加载更多</n-button> -->
-          <img v-if="isLoading" class="size-16px" src="@/assets/img/loading.svg" alt="" />
+          <img v-if="isLoading" class="size-16px" src="@/assets/img/loading.svg" alt="加载更多..." />
           <span v-if="isLast && !isLoading" class="text-[12px] color-[var(--hula-brand-primary)]">
             {{ t('announcement.list.noMore') }}
           </span>
