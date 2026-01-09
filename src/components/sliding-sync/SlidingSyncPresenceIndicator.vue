@@ -146,7 +146,7 @@ defineExpose({
 
   &.status-unavailable .indicator-dot {
     background-color: var(--hula-brand-primary);
-    box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.2);
+    box-shadow: 0 0 0 2px rgba(var(--hula-warning-rgb), 0.2);
   }
 }
 

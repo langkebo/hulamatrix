@@ -273,7 +273,7 @@ $breakpoints: (
 
   &.poor {
     background-color: var(--hula-brand-primary);
-    box-shadow: 0 0 8px rgba(250, 173, 20, 0.5);
+    box-shadow: 0 0 8px rgba(var(--hula-warning-rgb), 0.5);
   }
 
   &.very-poor {

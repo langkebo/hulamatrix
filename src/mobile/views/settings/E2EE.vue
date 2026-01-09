@@ -9,7 +9,7 @@
         :rate="e2eeStatus.rate"
         :speed="100"
         :color="e2eeStatus.color"
-        layer-color="#ebedf0"
+        layer-color="var(--hula-gray-200)"
         :text="e2eeStatus.text" />
       <div class="status-info">
         <div class="status-title">{{ e2eeStatus.title }}</div>

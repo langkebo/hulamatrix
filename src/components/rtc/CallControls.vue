@@ -582,8 +582,8 @@ watch(
 }
 
 .control-btn.sharing {
-  background: rgba(250, 173, 20, 0.2);
-  border-color: rgba(250, 173, 20, 0.4);
+  background: rgba(var(--hula-warning-rgb), 0.2);
+  border-color: rgba(var(--hula-warning-rgb), 0.4);
 }
 
 .control-label {

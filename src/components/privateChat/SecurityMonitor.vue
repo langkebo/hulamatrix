@@ -187,7 +187,7 @@ defineExpose({
 
   &.has-warnings {
     border-color: var(--hula-brand-primary);
-    background-color: rgba(245, 34, 45, 0.05);
+    background-color: rgba(var(--hula-error-rgb), 0.05);
   }
 }
 
@@ -205,12 +205,12 @@ defineExpose({
   }
 
   &.insecure {
-    background-color: rgba(245, 34, 45, 0.1);
+    background-color: rgba(var(--hula-error-rgb), 0.1);
     color: var(--hula-brand-primary);
   }
 
   &.warning {
-    background-color: rgba(250, 173, 20, 0.1);
+    background-color: rgba(var(--hula-warning-rgb), 0.1);
     color: var(--hula-brand-primary);
   }
 }
@@ -246,7 +246,7 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 6px;
-  background-color: rgba(245, 34, 45, 0.05);
+  background-color: rgba(var(--hula-error-rgb), 0.05);
   border-radius: 4px;
   font-size: 13px;
 }

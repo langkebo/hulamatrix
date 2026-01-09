@@ -305,7 +305,7 @@ defineExpose({
   }
 
   &.unencrypted {
-    background-color: rgba(245, 34, 45, 0.1);
+    background-color: rgba(var(--hula-error-rgb), 0.1);
     color: var(--hula-brand-primary);
 
     .encryption-icon {
@@ -314,7 +314,7 @@ defineExpose({
   }
 
   &.expiring {
-    background-color: rgba(250, 173, 20, 0.1);
+    background-color: rgba(var(--hula-warning-rgb), 0.1);
     color: var(--hula-brand-primary);
 
     .encryption-icon {

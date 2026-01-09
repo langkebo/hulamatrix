@@ -423,7 +423,7 @@ const handleDeviceAction = async (key: string) => {
     case 'unverify':
       await dialog.confirm({
         title: '取消验证',
-        message: '确定要取消验证此设备吗？'
+        content: '确定要取消验证此设备吗？'
       })
       // Implementation missing in store/composable for unverify.
       // Assuming it's not supported or handled elsewhere.
@@ -433,7 +433,7 @@ const handleDeviceAction = async (key: string) => {
     case 'block':
       await dialog.confirm({
         title: '屏蔽设备',
-        message: '确定要屏蔽此设备吗？'
+        content: '确定要屏蔽此设备吗？'
       })
       await e2eeStore.blockDevice(device.deviceId)
       await fetchDevices()
@@ -445,7 +445,7 @@ const handleDeviceAction = async (key: string) => {
     case 'delete':
       await dialog.confirm({
         title: '删除设备',
-        message: '确定要删除此设备吗？此操作不可撤销。',
+        content: '确定要删除此设备吗？此操作不可撤销。',
         theme: 'round-button',
       })
       await handleDeleteDevice(device.deviceId)

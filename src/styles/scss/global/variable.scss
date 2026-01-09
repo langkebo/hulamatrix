@@ -65,10 +65,10 @@ svg {
   --bg-popover: var(--hula-brand-primary);
   // 右键菜单样式或者需要透明的菜单的样式
   --bg-menu: linear-gradient(45deg, rgba(var(--hula-white-rgb), 0.45) 40%, rgba(var(--hula-white-rgb), 0.65) 60%);
-  --bg-menu-hover: rgba(10, 20, 28, 0.1);
+  --bg-menu-hover: rgba(var(--hula-gray-900-rgb), 0.1);
   --line-color: var(--hula-brand-primary);
   // 通用左边菜单栏的hover样式
-  --bg-left-menu: rgba(241, 241, 241, 1);
+  --bg-left-menu: rgba(var(--hula-gray-100-rgb), 1);
   --bg-left-menu-hover: rgba(var(--hula-gray-500-rgb), 0.1);
   --bg-left-active: rgba(var(--hula-gray-500-rgb), 0.2);
   //通用按钮样式
@@ -81,7 +81,7 @@ svg {
   // 翻译气泡背景色
   --bg-translate-bubble: rgba(200, 200, 200, 0.4);
   // 头像状态的背景颜色
-  --bg-avatar: rgba(241, 241, 241, 1);
+  --bg-avatar: rgba(var(--hula-gray-100-rgb), 1);
   // 个人信息框背景颜色
   --info-hover: var(--hula-brand-primary)70;
   --info-text-color: var(--hula-brand-primary);
@@ -192,7 +192,7 @@ html[data-theme='dark'] {
   --bg-menu-hover: var(--hula-brand-primary);
   --line-color: var(--hula-brand-primary);
   // 通用左边菜单栏的hover样式
-  --bg-left-menu: rgba(22, 22, 22, 1);
+  --bg-left-menu: rgba(var(--hula-gray-900-rgb), 1);
   --bg-left-menu-hover: var(--hula-brand-primary);
   --bg-left-active: var(--hula-brand-primary);
   //通用按钮样式
@@ -205,7 +205,7 @@ html[data-theme='dark'] {
   // 翻译气泡背景色
   --bg-translate-bubble: rgba(var(--hula-gray-400-rgb), 0.2);
   // 头像状态的背景颜色
-  --bg-avatar: rgba(22, 22, 22, 1);
+  --bg-avatar: rgba(var(--hula-gray-900-rgb), 1);
   // 个人信息框背景颜色
   --info-hover: var(--hula-brand-primary)60;
   --info-text-color: var(--hula-gray-200);

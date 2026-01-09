@@ -19,7 +19,7 @@
           <span class="font-bold text-20px text-var(--hula-gray-700)">{{ userDetailInfo!.name }}</span>
           <div
             v-show="hasUserOnlineState"
-            class="bg-#E7EFE6 flex flex-wrap ps-2 px-8px items-center rounded-full gap-1 h-24px">
+            class="bg-rgba(var(--hula-success-rgb), 0.05) flex flex-wrap ps-2 px-8px items-center rounded-full gap-1 h-24px">
             <span class="w-12px h-12px rounded-15px flex items-center">
               <img
                 :src="friendUserState.url ? friendUserState.url : currentState?.url"
@@ -97,7 +97,7 @@
             :disabled="loading"
             @click="toEditProfile"
             v-if="props.isMyPage && !isBotUser(uid)"
-            class="font-bold px-4 py-10px bg-#EEF4F3 text-var(--hula-gray-700) rounded-full text-12px">
+            class="font-bold px-4 py-10px bg-rgba(var(--hula-success-rgb), 0.05) text-var(--hula-gray-700) rounded-full text-12px">
             编辑资料
           </n-button>
           <n-button

@@ -24,7 +24,7 @@
   --van-background-color-light: var(--hula-bg-component, var(--hula-white));
 
   /* 边框颜色 */
-  --van-border-color: var(--hula-border-light, #ebedf0);
+  --van-border-color: var(--hula-border-light, var(--hula-gray-200));
   --van-border-color-2: var(--hula-border-base, var(--hula-gray-300));
 
   /* 活动状态 */

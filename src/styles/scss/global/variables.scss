@@ -178,7 +178,7 @@
   --menu-bg: linear-gradient(45deg, rgba(var(--hula-white-rgb), 0.45) 40%, rgba(var(--hula-white-rgb), 0.65) 60%);
   --menu-item-height: 36px;
   --menu-item-padding-x: var(--spacing-md);
-  --menu-hover: rgba(10, 20, 28, 0.1);
+  --menu-hover: rgba(var(--hula-gray-900-rgb), 0.1);
 
   /* 图标系统 */
   --icon-color: var(--hula-black);

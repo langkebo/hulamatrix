@@ -80,7 +80,7 @@
                 v-for="i in groupMemberListSliced"
                 :key="i.uid"
                 class="flex flex-col justify-center items-center gap-5px">
-                <div class="rounded-full relative bg-#E5EFEE w-36px h-36px flex items-center justify-center">
+                <div class="rounded-full relative bg-rgba(var(--hula-success-rgb), 0.05) w-36px h-36px flex items-center justify-center">
                   <!-- 蒙板 -->
                   <div
                     v-if="i.activeStatus !== OnlineEnum.ONLINE"
@@ -98,7 +98,7 @@
                 @click="toInviteGroupMember"
                 class="flex flex-col justify-center items-center gap-5px cursor-pointer">
                 <div
-                  class="rounded-full bg-#E5EFEE w-36px h-36px flex items-center justify-center hover:bg-#D5E5E0 transition-colors">
+                  class="rounded-full bg-rgba(var(--hula-success-rgb), 0.05) w-36px h-36px flex items-center justify-center hover:bg-#D5E5E0 transition-colors">
                   <svg class="iconpark-icon h-25px w-25px">
                     <use href="#plus"></use>
                   </svg>
