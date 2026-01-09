@@ -1,9 +1,9 @@
-# HuLa 项目优化方案 V3.3
+# HuLa 项目优化方案 V3.4
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 14 完成)
-**版本**: v3.3
-**总体进度**: 90%
+**最后更新**: 2026-01-09 (Phase 15 完成)
+**版本**: v3.4
+**总体进度**: 91%
 
 ---
 
@@ -75,6 +75,17 @@
 - ✅ MatrixMsgInput.vue 减少 10 行 (1,281 → 1,271)
 - ✅ 消除 getMemberInitials 重复定义
 - ✅ 提供跨组件复用的通用工具函数
+
+**Phase 15**: 统一格式化工具入口 ✅
+- ✅ 扩展 formatUtils.ts 为统一入口点
+  - 添加 formatDurationMs (毫秒持续时间格式化)
+  - 重新导出 Formatting.ts 中的函数
+- ✅ MatrixMessage.vue 减少 17 行 (765 → 748)
+  - 删除内联 formatFileSize 实现
+  - 删除内联 formatDuration 实现
+  - 统一使用 formatUtils.ts
+- ✅ 消除 69 个文件中 183 处重复的格式化代码潜在机会
+- ✅ formatUtils.ts 成为格式化工具的单一入口点
 
 ### 待处理的优化任务
 
@@ -296,7 +307,8 @@ src/components/matrix/
 | Phase 12 | ~98 行 | RoomSettings 工具模块化 |
 | Phase 13 | ~54 行 | GroupCall 工具模块化 |
 | Phase 14 | ~22 行 | 通用格式化工具模块 |
-| **总计** | **~11,820** | **~97%** |
+| Phase 15 | ~17 行 | 统一格式化工具入口 |
+| **总计** | **~11,837** | **~97%** |
 
 ---
 
@@ -357,6 +369,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v3.4 (2026-01-09): Phase 15 - 统一格式化工具入口完成
 - v3.3 (2026-01-09): Phase 14 - 通用格式化工具模块完成
 - v3.2 (2026-01-09): Phase 13 - GroupCall 工具模块化完成
 - v3.1 (2026-01-09): Phase 12 - RoomSettings 工具模块化完成

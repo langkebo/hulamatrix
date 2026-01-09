@@ -82,7 +82,7 @@
               您的浏览器不支持视频播放
             </video>
             <div v-if="message.body.duration" class="video-duration">
-              {{ formatDuration(message.body.duration) }}
+              {{ formatDurationMs(message.body.duration) }}
             </div>
           </div>
           <div v-if="message.body.text" class="video-caption">
@@ -114,7 +114,7 @@
                 ></div>
               </div>
               <div class="voice-duration">
-                {{ formatDuration(message.body.duration ?? 0) }}
+                {{ formatDurationMs(message.body.duration ?? 0) }}
               </div>
             </div>
           </div>
@@ -227,6 +227,7 @@ import {
 } from '@vicons/tabler'
 import { messageDecryptService } from '@/services/messageDecryptService'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
+import { formatFileSize, formatDurationMs } from '@/utils/formatUtils'
 import { MsgEnum } from '../../enums'
 import type { MsgType } from '@/services/types'
 
@@ -395,27 +396,6 @@ const formatTime = (timestamp: number | string | Date): string => {
       minute: '2-digit'
     })
   )
-}
-
-const formatDuration = (duration: number): string => {
-  const seconds = Math.floor(duration / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
-  }
-  return `${minutes}:${String(seconds % 60).padStart(2, '0')}`
-}
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / k ** i).toFixed(2)) + ' ' + sizes[i]
 }
 
 const previewImage = () => {

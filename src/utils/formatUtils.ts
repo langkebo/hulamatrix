@@ -3,26 +3,23 @@
  *
  * Shared formatting and display utility functions used across multiple components
  * Extracted from various components to improve code reusability
+ *
+ * This module also re-exports functions from Formatting.ts for convenience
  */
+
+// Re-export commonly used functions from Formatting.ts
+export { formatBytes as formatBytesFormatting, getFileSuffix, extractFileName } from './Formatting'
 
 /**
  * Format file size from bytes to human-readable string
+ * This is the preferred implementation (uses formatBytes from Formatting.ts internally)
  * @param bytes - File size in bytes
  * @returns Formatted string (e.g., "1.5 MB")
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let size = bytes
-  let unitIndex = 0
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024
-    unitIndex++
-  }
-
-  return `${size.toFixed(1)} ${units[unitIndex]}`
+  // Re-export from Formatting.ts
+  const { formatBytes } = require('./Formatting')
+  return formatBytes(bytes)
 }
 
 /**
@@ -69,6 +66,15 @@ export function formatDuration(seconds: number): string {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
   return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
+
+/**
+ * Format duration from milliseconds to HH:MM:SS or MM:SS
+ * @param ms - Duration in milliseconds
+ * @returns Formatted duration string
+ */
+export function formatDurationMs(ms: number): string {
+  return formatDuration(Math.floor(ms / 1000))
 }
 
 /**
