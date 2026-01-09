@@ -10,7 +10,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import fc from 'fast-check'
 import { MessageStatusEnum, MsgEnum } from '@/enums'
-import { MessageSyncService, MESSAGE_STATUS_TRANSITIONS } from '@/services/messageSyncService'
+import { MessageSyncService, MESSAGE_STATUS_TRANSITIONS } from '@/matrix/services/message/sync'
 
 // Mock logger
 vi.mock('@/utils/logger', () => ({
