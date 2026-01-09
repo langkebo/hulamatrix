@@ -5,4 +5,6 @@
  */
 
 export * from './manager'
+export * from './service'
 export * from './spaces'
+export * from './utils'
