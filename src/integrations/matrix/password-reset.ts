@@ -91,16 +91,12 @@ export class MatrixPasswordResetService {
   /**
    * 发起 Matrix HTTP 请求
    */
-  private async matrixRequest<T>(
-    path: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-    body?: unknown
-  ): Promise<T> {
+  private async matrixRequest<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
     const { baseUrl, accessToken } = this.getClientAuth()
     const url = `${baseUrl}${path}`
 
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
     }
 
@@ -137,15 +133,11 @@ export class MatrixPasswordResetService {
       // 使用 Matrix 密码重置 API
       // 注意：这需要服务器支持 /_matrix/client/v3/password/reset/email.hs 端点
       try {
-        await this.matrixRequest<{ sid: string }>(
-          '/_matrix/client/v3/password/reset/email.hs/requestToken',
-          'POST',
-          {
-            email,
-            client_secret: this.generateClientSecret(),
-            send_attempt: 1
-          }
-        )
+        await this.matrixRequest<{ sid: string }>('/_matrix/client/v3/password/reset/email.hs/requestToken', 'POST', {
+          email,
+          client_secret: this.generateClientSecret(),
+          send_attempt: 1
+        })
 
         // 存储重置请求状态
         this.resetRequest = {
@@ -235,14 +227,10 @@ export class MatrixPasswordResetService {
             type: 'm.login.dummy'
           }
 
-      await this.matrixRequest<{}>(
-        '/_matrix/client/v3/account/password',
-        'POST',
-        {
-          new_password: newPassword,
-          auth: authData
-        }
-      )
+      await this.matrixRequest<{}>('/_matrix/client/v3/account/password', 'POST', {
+        new_password: newPassword,
+        auth: authData
+      })
 
       // 更新重置请求状态
       if (this.resetRequest) {
@@ -292,10 +280,7 @@ export class MatrixPasswordResetService {
             session: matrixError.data.session
           }
 
-          await (client.setPassword as (newPassword: string, auth?: AuthDict) => Promise<void>)(
-            newPassword,
-            authData
-          )
+          await (client.setPassword as (newPassword: string, auth?: AuthDict) => Promise<void>)(newPassword, authData)
           logger.info('[MatrixPasswordReset] Password changed with UIA')
           return true
         }
