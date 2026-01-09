@@ -140,7 +140,7 @@ async function compressImage(file: File): Promise<File> {
   }
 
   try {
-    const { matrixMediaMetadataService } = await import('@/services/matrixMediaMetadataService')
+    const { matrixMediaMetadataService } = await import('@/matrix/services/media/metadata')
 
     // Check if compression is needed
     const metadata = await matrixMediaMetadataService.extractImageMetadata(file)

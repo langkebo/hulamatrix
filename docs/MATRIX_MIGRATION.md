@@ -178,20 +178,29 @@ src/matrix/
 ## 待办事项
 
 ### ✅ Phase 7: 清理遗留代码
-**Commit:** 进行中
+**Commits:** `c1b51c49`, `e2f8c3b2`
 
 **已清理:**
-- ✅ 移除已废弃的 `message-router.ts`
-- ✅ 简化 `enhancedMessageService.ts` - 移除路由逻辑，直接使用 Matrix SDK
+- ✅ 移除已废弃的 `message-router.ts` (90 行)
+- ✅ 简化 `enhancedMessageService.ts` - 移除路由逻辑，直接使用 Matrix SDK (-168 行)
 - ✅ 移除 `forceRoute` 选项 - 所有消息现在都通过 Matrix SDK 发送
+- ✅ 移除 5 个未使用的 re-export facades:
+  - `matrixBatchUploadService.ts` → `@/matrix/services/media/batch`
+  - `matrixCryptoManager.ts` → `@/matrix/services/crypto/manager`
+  - `matrixMediaMetadataService.ts` → `@/matrix/services/media/metadata`
+  - `matrixTypingNotifierService.ts` → `@/matrix/services/presence/typing-notifier`
+  - `matrixUiaService.ts` → `@/matrix/services/auth/uia`
+- ✅ 更新 `MediaPicker.vue` 使用新的导入路径
 - ✅ TypeScript 类型检查通过
+
+**总计:** 268 行代码清理
 
 ### 🔴 高优先级
 
-1. **清理遗留代码** (进行中)
+1. **清理遗留代码** (大部分已完成)
    - [x] 移除已废弃的 `message-router.ts`
-   - [ ] 清理未使用的 `src/services/` 中的遗留服务
-   - [ ] 验证所有 re-export facades 的使用情况
+   - [x] 清理未使用的 re-export facades
+   - [ ] 评估其他遗留服务的清理可能性
 
 ### 🟡 中优先级
 
