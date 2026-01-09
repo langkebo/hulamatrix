@@ -433,6 +433,8 @@ import { usePlatformConstants } from '@/utils/PlatformConstants'
 import { CallTypeEnum } from '@/enums'
 import { useCallMediaControls } from '@/composables/useCallMediaControls'
 import { useCallState } from '@/composables/useCallState'
+import { useCallParticipants } from '@/composables/useCallParticipants'
+import { useCallChat } from '@/composables/useCallChat'
 import GroupCallSettings from './GroupCallSettings.vue'
 import {
   getCallTypeEnum,
@@ -550,6 +552,30 @@ const localStream = ref<MediaStream | null>(null)
 const callStateComposable = useCallState()
 const mediaControls = useCallMediaControls({ localStream })
 
+// Initialize participants and chat composables
+const callId = ref(props.callId)
+const currentUserId = computed(() => props.currentUser?.id || 'current-user')
+const currentUserName = computed(() => props.currentUser?.name || '我')
+
+const participantsComposable = useCallParticipants({
+  callId,
+  rtcManager: {
+    inviteToGroupCall: rtcManager.inviteToGroupCall,
+    muteParticipant: rtcManager.muteParticipant,
+    removeFromGroupCall: rtcManager.removeFromGroupCall
+  },
+  currentUserId
+})
+
+const chatComposable = useCallChat({
+  callId,
+  rtcManager: {
+    sendGroupCallMessage: rtcManager.sendGroupCallMessage
+  },
+  currentUserId,
+  currentUserName
+})
+
 // Alias composable states for template use
 const callState = callStateComposable.callState
 const callDuration = callStateComposable.callDuration
@@ -559,37 +585,34 @@ const isCameraOff = mediaControls.isCameraOff
 const isScreenSharing = mediaControls.isScreenSharing
 const isTogglingScreenShare = mediaControls.isTogglingScreenShare
 
+// Alias participant composable states
+const remoteParticipants = participantsComposable.remoteParticipants
+const suggestedUsers = participantsComposable.suggestedUsers
+const showInviteDialog = participantsComposable.showInviteDialog
+const inviteInput = participantsComposable.inviteInput
+const totalParticipants = participantsComposable.totalParticipants
+
+// Alias chat composable states
+const chatMessages = chatComposable.chatMessages
+const chatInput = chatComposable.chatInput
+const unreadChatCount = chatComposable.unreadChatCount
+const isChatOpen = chatComposable.isChatOpen
+const chatMessagesRef = chatComposable.chatMessagesRef
+
 // UI状态
 const isMinimized = ref(false)
 const isFullscreen = ref(false)
 const isSidebarCollapsed = ref(false)
-const isChatOpen = ref(false)
 
 // 功能状态
 const isRecording = ref(false)
 const isTogglingRecording = ref(false)
 
-// 参与者
-const remoteParticipants = ref<CallParticipant[]>([])
-const suggestedUsers = ref<SuggestedUser[]>([])
-
-// 聊天
-const chatMessages = ref<ChatMessage[]>([])
-const chatInput = ref('')
-const unreadChatCount = ref(0)
-
 // UI状态
-const showInviteDialog = ref(false)
 const showCallSettings = ref(false)
-const inviteInput = ref('')
 
 // 引用
-const chatMessagesRef = ref<HTMLElement>()
 const localVideoRef = ref<HTMLVideoElement>()
-
-// 计算属性
-const currentUserId = computed(() => props.currentUser?.id || 'current-user')
-const totalParticipants = computed(() => 1 + remoteParticipants.value.length)
 
 const networkQuality = computed(() => ({ type: 'default' as const, text: '检测中' }))
 
@@ -651,84 +674,16 @@ const endCall = async () => {
 }
 
 // ========== 参与者管理 ==========
-
-const inviteParticipant = async () => {
-  try {
-    await rtcManager.inviteToGroupCall(props.callId, inviteInput.value)
-    logger.debug(`已邀请 ${inviteInput.value}`)
-    showInviteDialog.value = false
-    inviteInput.value = ''
-  } catch (error) {
-    logger.error('Failed to invite participant:', error)
-    logger.error('邀请失败')
-  }
-}
-
-const selectInviteUser = (user: { id: string; name: string; avatar?: string }) => {
-  inviteInput.value = user.id
-  inviteParticipant()
-}
-
-const handleParticipantAction = async (action: string, participant: CallParticipant) => {
-  switch (action) {
-    case 'private-message':
-      // 打开私信聊天
-      logger.debug(`打开与 ${participant.name} 的私信`)
-      break
-    case 'mute':
-      await rtcManager.muteParticipant(props.callId, participant.userId)
-      logger.debug(`已静音 ${participant.name}`)
-      break
-    case 'remove':
-      dlg.warning({
-        title: '确认移除',
-        content: `确定要将 ${participant.name} 移出通话吗？`,
-        onPositiveClick: async () => {
-          await rtcManager.removeFromGroupCall(props.callId, participant.userId)
-          logger.debug(`已移除 ${participant.name}`)
-        }
-      })
-      break
-  }
-}
+// These methods are now provided by useCallParticipants composable
+const inviteParticipant = participantsComposable.inviteParticipant
+const selectInviteUser = participantsComposable.selectInviteUser
+const handleParticipantAction = participantsComposable.handleParticipantAction
 
 // ========== 聊天功能 ==========
-
-const toggleChat = () => {
-  isChatOpen.value = !isChatOpen.value
-  if (isChatOpen.value) {
-    unreadChatCount.value = 0
-    nextTick(() => {
-      scrollToBottomChat()
-    })
-  }
-}
-
-const sendChatMessage = async () => {
-  if (!chatInput.value.trim()) return
-
-  const message: ChatMessage = {
-    id: `msg_${Date.now()}`,
-    senderId: currentUserId.value,
-    senderName: props.currentUser?.name || '我',
-    content: chatInput.value.trim(),
-    timestamp: Date.now()
-  }
-
-  chatMessages.value.push(message)
-  await rtcManager.sendGroupCallMessage(props.callId, message.content)
-  chatInput.value = ''
-
-  nextTick(() => {
-    scrollToBottomChat()
-  })
-}
-
-const scrollToBottomChat = () => {
-  if (chatMessagesRef.value) {
-    chatMessagesRef.value.scrollTop = chatMessagesRef.value.scrollHeight
-  }
-}
+// These methods are now provided by useCallChat composable
+const toggleChat = chatComposable.toggleChat
+const sendChatMessage = chatComposable.sendChatMessage
+const scrollToBottomChat = chatComposable.scrollToBottomChat
 
 // ========== 媒体控制 ==========
 
