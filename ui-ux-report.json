@@ -1,12 +1,5 @@
 {
-  "long-animation": [
-    {
-      "file": "src/components/chat/chatBox/ChatSidebar.vue",
-      "line": 19,
-      "issue": "动画时长过长: 600ms (建议: 300ms以内)",
-      "code": "class=\"contraction-with-radius transition-all duration-600 ease-in-out absolute top-35% left--14px cursor-pointer opacity-0 bg-var(--hula-brand-primary)33 h-60px w-14px\">"
-    }
-  ],
+  "long-animation": [],
   "hover-scale": [],
   "missing-alt": [
     {
@@ -14,60 +7,6 @@
       "line": 118,
       "issue": "图片缺少 alt 属性",
       "code": "// 检查目标元素是否是<img>元素"
-    },
-    {
-      "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 58,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img v-if=\"checkIsUrl(emoji)\" :src=\"emoji\" class=\"size-24px\" />"
-    },
-    {
-      "file": "src/components/chat/emoji-picker/index.vue",
-      "line": 136,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img :title=\"item.name\" :src=\"item.cover\" class=\"w-full h-full object-contain\" />"
-    },
-    {
-      "file": "src/components/chat/message-renderer/Text.vue",
-      "line": 66,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img class=\"text-card-image\" :src=\"urlMap[item].image\" @error=\"onImageLoadError\" />"
-    },
-    {
-      "file": "src/components/common/AvatarCropper.vue",
-      "line": 72,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img :src=\"previewUrl?.url\" :style=\"previewUrl?.img\" />"
-    },
-    {
-      "file": "src/components/common/AvatarCropper.vue",
-      "line": 93,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img :src=\"previewUrl?.url\" :style=\"previewUrl?.img\" />"
-    },
-    {
-      "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 64,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img :src=\"imageUrl\" @click=\"previewImage\" />"
-    },
-    {
-      "file": "src/mobile/views/chat/MediaViewer.vue",
-      "line": 29,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img :src=\"image.url\" class=\"w-full h-full\" />"
-    },
-    {
-      "file": "src/views/homeWindow/SearchDetails.vue",
-      "line": 63,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img class=\"size-64px\" src=\"/msgAction/exploding-head.png\" />"
-    },
-    {
-      "file": "src/views/loginWindow/RemoteLoginModal.vue",
-      "line": 15,
-      "issue": "图片缺少 alt 属性",
-      "code": "<img class=\"rounded-full size-72px\" :src=\"AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')\" />"
     }
   ],
   "missing-cursor": [
@@ -265,37 +204,37 @@
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 85,
+      "line": 81,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleScreenshot()\""
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 102,
+      "line": 98,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"isConceal = !isConceal\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 113,
+      "line": 109,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleFileOpen\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 125,
+      "line": 121,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleImageOpen\" class=\"mr-18px\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 133,
+      "line": 129,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleVoiceRecord\" class=\"mr-18px\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatFooter.vue",
-      "line": 141,
+      "line": 137,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"showLocationModal = true\" class=\"mr-18px\">"
     },
@@ -463,13 +402,13 @@
     },
     {
       "file": "src/components/chat/chatBox/ChatSidebar.vue",
-      "line": 80,
+      "line": 82,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleSelect\" class=\"size-14px\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatSidebar.vue",
-      "line": 143,
+      "line": 145,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"onClickMember(item)\""
     },
@@ -2695,69 +2634,69 @@
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 64,
+      "line": 62,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<img :src=\"imageUrl\" @click=\"previewImage\" />"
+      "code": "<img :src=\"imageUrl\" @click=\"previewImage\" alt=\"消息图片\" />"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 117,
+      "line": 112,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"showActionMenu = false\"></div>"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 135,
+      "line": 130,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('reply')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 141,
+      "line": 136,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('react')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 147,
+      "line": 142,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" v-if=\"isOwn\" @click=\"handleAction('edit')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 153,
+      "line": 148,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('forward')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 159,
+      "line": 154,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('copy')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 165,
+      "line": 160,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('pin')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 171,
+      "line": 166,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item\" @click=\"handleAction('select')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 177,
+      "line": 172,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"action-item danger\" @click=\"handleAction('delete')\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageWithGestures.vue",
-      "line": 198,
+      "line": 189,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"addReaction(emoji)\""
+      "code": "<div v-for=\"emoji in quickReactions\" :key=\"emoji\" class=\"emoji-option\" @click=\"addReaction(emoji)\">"
     },
     {
       "file": "src/mobile/components/message/MobileTemporarySessionDialog.vue",
@@ -4305,7 +4244,7 @@
     },
     {
       "file": "src/components/chat/chatBox/ChatSidebar.vue",
-      "line": 171,
+      "line": 173,
       "issue": "图片 alt 属性为空，建议提供描述性文本",
       "code": "<img class=\"size-12px\" :src=\"getUserState(item.userStateId)?.url\" alt=\"\" />"
     },
