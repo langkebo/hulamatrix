@@ -431,6 +431,8 @@ import type { MediaStream, MediaStreamTrack } from '@/types/rtc'
 import { useWebRtc } from '@/hooks/useWebRtc'
 import { usePlatformConstants } from '@/utils/PlatformConstants'
 import { CallTypeEnum } from '@/enums'
+import { useCallMediaControls } from '@/composables/useCallMediaControls'
+import { useCallState } from '@/composables/useCallState'
 import GroupCallSettings from './GroupCallSettings.vue'
 import {
   getCallTypeEnum,
@@ -541,26 +543,30 @@ const rtcManager = {
   addEventListener: (_event: string, _listener: (...args: unknown[]) => void) => {}
 }
 
-// 状态管理
-const callState = ref<'calling' | 'connected' | 'ended'>('calling')
-const callDuration = ref(0)
+// 媒体流
+const localStream = ref<MediaStream | null>(null)
+
+// 使用 composables
+const callStateComposable = useCallState()
+const mediaControls = useCallMediaControls({ localStream })
+
+// Alias composable states for template use
+const callState = callStateComposable.callState
+const callDuration = callStateComposable.callDuration
+const isConnected = callStateComposable.isConnected
+const isMuted = mediaControls.isMuted
+const isCameraOff = mediaControls.isCameraOff
+const isScreenSharing = mediaControls.isScreenSharing
+const isTogglingScreenShare = mediaControls.isTogglingScreenShare
+
+// UI状态
 const isMinimized = ref(false)
 const isFullscreen = ref(false)
 const isSidebarCollapsed = ref(false)
 const isChatOpen = ref(false)
-const isConnected = ref(false)
-
-// 媒体流
-const localStream = ref<MediaStream | null>(null)
-
-// 设备状态
-const isMuted = ref(false)
-const isCameraOff = ref(false)
 
 // 功能状态
-const isScreenSharing = ref(false)
 const isRecording = ref(false)
-const isTogglingScreenShare = ref(false)
 const isTogglingRecording = ref(false)
 
 // 参与者
@@ -608,9 +614,7 @@ const startGroupCall = async () => {
       callType: props.callType
     })
 
-    callState.value = 'connected'
-    isConnected.value = true
-    startCallTimer()
+    callStateComposable.startCall()
   } catch (error) {
     logger.error('Failed to start group call:', error)
     logger.error('无法启动群组通话')
@@ -626,7 +630,7 @@ const endCall = async () => {
     }
 
     // 停止屏幕共享
-    if (isScreenSharing.value) {
+    if (mediaControls.isScreenSharing.value) {
       await stopScreenShare()
     }
 
@@ -639,9 +643,7 @@ const endCall = async () => {
       localStream.value = null
     }
 
-    callState.value = 'ended'
-    isConnected.value = false
-    stopCallTimer()
+    callStateComposable.endCall()
     emit('call-ended', props.callId)
   } catch (error) {
     logger.error('Failed to end group call:', error)
@@ -753,7 +755,7 @@ const toggleCamera = () => {
 // ========== 屏幕共享 ==========
 
 const toggleScreenShare = async () => {
-  if (isScreenSharing.value) {
+  if (mediaControls.isScreenSharing.value) {
     await stopScreenShare()
   } else {
     await startScreenShare()
@@ -762,28 +764,22 @@ const toggleScreenShare = async () => {
 
 const startScreenShare = async () => {
   try {
-    isTogglingScreenShare.value = true
     await rtcManager.startGroupScreenShare()
-    isScreenSharing.value = true
+    mediaControls.isScreenSharing.value = true
     logger.debug('屏幕共享已开启')
   } catch (error) {
     logger.error('Failed to start screen share:', error)
     logger.error('无法开启屏幕共享')
-  } finally {
-    isTogglingScreenShare.value = false
   }
 }
 
 const stopScreenShare = async () => {
   try {
-    isTogglingScreenShare.value = true
     await rtcManager.stopGroupScreenShare()
-    isScreenSharing.value = false
+    await mediaControls.stopScreenShare()
     logger.debug('屏幕共享已停止')
   } catch (error) {
     logger.error('Failed to stop screen share:', error)
-  } finally {
-    isTogglingScreenShare.value = false
   }
 }
 
