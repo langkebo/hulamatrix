@@ -164,10 +164,10 @@
           <div class="member-list">
             <div v-for="member in filteredMembers" :key="member.userId" class="member-item">
               <n-avatar v-if="member.avatarUrl !== undefined" :src="member.avatarUrl" round size="medium">
-                {{ getMemberInitials(member) }}
+                {{ getMemberInitials(member.displayName || '', member.userId) }}
               </n-avatar>
               <n-avatar v-else round size="medium">
-                {{ getMemberInitials(member) }}
+                {{ getMemberInitials(member.displayName || '', member.userId) }}
               </n-avatar>
               <div class="member-info">
                 <div class="member-name">
@@ -442,6 +442,19 @@ import type { MatrixMember } from '@/types/matrix'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { getUserId, getRoom } from '@/utils/matrixClientUtils'
 import PowerLevelEditor from '@/components/rooms/PowerLevelEditor.vue'
+import {
+  getJoinRuleDescription,
+  getGuestAccessDescription,
+  getHistoryVisibilityDescription,
+  getMemberInitials,
+  getMembershipText,
+  getMembershipTagType,
+  getPowerLevelRole,
+  getEventTypeDisplayName,
+  formatUserId,
+  formatTimestamp,
+  formatTime
+} from './roomSettingsUtils'
 
 // PowerLevelConfig 接口定义 (与 PowerLevelEditor.vue 保持一致)
 interface PowerLevelConfig {
@@ -998,82 +1011,6 @@ const exportRoomData = async () => {
   }
 }
 
-// Helper methods
-const getJoinRuleDescription = (rule: string): string => {
-  const descriptions = {
-    public: '任何人都可以加入房间',
-    invite: '只有被邀请的用户才能加入',
-    knock: '用户可以申请加入，需要管理员批准',
-    restricted: '只有特定用户可以加入'
-  }
-  return descriptions[rule as keyof typeof descriptions] || ''
-}
-
-const getGuestAccessDescription = (access: string): string => {
-  const descriptions = {
-    can_join: '访客可以加入房间',
-    forbidden: '禁止访客访问'
-  }
-  return descriptions[access as keyof typeof descriptions] || ''
-}
-
-const getHistoryVisibilityDescription = (visibility: string): string => {
-  const descriptions = {
-    world_readable: '任何人都可以查看历史消息',
-    shared: '成员可以查看加入前的历史消息',
-    invited: '受邀者可以查看历史消息',
-    joined: '只能查看加入后的历史消息'
-  }
-  return descriptions[visibility as keyof typeof descriptions] || ''
-}
-
-const getMemberInitials = (member: MatrixMember): string => {
-  const name = member.displayName || member.userId
-  if (!name) return '?'
-  const names = name.split(' ')
-  if (names.length >= 2) {
-    const first = names[0]
-    const second = names[1]
-    if (first && second) {
-      const firstChar = first[0]
-      const secondChar = second[0]
-      if (firstChar !== undefined && secondChar !== undefined) {
-        return firstChar + secondChar
-      }
-    }
-  }
-  return name.substring(0, 2).toUpperCase()
-}
-
-const getMembershipText = (membership: string): string => {
-  const texts = {
-    join: '已加入',
-    invite: '已邀请',
-    leave: '已离开',
-    ban: '已封禁',
-    knock: '申请中'
-  }
-  return texts[membership as keyof typeof texts] || membership
-}
-
-const getMembershipTagType = (membership: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
-  const types: Record<string, 'success' | 'info' | 'warning' | 'error' | 'default'> = {
-    join: 'success',
-    invite: 'info',
-    leave: 'default',
-    ban: 'error',
-    knock: 'warning'
-  }
-  return types[membership] || 'default'
-}
-
-const getPowerLevelRole = (powerLevel: number): string => {
-  if (powerLevel >= 100) return '房主'
-  if (powerLevel >= 50) return '管理员'
-  if (powerLevel >= 10) return '版主'
-  return '成员'
-}
-
 const canManageMember = computed(() => {
   if (!selectedMember.value) return false
   const myPowerLevel = members.value.find((m) => m.userId === currentUserId)?.powerLevel || 0
@@ -1105,41 +1042,6 @@ const banSelectedMember = async () => {
   } catch (error) {
     message.error('封禁成员失败')
   }
-}
-
-const formatTimestamp = (timestamp?: number): string => {
-  if (!timestamp) return 'N/A'
-  return new Date(timestamp).toLocaleString('zh-CN')
-}
-
-const formatTime = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleTimeString('zh-CN')
-}
-
-const getEventTypeDisplayName = (eventType: string): string => {
-  const displayNames: Record<string, string> = {
-    'm.room.message': '消息',
-    'm.room.name': '房间名称',
-    'm.room.topic': '房间主题',
-    'm.room.avatar': '房间头像',
-    'm.room.member': '成员变化',
-    'm.room.power_levels': '权限等级',
-    'm.room.join_rules': '加入规则',
-    'm.room.guest_access': '访客访问',
-    'm.room.history_visibility': '历史可见性',
-    'm.room.encryption': '加密设置',
-    'm.room.create': '房间创建',
-    'm.sticker': '贴纸',
-    'm.reaction': '反应',
-    'm.redaction': '撤回'
-  }
-  return displayNames[eventType] || eventType
-}
-
-const formatUserId = (userId: string): string => {
-  // Extract the local part of the Matrix ID (before the :)
-  const match = userId.match(/^@?([^:]+):/)
-  return match ? match[1] : userId
 }
 
 // Lifecycle
