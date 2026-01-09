@@ -158,7 +158,7 @@ const refreshStatus = async () => {
 }
 
 // 计算加密强度评分
-const calculateStrengthScore = (encryptionStatus: any): number => {
+const calculateStrengthScore = (encryptionStatus: EncryptionStatus): number => {
   let score = 0
 
   // 基础加密 (40分)

@@ -47,6 +47,7 @@ import { NModal, NSpace, NAlert, NForm, NFormItem, NSelect, NRadioGroup, NRadio,
 import { useFriendsStore } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 import type { FormInst, FormRules } from 'naive-ui'
+import type { FriendItem } from '@/stores/friendsSDK'
 
 interface Props {
   show?: boolean
@@ -94,9 +95,9 @@ const rules: FormRules = {
 // 用户选项（从好友列表获取）
 const userOptions = computed(() => {
   const friends = friendsStore.friends || []
-  return friends.map((friend: any) => ({
-    label: friend.nickname || friend.username || friend.userId,
-    value: friend.userId
+  return friends.map((friend: FriendItem) => ({
+    label: friend.name || friend.display_name || friend.remark || friend.friend_id,
+    value: friend.friend_id
   }))
 })
 

@@ -1,5 +1,6 @@
 import { matrixClientService } from '@/integrations/matrix/client'
 import { MsgEnum, MessageStatusEnum } from '@/enums'
+import { logger } from '@/utils/logger'
 import type { MatrixEventLike } from '@/types/matrix'
 import pLimit from 'p-limit'
 import { MESSAGES_CONFIG } from '@/constants'
@@ -116,7 +117,7 @@ export async function getSessionDetail(params: { id: string }): Promise<unknown>
     }
   } catch (error) {
     // Log error but don't throw - maintain backward compatibility
-    console.error('[getSessionDetail] Failed to get room details:', error)
+    logger.error('[getSessionDetail] Failed to get room details:', error)
     return {
       roomId: params.id,
       exists: false,

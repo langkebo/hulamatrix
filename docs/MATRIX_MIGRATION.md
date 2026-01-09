@@ -253,14 +253,26 @@ src/matrix/
 
 ### 类型安全问题
 
-**源文件中的 `any` 类型 (非测试文件):**
-- `src/matrix/services/room/spaces.ts`: 1 处
-- `src/components/spaces/SpaceDetails.vue`: 4 处
-- `src/components/spaces/useSpaceDetails.ts`: 1 处
-- `src/integrations/matrix/password-reset.ts`: 2 处
-- `src/integrations/matrix/server-discovery.ts`: 1 处
+**已修复的 `any` 类型 (2026-01-09):**
+- ✅ `src/matrix/services/room/spaces.ts` - 添加 SpaceHierarchyRoom 接口
+- ✅ `src/components/spaces/SpaceDetails.vue` - 更新 emit 类型为 Record<string, unknown>
+- ✅ `src/components/spaces/useSpaceDetails.ts` - 添加 SpaceDetailsEmits 接口
+- ✅ `src/integrations/matrix/password-reset.ts` - 添加 MatrixApiError 接口和类型守卫
+- ✅ `src/integrations/matrix/server-discovery.ts` - 添加 MatrixVersion 接口
+- ✅ `src/components/privateChat/EncryptionIndicator.vue` - 使用 EncryptionStatus 类型
+- ✅ `src/components/chat/PrivateChatDialog.vue` - 使用 FriendItem 类型
 
-**总计:** 约 69 处 `any` 类型，其中大部分在测试文件中。源文件中约 9 处需要修复。
+**剩余 `any` 类型 (仅在测试文件中):**
+- 约 58 处 `any` 类型全部位于 `src/__tests__/` 和 `src/tests/` 目录
+- 这些在测试文件中使用是可接受的，可以后续逐步改进
+
+**源文件中的 `any` 类型:** ✅ 全部已修复
+
+### 错误代码改进
+
+**已修复的错误模式:**
+- ✅ `src/services/messages.ts` - 将 console.error 替换为 logger.error
+- ✅ `src/main.ts` - 保留 console.error 用于 Vue 错误处理器调试（这是预期的）
 
 ## 回滚记录
 
