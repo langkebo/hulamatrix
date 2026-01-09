@@ -1,26 +1,12 @@
 <template>
   <div class="dark-mode-toggle">
     <!-- 切换按钮 -->
-    <button
-      :class="toggleClasses"
-      @click="toggleDarkMode"
-      :aria-label="isDark ? '切换到亮色模式' : '切换到暗色模式'"
-    >
+    <button :class="toggleClasses" @click="toggleDarkMode" :aria-label="isDark ? '切换到亮色模式' : '切换到暗色模式'">
       <transition name="toggle-icon" mode="out-in">
         <!-- 太阳图标（亮色模式） -->
-        <Icon
-          v-if="!isDark"
-          key="sun"
-          icon="material-symbols:light-mode"
-          class="toggle-icon"
-        />
+        <Icon v-if="!isDark" key="sun" icon="material-symbols:light-mode" class="toggle-icon" />
         <!-- 月亮图标（暗色模式） -->
-        <Icon
-          v-else
-          key="moon"
-          icon="material-symbols:dark-mode"
-          class="toggle-icon"
-        />
+        <Icon v-else key="moon" icon="material-symbols:dark-mode" class="toggle-icon" />
       </transition>
 
       <!-- 涟漪效果 -->
@@ -29,24 +15,15 @@
 
     <!-- 系统跟随选项 -->
     <div v-if="showSystemOption" class="dark-mode-options">
-      <button
-        :class="['option-button', { 'option-button--active': mode === 'system' }]"
-        @click="setMode('system')"
-      >
+      <button :class="['option-button', { 'option-button--active': mode === 'system' }]" @click="setMode('system')">
         <Icon icon="material-symbols:computer" />
         <span>跟随系统</span>
       </button>
-      <button
-        :class="['option-button', { 'option-button--active': mode === 'light' }]"
-        @click="setMode('light')"
-      >
+      <button :class="['option-button', { 'option-button--active': mode === 'light' }]" @click="setMode('light')">
         <Icon icon="material-symbols:light-mode" />
         <span>亮色</span>
       </button>
-      <button
-        :class="['option-button', { 'option-button--active': mode === 'dark' }]"
-        @click="setMode('dark')"
-      >
+      <button :class="['option-button', { 'option-button--active': mode === 'dark' }]" @click="setMode('dark')">
         <Icon icon="material-symbols:dark-mode" />
         <span>暗色</span>
       </button>
@@ -316,11 +293,15 @@ onUnmounted(() => {
 
   &--toggle {
     background: linear-gradient(145deg, var(--hula-brand-primary), var(--hula-brand-primary));
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 0.9);
+    box-shadow:
+      2px 2px 4px rgba(var(--hula-black-rgb), 0.1),
+      -2px -2px 4px rgba(var(--hula-white-rgb), 0.9);
 
     &--dark {
       background: linear-gradient(145deg, var(--hula-brand-primary), var(--hula-brand-primary));
-      box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(255, 255, 255, 0.1);
+      box-shadow:
+        inset 2px 2px 4px rgba(var(--hula-black-rgb), 0.3),
+        inset -2px -2px 4px rgba(var(--hula-white-rgb), 0.1);
     }
   }
 
@@ -433,12 +414,12 @@ onUnmounted(() => {
 .toggle-ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(var(--hula-white-rgb), 0.5);
   transform: translate(-50%, -50%);
   transition: all 0.6s ease;
 
-  [data-theme-content="dark"] & {
-    background: rgba(255, 255, 255, 0.2);
+  [data-theme-content='dark'] & {
+    background: rgba(var(--hula-white-rgb), 0.2);
   }
 }
 
@@ -469,7 +450,7 @@ onUnmounted(() => {
 }
 
 // 暗色模式适配
-[data-theme-content="dark"] {
+[data-theme-content='dark'] {
   .dark-mode-toggle-button {
     color: var(--text-color);
   }

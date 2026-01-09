@@ -9,8 +9,7 @@
           :class="['h-fab__mini-btn', `h-fab__mini-btn--${action.variant || 'secondary'}`]"
           :style="getActionStyle(index)"
           @click="handleActionClick(action)"
-          v-bind="action.attrs"
-        >
+          v-bind="action.attrs">
           <Tooltip :text="action.tooltip" :placement="tooltipPlacement">
             <component :is="action.icon" v-if="typeof action.icon === 'object'" />
             <span v-else-if="action.text" class="h-fab__mini-btn-text">{{ action.text }}</span>
@@ -20,13 +19,7 @@
     </transition-group>
 
     <!-- 主按钮 -->
-    <button
-      ref="mainButton"
-      :class="mainButtonClasses"
-      :disabled="disabled"
-      @click="handleMainClick"
-      v-bind="$attrs"
-    >
+    <button ref="mainButton" :class="mainButtonClasses" :disabled="disabled" @click="handleMainClick" v-bind="$attrs">
       <!-- 主图标 -->
       <transition name="fab-icon-transition" mode="out-in">
         <component :is="expanded ? closeIcon : icon" :key="expanded ? 'close' : 'icon'" />
@@ -317,14 +310,14 @@ const createRipple = (event: Event) => {
   justify-content: center;
   border-radius: 50%;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(var(--hula-black-rgb), 0.2);
   }
 
   &:active {
@@ -332,7 +325,9 @@ const createRipple = (event: Event) => {
   }
 
   &:focus {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow:
+      0 0 0 4px rgba(var(--hula-white-rgb), 0.2),
+      0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   }
 
   svg {
@@ -351,18 +346,20 @@ const createRipple = (event: Event) => {
   border-radius: 50%;
   border: none;
   background: var(--hula-white, var(--hula-brand-primary));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   }
 
   &:focus {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 0 0 2px rgba(var(--hula-white-rgb), 0.5),
+      0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   }
 
   &--primary {
@@ -416,7 +413,7 @@ const createRipple = (event: Event) => {
 .h-fab__ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(var(--hula-white-rgb), 0.5);
   transform: translate(-50%, -50%);
   transition: all 0.6s ease;
 }

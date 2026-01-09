@@ -24,10 +24,7 @@
       </div>
 
       <!-- 空状态 -->
-      <n-empty
-        v-else-if="pendingRequests.length === 0"
-        :description="t('friends.requests.no_requests')"
-        size="small">
+      <n-empty v-else-if="pendingRequests.length === 0" :description="t('friends.requests.no_requests')" size="small">
         <template #icon>
           <svg class="size-48px text-var(--hula-brand-primary)">
             <use href="#check-circle"></use>
@@ -38,10 +35,7 @@
       <!-- 请求列表 -->
       <n-scrollbar v-else class="requests-scrollbar">
         <div class="requests-list">
-          <div
-            v-for="request in pendingRequests"
-            :key="request.id"
-            class="request-item">
+          <div v-for="request in pendingRequests" :key="request.id" class="request-item">
             <!-- 用户头像 -->
             <n-avatar round :size="48" :src="request.requester_avatar_url || ''">
               <svg class="size-24px">
@@ -276,7 +270,7 @@ onMounted(async () => {
 
   &:hover {
     border-color: var(--hula-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.08);
   }
 }
 

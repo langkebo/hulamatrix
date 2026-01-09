@@ -7,8 +7,7 @@
         class="theme-option"
         :class="{ active: currentTheme === 'auto' }"
         @click="setTheme('auto')"
-        :aria-label="`当前主题：自动${currentTheme === 'auto' ? '（已选中）' : ''}`"
-      >
+        :aria-label="`当前主题：自动${currentTheme === 'auto' ? '（已选中）' : ''}`">
         <Icon icon="mdi:theme-light-dark" class="theme-icon" />
         <span class="theme-name">自动</span>
         <span class="theme-description">跟随系统设置</span>
@@ -19,8 +18,7 @@
         class="theme-option"
         :class="{ active: currentTheme === 'light' }"
         @click="setTheme('light')"
-        :aria-label="`当前主题：浅色${currentTheme === 'light' ? '（已选中）' : ''}`"
-      >
+        :aria-label="`当前主题：浅色${currentTheme === 'light' ? '（已选中）' : ''}`">
         <Icon icon="mdi:white-balance-sunny" class="theme-icon" />
         <span class="theme-name">浅色</span>
         <span class="theme-description">明亮清新</span>
@@ -31,8 +29,7 @@
         class="theme-option"
         :class="{ active: currentTheme === 'dark' }"
         @click="setTheme('dark')"
-        :aria-label="`当前主题：深色${currentTheme === 'dark' ? '（已选中）' : ''}`"
-      >
+        :aria-label="`当前主题：深色${currentTheme === 'dark' ? '（已选中）' : ''}`">
         <Icon icon="mdi:moon-waning-crescent" class="theme-icon" />
         <span class="theme-name">深色</span>
         <span class="theme-description">护眼舒适</span>
@@ -84,8 +81,7 @@
             :aria-checked="reduceMotion"
             tabindex="0"
             @keydown.enter.prevent="toggleReduceMotion"
-            @keydown.space.prevent="toggleReduceMotion"
-          ></div>
+            @keydown.space.prevent="toggleReduceMotion"></div>
         </label>
         <label class="toggle-option">
           <span>高对比度</span>
@@ -97,8 +93,7 @@
             :aria-checked="highContrast"
             tabindex="0"
             @keydown.enter.prevent="toggleHighContrast"
-            @keydown.space.prevent="toggleHighContrast"
-          ></div>
+            @keydown.space.prevent="toggleHighContrast"></div>
         </label>
       </div>
     </div>
@@ -216,7 +211,7 @@ defineExpose({
   padding: 24px;
   background: var(--hula-bg-component, var(--hula-brand-primary));
   border-radius: 12px;
-  box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+  box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
 
   h3 {
     font-size: 18px;
@@ -274,7 +269,7 @@ defineExpose({
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
     background: var(--hula-brand-subtle, rgba(0, 191, 165, 0.05));
     transform: translateY(-2px);
-    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+    box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
 
   &:active {
@@ -321,7 +316,7 @@ defineExpose({
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(var(--hula-black-rgb), 0.05));
   transition: transform 0.3s ease;
 
   &:hover {
@@ -401,10 +396,10 @@ defineExpose({
     left: 3px;
     width: 20px;
     height: 20px;
-    background: #fff;
+    background: var(--hula-white);
     border-radius: 50%;
     transition: transform 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.2);
   }
 
   &.active {

@@ -181,14 +181,16 @@ function handleInvalidateCache() {
               {{ friend.display_name || friend.user_id }}
             </div>
             <div class="friend-id">{{ friend.user_id }}</div>
-            <div class="friend-category">
-              分类: {{ getCategoryName(friend.category_id) }}
-            </div>
+            <div class="friend-category">分类: {{ getCategoryName(friend.category_id) }}</div>
             <div class="friend-presence">状态: {{ friend.presence || 'unknown' }}</div>
           </div>
 
           <div class="friend-actions">
-            <button :disabled="!friendsStore.isLoaded || !friend.user_id" @click="friend.user_id && handleSendRequest(friend.user_id)">➕ 添加</button>
+            <button
+              :disabled="!friendsStore.isLoaded || !friend.user_id"
+              @click="friend.user_id && handleSendRequest(friend.user_id)">
+              ➕ 添加
+            </button>
           </div>
         </div>
       </div>
@@ -226,12 +228,12 @@ function handleInvalidateCache() {
 }
 
 h1 {
-  color: #333;
+  color: var(--hula-gray-900);
   margin-bottom: 20px;
 }
 
 h2 {
-  color: #666;
+  color: var(--hula-gray-700);
   margin-bottom: 15px;
   font-size: 1.2em;
 }
@@ -272,7 +274,7 @@ h2 {
 }
 
 .stat-item .value {
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 /* 搜索框 */
@@ -323,7 +325,7 @@ h2 {
 .empty {
   padding: 40px;
   text-align: center;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 /* 好友列表 */
@@ -340,7 +342,7 @@ h2 {
   padding: 15px;
   background: white;
   border-radius: 8px;
-  border-left: 4px solid #999;
+  border-left: 4px solid var(--hula-gray-400);
 }
 
 .friend-item.online {
@@ -354,19 +356,19 @@ h2 {
 .friend-name {
   font-weight: bold;
   font-size: 16px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .friend-id {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   margin-top: 4px;
 }
 
 .friend-category,
 .friend-presence {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
   margin-top: 4px;
 }
 
@@ -416,12 +418,12 @@ h2 {
 
 .requester-id {
   font-weight: bold;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .request-message {
   font-size: 13px;
-  color: #666;
+  color: var(--hula-gray-700);
   margin-top: 4px;
   font-style: italic;
 }
@@ -478,14 +480,14 @@ h2 {
 .session-name {
   font-weight: bold;
   font-size: 16px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .session-id,
 .session-participants,
 .session-expiry {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
   margin-top: 4px;
 }
 
@@ -534,17 +536,17 @@ h2 {
 .message-sender {
   font-size: 12px;
   font-weight: bold;
-  color: #666;
+  color: var(--hula-gray-700);
 }
 
 .message-content {
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .message-time {
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 /* 消息输入 */

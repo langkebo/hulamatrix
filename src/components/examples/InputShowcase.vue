@@ -6,17 +6,8 @@
     <section class="showcase-section">
       <h3>基础输入框</h3>
       <div class="input-group">
-        <input
-          type="text"
-          class="input-brand"
-          placeholder="请输入内容"
-        />
-        <input
-          type="text"
-          class="input-brand"
-          placeholder="禁用状态"
-          disabled
-        />
+        <input type="text" class="input-brand" placeholder="请输入内容" />
+        <input type="text" class="input-brand" placeholder="禁用状态" disabled />
       </div>
     </section>
 
@@ -26,21 +17,11 @@
       <div class="input-group">
         <div class="input-wrapper">
           <label for="username" class="input-label">用户名</label>
-          <input
-            id="username"
-            type="text"
-            class="input-brand"
-            placeholder="请输入用户名"
-          />
+          <input id="username" type="text" class="input-brand" placeholder="请输入用户名" />
         </div>
         <div class="input-wrapper">
           <label for="password" class="input-label">密码</label>
-          <input
-            id="password"
-            type="password"
-            class="input-brand"
-            placeholder="请输入密码"
-          />
+          <input id="password" type="password" class="input-brand" placeholder="请输入密码" />
         </div>
       </div>
     </section>
@@ -51,19 +32,11 @@
       <div class="input-group">
         <div class="input-with-icon">
           <Icon icon="mdi:magnify" class="input-icon" />
-          <input
-            type="text"
-            class="input-brand input-with-icon-input"
-            placeholder="搜索..."
-          />
+          <input type="text" class="input-brand input-with-icon-input" placeholder="搜索..." />
         </div>
         <div class="input-with-icon">
           <Icon icon="mdi:email" class="input-icon" />
-          <input
-            type="email"
-            class="input-brand input-with-icon-input"
-            placeholder="电子邮箱"
-          />
+          <input type="email" class="input-brand input-with-icon-input" placeholder="电子邮箱" />
         </div>
       </div>
     </section>
@@ -72,24 +45,9 @@
     <section class="showcase-section">
       <h3>状态变体</h3>
       <div class="input-group">
-        <input
-          type="text"
-          class="input-brand input-success"
-          placeholder="成功状态"
-          value="有效的内容"
-        />
-        <input
-          type="text"
-          class="input-brand input-warning"
-          placeholder="警告状态"
-          value="需要注意的内容"
-        />
-        <input
-          type="text"
-          class="input-brand input-error"
-          placeholder="错误状态"
-          value="无效的内容"
-        />
+        <input type="text" class="input-brand input-success" placeholder="成功状态" value="有效的内容" />
+        <input type="text" class="input-brand input-warning" placeholder="警告状态" value="需要注意的内容" />
+        <input type="text" class="input-brand input-error" placeholder="错误状态" value="无效的内容" />
       </div>
     </section>
 
@@ -97,21 +55,9 @@
     <section class="showcase-section">
       <h3>尺寸变体</h3>
       <div class="input-group">
-        <input
-          type="text"
-          class="input-brand input-sm"
-          placeholder="小尺寸"
-        />
-        <input
-          type="text"
-          class="input-brand"
-          placeholder="默认尺寸"
-        />
-        <input
-          type="text"
-          class="input-brand input-lg"
-          placeholder="大尺寸"
-        />
+        <input type="text" class="input-brand input-sm" placeholder="小尺寸" />
+        <input type="text" class="input-brand" placeholder="默认尺寸" />
+        <input type="text" class="input-brand input-lg" placeholder="大尺寸" />
       </div>
     </section>
 
@@ -119,11 +65,7 @@
     <section class="showcase-section">
       <h3>文本域</h3>
       <div class="input-group">
-        <textarea
-          class="textarea-brand"
-          placeholder="请输入多行内容"
-          rows="4"
-        ></textarea>
+        <textarea class="textarea-brand" placeholder="请输入多行内容" rows="4"></textarea>
       </div>
     </section>
 
@@ -137,8 +79,7 @@
             class="textarea-brand"
             placeholder="请输入消息（最多200字）"
             rows="3"
-            maxlength="200"
-          ></textarea>
+            maxlength="200"></textarea>
           <span class="input-counter">{{ message.length }}/200</span>
         </div>
       </div>
@@ -150,22 +91,12 @@
       <div class="input-group">
         <div class="input-wrapper">
           <label for="email2" class="input-label">电子邮箱</label>
-          <input
-            id="email2"
-            type="email"
-            class="input-brand"
-            placeholder="example@domain.com"
-          />
+          <input id="email2" type="email" class="input-brand" placeholder="example@domain.com" />
           <span class="input-helper">我们会将验证链接发送到您的邮箱</span>
         </div>
         <div class="input-wrapper">
           <label for="password2" class="input-label">密码</label>
-          <input
-            id="password2"
-            type="password"
-            class="input-brand input-error"
-            placeholder="请输入密码"
-          />
+          <input id="password2" type="password" class="input-brand input-error" placeholder="请输入密码" />
           <span class="input-helper input-error-text">密码至少需要8个字符，包含字母和数字</span>
         </div>
       </div>
@@ -217,13 +148,11 @@
       <div class="input-group">
         <label class="switch-label">
           <span>接收通知</span>
-          <div class="switch-brand" :class="{ active: notificationsEnabled }" @click="toggleNotifications">
-          </div>
+          <div class="switch-brand" :class="{ active: notificationsEnabled }" @click="toggleNotifications"></div>
         </label>
         <label class="switch-label">
           <span>自动保存</span>
-          <div class="switch-brand active">
-          </div>
+          <div class="switch-brand active"></div>
         </label>
       </div>
     </section>
@@ -234,17 +163,8 @@
       <div class="input-group">
         <div class="search-box">
           <Icon icon="mdi:magnify" class="search-icon" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="搜索..."
-          />
-          <button
-            v-if="searchQuery"
-            class="search-clear"
-            @click="searchQuery = ''"
-          >
+          <input v-model="searchQuery" type="text" class="search-input" placeholder="搜索..." />
+          <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
             <Icon icon="mdi:close" />
           </button>
         </div>
@@ -260,14 +180,7 @@
             姓名
             <span class="required">*</span>
           </label>
-          <input
-            id="name"
-            v-model="formData.name"
-            type="text"
-            class="input-brand"
-            placeholder="请输入姓名"
-            required
-          />
+          <input id="name" v-model="formData.name" type="text" class="input-brand" placeholder="请输入姓名" required />
         </div>
         <div class="form-group">
           <label for="email3" class="form-label">
@@ -280,8 +193,7 @@
             type="email"
             class="input-brand"
             placeholder="请输入邮箱"
-            required
-          />
+            required />
         </div>
         <div class="form-group">
           <label for="message3" class="form-label">留言</label>
@@ -290,8 +202,7 @@
             v-model="formData.message"
             class="textarea-brand"
             placeholder="请输入留言内容"
-            rows="4"
-          ></textarea>
+            rows="4"></textarea>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn-brand">提交</button>
@@ -526,7 +437,7 @@ const handleSubmit = () => {
     height: 20px;
     border: 2px solid var(--hula-gray-400, var(--hula-brand-primary));
     border-radius: 4px;
-    background: #fff;
+    background: var(--hula-white);
     transition: all 0.3s ease;
 
     &::after {
@@ -602,10 +513,10 @@ const handleSubmit = () => {
     left: 3px;
     width: 20px;
     height: 20px;
-    background: #fff;
+    background: var(--hula-white);
     border-radius: 50%;
     transition: transform 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.2);
   }
 
   &.active {

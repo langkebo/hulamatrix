@@ -175,13 +175,13 @@ watch(
   }
 
   &--card {
-    background-color: #ffffff;
+    background-color: var(--hula-white) fff;
     box-shadow: var(--showcase-shadow);
     border: 1px solid var(--showcase-border);
   }
 
   &--panel {
-    background-color: #ffffff;
+    background-color: var(--hula-white) fff;
     box-shadow: var(--shadow-md);
     border-radius: var(--radius-lg);
   }
@@ -228,7 +228,7 @@ watch(
 
   &--bg-primary {
     background-color: var(--hula-brand-primary);
-    color: #ffffff;
+    color: var(--hula-white) fff;
   }
 
   &--bg-secondary {
@@ -319,7 +319,7 @@ watch(
   &__retry-button {
     padding: var(--padding-sm) var(--padding-md);
     font-size: var(--text-sm);
-    color: #ffffff;
+    color: var(--hula-white) fff;
     background-color: var(--hula-brand-primary);
     border: none;
     border-radius: var(--radius-sm);

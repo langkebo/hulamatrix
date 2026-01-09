@@ -1,19 +1,11 @@
 <template>
   <div
     class="h-tooltip"
-    :class="[
-      `h-tooltip--${placement}`,
-      { 'h-tooltip--visible': isVisible }
-    ]"
+    :class="[`h-tooltip--${placement}`, { 'h-tooltip--visible': isVisible }]"
     @mouseenter="showTooltip"
-    @mouseleave="hideTooltip"
-  >
+    @mouseleave="hideTooltip">
     <slot></slot>
-    <div
-      v-show="isVisible"
-      class="h-tooltip__content"
-      :class="`h-tooltip__content--${placement}`"
-    >
+    <div v-show="isVisible" class="h-tooltip__content" :class="`h-tooltip__content--${placement}`">
       {{ text }}
     </div>
   </div>
@@ -66,8 +58,8 @@ onUnmounted(() => {
   &__content {
     position: absolute;
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: rgba(0, 0, 0, 0.9);
-    color: #fff;
+    background: rgba(var(--hula-black-rgb), 0.9);
+    color: var(--hula-white);
     font-size: var(--font-size-sm);
     border-radius: var(--radius-md);
     white-space: nowrap;
@@ -115,28 +107,28 @@ onUnmounted(() => {
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      border-top-color: rgba(0, 0, 0, 0.9);
+      border-top-color: rgba(var(--hula-black-rgb), 0.9);
     }
 
     &--bottom::before {
       bottom: 100%;
       left: 50%;
       transform: translateX(-50%) rotate(180deg);
-      border-top-color: rgba(0, 0, 0, 0.9);
+      border-top-color: rgba(var(--hula-black-rgb), 0.9);
     }
 
     &--left::before {
       left: 100%;
       top: 50%;
       transform: translateY(-50%) rotate(-90deg);
-      border-top-color: rgba(0, 0, 0, 0.9);
+      border-top-color: rgba(var(--hula-black-rgb), 0.9);
     }
 
     &--right::before {
       right: 100%;
       top: 50%;
       transform: translateY(-50%) rotate(90deg);
-      border-top-color: rgba(0, 0, 0, 0.9);
+      border-top-color: rgba(var(--hula-black-rgb), 0.9);
     }
   }
 }

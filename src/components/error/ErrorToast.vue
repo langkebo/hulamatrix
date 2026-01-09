@@ -566,7 +566,7 @@ defineExpose({
   gap: 0.75rem;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   background: var(--card-bg);
   border-left: 4px solid;
   position: relative;
@@ -593,7 +593,7 @@ defineExpose({
 
 .toast:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 16px rgba(var(--hula-black-rgb), 0.2);
 }
 
 .toast-icon {

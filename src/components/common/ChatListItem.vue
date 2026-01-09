@@ -10,7 +10,7 @@
           :max="99">
           <n-avatar
             :size="isMobile ? 52 : 44"
-            :color="isDark ? '' : '#fff'"
+            :color="isDark ? '' : 'var(--hula-white)'"
             :fallback-src="isDark ? '/logoL.png' : '/logoD.png'"
             :src="AvatarUtils.getAvatarUrl(item.avatar)"
             round />
@@ -57,9 +57,7 @@
             </span>
           </template>
           <template v-else>
-            <span
-              class="chat-list-item-message"
-              :class="{ 'text-bot': item.account === 'bot' }">
+            <span class="chat-list-item-message" :class="{ 'text-bot': item.account === 'bot' }">
               {{ displayMessage }}
             </span>
           </template>

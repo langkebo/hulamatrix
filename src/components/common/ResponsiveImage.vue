@@ -306,7 +306,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   background-color: var(--color-bg-secondary, var(--hula-brand-primary));
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary, var(--hula-gray-700));
 }
 
 .error-icon {

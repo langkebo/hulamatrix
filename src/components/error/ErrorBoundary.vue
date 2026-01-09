@@ -461,7 +461,7 @@ defineExpose({
   border-radius: 12px;
   padding: 2rem;
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .error-title {
@@ -630,7 +630,7 @@ defineExpose({
   justify-content: space-between;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   max-width: 400px;
   animation: slideIn 0.3s ease-out;
 }
@@ -674,7 +674,7 @@ defineExpose({
 }
 
 .notification-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--hula-white-rgb), 0.1);
 }
 
 .notification-low {

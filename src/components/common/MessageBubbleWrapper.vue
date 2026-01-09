@@ -31,7 +31,7 @@
               :size="34"
               @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
               class="select-none cursor-pointer"
-              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
               :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
               :src="getAvatarSrc(message.fromUser.uid) || ''" />
           </ContextMenu>
@@ -150,7 +150,9 @@
       <div class="translated-text cursor-default flex flex-col bg-[--right-chat-reply-color] p-8px rounded-8px mt-6px">
         <n-flex align="center" justify="space-between" class="mb-6px">
           <n-flex align="center" :size="4">
-            <span class="text-(12px var(--hula-brand-primary))">{{ message.message.body.translatedText.provider }}</span>
+            <span class="text-(12px var(--hula-brand-primary))">
+              {{ message.message.body.translatedText.provider }}
+            </span>
             <svg class="size-12px">
               <use href="#success"></use>
             </svg>
@@ -189,7 +191,7 @@
           class="reply-avatar"
           round
           :size="20"
-          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="getAvatarSrc(message.message.body.reply.uid) || ''" />
         <span>{{ `${message.message.body.reply.username}: ` }}</span>
@@ -214,7 +216,11 @@
               @click.stop="message && emoji.value && cancelReplyEmoji(message, emoji.value)">
               <img :title="emoji.title || ''" class="size-18px" :src="emoji.url || ''" :alt="emoji.title || ''" />
               <span
-                :class="emoji.value && hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'">
+                :class="
+                  emoji.value && hasUserMarkedEmoji(message, emoji.value)
+                    ? 'text-var(--hula-brand-primary)'
+                    : 'text-(12px var(--hula-gray-200))'
+                ">
                 {{ message && emoji.value ? getEmojiCount(message, emoji.value) : 0 }}
               </span>
             </div>
@@ -518,7 +524,7 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   }
 }
 
@@ -527,13 +533,13 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(var(--hula-black-rgb), 0.05);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(var(--hula-black-rgb), 0.1);
   }
 
   &--active {

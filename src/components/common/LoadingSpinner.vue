@@ -2,13 +2,8 @@
   <div
     class="h-loading-spinner"
     :class="[`h-loading-spinner--${size}`, { 'h-loading-spinner--overlay': overlay }]"
-    :style="{ color: customColor }"
-  >
-    <svg
-      class="h-loading-spinner__circle"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
+    :style="{ color: customColor }">
+    <svg class="h-loading-spinner__circle" viewBox="0 0 24 24" fill="none">
       <circle
         class="h-loading-spinner__path"
         cx="12"
@@ -17,8 +12,7 @@
         stroke="currentColor"
         stroke-width="4"
         stroke-linecap="round"
-        stroke-dasharray="60 20"
-      />
+        stroke-dasharray="60 20" />
     </svg>
   </div>
 </template>
@@ -64,7 +58,7 @@ const customColor = computed(() => props.color || 'var(--primary-color)')
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(var(--hula-white-rgb), 0.9);
     z-index: 9999;
   }
 

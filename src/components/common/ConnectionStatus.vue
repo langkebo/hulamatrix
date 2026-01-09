@@ -4,8 +4,7 @@
     class="connection-status"
     :class="[`connection-status--${displayState}`, { 'connection-status--clickable': clickable }]"
     :title="tooltip"
-    @click="handleClick"
-  >
+    @click="handleClick">
     <div class="connection-status__dot" :data-state="displayState"></div>
     <span class="connection-status__text">{{ userFriendlyText }}</span>
   </div>
@@ -117,9 +116,9 @@ const handleClick = () => {
   gap: 8px;
   padding: 6px 10px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(var(--hula-black-rgb), 0.75);
   backdrop-filter: blur(8px);
-  color: #fff;
+  color: var(--hula-white);
   font-size: 12px;
   line-height: 1;
   user-select: none;
@@ -129,7 +128,7 @@ const handleClick = () => {
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: #999;
+    background: var(--hula-gray-400);
     animation: pulse 2s ease-in-out infinite;
 
     &[data-state='SYNCING'] {
@@ -162,7 +161,7 @@ const handleClick = () => {
     cursor: pointer;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(var(--hula-black-rgb), 0.85);
       transform: scale(1.02);
     }
 
@@ -183,7 +182,8 @@ const handleClick = () => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

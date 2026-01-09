@@ -216,7 +216,7 @@ onMounted(async () => {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
     border-color: var(--hula-primary);
   }
 }

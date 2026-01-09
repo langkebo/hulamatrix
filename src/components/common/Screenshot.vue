@@ -666,7 +666,7 @@ canvas {
   overflow: hidden;
   display: none;
   background: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(var(--hula-black-rgb), 0.3);
 }
 
 .img-canvas {
@@ -785,7 +785,7 @@ canvas {
 
 .button-group {
   position: absolute;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
   color: white;
   padding: 5px 8px;
   border-radius: 12px;
@@ -831,7 +831,7 @@ canvas {
 .border-radius-controller {
   position: absolute;
   left: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--hula-black-rgb), 0.8);
   color: white;
   padding: 5px 8px;
   border-radius: 4px;
