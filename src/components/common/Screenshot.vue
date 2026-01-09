@@ -115,6 +115,7 @@ import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { writeImage } from '@tauri-apps/plugin-clipboard-manager'
 import type { Ref } from 'vue'
 import { useCanvasTool } from '@/hooks/useCanvasTool'
+import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
 import { isMac } from '@/utils/PlatformConstants'
 import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 
@@ -187,28 +188,6 @@ const showButtonGroup: Ref<boolean> = ref(false) // 控制按钮组显示
 
 // 选区拖动区域
 const selectionArea: Ref<HTMLDivElement | null> = ref(null)
-const selectionAreaStyle: Ref<Record<string, string>> = ref({})
-const isDragging: Ref<boolean> = ref(false)
-const dragOffset: Ref<{ x: number; y: number }> = ref({ x: 0, y: 0 })
-
-// 圆角控制器样式
-const borderRadiusControllerStyle: Ref<Record<string, string>> = ref({})
-
-// resize相关
-const isResizing: Ref<boolean> = ref(false)
-const resizeDirection: Ref<string> = ref('')
-const resizeStartPosition: Ref<{ x: number; y: number; width: number; height: number; left: number; top: number }> =
-  ref({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    left: 0,
-    top: 0
-  })
-
-// 圆角控制
-const borderRadius: Ref<number> = ref(0)
 
 // 截屏信息
 const screenConfig: Ref<ScreenConfig> = ref({
@@ -710,371 +689,6 @@ const handleMaskMouseUp = (event: MouseEvent) => {
   }
 }
 
-// 计算矩形区域工具栏位置
-const updateButtonGroupPosition = () => {
-  if (!buttonGroup.value) return
-
-  // 按钮组不可见、正在拖动或正在调整大小时，不进行尺寸测量和定位
-  if (!showButtonGroup.value || isDragging.value || isResizing.value) {
-    updateSelectionAreaPosition()
-    return
-  }
-
-  const { scaleX, scaleY, startX, startY, endX, endY } = screenConfig.value
-
-  // 矩形的边界
-  const minY = Math.min(startY, endY) / scaleY
-  const maxX = Math.max(startX, endX) / scaleX
-  const maxY = Math.max(startY, endY) / scaleY
-
-  // 可用屏幕尺寸
-  const availableHeight = window.innerHeight
-  const availableWidth = window.innerWidth
-
-  const el = buttonGroup.value
-  el.style.flexWrap = 'nowrap'
-  el.style.whiteSpace = 'nowrap'
-  el.style.width = 'max-content'
-  el.style.overflow = 'visible'
-
-  const rect = el.getBoundingClientRect()
-  const measuredHeight = rect.height
-  const contentWidth = el.scrollWidth || rect.width
-
-  const maxAllowedWidth = availableWidth - 20
-  const finalWidth = Math.min(contentWidth, maxAllowedWidth)
-
-  // 判断是否能放在选区下方
-  const spaceBelow = availableHeight - maxY
-  const canFitBelow = spaceBelow >= measuredHeight + 10 // 留10px缓冲
-
-  let leftPosition: number
-  let topPosition: number
-
-  if (canFitBelow) {
-    // 优先放在选区下方
-    topPosition = maxY + 4
-
-    // 与选区右对齐
-    leftPosition = maxX - finalWidth
-    leftPosition = Math.max(10, Math.min(leftPosition, availableWidth - finalWidth - 10))
-  } else {
-    // 选区下方空间不足，放在选区上方
-    topPosition = minY - (measuredHeight + 4)
-    if (topPosition < 0) topPosition = 10
-
-    // 与选区右对齐
-    leftPosition = maxX - finalWidth
-    leftPosition = Math.max(10, Math.min(leftPosition, availableWidth - finalWidth - 10))
-  }
-
-  // 应用最终位置与宽度
-  el.style.top = `${topPosition}px`
-  el.style.left = `${leftPosition}px`
-  el.style.width = `${finalWidth}px`
-  el.style.boxSizing = 'border-box'
-
-  // 更新选区拖动区域位置
-  updateSelectionAreaPosition()
-}
-
-// 更新选区拖动区域位置
-const updateSelectionAreaPosition = () => {
-  if (!selectionArea.value) return
-
-  const { scaleX, scaleY, startX, startY, endX, endY } = screenConfig.value
-
-  // 矩形的边界
-  const minX = Math.min(startX, endX) / scaleX
-  const minY = Math.min(startY, endY) / scaleY
-  const maxX = Math.max(startX, endX) / scaleX
-  const maxY = Math.max(startY, endY) / scaleY
-
-  selectionAreaStyle.value = {
-    left: `${minX}px`,
-    top: `${minY}px`,
-    width: `${maxX - minX}px`,
-    height: `${maxY - minY}px`,
-    borderRadius: `${borderRadius.value}px`,
-    border: '2px solid #13987f'
-  }
-
-  // 更新圆角控制器位置，确保不超出屏幕边界
-  updateBorderRadiusControllerPosition(minX, minY)
-}
-
-// 更新圆角控制器位置
-const updateBorderRadiusControllerPosition = (selectionLeft: number, selectionTop: number) => {
-  const controllerHeight = 35 // 控制器高度
-  const controllerWidth = 120 // 控制器宽度
-
-  let left = selectionLeft
-  let top = selectionTop - controllerHeight
-
-  // 确保控制器不超出屏幕左边界
-  if (left < 0) {
-    left = 0
-  }
-
-  // 确保控制器不超出屏幕右边界
-  if (left + controllerWidth > window.innerWidth) {
-    left = window.innerWidth - controllerWidth - 10
-  }
-
-  // 确保控制器不超出屏幕上边界
-  if (top < 0) {
-    top = selectionTop + 4 // 如果超出上边界，显示在选区内部
-  }
-
-  borderRadiusControllerStyle.value = {
-    left: `${left - selectionLeft}px`, // 相对于选区的位置
-    top: `${top - selectionTop}px`
-  }
-}
-
-// 选区拖动开始
-const handleSelectionDragStart = (event: MouseEvent) => {
-  // 如果有绘图工具处于激活状态，禁止拖动
-  if (currentDrawTool.value) {
-    event.preventDefault()
-    event.stopPropagation()
-    return // 直接返回，不执行拖动
-  }
-
-  // 确保拖动功能不受绘图工具状态影响
-  event.preventDefault()
-  event.stopPropagation()
-
-  isDragging.value = true
-  dragOffset.value = {
-    x: event.clientX - parseFloat(selectionAreaStyle.value.left),
-    y: event.clientY - parseFloat(selectionAreaStyle.value.top)
-  }
-
-  // 添加全局鼠标事件监听
-  document.addEventListener('mousemove', handleSelectionDragMove)
-  document.addEventListener('mouseup', handleSelectionDragEnd)
-
-  logger.debug('开始拖动，隐藏按钮组', undefined, 'Screenshot')
-}
-
-// 选区拖动移动
-const handleSelectionDragMove = (event: MouseEvent) => {
-  if (!isDragging.value) return
-
-  event.preventDefault()
-
-  // 拖动选区时不显示放大镜
-  const newLeft = event.clientX - dragOffset.value.x
-  const newTop = event.clientY - dragOffset.value.y
-
-  // 确保选区不超出屏幕边界
-  const selectionWidth = parseFloat(selectionAreaStyle.value.width)
-  const selectionHeight = parseFloat(selectionAreaStyle.value.height)
-  const maxLeft = window.innerWidth - selectionWidth
-  const maxTop = window.innerHeight - selectionHeight
-
-  const constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft))
-  const constrainedTop = Math.max(0, Math.min(newTop, maxTop))
-
-  selectionAreaStyle.value.left = `${constrainedLeft}px`
-  selectionAreaStyle.value.top = `${constrainedTop}px`
-  selectionAreaStyle.value.borderRadius = `${borderRadius.value}px`
-  selectionAreaStyle.value.border = '2px solid #13987f'
-
-  // 更新screenConfig
-  const { scaleX, scaleY } = screenConfig.value
-  screenConfig.value.startX = constrainedLeft * scaleX
-  screenConfig.value.startY = constrainedTop * scaleY
-  screenConfig.value.endX = (constrainedLeft + selectionWidth) * scaleX
-  screenConfig.value.endY = (constrainedTop + selectionHeight) * scaleY
-
-  // 重新绘制矩形
-  redrawSelection()
-  // 拖动过程中不定位按钮组
-  if (!isDragging.value) {
-    updateButtonGroupPosition()
-  }
-}
-
-// 选区拖动结束
-const handleSelectionDragEnd = () => {
-  isDragging.value = false
-
-  // 移除全局鼠标事件监听
-  document.removeEventListener('mousemove', handleSelectionDragMove)
-  document.removeEventListener('mouseup', handleSelectionDragEnd)
-
-  // 结束拖动后隐藏放大镜
-  if (magnifier.value) {
-    magnifier.value.style.display = 'none'
-  }
-
-  nextTick(() => {
-    updateButtonGroupPosition()
-  })
-
-  logger.debug('拖动结束，显示按钮组', undefined, 'Screenshot')
-}
-
-// resize开始
-const handleResizeStart = (event: MouseEvent, direction: string) => {
-  // 如果有绘图工具处于激活状态，禁止resize
-  if (currentDrawTool.value) {
-    event.preventDefault()
-    event.stopPropagation()
-    return // 直接返回，不执行resize
-  }
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  isResizing.value = true
-  resizeDirection.value = direction
-
-  resizeStartPosition.value = {
-    x: event.clientX,
-    y: event.clientY,
-    width: parseFloat(selectionAreaStyle.value.width),
-    height: parseFloat(selectionAreaStyle.value.height),
-    left: parseFloat(selectionAreaStyle.value.left),
-    top: parseFloat(selectionAreaStyle.value.top)
-  }
-
-  // 添加全局鼠标事件监听
-  document.addEventListener('mousemove', handleResizeMove)
-  document.addEventListener('mouseup', handleResizeEnd)
-}
-
-// resize移动
-const handleResizeMove = (event: MouseEvent) => {
-  if (!isResizing.value) return
-
-  event.preventDefault()
-
-  // 调整大小时也显示放大镜，辅助精确定位
-  handleMagnifierMouseMove(event)
-
-  const deltaX = event.clientX - resizeStartPosition.value.x
-  const deltaY = event.clientY - resizeStartPosition.value.y
-
-  let newLeft = resizeStartPosition.value.left
-  let newTop = resizeStartPosition.value.top
-  let newWidth = resizeStartPosition.value.width
-  let newHeight = resizeStartPosition.value.height
-
-  // 根据resize方向调整位置和尺寸
-  switch (resizeDirection.value) {
-    case 'nw': // 左上角
-      newLeft += deltaX
-      newTop += deltaY
-      newWidth -= deltaX
-      newHeight -= deltaY
-      break
-    case 'ne': // 右上角
-      newTop += deltaY
-      newWidth += deltaX
-      newHeight -= deltaY
-      break
-    case 'sw': // 左下角
-      newLeft += deltaX
-      newWidth -= deltaX
-      newHeight += deltaY
-      break
-    case 'se': // 右下角
-      newWidth += deltaX
-      newHeight += deltaY
-      break
-    case 'n': // 上边
-      newTop += deltaY
-      newHeight -= deltaY
-      break
-    case 'e': // 右边
-      newWidth += deltaX
-      break
-    case 's': // 下边
-      newHeight += deltaY
-      break
-    case 'w': // 左边
-      newLeft += deltaX
-      newWidth -= deltaX
-      break
-  }
-
-  // 确保最小尺寸
-  const minSize = 20
-  if (newWidth < minSize) {
-    if (resizeDirection.value.includes('w')) {
-      newLeft = resizeStartPosition.value.left + resizeStartPosition.value.width - minSize
-    }
-    newWidth = minSize
-  }
-  if (newHeight < minSize) {
-    if (resizeDirection.value.includes('n')) {
-      newTop = resizeStartPosition.value.top + resizeStartPosition.value.height - minSize
-    }
-    newHeight = minSize
-  }
-
-  // 确保不超出屏幕边界
-  newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - newWidth))
-  newTop = Math.max(0, Math.min(newTop, window.innerHeight - newHeight))
-
-  // 更新样式
-  selectionAreaStyle.value = {
-    left: `${newLeft}px`,
-    top: `${newTop}px`,
-    width: `${newWidth}px`,
-    height: `${newHeight}px`,
-    borderRadius: `${borderRadius.value}px`,
-    border: '2px solid #13987f'
-  }
-
-  // 更新screenConfig
-  const { scaleX, scaleY } = screenConfig.value
-  screenConfig.value.startX = newLeft * scaleX
-  screenConfig.value.startY = newTop * scaleY
-  screenConfig.value.endX = (newLeft + newWidth) * scaleX
-  screenConfig.value.endY = (newTop + newHeight) * scaleY
-
-  // 重新绘制选区
-  redrawSelection()
-  if (showButtonGroup.value) {
-    updateButtonGroupPosition()
-  }
-}
-
-// resize结束
-const handleResizeEnd = () => {
-  isResizing.value = false
-  resizeDirection.value = ''
-
-  // 移除全局鼠标事件监听
-  document.removeEventListener('mousemove', handleResizeMove)
-  document.removeEventListener('mouseup', handleResizeEnd)
-
-  // 结束调整后隐藏放大镜
-  if (magnifier.value) {
-    magnifier.value.style.display = 'none'
-  }
-
-  // 调整结束后再定位按钮组
-  nextTick(() => {
-    if (showButtonGroup.value) {
-      updateButtonGroupPosition()
-    }
-  })
-}
-
-// 圆角变化处理
-const handleBorderRadiusChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  borderRadius.value = parseInt(target.value, 10)
-
-  // 更新选区样式，包括边框显示
-  updateSelectionAreaPosition()
-}
-
 /**
  * 绘制矩形（支持圆角）
  */
@@ -1178,6 +792,35 @@ const redrawSelection = () => {
 
   maskCtx.value.clearRect(x, y, width, height)
 }
+
+// Initialize selection composable after redrawSelection is defined
+const selection = useScreenshotSelection({
+  screenConfig,
+  currentDrawTool,
+  buttonGroup,
+  showButtonGroup,
+  selectionArea,
+  onRedrawSelection: redrawSelection,
+  onMagnifierUpdate: handleMagnifierMouseMove
+})
+
+// Destructure selection state and functions
+const {
+  selectionAreaStyle,
+  isDragging,
+  isResizing,
+  borderRadiusControllerStyle,
+  borderRadius,
+  updateSelectionAreaPosition,
+  updateButtonGroupPosition,
+  handleSelectionDragStart,
+  handleSelectionDragMove,
+  handleSelectionDragEnd,
+  handleResizeStart,
+  handleResizeMove,
+  handleResizeEnd,
+  handleBorderRadiusChange
+} = selection
 
 /**
  * 初始化放大镜
