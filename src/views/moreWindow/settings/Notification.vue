@@ -92,7 +92,7 @@
             id="batch-progress"
             type="line"
             :color="'var(--hula-brand-primary)'"
-            :rail-color="'rgba(19, 152, 127, 0.19)'"
+            :rail-color="'rgba(var(--hula-brand-rgb), 0.19)'"
             :percentage="progress"
             :show-indicator="false" />
         </n-flex>

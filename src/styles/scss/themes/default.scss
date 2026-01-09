@@ -71,7 +71,7 @@ html[data-theme='dark'][data-theme-style="default"] {
 
   /* 聊天框样式 */
   --chat-reply-color: var(--hula-brand-primary);
-  --chat-reply-active: rgba(19, 152, 127, 0.15);
+  --chat-reply-active: rgba(var(--hula-brand-rgb), 0.15);
   --chat-footer-border: rgba(var(--hula-white-rgb), 0.1);
 
   /* 群公告 */

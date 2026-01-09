@@ -16,7 +16,7 @@ body {
 .typing-hint{
   font-size: 12px;
   color: var(--chat-text-color);
-  background: rgba(0,0,0,0.08);
+  background: rgba(var(--hula-black-rgb), 0.08);
   border-radius: 12px;
   padding: 4px 8px;
   backdrop-filter: blur(4px);

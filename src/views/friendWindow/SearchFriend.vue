@@ -649,7 +649,7 @@ onMounted(async () => {
 <style scoped lang="scss">
 .search-input {
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--hula-gray-300);
 }
 
 .state-container {

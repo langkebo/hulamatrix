@@ -859,7 +859,7 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(144, 144, 144, 0.3);
+    background-color: rgba(var(--hula-gray-400-rgb), 0.3);
     border-radius: 3px;
     transition-property: opacity, background-color;
     transition-duration: 0.3s;
@@ -869,7 +869,7 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(144, 144, 144, 0.5);
+    background-color: rgba(var(--hula-gray-400-rgb), 0.5);
   }
 
   &::-webkit-scrollbar-track {

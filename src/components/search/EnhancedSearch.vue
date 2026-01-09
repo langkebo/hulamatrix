@@ -1035,7 +1035,7 @@ defineExpose({
   .suggestions-header {
     background: var(--hula-gray-800, var(--hula-brand-primary));
     border-bottom-color: var(--hula-gray-900);
-    color: #ccc;
+    color: var(--hula-gray-300);
   }
 
   .suggestion-item {

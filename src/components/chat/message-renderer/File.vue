@@ -511,7 +511,7 @@ onMounted(async () => {
   color: var(--hula-brand-primary);
 
   &.downloaded {
-    background: rgba(19, 152, 127, 0.3);
+    background: rgba(var(--hula-brand-rgb), 0.3);
     color: var(--hula-brand-primary);
   }
 }

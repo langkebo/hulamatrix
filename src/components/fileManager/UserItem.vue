@@ -214,7 +214,7 @@ html[data-theme='dark'] {
     }
 
     &--selected {
-      background-color: rgba(19, 152, 127, 0.2);
+      background-color: rgba(var(--hula-brand-rgb), 0.2);
       border-color: var(--hula-brand-primary);
     }
   }

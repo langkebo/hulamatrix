@@ -661,7 +661,7 @@ canvas {
   pointer-events: none;
   width: 120px;
   height: 120px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--hula-gray-300);
   border-radius: 12px;
   overflow: hidden;
   display: none;
@@ -715,7 +715,7 @@ canvas {
 .resize-handle {
   position: absolute;
   background: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--hula-gray-300);
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -724,7 +724,7 @@ canvas {
 }
 
 .resize-handle.disabled {
-  background: #ccc;
+  background: var(--hula-gray-300);
   cursor: not-allowed;
   opacity: 0.5;
 }

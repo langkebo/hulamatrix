@@ -80,7 +80,7 @@
   --message-bubble-bg: var(--hula-brand-primary);
   --message-text-color: var(--hula-brand-primary);
   --message-border-color: var(--hula-brand-primary);
-  --message-selected-bg: rgba(19, 152, 127, 0.1);
+  --message-selected-bg: rgba(var(--hula-brand-rgb), 0.1);
   --reply-bg: rgba(var(--hula-white-rgb), 0.05);
   --reply-hover-bg: rgba(var(--hula-white-rgb), 0.08);
 
@@ -234,7 +234,7 @@
 
     &:focus {
       border-color: var(--input-border-focus);
-      box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+      box-shadow: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.1);
     }
   }
 

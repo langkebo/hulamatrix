@@ -83,7 +83,7 @@ const getNavigationLabel = (item: NavigationItem) => {
   user-select: none;
 
   &:hover:not(&--active) {
-    background-color: rgba(19, 152, 127, 0.1);
+    background-color: rgba(var(--hula-brand-rgb), 0.1);
     color: var(--hula-brand-primary);
 
     .navigation-item__icon svg {
@@ -92,7 +92,7 @@ const getNavigationLabel = (item: NavigationItem) => {
   }
 
   &--active {
-    background-color: rgba(19, 152, 127, 0.2);
+    background-color: rgba(var(--hula-brand-rgb), 0.2);
     color: var(--hula-brand-primary);
 
     .navigation-item__icon svg {

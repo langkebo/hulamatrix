@@ -61,7 +61,7 @@
   &--focus .n-input__border,
   &--focus .n-input__state-border {
     border-color: var(--input-border-focus);
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+    box-shadow: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.1);
   }
 }
 
@@ -79,7 +79,7 @@
 
   &--focus {
     border-color: var(--input-border-focus);
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+    box-shadow: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.1);
   }
 }
 
@@ -140,7 +140,7 @@
 .n-slider {
   .n-slider-handle {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.2);
+    box-shadow: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.2);
   }
 
   .n-slider-rail {

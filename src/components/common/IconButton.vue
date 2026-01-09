@@ -122,13 +122,13 @@ const handleClick = (event: Event) => {
 // 脉冲动画
 @keyframes icon-button-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(19, 152, 127, 0.4);
+    box-shadow: 0 0 0 0 rgba(var(--hula-brand-rgb), 0.4);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(19, 152, 127, 0);
+    box-shadow: 0 0 0 10px rgba(var(--hula-brand-rgb), 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(19, 152, 127, 0);
+    box-shadow: 0 0 0 0 rgba(var(--hula-brand-rgb), 0);
   }
 }
 
@@ -143,13 +143,13 @@ const handleClick = (event: Event) => {
 
 @keyframes icon-button-pulse-dark {
   0% {
-    box-shadow: 0 0 0 0 rgba(19, 152, 127, 0.6);
+    box-shadow: 0 0 0 0 rgba(var(--hula-brand-rgb), 0.6);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(19, 152, 127, 0);
+    box-shadow: 0 0 0 10px rgba(var(--hula-brand-rgb), 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(19, 152, 127, 0);
+    box-shadow: 0 0 0 0 rgba(var(--hula-brand-rgb), 0);
   }
 }
 </style>

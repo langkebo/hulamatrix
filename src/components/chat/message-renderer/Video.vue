@@ -51,7 +51,7 @@
             <svg class="progress-ring" width="44" height="44">
               <circle
                 class="progress-ring-circle"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="rgba(var(--hula-white-rgb), 0.3)"
                 stroke-width="3"
                 fill="transparent"
                 r="18"
@@ -77,7 +77,7 @@
             <svg class="progress-ring" width="44" height="44">
               <circle
                 class="progress-ring-circle"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="rgba(var(--hula-white-rgb), 0.3)"
                 stroke-width="3"
                 fill="transparent"
                 r="18"

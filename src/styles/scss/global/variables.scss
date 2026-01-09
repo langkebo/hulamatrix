@@ -16,8 +16,8 @@
       主色调系统
      ========================================================================== */
   --primary-color: var(--hula-brand-primary);
-  --primary-hover: rgba(19, 152, 127, 0.8);
-  --primary-active: rgba(19, 152, 127, 0.4);
+  --primary-hover: rgba(var(--hula-brand-rgb), 0.8);
+  --primary-active: rgba(var(--hula-brand-rgb), 0.4);
   --primary-light: var(--hula-brand-primary);
 
   /* ==========================================================================
@@ -31,7 +31,7 @@
   /* 左侧导航栏图标颜色 */
   --left-icon-color: var(--hula-gray-700);
   --left-win-icon-color: var(--hula-brand-primary);
-  --left-active-bg-color: rgba(19, 152, 127, 0.1);
+  --left-active-bg-color: rgba(var(--hula-brand-rgb), 0.1);
   --left-active-icon-color: var(--hula-brand-primary);
   --left-bg-hover: rgba(var(--hula-black-rgb), 0.05);
   --left-active-hover: var(--hula-brand-primary);
@@ -112,9 +112,9 @@
   /* ==========================================================================
       交互状态
      ========================================================================== */
-  --bg-hover: rgba(19, 152, 127, 0.05);
-  --bg-selected: rgba(19, 152, 127, 0.1);
-  --bg-active: rgba(19, 152, 127, 0.15);
+  --bg-hover: rgba(var(--hula-brand-rgb), 0.05);
+  --bg-selected: rgba(var(--hula-brand-rgb), 0.1);
+  --bg-active: rgba(var(--hula-brand-rgb), 0.15);
   --bg-disabled: var(--hula-brand-primary);
 
   /* ==========================================================================
@@ -192,7 +192,7 @@
   /* 特殊用途 */
   --blur-enabled: 1;
   --caret-color: var(--primary-color);
-  --selection-bg: rgba(19, 152, 127, 0.3);
+  --selection-bg: rgba(var(--hula-brand-rgb), 0.3);
 
   /* 响应式尺寸 */
   --sz-avatar-xl: clamp(96px, 25vw, 146px);
@@ -216,7 +216,7 @@ html[data-theme='dark'] {
   --left-bg-color: var(--hula-brand-primary);
 
   /* 左侧导航栏图标颜色 - 暗色主题 */
-  --left-icon-color: #ccc;
+  --left-icon-color: var(--hula-gray-300);
   --left-win-icon-color: var(--hula-brand-primary);
   --left-active-bg-color: rgba(79, 209, 199, 0.2);
   --left-active-icon-color: var(--hula-brand-primary);
@@ -225,7 +225,7 @@ html[data-theme='dark'] {
 
   /* 文字色系统 */
   --text-primary: var(--hula-white);
-  --text-secondary: #ccc;
+  --text-secondary: var(--hula-gray-300);
   --text-tertiary: var(--hula-gray-400);
   --text-disabled: var(--hula-brand-primary);
 
@@ -241,8 +241,8 @@ html[data-theme='dark'] {
 
   /* 交互状态 */
   --bg-hover: rgba(var(--hula-white-rgb), 0.05);
-  --bg-selected: rgba(19, 152, 127, 0.15);
-  --bg-active: rgba(19, 152, 127, 0.2);
+  --bg-selected: rgba(var(--hula-brand-rgb), 0.15);
+  --bg-active: rgba(var(--hula-brand-rgb), 0.2);
   --bg-disabled: var(--hula-brand-primary);
 
   /* 组件特定变量 */
@@ -254,7 +254,7 @@ html[data-theme='dark'] {
   /* 消息系统 */
   --msg-list-bg: var(--hula-brand-primary);
   --msg-hover: var(--hula-brand-primary);
-  --msg-active: rgba(19, 152, 127, 0.6);
+  --msg-active: rgba(var(--hula-brand-rgb), 0.6);
 
   /* 聊天气泡 */
   --chat-left-bg: var(--hula-brand-primary);
@@ -269,7 +269,7 @@ html[data-theme='dark'] {
   --modal-bg: rgba(var(--hula-black-rgb), 0.7);
 
   /* 菜单系统 */
-  --menu-bg: linear-gradient(45deg, rgba(33, 33, 33, 0.65) 60%, rgba(33, 33, 33, 0.95) 90%);
+  --menu-bg: linear-gradient(45deg, rgba(var(--hula-gray-800-rgb), 0.65) 60%, rgba(var(--hula-gray-800-rgb), 0.95) 90%);
   --menu-hover: var(--hula-brand-primary);
 
   /* 图标系统 */
@@ -308,8 +308,8 @@ html[data-theme='dark'] {
 :root[data-theme="dark"][data-theme-style="default"] {
   --right-theme-bg: radial-gradient(
     circle at top left,
-    rgba(19, 152, 127, 0.2) 20%,
-    rgba(19, 152, 127, 0.05) 100%
+    rgba(var(--hula-brand-rgb), 0.2) 20%,
+    rgba(var(--hula-brand-rgb), 0.05) 100%
   );
 }
 

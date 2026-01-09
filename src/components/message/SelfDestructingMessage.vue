@@ -117,7 +117,7 @@ const countdownStyle = computed(() => {
   const percentage = Math.max(0, remainingTime.value / props.destroyAfterMs)
   const hue = percentage > 0.3 ? '120' : percentage > 0.1 ? '60' : '0' // 绿->黄->红
   return {
-    background: `conic-gradient(hsl(${hue}, 70%, 50%) ${percentage * 360}deg, rgba(255,255,255,0.2) ${percentage * 360}deg)`
+    background: `conic-gradient(hsl(${hue}, 70%, 50%) ${percentage * 360}deg, rgba(var(--hula-white-rgb), 0.2) ${percentage * 360}deg)`
   }
 })
 
@@ -371,7 +371,7 @@ defineExpose({
 
   .private-icon {
     font-size: 12px;
-    color: rgba(19, 152, 127, 0.8);
+    color: rgba(var(--hula-brand-rgb), 0.8);
   }
 }
 

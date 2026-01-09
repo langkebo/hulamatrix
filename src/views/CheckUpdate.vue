@@ -17,7 +17,7 @@
           </n-flex>
 
           <n-flex v-if="newVersion" align="center" class="relative">
-            <svg class="w-24px h-24px select-none color-#ccc">
+            <svg class="w-24px h-24px select-none color-var(--hula-gray-300)">
               <use href="#RightArrow"></use>
             </svg>
 
@@ -79,11 +79,12 @@
 
             <n-flex>
               <n-flex vertical :size="20">
-                <svg class="m-[4px_40px] w-24px h-24px select-none rotate-270 color-#ccc">
+                <svg class="m-[4px_40px] w-24px h-24px select-none rotate-270 color-var(--hula-gray-300)">
                   <use href="#RightArrow"></use>
                 </svg>
 
-                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px var(--hula-gray-400))">
+                <span
+                  class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px var(--hula-gray-400))">
                   {{ currentVersion }}
                 </span>
               </n-flex>

@@ -21,8 +21,8 @@ html[data-theme='dark'] {
 
   /* 优化交互状态 */
   --bg-hover: rgba(var(--hula-white-rgb), 0.03);
-  --bg-selected: rgba(19, 152, 127, 0.12);
-  --bg-active: rgba(19, 152, 127, 0.18);
+  --bg-selected: rgba(var(--hula-brand-rgb), 0.12);
+  --bg-active: rgba(var(--hula-brand-rgb), 0.18);
 
   /* 更柔和的阴影 */
   --shadow-sm: 0 1px 2px rgba(var(--hula-black-rgb), 0.4);
@@ -44,7 +44,7 @@ html[data-theme='dark'] {
   /* 消息列表优化 */
   --msg-list-bg: var(--hula-brand-primary);
   --msg-hover: var(--hula-brand-primary);
-  --msg-active: rgba(19, 152, 127, 0.5);
+  --msg-active: rgba(var(--hula-brand-rgb), 0.5);
 
   /* 菜单优化 */
   --menu-bg: linear-gradient(45deg, rgba(26, 26, 26, 0.95) 60%, rgba(26, 26, 26, 0.98) 90%);
@@ -82,7 +82,7 @@ html[data-theme='dark'] {
     &:focus {
       border-color: var(--primary-color);
       box-shadow:
-        0 0 0 2px rgba(19, 152, 127, 0.15),
+        0 0 0 2px rgba(var(--hula-brand-rgb), 0.15),
         inset 0 1px 0 rgba(var(--hula-white-rgb), 0.05);
     }
 
@@ -141,13 +141,13 @@ html[data-theme='dark'] {
   /* 暗色模式下的引用 */
   blockquote {
     border-left-color: var(--primary-color);
-    background: rgba(19, 152, 127, 0.05);
+    background: rgba(var(--hula-brand-rgb), 0.05);
     color: var(--text-secondary);
   }
 
   /* 暗色模式下的选中状态 */
   ::selection {
-    background: rgba(19, 152, 127, 0.3);
+    background: rgba(var(--hula-brand-rgb), 0.3);
     color: var(--hula-white);
   }
 
@@ -212,7 +212,7 @@ html[data-theme='dark'] {
     &:focus-within {
       background: var(--hula-brand-primary);
       box-shadow:
-        0 0 0 2px rgba(19, 152, 127, 0.15),
+        0 0 0 2px rgba(var(--hula-brand-rgb), 0.15),
         inset 0 1px 0 rgba(var(--hula-white-rgb), 0.05);
     }
   }
@@ -280,7 +280,7 @@ html[data-theme='dark'] {
       }
 
       &.active {
-        background: rgba(19, 152, 127, 0.1);
+        background: rgba(var(--hula-brand-rgb), 0.1);
         color: var(--primary-color);
       }
     }
@@ -324,16 +324,16 @@ html[data-theme='dark'] {
 /* 暗色模式下的标签 */
 html[data-theme='dark'] {
   .tag {
-    background: rgba(19, 152, 127, 0.1);
+    background: rgba(var(--hula-brand-rgb), 0.1);
     color: var(--primary-color);
-    border: 1px solid rgba(19, 152, 127, 0.2);
+    border: 1px solid rgba(var(--hula-brand-rgb), 0.2);
 
     &.tag--outlined {
       background: transparent;
     }
 
     &.tag--ghost {
-      background: rgba(19, 152, 127, 0.05);
+      background: rgba(var(--hula-brand-rgb), 0.05);
       border-color: transparent;
     }
   }

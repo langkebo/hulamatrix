@@ -58,7 +58,10 @@
               @click="giveAccount(item)"
               class="p-8px cursor-pointer hover:bg-var(--hula-brand-primary)20 dark:hover:bg-var(--hula-brand-primary)30 hover:rounded-6px">
               <div class="flex-between-center">
-                <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" color="var(--hula-white)" class="size-28px rounded-50%" />
+                <n-avatar
+                  :src="AvatarUtils.getAvatarUrl(item.avatar)"
+                  color="var(--hula-white)"
+                  class="size-28px rounded-50%" />
                 <p class="text-14px color-var(--hula-brand-primary) dark:color-var(--hula-brand-primary)">
                   {{ item.account }}
                 </p>
@@ -190,7 +193,7 @@
         @click="router.push('/qrCode')">
         {{ qrCodeLabel }}
       </div>
-      <div class="w-1px h-14px bg-#ccc dark:bg-var(--hula-brand-primary) justify-self-center"></div>
+      <div class="w-1px h-14px bg-var(--hula-gray-300) dark:bg-var(--hula-brand-primary) justify-self-center"></div>
       <div
         v-if="uiState === 'auto'"
         class="text-brand cursor-pointer justify-self-start text-left"

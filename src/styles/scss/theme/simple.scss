@@ -9,7 +9,7 @@
     --left-active-hover: var(--hula-brand-primary);
     --left-bg-hover: rgba(193, 193, 193, 0.4);
     --left-active-icon-color: var(--hula-brand-primary);
-    --left-win-icon-color: rgba(19, 152, 127, 0.6);
+    --left-win-icon-color: rgba(var(--hula-brand-rgb), 0.6);
 
     // 包含边框的选中样式
     --border-active-color: var(--hula-brand-primary);
@@ -34,7 +34,7 @@
     --icon-hover-color: var(--hula-brand-primary);
 
     // 移动端样式
-    --tab-bar-icon-color: rgba(19, 152, 127, 1);
+    --tab-bar-icon-color: rgba(var(--hula-brand-rgb), 1);
   }
 }
 
@@ -48,7 +48,7 @@ html[data-theme='dark'] {
     --left-active-hover: var(--hula-brand-primary);
     --left-bg-hover: rgba(var(--hula-white-rgb), 0.2);
     --left-active-icon-color: var(--hula-brand-primary);
-    --left-win-icon-color: rgba(19, 152, 127, 0.6);
+    --left-win-icon-color: rgba(var(--hula-brand-rgb), 0.6);
 
     // 包含边框的选中样式
     --border-active-color: var(--hula-brand-primary);
@@ -62,7 +62,7 @@ html[data-theme='dark'] {
     --right-chat-footer-line-color: var(--hula-brand-primary);
 
     // 消息列表样式
-    --msg-active-color: rgba(19, 152, 127, 0.4);
+    --msg-active-color: rgba(var(--hula-brand-rgb), 0.4);
     // 群公告消息背景色
     --group-notice-bg: rgba(133, 133, 133, 0.2);
 
@@ -73,7 +73,7 @@ html[data-theme='dark'] {
     --icon-hover-color: var(--hula-brand-primary);
 
     // 移动端样式
-    --tab-bar-icon-color: rgba(19, 152, 127, 0.4);
+    --tab-bar-icon-color: rgba(var(--hula-brand-rgb), 0.4);
   }
 }
 /**! end */

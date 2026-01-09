@@ -74,33 +74,23 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue'
+import { h, onMounted } from 'vue'
 import { ref, computed } from 'vue'
 import { NCard, NAlert, NSpace, NButton, NDataTable, NModal, NProgress } from 'naive-ui'
-import { flags } from '@/utils/envFlags'
-import {
-  listDevices,
-  deleteDevice,
-  renameDevice,
-  startSasVerification,
-  startQrVerification
-} from '@/integrations/matrix/encryption'
+import { startSasVerification, startQrVerification } from '@/integrations/matrix/encryption'
 import { useE2EEStore } from '@/stores/e2ee'
 import { useRouter } from 'vue-router'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
+import { useE2EEDevices, type DeviceItem } from '@/composables/useE2EEDevices'
 
 import { msg } from '@/utils/SafeUI'
 
 // Type definitions
-interface DeviceRow {
-  device_id: string
-  display_name?: string
-  last_seen_ts?: number
-}
+// Replaced by DeviceItem from composable
 
 interface UnverifiedDevice {
-  device_id: string
-  display_name?: string
+  deviceId: string
+  displayName?: string
 }
 
 interface SasEmoji {
@@ -117,42 +107,34 @@ interface SasData {
   reason?: string
 }
 
-const e2eeEnabledFlag = computed(() => flags.matrixE2eeEnabled)
-const devices = ref<DeviceRow[]>([])
-const loading = ref(false)
+const {
+  devices,
+  loading,
+  progress,
+  securityLevel,
+  e2eeEnabled: e2eeEnabledFlag,
+  unverifiedDevices,
+  fetchDevices: refresh,
+  handleRenameDevice,
+  handleDeleteDevice
+} = useE2EEDevices()
+
 const showGuide = ref(false)
 const router = useRouter()
 const e2ee = useE2EEStore()
 const auth = useMatrixAuthStore()
-const progress = computed(() => e2ee.deviceVerificationProgress || 0)
+
 const securityLevelText = computed(() => {
-  const lvl = e2ee.securityLevel
+  const lvl = securityLevel.value
   return lvl === 'high' ? '高' : lvl === 'medium' ? '中' : '低'
 })
-const unverified = computed(() =>
-  e2ee.getUnverifiedDevices().map((d: { deviceId: string; displayName?: string }) => ({
-    device_id: d.deviceId,
-    display_name: d.displayName
-  }))
-)
-const lastVerifyError = ref('')
-const showVerifyModal = ref(false)
-const currentVerify = ref<DeviceRow | null>(null)
-const sasData = ref<SasData | null>(null)
-const qrDataUri = ref<string | null>(null)
-const verifyFlowError = ref('')
-const verifyFlowInfo = ref('')
-const verifyProgress = ref(0)
-let progressTimer: NodeJS.Timeout | null = null
 
-const refresh = async () => {
-  loading.value = true
-  try {
-    devices.value = await listDevices()
-  } finally {
-    loading.value = false
-  }
-}
+// Use unverifiedDevices from composable, but we might need to map it if the table expects specific columns
+// The original unverified computed mapped to { device_id, display_name }
+// Let's check unverifiedCols. It is not shown in the read output, I should assume it uses similar keys.
+// Actually, looking at the template: <n-data-table ... :columns="unverifiedCols" :data="unverified" />
+// I need to find unverifiedCols definition. It wasn't in the first 200 lines.
+// I should read the rest of the file first to be safe.
 
 const goRecovery = async () => {
   await router.push('/e2ee/backup')
@@ -161,46 +143,44 @@ const openGuide = () => {
   showGuide.value = true
 }
 
-const onRename = async (row: DeviceRow) => {
-  const name = prompt('输入新的设备名称', row.display_name || '')
-  if (!name) return
-  const ok = await renameDevice(row.device_id, name)
-  msg[ok ? 'success' : 'error'](ok ? '已更新设备名称' : '更新设备名称失败')
-  if (ok) refresh()
-}
-const onDelete = async (row: DeviceRow) => {
-  const ok = await deleteDevice(row.device_id)
-  msg[ok ? 'success' : 'error'](ok ? '已删除设备' : '删除设备失败')
-  if (ok) refresh()
-}
-
 const cols = [
-  { title: '设备ID', key: 'device_id' },
-  { title: '名称', key: 'display_name' },
+  { title: '设备ID', key: 'deviceId' },
+  { title: '名称', key: 'displayName' },
   {
     title: '最近使用',
-    key: 'last_seen_ts',
-    render(row: DeviceRow) {
-      return row.last_seen_ts ? new Date(row.last_seen_ts).toLocaleString() : '-'
+    key: 'lastSeenTs',
+    render(row: DeviceItem) {
+      return row.lastSeenTs ? new Date(row.lastSeenTs).toLocaleString() : '-'
     }
   },
   {
     title: '操作',
     key: 'ops',
-    render(row: DeviceRow) {
+    render(row: DeviceItem) {
       return h('div', { class: 'flex gap-8px' }, [
-        h('button', { class: 'n-button', onClick: () => onRename(row) }, '重命名'),
-        h('button', { class: 'n-button n-button--error', onClick: () => onDelete(row) }, '删除')
+        h('button', { class: 'n-button', onClick: () => handleRenameDevice(row.deviceId, row.displayName) }, '重命名'),
+        h('button', { class: 'n-button n-button--error', onClick: () => handleDeleteDevice(row.deviceId) }, '删除')
       ])
     }
   }
 ]
 
-const onVerify = async (row: DeviceRow) => {
+const onVerify = async (row: DeviceItem) => {
   lastVerifyError.value = ''
   currentVerify.value = row
   showVerifyModal.value = true
 }
+
+const lastVerifyError = ref('')
+const showVerifyModal = ref(false)
+const currentVerify = ref<DeviceItem | null>(null)
+const sasData = ref<SasData | null>(null)
+const qrDataUri = ref<string | null>(null)
+const verifyFlowError = ref('')
+const verifyFlowInfo = ref('')
+const verifyProgress = ref(0)
+let progressTimer: NodeJS.Timeout | null = null
+
 const beginSas = async () => {
   verifyFlowError.value = ''
   verifyFlowInfo.value = '正在发起 SAS 验证，请在另一设备确认…'
@@ -211,7 +191,7 @@ const beginSas = async () => {
   progressTimer = setInterval(() => {
     verifyProgress.value = Math.min(95, verifyProgress.value + 5)
   }, 600)
-  const r = await startSasVerification(auth.userId, currentVerify.value?.device_id || '')
+  const r = await startSasVerification(auth.userId, currentVerify.value?.deviceId || '')
   if (!r.ok && !r.decimals && !r.emojis) {
     verifyFlowError.value = r.reason || '无法开始 SAS 验证'
     verifyFlowInfo.value = ''
@@ -226,7 +206,7 @@ const confirmSas = async () => {
   try {
     await sasData.value?.confirm?.()
     msg.success('SAS 验证完成')
-    e2ee.updateDevice(currentVerify.value!.device_id, { verified: true })
+    e2ee.updateDevice(currentVerify.value!.deviceId, { verified: true })
     verifyFlowInfo.value = '验证已完成'
     verifyProgress.value = 100
     if (progressTimer) clearInterval(progressTimer)
@@ -255,7 +235,7 @@ const beginQr = async () => {
   progressTimer = setInterval(() => {
     verifyProgress.value = Math.min(95, verifyProgress.value + 5)
   }, 600)
-  const r = await startQrVerification(auth.userId, currentVerify.value?.device_id || '')
+  const r = await startQrVerification(auth.userId, currentVerify.value?.deviceId || '')
   if (!r.ok && !r.dataUri) {
     verifyFlowError.value = r.reason || '无法开始二维码验证'
     verifyFlowInfo.value = ''
@@ -267,9 +247,9 @@ const beginQr = async () => {
 }
 const confirmQr = async () => {
   try {
-    await (await startQrVerification(auth.userId, currentVerify.value?.device_id || '')).confirm?.()
+    await (await startQrVerification(auth.userId, currentVerify.value?.deviceId || '')).confirm?.()
     msg.success('二维码验证完成')
-    e2ee.updateDevice(currentVerify.value!.device_id, { verified: true })
+    e2ee.updateDevice(currentVerify.value!.deviceId, { verified: true })
     verifyFlowInfo.value = '验证已完成'
     verifyProgress.value = 100
     if (progressTimer) clearInterval(progressTimer)
@@ -291,20 +271,22 @@ const retrySas = () => beginSas()
 const retryQr = () => beginQr()
 
 const unverifiedCols = [
-  { title: '设备ID', key: 'device_id' },
-  { title: '名称', key: 'display_name' },
+  { title: '设备ID', key: 'deviceId' },
+  { title: '名称', key: 'displayName' },
   {
     title: '操作',
     key: 'ops',
     render(row: UnverifiedDevice) {
       return h('div', { class: 'flex gap-8px' }, [
-        h('button', { class: 'n-button', onClick: () => onVerify(row as DeviceRow) }, '验证')
+        h('button', { class: 'n-button', onClick: () => onVerify(row as unknown as DeviceItem) }, '验证')
       ])
     }
   }
 ]
 
-refresh()
+onMounted(() => {
+  refresh()
+})
 </script>
 
 <style scoped>

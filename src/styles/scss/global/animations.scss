@@ -133,7 +133,7 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    box-shadow: 0 0 20px rgba(19, 152, 127, 0.3);
+    box-shadow: 0 0 20px rgba(var(--hula-brand-rgb), 0.3);
   }
 }
 

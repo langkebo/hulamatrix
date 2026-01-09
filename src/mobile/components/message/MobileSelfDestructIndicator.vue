@@ -324,7 +324,7 @@ watch(
     justify-content: center;
     width: 28px;
     height: 28px;
-    background: rgba(19, 152, 127, 0.1);
+    background: rgba(var(--hula-brand-rgb), 0.1);
     border-radius: 50%;
 
     &.is-pulsing {

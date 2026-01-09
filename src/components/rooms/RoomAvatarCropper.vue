@@ -90,7 +90,7 @@ const cropSize = 300 // Base size for cropper area
 const canvasStyle = computed(() => ({
   width: `${cropSize}px`,
   height: `${cropSize}px`,
-  border: '2px dashed #ccc',
+  border: '2px dashed var(--hula-gray-300)',
   borderRadius: cropShape.value === 'circle' ? '50%' : '8px',
   overflow: 'hidden',
   position: 'relative' as const,

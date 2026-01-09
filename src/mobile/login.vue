@@ -40,7 +40,9 @@
       <!-- 登录表单 -->
       <n-flex v-if="activeTab === 'login'" class="text-center w-80%" vertical :size="16">
         <n-flex justify="center" class="mt--10px">
-          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="toggleServerInput()">自定义服务器</n-button>
+          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="toggleServerInput()">
+            自定义服务器
+          </n-button>
         </n-flex>
         <n-collapse-transition :show="matrixStore.serverInputVisible">
           <n-flex vertical :size="8">
@@ -95,7 +97,9 @@
               @click="giveAccount(item)"
               class="p-8px hover:bg-var(--hula-gray-100) hover:rounded-6px">
               <div class="flex-between-center">
-                <n-avatar :src="AvatarUtils.getAvatarUrl(item.avatar)" class="size-28px bg-#ccc rounded-50%" />
+                <n-avatar
+                  :src="AvatarUtils.getAvatarUrl(item.avatar)"
+                  class="size-28px bg-var(--hula-gray-300) rounded-50%" />
                 <p class="text-14px color-#505050">{{ item.account }}</p>
                 <svg @click.stop="delAccount(item)" class="w-12px h-12px">
                   <use href="#close"></use>
@@ -121,7 +125,9 @@
           clearable />
 
         <n-flex justify="flex-end" :size="6">
-          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="handleForgetPassword">忘记密码</n-button>
+          <n-button text :style="{ color: 'var(--hula-brand-primary)' }" @click="handleForgetPassword">
+            忘记密码
+          </n-button>
         </n-flex>
 
         <n-button

@@ -7,14 +7,14 @@ html,
 body,
 svg {
   &::selection {
-    background: rgba(19, 152, 127, 0.3); /** 输入框选中文本背景色 */
+    background: rgba(var(--hula-brand-rgb), 0.3); /** 输入框选中文本背景色 */
   }
   outline: none;
   overscroll-behavior: none; // 禁止mac的"触底反弹"效果
 }
 
 ::selection {
-  background: rgba(19, 152, 127, 0.3); /** 输入框选中文本背景色 */
+  background: rgba(var(--hula-brand-rgb), 0.3); /** 输入框选中文本背景色 */
 }
 /**! 主题变量 - 基于HuLa配色方案 */
 /* todo: 这里只需要定义单个颜色的变量即可无需重复定义组件的颜色 */
@@ -69,8 +69,8 @@ svg {
   --line-color: var(--hula-brand-primary);
   // 通用左边菜单栏的hover样式
   --bg-left-menu: rgba(241, 241, 241, 1);
-  --bg-left-menu-hover: rgba(90, 90, 90, 0.1);
-  --bg-left-active: rgba(90, 90, 90, 0.2);
+  --bg-left-menu-hover: rgba(var(--hula-gray-500-rgb), 0.1);
+  --bg-left-active: rgba(var(--hula-gray-500-rgb), 0.2);
   //通用按钮样式
   --button-bg-color: var(--hula-brand-primary);
   // 通用禁用时的样式
@@ -168,7 +168,7 @@ html[data-theme='dark'] {
   --center-bg-color: var(--hula-brand-primary);
   --right-bg-color: var(--hula-brand-primary);
   // 阴影样式的颜色
-  --box-shadow-color: rgba(90, 90, 90, 0.1);
+  --box-shadow-color: rgba(var(--hula-gray-500-rgb), 0.1);
   // 文字颜色
   --text-color: var(--hula-white);
   // 整体图标颜色
@@ -180,7 +180,7 @@ html[data-theme='dark'] {
   // 消息列表样式
   --bg-msg-first-child: var(--hula-brand-primary);
   --bg-msg-hover: var(--hula-brand-primary);
-  --bg-active-msg: rgba(19, 152, 127, 0.6);
+  --bg-active-msg: rgba(var(--hula-brand-rgb), 0.6);
   // 聊天框整体样式
   --bg-chat-drawer: var(--hula-brand-primary);
   --bg-setting-item: var(--hula-brand-primary);
@@ -188,7 +188,7 @@ html[data-theme='dark'] {
   // 弹出框背景样式
   --bg-popover: var(--hula-brand-primary);
   // 右键菜单样式或者需要透明的菜单的样式
-  --bg-menu: linear-gradient(45deg, rgba(33, 33, 33, 0.65) 60%, rgba(33, 33, 33, 0.95) 90%);
+  --bg-menu: linear-gradient(45deg, rgba(var(--hula-gray-800-rgb), 0.65) 60%, rgba(var(--hula-gray-800-rgb), 0.95) 90%);
   --bg-menu-hover: var(--hula-brand-primary);
   --line-color: var(--hula-brand-primary);
   // 通用左边菜单栏的hover样式
@@ -203,7 +203,7 @@ html[data-theme='dark'] {
   --bg-bubble: rgb(38, 38, 38);
   --bg-bubble-active: rgba(66, 66, 66, 0.8);
   // 翻译气泡背景色
-  --bg-translate-bubble: rgba(144, 144, 144, 0.2);
+  --bg-translate-bubble: rgba(var(--hula-gray-400-rgb), 0.2);
   // 头像状态的背景颜色
   --bg-avatar: rgba(22, 22, 22, 1);
   // 个人信息框背景颜色
@@ -262,7 +262,7 @@ html[data-theme='dark'] {
   // 群公告列表背景色
   --group-notice-list-bg: var(--hula-brand-primary);
   // 文件文本的背景颜色
-  --file-bg-color: #222;
+  --file-bg-color: var(--hula-gray-800);
 }
 @media (min-width: 640px) {
   :root {
@@ -408,7 +408,7 @@ html[data-blur='1'] {
 
 /** 修改默认的naive-ui的选择器样式 */
 :deep(.n-base-selection) {
-  --n-box-shadow-active: 0 0 0 2px rgba(19, 152, 127, 0.2) !important;
+  --n-box-shadow-active: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.2) !important;
   --n-border-active: 1px solid var(--hula-brand-primary) !important;
   --n-border-hover: 1px solid var(--hula-brand-primary) !important;
 }

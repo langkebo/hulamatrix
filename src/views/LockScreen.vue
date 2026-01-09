@@ -78,7 +78,7 @@
             <p class="text-(18px [--chat-text-color])">{{ t('message.lock_screen.wrong_password') }}</p>
             <p
               @click="init"
-              class="w-120px bg-[rgba(255,255,255,0.1)] backdrop-blur-xl cursor-pointer p-10px rounded-8px text-(14px var(--hula-brand-primary) center) font-500">
+              class="w-120px bg-[rgba(var(--hula-white-rgb), 0.1)] backdrop-blur-xl cursor-pointer p-10px rounded-8px text-(14px var(--hula-brand-primary) center) font-500">
               {{ t('message.lock_screen.confirm_button') }}
             </p>
           </n-flex>
@@ -254,7 +254,7 @@ onUnmounted(() => {
 .password-input {
   width: 320px;
   border: 2px solid rgba(var(--hula-white-rgb), 0.1);
-  border-bottom-color: rgba(19, 152, 127, 1);
+  border-bottom-color: rgba(var(--hula-brand-rgb), 1);
   background-color: var(--hula-brand-primary);
   color: var(--hula-white);
 }

@@ -11,8 +11,8 @@
 
 // 品牌色
 $color-primary: var(--hula-brand-primary);
-$color-primary-hover: rgba(19, 152, 127, 0.8);
-$color-primary-active: rgba(19, 152, 127, 0.4);
+$color-primary-hover: rgba(var(--hula-brand-rgb), 0.8);
+$color-primary-active: rgba(var(--hula-brand-rgb), 0.4);
 $color-primary-light: var(--hula-brand-primary);
 
 // 文本颜色

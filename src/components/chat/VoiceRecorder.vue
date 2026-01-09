@@ -368,7 +368,7 @@ onUnmounted(() => {
   }
 
   .record-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-brand-primary));
+    @include base-control-button(rgba(var(--hula-brand-rgb), 0.5), var(--hula-brand-primary));
   }
 
   .stop-btn {
@@ -380,7 +380,7 @@ onUnmounted(() => {
   }
 
   .send-btn {
-    @include base-control-button(rgba(19, 152, 127, 0.5), var(--hula-brand-primary));
+    @include base-control-button(rgba(var(--hula-brand-rgb), 0.5), var(--hula-brand-primary));
 
     .loading-spinner {
       @apply size-16px rounded-full;

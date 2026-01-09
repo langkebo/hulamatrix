@@ -143,7 +143,7 @@ onMounted(async () => {
     white-space: normal;
   }
   &:not(.active):hover {
-    background: #ccc;
+    background: var(--hula-gray-300);
     cursor: pointer;
   }
 }

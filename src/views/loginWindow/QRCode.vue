@@ -69,7 +69,7 @@
       <div class="text-brand cursor-pointer" @click="router.push('/login')">
         {{ t('login.qr.actions.account_login') }}
       </div>
-      <div class="w-1px h-14px bg-#ccc dark:bg-var(--hula-brand-primary)"></div>
+      <div class="w-1px h-14px bg-var(--hula-gray-300) dark:bg-var(--hula-brand-primary)"></div>
       <div
         class="text-brand cursor-pointer"
         @click="createWebviewWindow(t('login.qr.actions.register_title'), 'register', 600, 600)">

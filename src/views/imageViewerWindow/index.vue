@@ -1,6 +1,6 @@
 <template>
   <div
-    class="size-full bg-#222 relative flex flex-col select-none"
+    class="size-full bg-var(--hula-gray-800) relative flex flex-col select-none"
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave">
     <!-- 顶部操作栏 -->

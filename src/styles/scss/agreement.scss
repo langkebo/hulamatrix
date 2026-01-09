@@ -23,7 +23,7 @@
   --agreement-subheading-color: var(--hula-brand-primary);
   --agreement-paragraph-color: var(--hula-brand-primary);
   --agreement-muted-color: var(--hula-brand-primary);
-  --agreement-accent-color: rgba(19, 152, 127, 0.55);
+  --agreement-accent-color: rgba(var(--hula-brand-rgb), 0.55);
   --agreement-scrollbar-track: var(--hula-brand-primary);
   --agreement-scrollbar-thumb: var(--hula-brand-primary);
   --agreement-scrollbar-thumb-hover: var(--hula-brand-primary);

@@ -517,7 +517,7 @@ onMounted(async () => {
 }
 
 .n-date-panel-actions .n-button {
-  background-color: rgba(19, 152, 127, 0.1) !important;
+  background-color: rgba(var(--hula-brand-rgb), 0.1) !important;
   border: none !important;
   color: var(--hula-brand-primary) !important;
 }

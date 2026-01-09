@@ -37,7 +37,7 @@
         <div class="flex flex-row">
           <!-- 搜索会话 -->
           <div
-            class="flex-1 h-64vh bg-var(--hula-brand-primary)60 dark:bg-#222 rounded-8px px-12px mt-6px flex flex-col">
+            class="flex-1 h-64vh bg-var(--hula-brand-primary)60 dark:bg-var(--hula-gray-800) rounded-8px px-12px mt-6px flex flex-col">
             <n-input
               id="search"
               v-model:value="searchText"

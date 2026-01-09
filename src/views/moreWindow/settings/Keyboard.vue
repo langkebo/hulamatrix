@@ -441,7 +441,7 @@ const saveShortcut = () => {
 
   &.is-recording {
     border-color: var(--hula-brand-primary);
-    background: rgba(19, 152, 127, 0.05);
+    background: rgba(var(--hula-brand-rgb), 0.05);
   }
 
   &:focus {

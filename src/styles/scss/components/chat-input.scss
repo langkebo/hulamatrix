@@ -88,7 +88,7 @@
 
   &:focus-within {
     border-color: var(--input-border-focus);
-    box-shadow: 0 0 0 2px rgba(19, 152, 127, 0.1);
+    box-shadow: 0 0 0 2px rgba(var(--hula-brand-rgb), 0.1);
   }
 }
 
@@ -222,7 +222,7 @@
 
   &.active {
     color: var(--primary-color);
-    background: rgba(19, 152, 127, 0.1);
+    background: rgba(var(--hula-brand-rgb), 0.1);
   }
 }
 

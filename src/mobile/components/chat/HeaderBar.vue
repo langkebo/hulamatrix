@@ -159,7 +159,7 @@ const onlineCount = computed(() => {
 }
 
 .typing-hint {
-  @apply bg-[rgba(0,0,0,0.15)] text-12px rounded-12px px-8px py-4px backdrop-blur-sm;
+  @apply bg-[rgba(var(--hula-black-rgb), 0.15)] text-12px rounded-12px px-8px py-4px backdrop-blur-sm;
   color: var(--chat-text-color);
 }
 .dot-online {

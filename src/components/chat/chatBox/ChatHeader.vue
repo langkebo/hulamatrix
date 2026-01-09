@@ -1181,7 +1181,7 @@ onUnmounted(() => {
 }
 
 .sidebar {
-  border: 1px solid rgba(90, 90, 90, 0.1);
+  border: 1px solid rgba(var(--hula-gray-500-rgb), 0.1);
 }
 
 .sidebar-scrollbar {

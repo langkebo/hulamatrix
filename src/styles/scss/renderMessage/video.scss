@@ -60,7 +60,7 @@
 }
 
 .upload-icon {
-  color: rgba(19, 152, 127, 0.4);
+  color: rgba(var(--hula-brand-rgb), 0.4);
 }
 
 @keyframes spin {
@@ -80,7 +80,7 @@
 
 .upload-tip {
   @apply: color-white backdrop-blur-4px;
-  background: rgba(19, 152, 127, 0.4);
+  background: rgba(var(--hula-brand-rgb), 0.4);
 }
 
 .loading-text {

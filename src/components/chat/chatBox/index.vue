@@ -77,8 +77,8 @@ const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !c
     transition: all 0.2s ease;
     opacity: 0;
     box-shadow:
-      0 -3px 0 0 rgba(102, 102, 102, 0.5),
-      0 3px 0 0 rgba(102, 102, 102, 0.5);
+      0 -3px 0 0 rgba(var(--hula-gray-500-rgb), 0.5),
+      0 3px 0 0 rgba(var(--hula-gray-500-rgb), 0.5);
     pointer-events: none;
   }
 
@@ -92,8 +92,8 @@ const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !c
     &::after {
       opacity: 1;
       box-shadow:
-        0 -3px 0 0 rgba(102, 102, 102, 0.8),
-        0 3px 0 0 rgba(102, 102, 102, 0.8);
+        0 -3px 0 0 rgba(var(--hula-gray-500-rgb), 0.8),
+        0 3px 0 0 rgba(var(--hula-gray-500-rgb), 0.8);
     }
   }
 
@@ -102,14 +102,14 @@ const isLoadingSession = computed(() => !!globalStore.currentSessionRoomId && !c
     &::before {
       opacity: 1;
       transform: scaleY(1.2);
-      background: rgba(19, 152, 127, 0.5);
+      background: rgba(var(--hula-brand-rgb), 0.5);
     }
 
     &::after {
       opacity: 1;
       box-shadow:
-        0 -3px 0 0 rgba(19, 152, 127, 0.5),
-        0 3px 0 0 rgba(19, 152, 127, 0.5);
+        0 -3px 0 0 rgba(var(--hula-brand-rgb), 0.5),
+        0 3px 0 0 rgba(var(--hula-brand-rgb), 0.5);
     }
   }
 }

@@ -358,7 +358,7 @@ onMounted(() => {
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(19, 152, 127, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--hula-brand-rgb), 0.3);
   }
 
   &:active {

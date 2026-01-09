@@ -14,16 +14,13 @@
               :srcObject="localStream"
               autoplay
               playsinline
-              muted
-            />
+              muted />
             <div v-else class="video-placeholder">
               <n-avatar
                 :src="currentUser?.avatar || ''"
                 :size="80"
                 round
-                :fallback="currentUser?.name?.charAt(0) || 'M'
-              "
-              />
+                :fallback="currentUser?.name?.charAt(0) || 'M'" />
             </div>
           </div>
           <div class="participant-info">
@@ -40,8 +37,7 @@
           v-for="participant in remoteParticipants"
           :key="participant.userId"
           class="video-participant"
-          :class="{ 'speaking': participant.isSpeaking }"
-        >
+          :class="{ speaking: participant.isSpeaking }">
           <div class="video-container">
             <video
               v-if="participant.stream && callType === 'video'"
@@ -49,30 +45,29 @@
               class="participant-video"
               :srcObject="participant.stream"
               autoplay
-              playsinline
-            />
+              playsinline />
             <div v-else class="video-placeholder">
               <n-avatar
                 :src="participant.avatar || ''"
                 :size="80"
                 round
-                :fallback="participant.name?.charAt(0) || '?'
-              "
-              />
+                :fallback="participant.name?.charAt(0) || '?'" />
             </div>
           </div>
           <div class="participant-info">
             <div class="participant-name">{{ participant.name }}</div>
             <div class="participant-status">
               <n-tag v-if="participant.isMuted" type="error" size="small" round>静音</n-tag>
-              <n-tag v-if="participant.hasCamera && !participant.stream" type="warning" size="small" round">摄像头关闭</n-tag>
+              <n-tag v-if="participant.hasCamera && !participant.stream" type="warning" size="small" round>
+                摄像头关闭
+              </n-tag>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 侧边栏 - 参与者列表 -->
-      <div class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
+      <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
         <div class="sidebar-header">
           <h3>参与者 ({{ totalParticipants }})</h3>
           <n-button quaternary circle size="small" @click="toggleSidebar">
@@ -92,9 +87,7 @@
               :src="currentUser?.avatar || ''"
               :size="40"
               round
-              :fallback="currentUser?.name?.charAt(0) || 'M'
-            "
-            />
+              :fallback="currentUser?.name?.charAt(0) || 'M'" />
             <div class="participant-details">
               <div class="name">{{ currentUser?.name || '我' }} (您)</div>
               <div class="status">
@@ -120,15 +113,8 @@
             v-for="participant in remoteParticipants"
             :key="participant.userId"
             class="participant-item"
-            :class="{ 'speaking': participant.isSpeaking }"
-          >
-            <n-avatar
-              :src="participant.avatar || ''"
-              :size="40"
-              round
-              :fallback="participant.name?.charAt(0) || '?'
-            "
-            />
+            :class="{ speaking: participant.isSpeaking }">
+            <n-avatar :src="participant.avatar || ''" :size="40" round :fallback="participant.name?.charAt(0) || '?'" />
             <div class="participant-details">
               <div class="name">{{ participant.name }}</div>
               <div class="status">
@@ -140,8 +126,7 @@
             <div class="participant-actions">
               <n-dropdown
                 :options="getParticipantActions(currentUser?.isHost || false)"
-                @select="handleParticipantAction($event, participant)"
-              >
+                @select="handleParticipantAction($event, participant)">
                 <n-button quaternary circle size="tiny">
                   <template #icon>
                     <n-icon><DotsVertical /></n-icon>
@@ -177,8 +162,7 @@
             circle
             size="large"
             @click="toggleMicrophone"
-            :disabled="!localStream"
-          >
+            :disabled="!localStream">
             <template #icon>
               <n-icon>
                 <MicrophoneOff v-if="isMuted" />
@@ -194,8 +178,7 @@
             circle
             size="large"
             @click="toggleCamera"
-            :disabled="!localStream"
-          >
+            :disabled="!localStream">
             <template #icon>
               <n-icon>
                 <VideoOff v-if="isCameraOff" />
@@ -219,8 +202,7 @@
             size="large"
             @click="toggleScreenShare"
             :type="isScreenSharing ? 'primary' : 'default'"
-            :loading="isTogglingScreenShare"
-          >
+            :loading="isTogglingScreenShare">
             <template #icon>
               <n-icon><DeviceComputerCamera /></n-icon>
             </template>
@@ -233,8 +215,7 @@
             size="large"
             @click="toggleRecording"
             :type="isRecording ? 'error' : 'default'"
-            :loading="isTogglingRecording"
-          >
+            :loading="isTogglingRecording">
             <template #icon>
               <n-icon><Radio /></n-icon>
             </template>
@@ -254,12 +235,7 @@
             <template #icon>
               <n-icon><MessageCircle /></n-icon>
             </template>
-            <n-badge
-              v-if="unreadChatCount > 0"
-              :value="unreadChatCount"
-              :max="99"
-              class="chat-unread-badge"
-            />
+            <n-badge v-if="unreadChatCount > 0" :value="unreadChatCount" :max="99" class="chat-unread-badge" />
           </n-button>
 
           <!-- 参与者管理 -->
@@ -331,8 +307,7 @@
           v-for="message in chatMessages"
           :key="message.id"
           class="chat-message"
-          :class="{ 'own-message': message.senderId === currentUserId }"
-        >
+          :class="{ 'own-message': message.senderId === currentUserId }">
           <div class="message-sender">{{ message.senderName }}</div>
           <div class="message-content">{{ message.content }}</div>
           <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
@@ -343,8 +318,7 @@
           v-model:value="chatInput"
           placeholder="输入消息..."
           @keyup.enter="sendChatMessage"
-          :disabled="!isConnected"
-        >
+          :disabled="!isConnected">
           <template #suffix>
             <n-button quaternary size="small" @click="sendChatMessage">
               <template #icon>
@@ -359,18 +333,9 @@
     <!-- 邀请对话框 -->
     <n-modal v-model:show="showInviteDialog" preset="dialog" title="邀请参与者">
       <div class="invite-content">
-        <n-input
-          v-model:value="inviteInput"
-          placeholder="输入用户ID或搜索用户"
-          @keyup.enter="inviteParticipant"
-        />
+        <n-input v-model:value="inviteInput" placeholder="输入用户ID或搜索用户" @keyup.enter="inviteParticipant" />
         <div class="invite-suggestions">
-          <div
-            v-for="user in suggestedUsers"
-            :key="user.id"
-            class="suggestion-item"
-            @click="selectInviteUser(user)"
-          >
+          <div v-for="user in suggestedUsers" :key="user.id" class="suggestion-item" @click="selectInviteUser(user)">
             <n-avatar :src="user.avatar" :size="32" round />
             <span>{{ user.name }}</span>
           </div>
@@ -379,20 +344,14 @@
       <template #action>
         <n-space>
           <n-button @click="showInviteDialog = false">取消</n-button>
-          <n-button type="primary" @click="inviteParticipant" :disabled="!inviteInput">
-            邀请
-          </n-button>
+          <n-button type="primary" @click="inviteParticipant" :disabled="!inviteInput">邀请</n-button>
         </n-space>
       </template>
     </n-modal>
 
     <!-- 通话设置抽屉 -->
     <n-drawer v-model:show="showCallSettings" :width="400" placement="right">
-      <GroupCallSettings
-        :call-type="callType"
-        :local-stream="localStream"
-        @closed="showCallSettings = false"
-      />
+      <GroupCallSettings :call-type="callType" :local-stream="localStream" @closed="showCallSettings = false" />
     </n-drawer>
 
     <!-- 录制指示器 -->
@@ -1053,7 +1012,7 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     padding: 12px;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
     color: white;
 
     .participant-name {
@@ -1071,7 +1030,7 @@ onUnmounted(() => {
 
   &.local-participant {
     .participant-info {
-      background: linear-gradient(to top, rgba(24, 160, 88, 0.8); transparent);
+      background: linear-gradient(to top, rgba(24, 160, 88, 0.8), transparent);
     }
   }
 }

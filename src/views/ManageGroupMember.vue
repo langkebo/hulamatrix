@@ -135,7 +135,7 @@
               class="w-full flex items-center px-12px"
               :class="[
                 'cursor-pointer select-none transition-colors duration-150',
-                selectedList.includes(item.uid) ? 'bg-[rgba(19,152,127,0.1)]' : ''
+                selectedList.includes(item.uid) ? 'bg-[rgba(var(--hula-brand-rgb), 0.1)]' : ''
               ]">
               <template var(--hula-gray-100)ult>
                 <div class="flex items-center gap-10px px-8px py-10px">

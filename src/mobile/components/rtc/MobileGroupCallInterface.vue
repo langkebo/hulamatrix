@@ -859,7 +859,7 @@ watch(callType, (_newType) => {
 
     .video-tile {
       position: relative;
-      background: #222;
+      background: var(--hula-gray-800);
       overflow: hidden;
 
       &.local-stream {
