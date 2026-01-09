@@ -492,7 +492,7 @@ if (isMobile.value) {
   border-radius: 8px;
 
   &:hover {
-    background-color: var(--item-hover-bg, rgba(0, 0, 0, 0.05));
+    background-color: var(--item-hover-bg, rgba(var(--hula-black-rgb), 0.05));
   }
 
   &.chat-list-item-current {

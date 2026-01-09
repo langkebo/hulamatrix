@@ -99,7 +99,7 @@ const iconRightComponent = computed(() => props.iconRight)
   // 使用设计令牌
   --button-bg: var(--hula-brand-primary);
   --button-hover: var(--hula-brand-hover);
-  --button-text: #ffffff;
+  --button-text: var(--hula-white) fff;
   --button-border: transparent;
   --button-shadow: var(--shadow-sm);
 
@@ -167,7 +167,7 @@ const iconRightComponent = computed(() => props.iconRight)
 
     &:hover {
       background-color: var(--hula-brand-primary);
-      color: #ffffff;
+      color: var(--hula-white) fff;
     }
   }
 
@@ -184,7 +184,7 @@ const iconRightComponent = computed(() => props.iconRight)
   &--danger {
     --button-bg: var(--hula-error);
     --button-hover: var(--hula-error-dark);
-    --button-text: #ffffff;
+    --button-text: var(--hula-white) fff;
   }
 
   // 交互状态 - 使用 opacity 而非 scale

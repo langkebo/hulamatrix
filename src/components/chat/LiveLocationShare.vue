@@ -42,8 +42,7 @@
       :percentage="progressPercentage"
       :show-indicator="false"
       :height="2"
-      :color="progressColor"
-    />
+      :color="progressColor" />
   </div>
 </template>
 
@@ -266,6 +265,6 @@ onUnmounted(() => {
 .share-time {
   font-size: 12px;
   margin: 0;
-  color: var(--text-color-3, #999);
+  color: var(--text-color-3, var(--hula-gray-400));
 }
 </style>

@@ -36,7 +36,7 @@
                 userSelect: 'text',
                 padding: '2px 4px',
                 borderRadius: '6px',
-                color: '#000',
+                color: 'var(--hula-black)',
                 background: 'var(--hula-brand-primary)'
               }" />
             <p v-else class="link-paragraph">{{ item }}</p>
@@ -51,7 +51,7 @@
           userSelect: 'text',
           padding: '2px 4px',
           borderRadius: '6px',
-          color: '#000',
+          color: 'var(--hula-black)',
           background: 'var(--hula-brand-primary)'
         }" />
       <template v-else>{{ item }}</template>
@@ -295,14 +295,14 @@ const onImageLoadError = (e: Event) => {
   margin: 8px 0;
   padding: 12px;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(var(--hula-black-rgb), 0.03);
   cursor: pointer;
   user-select: none;
   transition: background-color 0.2s ease;
 }
 
 .text-card:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(var(--hula-black-rgb), 0.08);
 }
 
 .text-card-image-wrapper {

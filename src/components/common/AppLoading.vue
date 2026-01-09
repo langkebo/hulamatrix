@@ -98,7 +98,7 @@ const progress = ref(0)
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(var(--hula-black-rgb), 0.75);
   backdrop-filter: blur(4px);
 }
 
@@ -111,7 +111,7 @@ const progress = ref(0)
   padding: 32px 48px;
   background: var(--n-color);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(var(--hula-black-rgb), 0.3);
   max-width: 400px;
   width: 90%;
 }
@@ -156,7 +156,7 @@ const progress = ref(0)
 /* 暗色模式适配 */
 .dark .loading-content {
   background: rgba(24, 24, 28, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--hula-white-rgb), 0.1);
 }
 
 /* 移动端适配 */

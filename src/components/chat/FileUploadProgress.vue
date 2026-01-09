@@ -68,7 +68,7 @@ const getStatusText = () => {
   @apply absolute w-fit max-w-260px bottom-10px left-20px z-1000 rounded-8px p-12px;
   background: var(--bg-emoji);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s ease;

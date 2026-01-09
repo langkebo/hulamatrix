@@ -21,9 +21,15 @@
     <span class="text-(20px [--text-color])">{{ item.name }}</span>
 
     <template v-if="!isBotUser">
-      <span class="text-(14px [--hula-gray-500,var(--hula-brand-primary)])">{{ t('home.chat_details.single.empty_signature') }}</span>
+      <span class="text-(14px [--hula-gray-500,var(--hula-brand-primary)])">
+        {{ t('home.chat_details.single.empty_signature') }}
+      </span>
 
-      <n-flex align="center" justify="space-between" :size="30" class="text-var(--hula-brand-primary) select-none cursor-default">
+      <n-flex
+        align="center"
+        justify="space-between"
+        :size="30"
+        class="text-var(--hula-brand-primary) select-none cursor-default">
         <span>
           {{
             t('home.chat_details.single.region', {
@@ -45,7 +51,7 @@
           <n-popover trigger="hover">
             <template #trigger>
               <n-icon :size="20">
-                <svg class="color-#fff"><use :href="`#${item.url}`"></use></svg>
+                <svg class="color-var(--hula-white)"><use :href="`#${item.url}`"></use></svg>
               </n-icon>
             </template>
             <span>{{ item.title }}</span>
@@ -111,7 +117,7 @@
         :border-radius="10"
         :color="'var(--hula-brand-primary)'">
         <n-icon :size="22">
-          <svg class="color-#fff"><use href="#message"></use></svg>
+          <svg class="color-var(--hula-white)"><use href="#message"></use></svg>
         </n-icon>
       </n-icon-wrapper>
     </n-flex>
@@ -629,6 +635,6 @@ const openImageViewer = async () => {
 
 <style scoped>
 .avatar-with-border {
-  border: 2px solid #fff;
+  border: 2px solid var(--hula-white);
 }
 </style>

@@ -49,9 +49,17 @@
         class="time-preview"
         :style="{
           left: `${waveformRenderer.scanLinePosition.value}px`,
-          color: isCurrentUser ? '#fff' : isDarkMode ? '#fff' : '#000',
-          backgroundColor: isCurrentUser ? 'var(--hula-brand-primary)' : isDarkMode ? 'var(--hula-brand-primary)' : '#fff',
-          border: isCurrentUser ? 'none' : isDarkMode ? '1px solid var(--hula-brand-primary)' : '1px solid var(--hula-brand-primary)'
+          color: isCurrentUser ? 'var(--hula-white)' : isDarkMode ? 'var(--hula-white)' : 'var(--hula-black)',
+          backgroundColor: isCurrentUser
+            ? 'var(--hula-brand-primary)'
+            : isDarkMode
+              ? 'var(--hula-brand-primary)'
+              : 'var(--hula-white)',
+          border: isCurrentUser
+            ? 'none'
+            : isDarkMode
+              ? '1px solid var(--hula-brand-primary)'
+              : '1px solid var(--hula-brand-primary)'
         }">
         {{ formatTime(dragControl.previewTime.value) }}
       </div>
@@ -116,9 +124,9 @@ const isCurrentUser = computed(() => {
 // 计算语音图标颜色
 const voiceIconColor = computed(() => {
   if (isCurrentUser.value) {
-    return '#fff'
+    return 'var(--hula-white)'
   } else {
-    return isDarkMode.value ? '#fff' : '#000'
+    return isDarkMode.value ? 'var(--hula-white)' : 'var(--hula-black)'
   }
 })
 
@@ -289,7 +297,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-color, #333);
+  color: var(--text-color, var(--hula-gray-900));
 
   svg {
     width: 18px;
@@ -351,7 +359,7 @@ onUnmounted(() => {
     white-space: nowrap;
     pointer-events: none;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.2);
     animation: fadeIn 0.2s ease;
   }
 }

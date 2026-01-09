@@ -13,7 +13,7 @@
           :highlight-style="{
             padding: '0 4px',
             borderRadius: '6px',
-            color: '#000',
+            color: 'var(--hula-black)',
             background: 'var(--hula-brand-primary)'
           }" />
         <template v-else>
@@ -73,7 +73,7 @@
             <svg class="progress-ring" width="24" height="24">
               <circle
                 class="progress-ring-circle"
-                stroke="rgba(255, 255, 255, 0.3)"
+                stroke="rgba(var(--hula-white-rgb), 0.3)"
                 stroke-width="2"
                 fill="transparent"
                 r="10"
@@ -81,7 +81,7 @@
                 cy="12" />
               <circle
                 class="progress-ring-circle progress-ring-fill"
-                stroke="#fff"
+                stroke="var(--hula-white)"
                 stroke-width="2"
                 fill="transparent"
                 r="10"
@@ -535,7 +535,7 @@ onMounted(async () => {
 }
 
 .file-overlay {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--hula-black-rgb), 0.6);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -562,13 +562,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(var(--hula-white-rgb), 0.4);
 }
 
 .download-circle .download-btn-icon {
   width: 14px;
   height: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(var(--hula-white-rgb), 0.8);
 }
 
 .progress-circle {
@@ -588,23 +588,23 @@ onMounted(async () => {
 
 .progress-text {
   font-size: 8px;
-  color: #fff;
+  color: var(--hula-white);
   text-align: center;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(var(--hula-black-rgb), 0.5);
 }
 
 .loading-icon {
   width: 20px;
   height: 20px;
-  color: #fff;
+  color: var(--hula-white);
   animation: spin 1s linear infinite;
 }
 
 .download-btn-icon {
   width: 16px;
   height: 16px;
-  color: #fff;
+  color: var(--hula-white);
 }
 
 @keyframes spin {

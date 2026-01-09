@@ -23,7 +23,9 @@
         </div>
 
         <ContextMenu class="w-full flex-1 min-h-0" @select="$event.click()" :menu="menuList">
-          <div v-if="!isMobile() && isTyping" class="px-10px py-4px text-12px text-var(--hula-brand-primary) flex items-center gap-6px">
+          <div
+            v-if="!isMobile() && isTyping"
+            class="px-10px py-4px text-12px text-var(--hula-brand-primary) flex items-center gap-6px">
             <span class="dot-online" v-if="onlineCount > 0"></span>
             正在输入…
           </div>
@@ -64,7 +66,11 @@
           class="flex-shrink-0 max-h-52px p-4px pr-12px border-t border-gray-200/50 flex justify-end mb-4px">
           <n-config-provider :theme="lightTheme">
             <n-button-group size="small">
-              <n-button :color="'var(--hula-brand-primary)'" :disabled="disabledSend" class="w-65px" @click="handleDesktopSend">
+              <n-button
+                :color="'var(--hula-brand-primary)'"
+                :disabled="disabledSend"
+                class="w-65px"
+                @click="handleDesktopSend">
                 {{ t('editor.send') }}
               </n-button>
               <n-button :color="'var(--hula-brand-primary)'" class="p-[0_6px]">
@@ -138,7 +144,7 @@
                   round
                   :size="22"
                   :src="AvatarUtils.getAvatarUrl(item.avatar)"
-                  :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+                  :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
                   :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                   :render-placeholder="() => null"
                   :intersection-observer-options="{
@@ -164,7 +170,11 @@
             class="flex-shrink-0 max-h-62px h-full border-t border-gray-200/50 flex items-center justify-end">
             <n-config-provider class="h-full" :theme="lightTheme">
               <n-button-group size="small" :class="isMobile() ? 'h-full' : 'pr-20px'">
-                <n-button :color="'var(--hula-brand-primary)'" :disabled="disabledSend" class="w-3rem h-full" @click="handleMobileSend">
+                <n-button
+                  :color="'var(--hula-brand-primary)'"
+                  :disabled="disabledSend"
+                  class="w-3rem h-full"
+                  @click="handleMobileSend">
                   发送
                 </n-button>
               </n-button-group>

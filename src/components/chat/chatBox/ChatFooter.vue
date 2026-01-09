@@ -780,7 +780,7 @@ onUnmounted(() => {
     transform: translateX(-50%);
     width: 20px;
     height: 1px;
-    background: var(--icon-color, #666);
+    background: var(--icon-color, var(--hula-gray-700));
     border-radius: 1px;
     opacity: 0.5;
   }
@@ -793,7 +793,7 @@ onUnmounted(() => {
     transform: translateX(-50%);
     width: 20px;
     height: 1px;
-    background: var(--icon-color, #666);
+    background: var(--icon-color, var(--hula-gray-700));
     border-radius: 1px;
     opacity: 0.5;
   }

@@ -25,7 +25,7 @@
           userSelect: 'text',
           padding: '2px 4px',
           borderRadius: '6px',
-          color: '#000',
+          color: 'var(--hula-black)',
           background: 'var(--hula-brand-primary)'
         }" />
       <template v-else>{{ body.content }}</template>

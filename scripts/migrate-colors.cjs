@@ -23,7 +23,7 @@ const path = require('path');
 const CONFIG = {
   srcDir: path.join(process.cwd(), 'src'),
   dryRun: false,
-  maxFiles: 10, // 第一阶段只处理前10个文件
+  maxFiles: 50, // 第二阶段处理50个文件
 };
 
 // 颜色映射表

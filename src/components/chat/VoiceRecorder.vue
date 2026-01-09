@@ -285,7 +285,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @mixin base-control-button($dark-bg, $bg) {
-  @apply flex-center size-36px text-#fff cursor-pointer rounded-full;
+  @apply flex-center size-36px text-var(--hula-white) cursor-pointer rounded-full;
   background-color: $bg;
   [data-theme='dark'] & {
     background-color: $dark-bg;
@@ -372,11 +372,11 @@ onUnmounted(() => {
   }
 
   .stop-btn {
-    @include base-control-button(var(--hula-brand-primary)96, var(--hula-brand-primary));
+    @include base-control-button(var(--hula-brand-primary) 96, var(--hula-brand-primary));
   }
 
   .refresh-btn {
-    @include base-control-button(var(--hula-brand-primary)80, var(--hula-brand-primary));
+    @include base-control-button(var(--hula-brand-primary) 80, var(--hula-brand-primary));
   }
 
   .send-btn {
@@ -392,7 +392,7 @@ onUnmounted(() => {
 
   .cancel-btn,
   .cancel-record-btn {
-    @include base-control-button(var(--hula-brand-primary)40, var(--hula-brand-primary)90);
+    @include base-control-button(var(--hula-brand-primary) 40, var(--hula-brand-primary) 90);
   }
 }
 

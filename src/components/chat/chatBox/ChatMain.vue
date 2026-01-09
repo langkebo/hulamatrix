@@ -17,7 +17,7 @@
       <div
         v-if="isGroup && topAnnouncement"
         key="announcement"
-        :class="{ 'bg-#eee': isMobile() }"
+        :class="{ 'bg-var(--hula-gray-200)': isMobile() }"
         class="p-[6px_12px_0_12px]">
         <div
           class="custom-announcement"
@@ -42,7 +42,7 @@
     </Transition>
 
     <!-- 聊天内容 -->
-    <div :class="{ 'bg-#eee': isMobile() }" class="flex flex-col flex-1 min-h-0">
+    <div :class="{ 'bg-var(--hula-gray-200)': isMobile() }" class="flex flex-col flex-1 min-h-0">
       <div
         id="image-chat-main"
         ref="scrollContainer"
@@ -132,7 +132,7 @@
         v-if="isMac()"
         @click="modalShow = false"
         class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
-        <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+        <svg class="hidden size-7px color-var(--hula-black) select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
       </div>
@@ -159,7 +159,7 @@
         v-if="isMac()"
         @click="groupNicknameModalVisible = false"
         class="mac-close z-999 size-13px shadow-inner bg-var(--hula-brand-primary)ff rounded-50% select-none absolute left-6px">
-        <svg class="hidden size-7px color-#000 select-none absolute top-3px left-3px">
+        <svg class="hidden size-7px color-var(--hula-black) select-none absolute top-3px left-3px">
           <use href="#close"></use>
         </svg>
       </div>
@@ -185,7 +185,10 @@
           <n-button @click="groupNicknameModalVisible = false" :disabled="groupNicknameSubmitting" secondary>
             {{ t('home.chat_main.cancel') }}
           </n-button>
-          <n-button :color="'var(--hula-brand-primary)'" :loading="groupNicknameSubmitting" @click="handleGroupNicknameConfirm">
+          <n-button
+            :color="'var(--hula-brand-primary)'"
+            :loading="groupNicknameSubmitting"
+            @click="handleGroupNicknameConfirm">
             {{ t('home.chat_main.confirm') }}
           </n-button>
         </n-flex>

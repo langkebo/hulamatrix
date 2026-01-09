@@ -155,7 +155,7 @@ import { logger } from '@/utils/logger'
                         class="grayscale"
                         :class="{ 'grayscale-0': item.activeStatus === OnlineEnum.ONLINE }"
                         :size="26"
-                        :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+                        :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
                         :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                         :src="AvatarUtils.getAvatarUrl(item.avatar)"
                         @load="userLoadedMap[item.uid] = true"

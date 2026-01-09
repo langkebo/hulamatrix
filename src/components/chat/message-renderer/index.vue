@@ -73,7 +73,7 @@
                 :size="34"
                 @click="handleAvatarClick(message.fromUser.uid, message.message.id)"
                 class="select-none"
-                :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+                :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
                 :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
                 :src="getAvatarSrc(message.fromUser.uid) || ''"
                 :class="isMe ? '' : 'mr-10px'" />
@@ -263,7 +263,7 @@
               class="reply-avatar"
               round
               :size="20"
-              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : '#fff'"
+              :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
               :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
               :src="getAvatarSrc(message.message.body.reply.uid ?? '') || ''" />
             <span>{{ `${message.message.body.reply.username}: ` }}</span>
@@ -290,7 +290,9 @@
                   <img :title="emoji.title" class="size-18px" :src="emoji.url" :alt="emoji.title" />
                   <span
                     :class="
-                      hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'
+                      hasUserMarkedEmoji(message, emoji.value)
+                        ? 'text-var(--hula-brand-primary)'
+                        : 'text-(12px var(--hula-gray-200))'
                     ">
                     {{ message ? getEmojiCount(message, emoji.value) : 0 }}
                   </span>

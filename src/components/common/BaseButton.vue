@@ -8,8 +8,7 @@
     :to="to"
     :loading="loading"
     v-bind="$attrs"
-    @click="handleClick"
-  >
+    @click="handleClick">
     <!-- 加载状态 -->
     <span v-if="loading" class="h-button__loading">
       <LoadingSpinner :size="spinnerSize" />
@@ -404,7 +403,7 @@ const createRipple = (event: Event) => {
   &__ripple {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(var(--hula-white-rgb), 0.5);
     transform: translate(-50%, -50%);
     transition: all 0.6s ease;
     pointer-events: none;
@@ -413,10 +412,15 @@ const createRipple = (event: Event) => {
 
 // 动画定义
 @keyframes button-bounce {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: scale(1);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: scale(1.05);
   }
   70% {
@@ -428,22 +432,22 @@ const createRipple = (event: Event) => {
 }
 
 // 暗色模式适配
-[data-theme-content="dark"] {
+[data-theme-content='dark'] {
   .h-button {
     &--outline {
       &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(var(--hula-white-rgb), 0.1);
       }
     }
 
     &--ghost {
       &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(var(--hula-white-rgb), 0.05);
       }
     }
 
     &__ripple {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(var(--hula-white-rgb), 0.2);
     }
   }
 }
