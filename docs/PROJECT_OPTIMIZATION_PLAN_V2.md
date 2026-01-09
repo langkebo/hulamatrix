@@ -1,8 +1,8 @@
-# HuLa 项目优化方案 V4.6
+# HuLa 项目优化方案 V4.7
 
 **分析日期**: 2026-01-09
-**最后更新**: 2026-01-09 (Phase 27 完成)
-**版本**: v4.6
+**最后更新**: 2026-01-09 (Phase 28 完成)
+**版本**: v4.7
 **总体进度**: 99%
 
 ---
@@ -16,7 +16,7 @@
 | 指标 | 状态 | 详情 |
 |------|------|------|
 | **类型安全** | ✅ 100% | TypeScript 编译通过 |
-| **代码质量** | ✅ 100% | Biome 检查通过 (0 警告, 1187 文件) |
+| **代码质量** | ✅ 100% | Biome 检查通过 (0 警告, 1188 文件) |
 | **内存泄漏** | ✅ 已验证 | 无泄漏风险 |
 | **Matrix 架构** | ✅ 100% | 统一架构完成 |
 
@@ -274,6 +274,20 @@
 - ✅ 创建 1 个新的工具模块
 - ✅ 所有检查通过 (0 TypeScript 错误, 0 Biome 警告)
 
+**Phase 28**: Screenshot Processing Utilities 提取 ✅
+- ✅ 创建 screenshotProcessingUtils.ts 工具模块 (175 行)
+  - 截图处理和导出函数
+  - 选区验证函数
+  - Canvas 合并和裁剪逻辑
+  - 圆角应用逻辑
+  - Clipboard 集成和事件发送
+- ✅ Screenshot.vue 简化 (~97 行减少)
+  - 移除 confirmSelection 函数实现 (~140 行 → ~43 行)
+  - 使用工具模块统一截图处理逻辑
+  - 提高代码复用性和可测试性
+- ✅ 创建 1 个新的工具模块
+- ✅ 所有检查通过 (0 TypeScript 错误, 0 Biome 警告)
+
 ### 待处理的优化任务
 
 根据当前实际情况，以下是剩余的优化机会：
@@ -307,11 +321,11 @@
 4. **Screenshot.vue** (~1,200 行) 🟡 进行中
    - 已完成: Phase 25 - 提取 useScreenshotSelection composable (439 行)
    - 已完成: Phase 26 - 提取 useScreenshotMagnifier composable (210 行)
-   - 已完成: Phase 27 - 提取 screenshotCanvasUtils.ts 工具模块 (125 行)
-   - 已完成: 移除选区、放大镜和绘图相关函数 (~510 行减少)
-   - 集成难度: 🟡 中等 (剩余 canvas 初始化和截图处理逻辑需要仔细规划)
-   - 建议: 继续提取 canvas 初始化和截图处理相关逻辑
-   - 下一步: 可选择性提取 useScreenshotCanvas composable (canvas 初始化、截图处理)
+   - 已完成: Phase 28 - 提取 screenshotProcessingUtils.ts 工具模块 (175 行)
+   - 已完成: 移除选区、放大镜、绘图和截图处理函数 (~607 行减少)
+   - 集成难度: 🟢 低 (剩余主要是模板和状态管理)
+   - 建议: 组件已大幅简化，可选择性继续优化或转向其他任务
+   - 状态: 大幅简化，从 1,710 行减少到 ~1,100 行 (36% 减少)
 
 5. **MatrixMsgInput.vue** (~500 行) ✅ 已完成
    - 已完成: 创建 useMessageEditor composable (481 行)
@@ -340,13 +354,11 @@
 
 ## 文件大小分析
 
-### 超过 1500 行的文件 (1 个待处理)
+### 超过 1500 行的文件 (0 个待处理)
 
-| 文件 | 行数 | 类型 | 建议 |
-|------|------|------|------|
-| `Screenshot.vue` | 1,710 | 组件 | 集成已提取的 composables |
+所有文件已优化到 1500 行以下 ✅
 
-### 1000-1500 行的文件 (7 个)
+### 1000-1500 行的文件 (8 个)
 
 | 文件 | 行数 | 类型 | 建议 |
 |------|------|------|------|
@@ -357,6 +369,7 @@
 | `ChatHeader.vue` | 1,304 | 组件 | 拆分工具栏组件 |
 | `useWebRtc.ts` | 1,276 | Composable | 提取 useCallControls |
 | `MessageEditor.vue` | 1,253 | 组件 | 保持现状 |
+| `Screenshot.vue` | ~1,100 | 组件 | 已大幅简化 (Phase 25-28) |
 
 ---
 
@@ -565,6 +578,7 @@ src/components/matrix/
 **维护者**: Claude Code
 
 **变更日志**:
+- v4.7 (2026-01-09): Phase 28 - Screenshot Processing Utilities 提取完成
 - v4.6 (2026-01-09): Phase 27 - Screenshot Canvas Drawing Utilities 提取完成
 - v4.5 (2026-01-09): Phase 26 - Screenshot Magnifier Composable 提取完成
 - v4.4 (2026-01-09): Phase 25 - Screenshot Selection Composable 提取完成

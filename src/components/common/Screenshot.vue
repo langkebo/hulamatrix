@@ -125,6 +125,7 @@ import {
   drawMask as drawMaskUtil,
   redrawSelection as redrawSelUtil
 } from '@/utils/screenshotCanvasUtils'
+import { processAndExportScreenshot, isValidSelection } from '@/utils/screenshotProcessingUtils'
 
 import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
@@ -693,134 +694,37 @@ const confirmSelection = async () => {
     return
   }
 
-  const { startX, startY, endX, endY } = screenConfig.value
-  const width = Math.abs(endX - startX)
-  const height = Math.abs(endY - startY)
-
-  if (width < 1 || height < 1) {
-    logger.error('❌选区尺寸无效:', { width, height })
+  // 验证选区
+  if (!isValidSelection(screenConfig)) {
+    logger.error('❌选区尺寸无效')
     await resetScreenshot()
     return
   }
 
-  // 计算选区的左上角位置
-  const rectX = Math.min(startX, endX)
-  const rectY = Math.min(startY, endY)
-
-  // 创建一个临时 canvas 来合成最终图像
-  const mergedCanvas = document.createElement('canvas')
-  const mergedCtx = mergedCanvas.getContext('2d')
-
-  // 设置合成canvas的尺寸与imgCanvas相同
-  mergedCanvas.width = imgCanvas.value!.width
-  mergedCanvas.height = imgCanvas.value!.height
-
-  if (mergedCtx) {
-    try {
-      // 先绘制原始截图（从imgCanvas）
-      mergedCtx.drawImage(imgCanvas.value!, 0, 0)
-
-      // 然后绘制用户的绘图内容（从drawCanvas），使用source-over模式确保正确合成
-      mergedCtx.globalCompositeOperation = 'source-over'
-      mergedCtx.drawImage(drawCanvas.value!, 0, 0)
-
-      // 创建最终的裁剪canvas
-      const offscreenCanvas = document.createElement('canvas')
-      const offscreenCtx = offscreenCanvas.getContext('2d')
-
-      // 设置临时 canvas 的尺寸
-      offscreenCanvas.width = width
-      offscreenCanvas.height = height
-
-      if (offscreenCtx) {
-        // 从合成后的canvas裁剪选区
-        offscreenCtx.drawImage(
-          mergedCanvas,
-          rectX,
-          rectY,
-          width,
-          height, // 裁剪区域
-          0,
-          0,
-          width,
-          height // 绘制到临时 canvas 的区域
-        )
-
-        // 如果设置了圆角，则将裁剪结果应用圆角蒙版，导出带透明圆角的 PNG
-        if (borderRadius.value > 0) {
-          const scale = screenConfig.value.scaleX || 1
-          const r = Math.min(borderRadius.value * scale, width / 2, height / 2)
-          if (r > 0) {
-            offscreenCtx.save()
-            // 仅保留圆角矩形内的内容
-            offscreenCtx.globalCompositeOperation = 'destination-in'
-
-            offscreenCtx.beginPath()
-            // 在 (0,0,width,height) 上构建圆角矩形路径
-            offscreenCtx.moveTo(r, 0)
-            offscreenCtx.lineTo(width - r, 0)
-            offscreenCtx.quadraticCurveTo(width, 0, width, r)
-            offscreenCtx.lineTo(width, height - r)
-            offscreenCtx.quadraticCurveTo(width, height, width - r, height)
-            offscreenCtx.lineTo(r, height)
-            offscreenCtx.quadraticCurveTo(0, height, 0, height - r)
-            offscreenCtx.lineTo(0, r)
-            offscreenCtx.quadraticCurveTo(0, 0, r, 0)
-            offscreenCtx.closePath()
-            offscreenCtx.fill()
-
-            offscreenCtx.restore()
-          }
+  try {
+    // 处理并导出截图
+    await processAndExportScreenshot(
+      {
+        imgCanvas,
+        drawCanvas,
+        screenConfig,
+        borderRadius
+      },
+      {
+        onSuccess: () => {
+          msg.success(t('message.screenshot.save_success'))
+          resetScreenshot()
+        },
+        onError: () => {
+          msg.error(t('message.screenshot.save_failed'))
+          resetScreenshot()
         }
-
-        // 测试：检查canvas数据是否有效
-        try {
-          offscreenCtx.getImageData(0, 0, Math.min(10, width), Math.min(10, height))
-        } catch (error) {
-          logger.error('获取ImageData失败,可能是安全限制:', error)
-        }
-
-        offscreenCanvas.toBlob(async (blob) => {
-          if (blob && blob.size > 0) {
-            try {
-              // 将 Blob 转换为 ArrayBuffer 以便通过 Tauri 事件传递
-              const arrayBuffer = await blob.arrayBuffer()
-              const buffer = new Uint8Array(arrayBuffer)
-
-              try {
-                await emitTo('home', 'screenshot', {
-                  type: 'image',
-                  buffer: Array.from(buffer),
-                  mimeType: 'image/png'
-                })
-              } catch (e) {
-                logger.warn('发送截图到主窗口失败:', e)
-              }
-
-              try {
-                await writeImage(buffer)
-                msg.success(t('message.screenshot.save_success'))
-              } catch (clipboardError) {
-                logger.error('复制到剪贴板失败:', clipboardError)
-                msg.error(t('message.screenshot.save_failed'))
-              }
-
-              await resetScreenshot()
-            } catch (error) {
-              msg.error(t('message.screenshot.save_failed'))
-              await resetScreenshot()
-            }
-          } else {
-            msg.error(t('message.screenshot.save_failed'))
-            await resetScreenshot()
-          }
-        }, 'image/png')
       }
-    } catch (error) {
-      logger.error('Canvas操作失败:', error)
-      msg.error(t('message.screenshot.save_failed'))
-      await resetScreenshot()
-    }
+    )
+  } catch (error) {
+    logger.error('截图处理失败:', error)
+    msg.error(t('message.screenshot.save_failed'))
+    await resetScreenshot()
   }
 }
 
