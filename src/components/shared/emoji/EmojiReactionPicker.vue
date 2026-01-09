@@ -159,7 +159,7 @@ defineExpose({
 @media (max-width: 768px) {
   .emoji-reaction-picker {
     background: var(--mobile-bg-secondary, var(--hula-brand-primary));
-    box-shadow: 0 2px 8px rgba(0, 184, 148, 0.1);
+    box-shadow: 0 2px 8px rgba(var(--hula-success-rgb), 0.1);
   }
 
   .reaction-item {

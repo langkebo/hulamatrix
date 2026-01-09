@@ -284,7 +284,7 @@ onMounted(async () => {
   cursor: pointer;
 
   &:active {
-    background: #e8e8e8;
+    background: var(--hula-gray-200);
   }
 }
 

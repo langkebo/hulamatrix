@@ -167,7 +167,7 @@ const onlineCount = computed(() => {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background-color: #1aaa55;
+  background-color: var(--hula-success);
   margin-right: 6px;
 }
 

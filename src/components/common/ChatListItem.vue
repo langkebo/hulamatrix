@@ -142,7 +142,7 @@ const itemClasses = computed(() => ({
   }
 
   &.is-pinned {
-    background-color: var(--item-pinned-bg, rgba(100, 162, 156, 0.1));
+    background-color: var(--item-pinned-bg, rgba(var(--hula-brand-rgb), 0.1));
   }
 
   .item-flex {

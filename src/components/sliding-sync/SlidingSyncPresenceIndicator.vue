@@ -137,7 +137,7 @@ defineExpose({
 
   &.status-online .indicator-dot {
     background-color: var(--hula-brand-primary);
-    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+    box-shadow: 0 0 0 2px rgba(var(--hula-success-rgb), 0.2);
   }
 
   &.status-offline .indicator-dot {

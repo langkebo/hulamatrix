@@ -510,7 +510,7 @@ onUnmounted(() => {
       }
 
       &.type-message {
-        background: rgba(51, 136, 255, 0.1);
+        background: rgba(var(--hula-info-rgb), 0.1);
         color: var(--hula-brand-primary);
       }
     }

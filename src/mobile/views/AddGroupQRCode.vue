@@ -19,7 +19,7 @@
             </div>
 
             <div
-              class="flex flex-col text-#4e4e4e h-auto gap-8px overflow-hidden justify-center text-18px whitespace-normal break-words max-w-46">
+              class="flex flex-col text-var(--hula-gray-700) h-auto gap-8px overflow-hidden justify-center text-18px whitespace-normal break-words max-w-46">
               <div class="font-bold">{{ userInfo?.name }}</div>
               <div class="text-16px">账号:{{ userInfo?.account }}</div>
             </div>
@@ -30,7 +30,7 @@
               :size="250"
               class="rounded-12px"
               :value="qrCodeValue"
-              color="#14997E"
+              color="var(--hula-brand-primary)"
               :bg-color="qrCodeBgColor"
               :type="qrCodeType"
               :icon-src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar || '')"

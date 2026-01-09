@@ -7,7 +7,7 @@
       spellcheck="false"
       style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; white-space: pre-wrap"></div>
 
-    <div class="w-full min-h-20px bg-#FAFAFA flex flex-col z-2 footer-bar-shadow">
+    <div class="w-full min-h-20px bg-var(--hula-gray-50) flex flex-col z-2 footer-bar-shadow">
       <div class="px-10px py-6px text-12px text-#606060 flex items-center gap-6px" v-if="false"></div>
       <div class="flex-1 min-h-0">
         <chat-footer :detail-id="globalStore.currentSession?.detailId"></chat-footer>
@@ -115,7 +115,7 @@ defineExpose({ root })
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background-color: #1aaa55;
+  background-color: var(--hula-success);
 }
 </style>
 //

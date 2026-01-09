@@ -21,7 +21,7 @@
     <van-cell-group :title="t('setting.e2ee.cross_signing.title')" inset>
       <van-cell :title="t('setting.e2ee.cross_signing.status')">
         <template #icon>
-          <van-icon name="shield" :color="crossSigningReady ? '#07c160' : '#ff976a'" />
+          <van-icon name="shield" :color="crossSigningReady ? 'var(--hula-success)' : '#ff976a'" />
         </template>
         <template #right-icon>
           <van-tag :type="crossSigningReady ? 'success' : 'warning'">
@@ -68,7 +68,7 @@
     <van-cell-group :title="t('setting.e2ee.key_backup.title')" inset>
       <van-cell :title="t('setting.e2ee.key_backup.storage')" is-link @click="handleManageBackup">
         <template #icon>
-          <van-icon name="shield-o" :color="secretStorageReady ? '#07c160' : '#ff976a'" />
+          <van-icon name="shield-o" :color="secretStorageReady ? 'var(--hula-success)' : '#ff976a'" />
         </template>
         <template #right-icon>
           <van-tag :type="secretStorageReady ? 'success' : 'warning'">
@@ -198,7 +198,7 @@ const e2eeStatus = computed(() => {
   const isReady = e2eeStore.initialized && e2eeStore.enabled
   return {
     rate: isReady ? 100 : 60,
-    color: isReady ? '#07c160' : '#ff976a',
+    color: isReady ? 'var(--hula-success)' : '#ff976a',
     text: isReady ? '100%' : '60%',
     title: isReady ? t('setting.e2ee.status.enabled') : t('setting.e2ee.status.disabled'),
     description: isReady ? t('setting.e2ee.status.enabled_desc') : t('setting.e2ee.status.disabled_desc')
@@ -343,7 +343,7 @@ onMounted(() => {
 
     &.verified {
       background: rgba(7, 193, 96, 0.1);
-      color: #07c160;
+      color: var(--hula-success);
     }
   }
 

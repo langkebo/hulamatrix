@@ -41,6 +41,6 @@ const props = defineProps({
 <style lang="scss" scoped>
 .custom-border-b-1 {
   border-bottom: 1px solid;
-  border-color: #d9d9d9;
+  border-color: var(--hula-gray-300);
 }
 </style>

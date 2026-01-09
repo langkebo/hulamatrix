@@ -71,7 +71,7 @@
             <span class="text-(12px #c14053)" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
               已拒绝
             </span>
-            <span class="text-(12px #909090)" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">已忽略</span>
+            <span class="text-(12px var(--hula-gray-400))" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">已忽略</span>
             <span
               class="text-(12px #64a29c)"
               :class="{ 'text-(12px #c14053)': item.status === RequestNoticeAgreeStatus.REJECTED }"

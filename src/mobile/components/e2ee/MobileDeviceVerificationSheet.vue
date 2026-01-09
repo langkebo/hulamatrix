@@ -25,7 +25,7 @@
               <van-icon name="smile-o" />
             </template>
             <template #right-icon>
-              <van-icon v-if="verifyMethod === 'emoji'" name="success" color="#07c160" />
+              <van-icon v-if="verifyMethod === 'emoji'" name="success" color="var(--hula-success)" />
             </template>
           </van-cell>
 
@@ -34,7 +34,7 @@
               <van-icon name="key" />
             </template>
             <template #right-icon>
-              <van-icon v-if="verifyMethod === 'key'" name="success" color="#07c160" />
+              <van-icon v-if="verifyMethod === 'key'" name="success" color="var(--hula-success)" />
             </template>
           </van-cell>
         </van-cell-group>

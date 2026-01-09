@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <div class="bg-#FAFAFA">
+    <div class="bg-var(--hula-gray-50)">
       <slot name="footer"></slot>
     </div>
   </div>

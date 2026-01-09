@@ -337,7 +337,7 @@ html[data-theme='dark'] {
 
   .n-message,
   .n-notification {
-    background: rgba(30, 30, 30, 0.95);
+    background: rgba(var(--hula-gray-900-rgb), 0.95);
     border: 1px solid var(--border-color);
   }
 }

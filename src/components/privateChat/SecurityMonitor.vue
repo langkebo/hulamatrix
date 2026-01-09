@@ -200,7 +200,7 @@ defineExpose({
   margin-bottom: 8px;
 
   &.secure {
-    background-color: rgba(82, 196, 26, 0.1);
+    background-color: rgba(var(--hula-success-rgb), 0.1);
     color: var(--hula-brand-primary);
   }
 

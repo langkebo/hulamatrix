@@ -16,7 +16,7 @@
       <div ref="infoBox" class="pl-2 flex gap-8px flex-col transition-transform duration-300 ease-in-out">
         <!-- 名字与在线状态 -->
         <div class="flex flex-warp gap-4 items-center">
-          <span class="font-bold text-20px text-#373838">{{ userDetailInfo!.name }}</span>
+          <span class="font-bold text-20px text-var(--hula-gray-700)">{{ userDetailInfo!.name }}</span>
           <div
             v-show="hasUserOnlineState"
             class="bg-#E7EFE6 flex flex-wrap ps-2 px-8px items-center rounded-full gap-1 h-24px">
@@ -26,7 +26,7 @@
                 alt=""
                 class="rounded-50% size-14px" />
             </span>
-            <span class="text-bold-style" style="font-size: 12px; color: #373838">
+            <span class="text-bold-style" style="font-size: 12px; color: var(--hula-gray-700)">
               {{ friendUserState.title ? friendUserState.title : currentState.title }}
             </span>
           </div>
@@ -97,7 +97,7 @@
             :disabled="loading"
             @click="toEditProfile"
             v-if="props.isMyPage && !isBotUser(uid)"
-            class="font-bold px-4 py-10px bg-#EEF4F3 text-#373838 rounded-full text-12px">
+            class="font-bold px-4 py-10px bg-#EEF4F3 text-var(--hula-gray-700) rounded-full text-12px">
             编辑资料
           </n-button>
           <n-button

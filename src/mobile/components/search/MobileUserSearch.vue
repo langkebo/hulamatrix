@@ -60,7 +60,7 @@
 
       <!-- Empty State -->
       <div v-else-if="searchResults.length === 0" class="empty-state">
-        <n-icon :size="64" color="#c0c0c0">
+        <n-icon :size="64" color="var(--hula-gray-300)">
           <Search />
         </n-icon>
         <p>未找到匹配的用户</p>
@@ -632,7 +632,7 @@ defineExpose({
         }
 
         &.offline {
-          background: #c0c0c0;
+          background: var(--hula-gray-300);
         }
 
         &.unavailable {
@@ -696,7 +696,7 @@ defineExpose({
       }
 
       &.offline {
-        background: #c0c0c0;
+        background: var(--hula-gray-300);
       }
 
       &.unavailable {

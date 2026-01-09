@@ -725,7 +725,7 @@ defineExpose({
   }
 
   &.offline {
-    background: #909399;
+    background: var(--hula-gray-400);
   }
 }
 
@@ -782,7 +782,7 @@ defineExpose({
   }
 
   &.offline {
-    background: #909399;
+    background: var(--hula-gray-400);
     color: white;
   }
 }

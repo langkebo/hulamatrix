@@ -358,11 +358,11 @@ watch(
     align-items: center;
     gap: 6px;
     padding: 10px 12px;
-    background: #e6f7ff;
+    background: rgba(var(--hula-info-rgb), 0.1);
     border: 1px solid var(--hula-info);
     border-radius: 6px;
     font-size: 12px;
-    color: #0050b3;
+    color: var(--hula-info);
 
     .van-icon {
       color: var(--hula-info);

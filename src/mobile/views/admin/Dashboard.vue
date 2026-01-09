@@ -11,7 +11,7 @@
     <van-grid :column-num="2" :border="false" class="stats-grid">
       <van-grid-item>
         <div class="stat-item">
-          <van-icon name="friends" size="32" color="#07c160" />
+          <van-icon name="friends" size="32" color="var(--hula-success)" />
           <div class="stat-value">{{ stats.totalUsers }}</div>
           <div class="stat-label">{{ t('admin.stats.total_users') }}</div>
         </div>
@@ -109,7 +109,7 @@ const recentActivities = ref([
     title: 'User registered: @alice:example.com',
     timestamp: Date.now() - 300000,
     icon: 'add',
-    color: '#07c160'
+    color: 'var(--hula-success)'
   },
   {
     id: 2,

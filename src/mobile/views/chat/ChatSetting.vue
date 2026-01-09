@@ -84,7 +84,7 @@
                   <!-- 蒙板 -->
                   <div
                     v-if="i.activeStatus !== OnlineEnum.ONLINE"
-                    class="w-36px h-36px absolute rounded-full bg-#707070 opacity-70 z-4"></div>
+                    class="w-36px h-36px absolute rounded-full bg-var(--hula-gray-600) opacity-70 z-4"></div>
                   <n-avatar
                     class="absolute z-3"
                     :size="36"
@@ -92,7 +92,7 @@
                     fallback-src="/logo.png"
                     round />
                 </div>
-                <div class="truncate max-w-full text-#707070">{{ i.name }}</div>
+                <div class="truncate max-w-full text-var(--hula-gray-600)">{{ i.name }}</div>
               </div>
               <div
                 @click="toInviteGroupMember"
@@ -142,7 +142,7 @@
               <!-- 公告内容 -->
               <div @click="goToNotice" v-if="isGroup" class="pt-15px flex flex-col text-14px gap-10px">
                 <div>群公告</div>
-                <div class="text-#707070 line-clamp-2 text-12px line-height-20px">
+                <div class="text-var(--hula-gray-600) line-clamp-2 text-12px line-height-20px">
                   {{ announList.length > 0 ? announList[0]?.content : '' }}
                 </div>
               </div>

@@ -23,7 +23,7 @@
   background: var(--right-theme-bg-color, rgba(var(--hula-white-rgb), 0.9)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-left: 1px solid rgba(100, 162, 156, 0.2);
+  border-left: 1px solid rgba(var(--hula-brand-rgb), 0.2);
   position: relative;
   z-index: 1;
 }
@@ -42,7 +42,7 @@
   background: var(--matrix-bg-primary, rgba(var(--hula-white-rgb), 0.95)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--matrix-border, rgba(100, 162, 156, 0.2));
+  border-bottom: 1px solid var(--matrix-border, rgba(var(--hula-brand-rgb), 0.2));
   z-index: 10;
 }
 
@@ -60,7 +60,7 @@
   background: var(--matrix-bg-primary, rgba(var(--hula-white-rgb), 0.95)) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--matrix-border, rgba(100, 162, 156, 0.2));
+  border-top: 1px solid var(--matrix-border, rgba(var(--hula-brand-rgb), 0.2));
   padding: 16px;
 }
 

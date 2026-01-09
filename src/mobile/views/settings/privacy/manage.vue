@@ -231,7 +231,7 @@ onMounted(fetchData)
     min-width: 18px;
     height: 18px;
     padding: 0 6px;
-    background: #f56c6c;
+    background: var(--hula-error);
     color: white;
     border-radius: 9px;
     font-size: 11px;

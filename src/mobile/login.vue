@@ -142,7 +142,7 @@
         <!-- 协议 -->
         <n-flex align="center" justify="center" :style="agreementStyle" :size="6" class="absolute bottom-0 w-[80%]">
           <n-checkbox v-model:checked="protocol" />
-          <div class="text-12px color-#909090 cursor-default lh-14px">
+          <div class="text-12px color-var(--hula-gray-400) cursor-default lh-14px">
             <span>已阅读并同意</span>
             <span @click.stop="toServiceAgreement" class="brand-link">服务协议</span>
             <span>和</span>
@@ -214,7 +214,7 @@
         <!-- 协议 -->
         <n-flex align="center" justify="center" :size="6" class="mt-10px">
           <n-checkbox v-model:checked="registerProtocol" />
-          <div class="text-12px color-#909090 cursor-default lh-14px">
+          <div class="text-12px color-var(--hula-gray-400) cursor-default lh-14px">
             <span>已阅读并同意</span>
             <span @click.stop="toServiceAgreement" class="brand-link">服务协议</span>
             <span>和</span>

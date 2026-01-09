@@ -28,7 +28,7 @@
         <div class="flex items-center justify-between">
           <div class="flex-1 truncate">
             <div class="text-14px truncate">{{ row.name }}</div>
-            <div class="text-12px text-#909090 truncate">{{ row.id }}</div>
+            <div class="text-12px text-var(--hula-gray-400) truncate">{{ row.id }}</div>
           </div>
           <n-button size="small" type="primary" @click="joinRoom(row.id)">加入</n-button>
         </div>

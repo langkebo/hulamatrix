@@ -411,7 +411,7 @@ watch(
   background: rgba(var(--hula-warning-rgb), 0.1);
   border-radius: 8px;
   font-size: 12px;
-  color: #b45309;
+  color: var(--hula-warning);
 }
 
 // Slide down animation

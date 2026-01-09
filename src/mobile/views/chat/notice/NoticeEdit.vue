@@ -196,9 +196,9 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed var(--hula-gray-300);
   border-radius: 8px;
-  background-color: #fafafa;
+  background-color: var(--hula-gray-50);
 }
 .upload-image-container :deep(.n-upload-file-list) {
   display: grid;

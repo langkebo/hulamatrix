@@ -296,7 +296,7 @@ defineExpose({
   transition: all 0.3s ease;
 
   &.encrypted {
-    background-color: rgba(82, 196, 26, 0.1);
+    background-color: rgba(var(--hula-success-rgb), 0.1);
     color: var(--hula-brand-primary);
 
     .encryption-icon {

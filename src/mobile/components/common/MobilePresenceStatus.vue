@@ -87,12 +87,12 @@ function formatLastActive(timestamp: number): string {
     transition: all 0.2s ease;
 
     &.status-online {
-      background: #07c160;
+      background: var(--hula-success);
       box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
     }
 
     &.status-offline {
-      background: #909399;
+      background: var(--hula-gray-400);
     }
 
     &.status-unavailable {

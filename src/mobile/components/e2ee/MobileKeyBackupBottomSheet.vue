@@ -15,7 +15,7 @@
           </van-empty>
 
           <div v-else class="backup-exists">
-            <van-icon name="passed" size="60" color="#07c160" />
+            <van-icon name="passed" size="60" color="var(--hula-success)" />
             <div class="success-title">{{ t('setting.e2ee.key_backup.backup_exists') }}</div>
 
             <van-cell-group inset>
@@ -51,7 +51,7 @@
 
         <template v-else>
           <div v-if="recoveryKey" class="recovery-key-section">
-            <van-icon name="shield-o" size="60" color="#07c160" />
+            <van-icon name="shield-o" size="60" color="var(--hula-success)" />
             <div class="success-title">{{ t('setting.e2ee.key_backup.created') }}</div>
 
             <div class="key-display">
@@ -99,7 +99,7 @@
 
         <template v-else>
           <div v-if="restoreResult" class="restore-result">
-            <van-icon name="passed" size="60" color="#07c160" />
+            <van-icon name="passed" size="60" color="var(--hula-success)" />
             <div class="success-title">{{ t('setting.e2ee.key_backup.restored') }}</div>
 
             <van-cell-group inset>

@@ -9,7 +9,7 @@
       </div>
 
       <!-- Progress -->
-      <van-steps :active="stepIndex" direction="horizontal" active-color="#07c160">
+      <van-steps :active="stepIndex" direction="horizontal" active-color="var(--hula-success)">
         <van-step v-for="(step, index) in steps" :key="index">
           {{ step.title }}
         </van-step>

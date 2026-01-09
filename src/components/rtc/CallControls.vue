@@ -597,12 +597,12 @@ watch(
 }
 
 .accept-btn {
-  background: rgba(82, 196, 26, 0.2);
-  border-color: rgba(82, 196, 26, 0.4);
+  background: rgba(var(--hula-success-rgb), 0.2);
+  border-color: rgba(var(--hula-success-rgb), 0.4);
 }
 
 .accept-btn:hover {
-  background: rgba(82, 196, 26, 0.3);
+  background: rgba(var(--hula-success-rgb), 0.3);
 }
 
 .reject-btn,

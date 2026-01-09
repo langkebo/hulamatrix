@@ -236,11 +236,11 @@ watch(
 
   &--danger {
     .menu-item__label {
-      color: #f56c6c;
+      color: var(--hula-error);
     }
 
     .menu-item__icon {
-      color: #f56c6c;
+      color: var(--hula-error);
     }
   }
 
@@ -285,7 +285,7 @@ watch(
   transition: background-color 0.2s;
 
   &:active {
-    background: #e8e8e8;
+    background: var(--hula-gray-200);
   }
 }
 

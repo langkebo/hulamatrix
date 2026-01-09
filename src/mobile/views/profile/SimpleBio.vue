@@ -25,7 +25,7 @@
                   round />
 
                 <div @click="toMyInfo" class="flex flex-col flex-1 py-10px">
-                  <div class="font-bold text-18px text-#373838">{{ userStore.userInfo!.name }}</div>
+                  <div class="font-bold text-18px text-var(--hula-gray-700)">{{ userStore.userInfo!.name }}</div>
                   <div class="mt-2 text-bold-style line-height-22px line-clamp-2">
                     {{ userStore.userInfo!.resume || '用户很懒没写简介~' }}
                   </div>
@@ -145,6 +145,6 @@ $font-family-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 .online-status-text {
   font-size: 12px;
-  color: #373838;
+  color: var(--hula-gray-700);
 }
 </style>

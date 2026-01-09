@@ -242,7 +242,7 @@ html[data-theme='dark'] {
   // 安装进度条样式
   --progress-bg: transparent;
   // 回复消息框背景
-  --reply-bg: rgba(30, 30, 30, 0.6);
+  --reply-bg: rgba(var(--hula-gray-900-rgb), 0.6);
   // 危险样式
   --danger-text: var(--hula-brand-primary);
   --danger-bg: var(--hula-brand-primary);
@@ -252,7 +252,7 @@ html[data-theme='dark'] {
   // 头像边框颜色
   --avatar-border-color: var(--hula-brand-primary);
   // hover头像样式
-  --avatar-hover-bg: rgba(30, 30, 30, 0.6);
+  --avatar-hover-bg: rgba(var(--hula-gray-900-rgb), 0.6);
   // 插件背景颜色
   --plugin-bg-color: var(--hula-brand-primary);
   // 列表悬浮的颜色

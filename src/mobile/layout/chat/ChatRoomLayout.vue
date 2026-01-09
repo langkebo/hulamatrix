@@ -20,7 +20,7 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const computedBottomSafeAreaClass = computed(() => {
   if (route.name === 'mobileChatMain') {
-    return 'bg-#FAFAFA'
+    return 'bg-var(--hula-gray-50)'
   }
   return ''
 })

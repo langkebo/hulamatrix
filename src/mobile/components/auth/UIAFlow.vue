@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="uia-header">
         <van-nav-bar :title="title" />
-        <van-steps :active="currentStepIndex" direction="horizontal" active-color="#07c160">
+        <van-steps :active="currentStepIndex" direction="horizontal" active-color="var(--hula-success)">
           <van-step v-for="(step, index) in steps" :key="step.type || index">{{ step.title }}</van-step>
         </van-steps>
       </div>

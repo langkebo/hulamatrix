@@ -80,7 +80,7 @@ function handleTab(id: string) {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -2px 8px rgba(0, 184, 148, 0.1);
+  box-shadow: 0 -2px 8px rgba(var(--hula-success-rgb), 0.1);
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }

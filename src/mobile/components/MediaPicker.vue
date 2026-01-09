@@ -440,7 +440,7 @@ function formatFileSize(bytes: number): string {
   aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;
-  background-color: var(--color-bg-tertiary, #e8e8e8);
+  background-color: var(--color-bg-tertiary, var(--hula-gray-200));
 }
 
 .preview-image,

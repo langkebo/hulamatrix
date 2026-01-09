@@ -196,10 +196,10 @@ const handleClick = () => {
 // 深色模式适配
 [data-theme='dark'] {
   .connection-status {
-    background: rgba(42, 42, 42, 0.9);
+    background: rgba(var(--hula-gray-800-rgb), 0.9);
 
     &--clickable:hover {
-      background: rgba(42, 42, 42, 0.95);
+      background: rgba(var(--hula-gray-800-rgb), 0.95);
     }
   }
 }

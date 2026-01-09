@@ -14,9 +14,9 @@ $shadows: (
   dark-lg: 0 10px 15px rgba(var(--hula-black-rgb), 0.5),
 
   // 移动端浅色主题
-  light-sm: 0 1px 3px rgba(0, 184, 148, 0.1),
-  light-md: 0 4px 8px rgba(0, 184, 148, 0.15),
-  light-lg: 0 8px 16px rgba(0, 184, 148, 0.2),
+  light-sm: 0 1px 3px rgba(var(--hula-success-rgb), 0.1),
+  light-md: 0 4px 8px rgba(var(--hula-success-rgb), 0.15),
+  light-lg: 0 8px 16px rgba(var(--hula-success-rgb), 0.2),
 );
 
 @mixin export {

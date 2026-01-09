@@ -569,7 +569,7 @@ const getTypeColor = (type: string): string => {
     case 'audio':
       return '#7c4dff'
     default:
-      return '#909090'
+      return 'var(--hula-gray-400)'
   }
 }
 

@@ -16,18 +16,18 @@
                 <!-- 时间/阅读人数 -->
                 <div class="flex items-center justify-between text-14px">
                   <span class="flex gap-5px">
-                    <span class="text-#717171">发布人:</span>
+                    <span class="text-var(--hula-gray-600)">发布人:</span>
                     <span class="text-black">{{ groupStore.getUserInfo(item.uid)?.name }}</span>
                   </span>
                   <span v-if="item.isTop" class="top-badge">置顶</span>
                 </div>
                 <!-- 公告内容 -->
-                <div class="text-14px line-clamp-3 line-height-20px text-#717171 max-h-60px">
+                <div class="text-14px line-clamp-3 line-height-20px text-var(--hula-gray-600) max-h-60px">
                   {{ item.content }}
                 </div>
 
                 <div class="flex items-center justify-between text-12px">
-                  <span class="flex gap-5px text-#717171">{{ formatTimestamp(item.createTime) }}</span>
+                  <span class="flex gap-5px text-var(--hula-gray-600)">{{ formatTimestamp(item.createTime) }}</span>
                   <span class="text-#13987F">128人已读</span>
                 </div>
               </div>

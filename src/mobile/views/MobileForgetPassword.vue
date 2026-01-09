@@ -23,7 +23,7 @@
             <n-form-item path="email" label="邮箱账号">
               <n-input
                 :allow-input="noSideSpace"
-                class="border-(1px solid #90909080)"
+                class="border-(1px solid var(--hula-gray-400)80)"
                 v-model:value="formData.email"
                 placeholder="请输入您的邮箱"
                 spellCheck="false"
@@ -38,7 +38,7 @@
               <n-flex :size="8">
                 <n-input
                   :allow-input="noSideSpace"
-                  class="border-(1px solid #90909080)"
+                  class="border-(1px solid var(--hula-gray-400)80)"
                   v-model:value="formData.emailCode"
                   placeholder="请输入邮箱验证码"
                   spellCheck="false"
@@ -77,7 +77,7 @@
               <n-flex vertical :size="8" class="w-full">
                 <n-input
                   :allow-input="noSideSpace"
-                  class="border-(1px solid #90909080) w-full"
+                  class="border-(1px solid var(--hula-gray-400)80) w-full"
                   v-model:value="passwordForm.password"
                   type="password"
                   show-password-on="click"
@@ -110,7 +110,7 @@
               <n-flex vertical :size="8" class="w-full">
                 <n-input
                   :allow-input="noSideSpace"
-                  class="border-(1px solid #90909080) w-full"
+                  class="border-(1px solid var(--hula-gray-400)80) w-full"
                   v-model:value="passwordForm.confirmPassword"
                   type="password"
                   show-password-on="click"

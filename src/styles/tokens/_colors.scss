@@ -38,7 +38,7 @@ $pc-dark: (
   border-color: var(--hula-brand-primary),    // 边框颜色
   divider-color: var(--hula-brand-primary),   // 分割线颜色
 
-  scrollbar-track: rgba(74, 74, 74, 0.3),
+  scrollbar-track: rgba(var(--hula-gray-700-rgb), 0.3),
   scrollbar-thumb: var(--hula-brand-primary),
   scrollbar-thumb-hover: var(--hula-brand-primary),
 );

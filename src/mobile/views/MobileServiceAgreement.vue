@@ -193,22 +193,22 @@
 }
 
 .agreement-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--hula-gray-100);
   border-radius: 3px;
 }
 
 .agreement-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--hula-gray-300);
   border-radius: 3px;
 }
 
 .agreement-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--hula-gray-400);
 }
 
 :deep(.action-close) {
   svg {
-    color: #303030;
+    color: var(--hula-gray-800);
   }
 }
 </style>

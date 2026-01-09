@@ -65,7 +65,7 @@ const statusText = computed(() => {
     transition: all 0.2s ease;
 
     &.status-online {
-      background: #07c160;
+      background: var(--hula-success);
     }
 
     &.status-offline {

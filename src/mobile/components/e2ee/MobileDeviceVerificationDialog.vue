@@ -601,7 +601,7 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: #e6f7ff;
+  background: rgba(var(--hula-info-rgb), 0.1);
   border: 1px solid var(--hula-info);
   border-radius: 8px;
   color: var(--hula-info);

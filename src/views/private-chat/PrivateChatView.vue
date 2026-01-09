@@ -957,11 +957,11 @@ defineExpose({
   margin-bottom: 4px;
 
   &:hover {
-    background: var(--mobile-bg-hover, rgba(0, 184, 148, 0.08));
+    background: var(--mobile-bg-hover, rgba(var(--hula-success-rgb), 0.08));
   }
 
   &:active {
-    background: var(--mobile-bg-active, rgba(0, 184, 148, 0.15));
+    background: var(--mobile-bg-active, rgba(var(--hula-success-rgb), 0.15));
   }
 
   .session-avatar {
