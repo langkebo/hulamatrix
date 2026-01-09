@@ -126,7 +126,7 @@ export class AuthStateManager {
 
       // 初始化推送通知服务
       try {
-        const { matrixPushService } = await import('@/services/matrixPushService')
+        const { matrixPushService } = await import('@/matrix/services/notification/push')
         await matrixPushService.initialize()
         logger.info('[AuthState] Push notification service initialized')
       } catch (pushError) {

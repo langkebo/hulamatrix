@@ -155,7 +155,7 @@ async function compressImage(file: File): Promise<File> {
     }
 
     // Generate compressed thumbnail
-    const { matrixThumbnailService } = await import('@/services/matrixThumbnailService')
+    const { matrixThumbnailService } = await import('@/matrix/services/media/thumbnail')
     const compressedBlob = await matrixThumbnailService.generateClientThumbnail(file, props.compressionOptions)
 
     return new File([compressedBlob], file.name, {

@@ -81,7 +81,7 @@ export function useChatSessions(deps: ChatSessionDeps): ChatSessionComposables {
       sessionOptions.isLoading = true
 
       // 使用 matrixRoomManager 获取房间列表
-      const { matrixRoomManager } = await import('@/services/matrixRoomManager')
+      const { matrixRoomManager } = await import('@/matrix/services/room/manager')
       const roomIds = await matrixRoomManager.getJoinedRooms()
 
       // 将房间转换为会话项
@@ -179,7 +179,7 @@ export function useChatSessions(deps: ChatSessionDeps): ChatSessionComposables {
       }
 
       // 使用 matrixRoomManager 获取房间信息
-      const { matrixRoomManager } = await import('@/services/matrixRoomManager')
+      const { matrixRoomManager } = await import('@/matrix/services/room/manager')
       const roomSummary = matrixRoomManager.getRoomSummary(roomId)
 
       if (!roomSummary) {

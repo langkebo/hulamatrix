@@ -211,7 +211,7 @@ const isBotUser = (uid: string) => groupStore.getUserInfo(uid)?.account === User
 const toChatRoom = async () => {
   try {
     // 使用 Matrix SDK 获取或创建 DM 房间
-    const { matrixRoomManager } = await import('@/services/matrixRoomManager')
+    const { matrixRoomManager } = await import('@/matrix/services/room/manager')
     const roomId = await matrixRoomManager.createDMRoom(uid)
 
     // 先检查会话是否已存在
