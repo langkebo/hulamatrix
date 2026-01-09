@@ -124,6 +124,8 @@
     "paths": {
       // @/ 指向 src 目录
       "@/*": ["./src/*"],
+      // @/matrix/* 指向 src/matrix 目录（Matrix 服务统一入口）
+      "@/matrix/*": ["./src/matrix/*"],
       // #/ 指向 src/mobile 目录（移动端专用代码）
       "#/*": ["./src/mobile/*"],
       // ~/ 指向项目根目录
