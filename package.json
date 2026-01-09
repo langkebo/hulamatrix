@@ -88,7 +88,12 @@
     "========= UI/UX 检查和修复 =========": "",
     "uiux:check": "node scripts/ui-ux-check.cjs",
     "uiux:fix": "node scripts/ui-ux-fix.cjs",
-    "uiux:fix:dry": "node scripts/ui-ux-fix.cjs --dry-run"
+    "uiux:fix:dry": "node scripts/ui-ux-fix.cjs --dry-run",
+    "uiux:tokens": "node scripts/check-design-tokens.cjs",
+    "uiux:images": "node scripts/optimize-images.cjs",
+    "uiux:images:dry": "node scripts/optimize-images.cjs --dry-run",
+    "========= UI/UX 质量检查全流程 =========": "",
+    "uiux:audit": "pnpm uiux:check && pnpm uiux:tokens && pnpm uiux:images:dry"
   },
   "dependencies": {
     "@tauri-apps/api": "2.9.0",
