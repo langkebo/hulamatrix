@@ -612,7 +612,7 @@ watch(
   }
 
   .context-messages {
-    border-left-color: #444;
+    border-left-color: var(--hula-gray-700);
   }
 
   .main-message {
@@ -620,7 +620,7 @@ watch(
   }
 
   .detail-actions {
-    border-top-color: #444;
+    border-top-color: var(--hula-gray-700);
   }
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="flex items-center justify-center p-[20px_0]">
     <div class="flex items-center justify-center gap-8px">
       <svg class="size-18px"><use href="#SmilingFace"></use></svg>
-      <p class="text-(12px #777)">{{ t('setting.footer.like_product') }}</p>
+      <p class="text-(12px var(--hula-gray-500))">{{ t('setting.footer.like_product') }}</p>
       <n-popover v-model:show="isStar" class="no-padding-popover" trigger="hover" placement="top">
         <template #trigger>
           <p class="text-(12px) text-brand cursor-pointer">{{ t('setting.footer.star_cta') }}</p>
@@ -31,7 +31,7 @@
           </n-flex>
         </n-flex>
       </n-popover>
-      <p class="text-(12px #777)">{{ t('setting.footer.share_joiner') }}</p>
+      <p class="text-(12px var(--hula-gray-500))">{{ t('setting.footer.share_joiner') }}</p>
       <n-popover v-model:show="isIssue" class="no-padding-popover" trigger="hover" placement="top-end">
         <template #trigger>
           <p class="text-(12px) text-brand cursor-pointer">{{ t('setting.footer.share_cta') }}</p>

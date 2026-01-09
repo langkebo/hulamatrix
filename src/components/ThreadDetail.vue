@@ -660,7 +660,7 @@ onMounted(() => {
   .thread-detail__header,
   .thread-detail__input {
     background: var(--hula-gray-800, var(--hula-brand-primary));
-    border-color: #444;
+    border-color: var(--hula-gray-700);
   }
 
   .title,
@@ -684,7 +684,7 @@ onMounted(() => {
 
   .thread-divider::before,
   .thread-divider::after {
-    background: #444;
+    background: var(--hula-gray-700);
   }
 
   .thread-divider__text {
@@ -697,7 +697,7 @@ onMounted(() => {
 
   .hint kbd {
     background: var(--hula-gray-900);
-    border-color: #444;
+    border-color: var(--hula-gray-700);
   }
 }
 </style>

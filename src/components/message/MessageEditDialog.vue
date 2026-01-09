@@ -288,7 +288,7 @@ watch(
 
   .hint kbd {
     background: var(--hula-gray-900);
-    border-color: #444;
+    border-color: var(--hula-gray-700);
   }
 }
 </style>

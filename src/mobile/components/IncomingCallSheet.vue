@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="rtc.status === 'incoming'"
-    class="fixed left-0 top-0 w-100vw h-100vh z-1000 bg-var(--hula-black)00070 flex items-center justify-center">
+    class="fixed left-0 top-0 w-100vw h-100vh z-1000 bg-var(--hula-black)70 flex items-center justify-center">
     <div class="w-88vw max-w-360px bg-white rounded-12px p-16px">
       <div class="flex items-center gap-8px mb-12px">
         <svg class="size-18px"><use href="#Telephone"></use></svg>

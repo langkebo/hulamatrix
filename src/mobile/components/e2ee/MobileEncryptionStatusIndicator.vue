@@ -714,7 +714,7 @@ defineExpose({
 .detail-modal {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, var(--hula-white)fff);
+  background: var(--card-color, var(--hula-white));
   max-height: 80vh;
   border-radius: 12px;
   overflow: hidden;

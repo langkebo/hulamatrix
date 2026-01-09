@@ -650,7 +650,7 @@ onMounted(() => {
   }
 
   .permission-row {
-    border-bottom-color: #444;
+    border-bottom-color: var(--hula-gray-700);
   }
 
   .permission-row label {
@@ -670,7 +670,7 @@ onMounted(() => {
   }
 
   .power-level-editor__actions {
-    border-top-color: #444;
+    border-top-color: var(--hula-gray-700);
   }
 }
 </style>

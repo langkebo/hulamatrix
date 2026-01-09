@@ -78,8 +78,8 @@
 
               <n-flex
                 v-if="plugin.state === PluginEnum.BUILTIN"
-                class="relative rounded-22px border-(1px solid #777) bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
-                <p class="text-(12px #777 center)">{{ t('home.plugins.status.builtin') }}</p>
+                class="relative rounded-22px border-(1px solid var(--hula-gray-500)) bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
+                <p class="text-(12px var(--hula-gray-500) center)">{{ t('home.plugins.status.builtin') }}</p>
               </n-flex>
 
               <n-flex

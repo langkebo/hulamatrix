@@ -83,7 +83,7 @@ function formatTime(timestamp: number): string {
 
 .no-message {
   text-align: center;
-  color: #888;
+  color: var(--hula-gray-400);
   padding: 40px 0;
 }
 </style>

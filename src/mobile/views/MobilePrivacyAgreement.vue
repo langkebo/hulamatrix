@@ -221,7 +221,7 @@
       h3 {
         font-size: 16px;
         font-weight: bold;
-        color: #444;
+        color: var(--hula-gray-700);
         margin: 15px 0 10px 0;
       }
 

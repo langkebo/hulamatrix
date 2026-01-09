@@ -266,7 +266,7 @@ const handleCreate = async () => {
 .create-space-dialog {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, var(--hula-white)fff);
+  background: var(--card-color, var(--hula-white));
   max-height: 85vh;
   border-radius: 12px;
   overflow: hidden;

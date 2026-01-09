@@ -21,7 +21,7 @@
 
   /* 背景颜色 */
   --van-background-color: var(--hula-bg-page, #f7f8fa);
-  --van-background-color-light: var(--hula-bg-component, var(--hula-white)fff);
+  --van-background-color-light: var(--hula-bg-component, var(--hula-white));
 
   /* 边框颜色 */
   --van-border-color: var(--hula-border-light, #ebedf0);
@@ -36,10 +36,10 @@
   --van-disabled-opacity: 0.5;
 
   /* 白色（用于遮罩等） */
-  --van-white: var(--hula-white)fff;
+  --van-white: var(--hula-white);
 
   /* 黑色 */
-  --van-black: var(--hula-black)000;
+  --van-black: var(--hula-black);
 
   /* 圆角 */
   --van-radius-sm: var(--hula-radius-sm, 4px);
@@ -78,9 +78,9 @@ html[data-theme='dark'] {
   --van-danger-color: var(--hula-error, #f54a5f);
 
   /* 文字颜色（深色模式） */
-  --van-text-color: var(--hula-text-primary, var(--hula-white)fff);
+  --van-text-color: var(--hula-text-primary, var(--hula-white));
   --van-text-color-link: var(--hula-accent, #1ec29f);
-  --van-text-color-base: var(--hula-text-primary, var(--hula-white)fff);
+  --van-text-color-base: var(--hula-text-primary, var(--hula-white));
   --van-text-color-2: var(--hula-text-regular, rgba(var(--hula-white-rgb), 0.75));
   --van-text-color-3: var(--hula-text-secondary, rgba(var(--hula-white-rgb), 0.55));
 

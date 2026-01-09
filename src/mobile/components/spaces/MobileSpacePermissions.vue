@@ -445,7 +445,7 @@ defineExpose({
 .warning-dialog {
   display: flex;
   flex-direction: column;
-  background: var(--card-color, var(--hula-white)fff);
+  background: var(--card-color, var(--hula-white));
   border-radius: 12px;
   overflow: hidden;
   max-height: 70vh;

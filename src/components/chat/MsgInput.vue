@@ -54,8 +54,8 @@
               :data-placeholder="t('editor.placeholder')"
               :class="
                 isMobile()
-                  ? 'empty:before:content-[attr(data-placeholder)] before:text-(12px #777) p-2 min-h-2rem ps-10px! text-14px! bg-white! rounded-10px! max-h-8rem! flex items-center'
-                  : 'empty:before:content-[attr(data-placeholder)] before:text-(12px #777) p-2'
+                  ? 'empty:before:content-[attr(data-placeholder)] before:text-(12px var(--hula-gray-500)) p-2 min-h-2rem ps-10px! text-14px! bg-white! rounded-10px! max-h-8rem! flex items-center'
+                  : 'empty:before:content-[attr(data-placeholder)] before:text-(12px var(--hula-gray-500)) p-2'
               "></div>
           </n-scrollbar>
         </ContextMenu>
@@ -93,7 +93,7 @@
                           justify="center"
                           align="center"
                           :size="4"
-                          class="text-(12px #777) cursor-default tracking-1 select-none">
+                          class="text-(12px var(--hula-gray-500)) cursor-default tracking-1 select-none">
                           <i18n-t keypath="editor.send_or_newline">
                             <template #send>
                               <span v-if="chatKey !== 'Enter'">

@@ -9,7 +9,7 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 
   --agreement-heading-color: var(--hula-gray-900);
-  --agreement-subheading-color: #444;
+  --agreement-subheading-color: var(--hula-gray-700);
   --agreement-paragraph-color: #555;
   --agreement-muted-color: var(--hula-gray-700);
   --agreement-accent-color: var(--hula-brand-primary)90;

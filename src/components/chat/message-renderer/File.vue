@@ -507,7 +507,7 @@ onMounted(async () => {
   font-size: 10px;
   padding: 2px 4px;
   border-radius: 4px;
-  @apply light:bg-var(--hula-brand-primary)20 dark:bg-#444;
+  @apply light:bg-var(--hula-brand-primary)20 dark:bg-var(--hula-gray-700);
   color: var(--hula-brand-primary);
 
   &.downloaded {

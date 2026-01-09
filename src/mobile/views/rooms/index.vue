@@ -9,7 +9,7 @@
               <n-avatar size="small">{{ room.name?.[0] || '#' }}</n-avatar>
               <div class="flex flex-col">
                 <span class="text-14px">{{ room.name || room.roomId }}</span>
-                <span class="text-12px text-#888">成员 {{ room.getJoinedMemberCount?.() ?? 0 }}</span>
+                <span class="text-12px text-var(--hula-gray-400)">成员 {{ room.getJoinedMemberCount?.() ?? 0 }}</span>
               </div>
             </div>
             <div class="flex items-center gap-8px">
@@ -19,8 +19,8 @@
           </div>
         </n-list-item>
       </n-list>
-      <div v-if="!client" class="text-12px text-#888">未连接到服务器</div>
-      <div v-if="client && rooms.length === 0" class="text-12px text-#888">暂无房间</div>
+      <div v-if="!client" class="text-12px text-var(--hula-gray-400)">未连接到服务器</div>
+      <div v-if="client && rooms.length === 0" class="text-12px text-var(--hula-gray-400)">暂无房间</div>
     </n-space>
   </div>
 </template>

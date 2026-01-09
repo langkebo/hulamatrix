@@ -492,7 +492,7 @@ watch(
   }
 
   .thread-timeline__actions {
-    border-top-color: #444;
+    border-top-color: var(--hula-gray-700);
   }
 
   .participant-avatar {

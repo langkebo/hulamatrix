@@ -47,7 +47,7 @@
                 <n-flex
                   v-else-if="plugin.state === PluginEnum.BUILTIN"
                   class="relative rounded-22px bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
-                  <p class="text-(12px #777 center)">{{ t('home.plugins.status.builtin') }}</p>
+                  <p class="text-(12px var(--hula-gray-500) center)">{{ t('home.plugins.status.builtin') }}</p>
                 </n-flex>
 
                 <n-flex v-else class="relative rounded-22px bg-var(--hula-brand-primary) size-fit p-[4px_8px]">
