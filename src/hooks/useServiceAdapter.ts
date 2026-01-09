@@ -342,7 +342,7 @@ export function useRoomAdapter() {
     return await state.value.room.createRoom(params)
   }
 
-  const joinRoom = async (params: { roomId: string; reason?: string }) => {
+  const joinRoom = async (params: { roomId: string; reason?: string; viaServers?: string[] }) => {
     if (!state.value.room || !isReady.value) {
       throw new Error('Room adapter not ready')
     }

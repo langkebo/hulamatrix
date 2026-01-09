@@ -271,20 +271,27 @@ export async function getDirectoryVisibility(roomId: string): Promise<'public' |
 
 /**
  * Join a room
- * Implementation of document requirement: join room with optional reason
+ * Implementation of document requirement: join room with optional reason and viaServers
  * @param roomIdOrAlias Room ID or alias to join
  * @param reason Optional reason for joining
+ * @param viaServers Optional list of servers to route join request through (for federation)
  */
-export async function joinRoom(roomIdOrAlias: string, reason?: string): Promise<void> {
+export async function joinRoom(roomIdOrAlias: string, reason?: string, viaServers?: string[]): Promise<void> {
   const client = (matrixClientService.getClient() ||
     (matrixClientService as unknown as MatrixClientServiceLike).client) as MatrixClientLike | null
   if (!client) throw new Error('Matrix client not initialized')
 
-  // Try with reason if supported
-  const joinRoomWithReason = (client as { joinRoom?: (roomId: string, opts: { reason?: string }) => Promise<unknown> })
-    .joinRoom
-  if (reason && typeof joinRoomWithReason === 'function') {
-    await withRetry(() => joinRoomWithReason(roomIdOrAlias, { reason }))
+  // Build options object
+  const opts: Record<string, unknown> = {}
+  if (reason) opts.reason = reason
+  if (viaServers) opts.viaServers = viaServers
+
+  // Try with options if supported
+  const joinRoomWithOptions = (
+    client as { joinRoom?: (roomId: string, opts?: Record<string, unknown>) => Promise<unknown> }
+  ).joinRoom
+  if (typeof joinRoomWithOptions === 'function') {
+    await withRetry(() => joinRoomWithOptions(roomIdOrAlias, opts))
   } else {
     const joinRoomBasic = client.joinRoom as (roomId: string) => Promise<unknown>
     await withRetry(() => joinRoomBasic(roomIdOrAlias))

@@ -95,7 +95,7 @@ export const useAppStore = defineStore('app', () => {
 
   // ========== Room Management Methods ==========
 
-  const joinRoom = (roomId: string) => roomState.joinRoom(roomId)
+  const joinRoom = (roomId: string, viaServers?: string[]) => roomState.joinRoom(roomId, viaServers)
   const leaveRoom = (roomId: string) => roomState.leaveRoom(roomId)
   const sendMessage = (roomId: string, content: Record<string, unknown>, type?: string) =>
     roomState.sendMessage(roomId, content, type)

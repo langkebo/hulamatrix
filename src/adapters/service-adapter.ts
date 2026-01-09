@@ -77,8 +77,11 @@ export interface RoomAdapter extends ServiceAdapter {
 
   /**
    * 加入房间
+   * @param params.roomId Room ID to join
+   * @param params.reason Optional reason for joining
+   * @param params.viaServers Optional list of servers to route join request through (for federation)
    */
-  joinRoom(params: { roomId: string; reason?: string }): Promise<void>
+  joinRoom(params: { roomId: string; reason?: string; viaServers?: string[] }): Promise<void>
 
   /**
    * 离开房间

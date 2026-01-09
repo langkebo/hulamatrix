@@ -121,13 +121,21 @@ export class RoomStateManager {
 
   /**
    * Join a room
+   * @param roomId Room ID to join
+   * @param viaServers Optional list of servers to route join request through (for federation)
    */
-  async joinRoom(roomId: string): Promise<void> {
+  async joinRoom(roomId: string, viaServers?: string[]): Promise<void> {
     const client = this.getClient()
     if (!client) return
 
     try {
-      await client.joinRoom(roomId)
+      // Build options with viaServers for federation support
+      const opts: Record<string, unknown> = {}
+      if (viaServers !== undefined) {
+        opts.viaServers = viaServers
+      }
+
+      await client.joinRoom(roomId, opts)
       this.currentRoomId.value = roomId
     } catch (error) {
       logger.error('[RoomState] Failed to join room:', error)

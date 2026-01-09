@@ -559,9 +559,18 @@ export async function deleteAlias(alias: string): Promise<void> {
 
 ### 2.4 发现的问题
 
-| 问题 | 位置 | 影响 | 优先级 |
-|------|------|------|--------|
-| joinRoom 缺少 viaServers 参数 | matrixRoomManager.ts:786 | 联邦场景无法指定服务器 | 中 |
+| 问题 | 位置 | 影响 | 优先级 | 状态 |
+|------|------|------|--------|------|
+| joinRoom 缺少 viaServers 参数 | matrixRoomManager.ts:786 | 联邦场景无法指定服务器 | 中 | ✅ 已修复 |
+
+**修复详情 (2026-01-09)**:
+- ✅ `src/matrix/services/room/manager.ts:788` - 添加 `viaServers?: string[]` 参数
+- ✅ `src/adapters/matrix-adapter.ts:460` - 更新 `MatrixRoomAdapter.joinRoom` 支持 `viaServers`
+- ✅ `src/matrix/core/rooms.ts:279` - 更新 `joinRoom` 函数支持 `viaServers`
+- ✅ `src/stores/core/room-state.ts:127` - 更新 `RoomStateManager.joinRoom` 支持 `viaServers`
+- ✅ `src/hooks/useServiceAdapter.ts:345` - 更新 `useRoomAdapter.joinRoom` 支持 `viaServers`
+- ✅ `src/adapters/service-adapter.ts:84` - 更新 `RoomAdapter` 接口支持 `viaServers`
+- ✅ `src/stores/core/store/index.ts:98` - 更新统一 store 接口支持 `viaServers`
 
 ---
 

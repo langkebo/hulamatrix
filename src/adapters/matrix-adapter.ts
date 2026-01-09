@@ -59,6 +59,7 @@ interface CreateRoomResponse {
 /** 加入/离开房间选项接口 */
 interface RoomOptions {
   reason?: string
+  viaServers?: string[]
 }
 
 /** 房间信息接口 */
@@ -456,7 +457,7 @@ export class MatrixRoomAdapter implements RoomAdapter {
     }
   }
 
-  async joinRoom(params: { roomId: string; reason?: string }): Promise<void> {
+  async joinRoom(params: { roomId: string; reason?: string; viaServers?: string[] }): Promise<void> {
     const startTime = Date.now()
     try {
       const client = await this.getClient()
@@ -464,13 +465,16 @@ export class MatrixRoomAdapter implements RoomAdapter {
       if (params.reason !== undefined) {
         joinOptions.reason = params.reason
       }
+      if (params.viaServers !== undefined) {
+        joinOptions.viaServers = params.viaServers
+      }
       await client.joinRoom(params.roomId, joinOptions)
 
       // Phase 4: 记录性能
       const latency = Date.now() - startTime
       migrationMonitor.recordPerformance('matrix', latency)
 
-      logger.info('[MatrixRoomAdapter] Joined room:', params.roomId)
+      logger.info('[MatrixRoomAdapter] Joined room:', { roomId: params.roomId, viaServers: params.viaServers })
     } catch (error) {
       logger.error('[MatrixRoomAdapter] Join room failed:', error)
       migrationMonitor.recordError('matrix', error instanceof Error ? error : new Error(String(error)))
