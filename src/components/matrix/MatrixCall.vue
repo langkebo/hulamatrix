@@ -10,15 +10,13 @@
           :srcObject="remoteVideoStream"
           autoplay
           playsinline
-          class="remote-video"
-        />
+          class="remote-video" />
         <div v-else class="audio-placeholder">
           <n-avatar
             v-bind="remoteUserAvatar !== undefined ? { src: remoteUserAvatar } : {}"
             :fallback-src="'/default-avatar.png'"
             round
-            size="large"
-          >
+            size="large">
             {{ remoteUserInitials }}
           </n-avatar>
           <span class="remote-user-name">{{ remoteUserName }}</span>
@@ -27,14 +25,7 @@
 
       <!-- Local Video -->
       <div v-if="call?.type === 'video'" class="local-video-container">
-        <video
-          ref="localVideoRef"
-          :srcObject="localVideoStream"
-          autoplay
-          muted
-          playsinline
-          class="local-video"
-        />
+        <video ref="localVideoRef" :srcObject="localVideoStream" autoplay muted playsinline class="local-video" />
       </div>
 
       <!-- Call Controls -->
@@ -46,12 +37,7 @@
 
         <div class="control-buttons">
           <!-- Mute/Unmute -->
-          <n-button
-            circle
-            :type="isMuted ? 'error' : 'default'"
-            size="large"
-            @click="toggleMute"
-          >
+          <n-button circle :type="isMuted ? 'error' : 'default'" size="large" @click="toggleMute">
             <n-icon :component="isMuted ? MicrophoneOff : Microphone" />
           </n-button>
 
@@ -61,8 +47,7 @@
             circle
             :type="isVideoOff ? 'error' : 'default'"
             size="large"
-            @click="toggleVideo"
-          >
+            @click="toggleVideo">
             <n-icon :component="isVideoOff ? VideoOff : Video" />
           </n-button>
 
@@ -72,18 +57,12 @@
             circle
             :type="isScreenSharing ? 'primary' : 'default'"
             size="large"
-            @click="toggleScreenShare"
-          >
+            @click="toggleScreenShare">
             <n-icon :component="DeviceDesktop" />
           </n-button>
 
           <!-- End Call -->
-          <n-button
-            circle
-            type="error"
-            size="large"
-            @click="endCall"
-          >
+          <n-button circle type="error" size="large" @click="endCall">
             <n-icon :component="PhoneCall" />
           </n-button>
         </div>
@@ -91,19 +70,13 @@
     </div>
 
     <!-- Incoming Call Modal -->
-    <n-modal
-      v-model:show="showIncomingCall"
-      :mask-closable="false"
-      preset="dialog"
-      title="来电"
-    >
+    <n-modal v-model:show="showIncomingCall" :mask-closable="false" preset="dialog" title="来电">
       <div class="incoming-call-content">
         <n-avatar
           v-bind="incomingCallAvatar !== undefined ? { src: incomingCallAvatar } : {}"
           :fallback-src="'/default-avatar.png'"
           round
-          size="large"
-        >
+          size="large">
           {{ incomingCallInitials }}
         </n-avatar>
         <div class="incoming-call-info">
@@ -131,8 +104,7 @@
             v-model:value="selectedAudioInput"
             :options="audioInputDevices"
             placeholder="选择麦克风"
-            @update:value="changeAudioInput"
-          />
+            @update:value="changeAudioInput" />
         </n-form-item>
 
         <n-form-item label="扬声器">
@@ -140,8 +112,7 @@
             v-model:value="selectedAudioOutput"
             :options="audioOutputDevices"
             placeholder="选择扬声器"
-            @update:value="changeAudioOutput"
-          />
+            @update:value="changeAudioOutput" />
         </n-form-item>
 
         <n-form-item v-if="call?.type === 'video'" label="摄像头">
@@ -149,19 +120,14 @@
             v-model:value="selectedVideoInput"
             :options="videoInputDevices"
             placeholder="选择摄像头"
-            @update:value="changeVideoInput"
-          />
+            @update:value="changeVideoInput" />
         </n-form-item>
       </div>
     </n-modal>
 
     <!-- Network Status -->
     <div v-if="showNetworkStatus" class="network-status">
-      <n-tag
-        :type="networkQuality.type"
-        size="small"
-        round
-      >
+      <n-tag :type="networkQuality.type" size="small" round>
         {{ networkQuality.text }}
       </n-tag>
     </div>
@@ -173,7 +139,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { NModal, NButton, NIcon, NAvatar, NTag, NSelect, useMessage } from 'naive-ui'
 import { Microphone, MicrophoneOff, Video, VideoOff, DeviceDesktop, PhoneCall, X } from '@vicons/tabler'
 import { matrixCallService, MatrixCall, CallState } from '@/services/matrixCallService'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import type { MatrixMember } from '@/types/matrix'

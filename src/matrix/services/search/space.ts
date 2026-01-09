@@ -7,8 +7,8 @@
 
 import { ref, computed } from 'vue'
 import { createLogger } from '@/utils/logger'
-import { matrixSpacesService } from '@/services/matrixSpacesService'
-import type { SpaceInfo } from '@/services/matrixSpacesService'
+import { matrixSpacesService } from '@/matrix/services/room/spaces'
+import type { SpaceInfo } from '@/matrix/services/room/spaces'
 
 const logger = createLogger('SpaceSearch')
 

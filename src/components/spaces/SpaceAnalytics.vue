@@ -203,7 +203,7 @@ import {
 } from 'naive-ui'
 import { Space, Hash, Users, Lock } from '@vicons/tabler'
 import { useSpacesStore } from '@/stores/spaces'
-import type { SpaceInfo } from '@/services/matrixSpacesService'
+import type { SpaceInfo } from '@/matrix/services/room/spaces'
 import { logger } from '@/utils/logger'
 
 const { t } = useI18n()

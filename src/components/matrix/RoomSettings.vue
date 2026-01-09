@@ -437,7 +437,7 @@ import {
   useMessage
 } from 'naive-ui'
 import { Users, Lock, LockOpen, Search, UserPlus, DotsVertical, Download, Logout, Trash, User } from '@vicons/tabler'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import type { MatrixMember } from '@/types/matrix'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { getUserId, getRoom } from '@/utils/matrixClientUtils'

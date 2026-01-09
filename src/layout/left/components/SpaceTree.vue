@@ -77,7 +77,7 @@ import { useSpacesStore } from '@/stores/spaces'
 import { useMitt } from '@/hooks/useMitt'
 import { MittEnum } from '@/enums'
 import { logger } from '@/utils/logger'
-import type { SpaceInfo, SpaceChild } from '@/services/matrixSpacesService'
+import type { SpaceInfo, SpaceChild } from '@/matrix/services/room/spaces'
 
 const emit = defineEmits<{
   (e: 'room-selected', roomId: string): void

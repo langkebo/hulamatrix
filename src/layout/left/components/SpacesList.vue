@@ -34,7 +34,7 @@ import { useSettingStore } from '@/stores/setting'
 import { useMitt } from '@/hooks/useMitt'
 import { MittEnum } from '@/enums'
 import { logger } from '@/utils/logger'
-import type { SpaceInfo } from '@/services/matrixSpacesService'
+import type { SpaceInfo } from '@/matrix/services/room/spaces'
 import CreateSpaceModal from '@/components/spaces/CreateSpaceModal.vue'
 
 const emit = defineEmits<(e: 'space-selected', space: SpaceInfo) => void>()

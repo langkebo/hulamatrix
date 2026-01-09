@@ -8,7 +8,7 @@
 
 import { ref, computed } from 'vue'
 import { logger } from '@/utils/logger'
-import type { ClientThumbnailOptions } from '@/services/matrixThumbnailService'
+import type { ClientThumbnailOptions } from '@/matrix/services/media/thumbnail'
 
 interface Props {
   /** Maximum number of files */

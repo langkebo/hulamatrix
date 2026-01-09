@@ -8,7 +8,7 @@
 
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import LazyImage from '@/components/common/LazyImage.vue'
-import { matrixThumbnailService } from '@/services/matrixThumbnailService'
+import { matrixThumbnailService } from '@/matrix/services/media/thumbnail'
 
 interface Props {
   /** MXC URL of the media */
@@ -301,16 +301,13 @@ watch(
         class="mobile-media-viewer"
         @touchstart="handleTouchStart"
         @touchmove="handleTouchMove"
-        @touchend="handleTouchEnd"
-      >
+        @touchend="handleTouchEnd">
         <!-- Top bar -->
         <div class="media-viewer-header">
           <button class="icon-button" @click="close">
             <span class="icon">✕</span>
           </button>
-          <div class="media-counter">
-            {{ index + 1 }} / {{ total }}
-          </div>
+          <div class="media-counter">{{ index + 1 }} / {{ total }}</div>
           <div class="spacer" />
         </div>
 
@@ -318,8 +315,7 @@ watch(
         <div
           class="media-container"
           :style="{ transform: transformStyle }"
-          @dblclick="handleDoubleTap($event as unknown as TouchEvent)"
-        >
+          @dblclick="handleDoubleTap($event as unknown as TouchEvent)">
           <!-- Image -->
           <LazyImage
             v-if="mediaType === 'image'"
@@ -327,8 +323,7 @@ watch(
             :mxc-url="mxcUrl"
             class="media-content"
             @loaded="emit('loaded')"
-            @error="emit('error', $event as unknown as Error)"
-          />
+            @error="emit('error', $event as unknown as Error)" />
 
           <!-- Video -->
           <video
@@ -338,8 +333,7 @@ watch(
             class="media-content"
             controls
             @loadeddata="emit('loaded')"
-            @error="emit('error', $event as unknown as Error)"
-          />
+            @error="emit('error', $event as unknown as Error)" />
 
           <!-- Audio -->
           <audio
@@ -349,8 +343,7 @@ watch(
             class="media-content"
             controls
             @loadeddata="emit('loaded')"
-            @error="emit('error', $event as unknown as Error)"
-          />
+            @error="emit('error', $event as unknown as Error)" />
 
           <!-- File (download only) -->
           <div v-else class="file-content">
@@ -361,21 +354,13 @@ watch(
 
         <!-- Navigation buttons -->
         <Transition name="slide">
-          <button
-            v-if="canGoPrev"
-            class="nav-button prev"
-            @click="goPrev"
-          >
+          <button v-if="canGoPrev" class="nav-button prev" @click="goPrev">
             <span class="icon">‹</span>
           </button>
         </Transition>
 
         <Transition name="slide">
-          <button
-            v-if="canGoNext"
-            class="nav-button next"
-            @click="goNext"
-          >
+          <button v-if="canGoNext" class="nav-button next" @click="goNext">
             <span class="icon">›</span>
           </button>
         </Transition>
@@ -488,7 +473,9 @@ watch(
   border-radius: 50%;
   cursor: pointer;
   backdrop-filter: blur(10px);
-  transition: opacity 0.3s, transform 0.2s;
+  transition:
+    opacity 0.3s,
+    transform 0.2s;
 
   &:active {
     transform: translateY(-50%) scale(0.95);
@@ -527,7 +514,9 @@ watch(
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .slide-enter-from,

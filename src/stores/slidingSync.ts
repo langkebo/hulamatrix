@@ -7,7 +7,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { matrixSlidingSyncService } from '@/services/matrixSlidingSyncService'
+import { matrixSlidingSyncService } from '@/matrix/services/sync/sliding'
 import { logger } from '@/utils/logger'
 import type { MSC3575RoomData, SlidingSyncLifecycleState, PresenceState } from '@/types/sliding-sync'
 

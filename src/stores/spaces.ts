@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { matrixSpacesService, type SpaceInfo, type SpaceChild } from '@/services/matrixSpacesService'
+import { matrixSpacesService, type SpaceInfo, type SpaceChild } from '@/matrix/services/room/spaces'
 import { logger } from '@/utils/logger'
 
 export interface SpaceNode {

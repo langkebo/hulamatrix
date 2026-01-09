@@ -6,7 +6,7 @@ import { useMatrixClient } from '@/composables'
 import { matrixCallService } from '@/services/matrixCallService'
 import { Room, MatrixEvent, RoomMember, ClientEvent, RoomEvent } from 'matrix-js-sdk'
 import type { MatrixCall } from '@/services/matrixCallService'
-import { MatrixEventHandler } from '@/services/matrixEventHandler'
+import { MatrixEventHandler } from '@/matrix/services/message/event-handler'
 import { logger } from '@/utils/logger'
 
 /** Sync state type */

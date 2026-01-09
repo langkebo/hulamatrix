@@ -2,12 +2,7 @@
   <div class="matrix-room-list">
     <!-- Search Bar -->
     <div class="search-bar">
-      <n-input
-        v-model:value="searchQuery"
-        placeholder="搜索房间..."
-        clearable
-        @input="handleSearch"
-      >
+      <n-input v-model:value="searchQuery" placeholder="搜索房间..." clearable @input="handleSearch">
         <template #prefix>
           <n-icon :component="Search" />
         </template>
@@ -18,31 +13,19 @@
     <div v-if="spaces.length > 0" class="spaces-section">
       <div class="section-header">
         <span>工作空间</span>
-        <n-button
-          quaternary
-          size="tiny"
-          @click="toggleSpacesExpanded"
-        >
-          <n-icon
-            :component="spacesExpanded ? ChevronDown : ChevronRight"
-          />
+        <n-button quaternary size="tiny" @click="toggleSpacesExpanded">
+          <n-icon :component="spacesExpanded ? ChevronDown : ChevronRight" />
         </n-button>
       </div>
 
       <n-collapse-transition :show="spacesExpanded">
         <div class="spaces-list">
-          <div
-            v-for="space in filteredSpaces"
-            :key="space.roomId"
-            class="space-item"
-            @click="selectSpace(space)"
-          >
+          <div v-for="space in filteredSpaces" :key="space.roomId" class="space-item" @click="selectSpace(space)">
             <n-avatar
               v-bind="space.avatar !== undefined ? { src: space.avatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              size="small"
-            >
+              size="small">
               <n-icon :component="Users" />
             </n-avatar>
             <div class="space-info">
@@ -58,11 +41,7 @@
     <div class="rooms-section">
       <div class="section-header">
         <span>房间</span>
-        <n-button
-          quaternary
-          size="tiny"
-          @click="createRoom"
-        >
+        <n-button quaternary size="tiny" @click="createRoom">
           <n-icon :component="Plus" />
         </n-button>
       </div>
@@ -76,14 +55,12 @@
             :key="room.roomId"
             class="room-item dm"
             :class="{ active: selectedRoomId === room.roomId }"
-            @click="selectRoom(room)"
-          >
+            @click="selectRoom(room)">
             <n-avatar
               v-bind="room.avatar !== undefined ? { src: room.avatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              size="small"
-            >
+              size="small">
               {{ getDMInitials(room) }}
             </n-avatar>
             <div class="room-info">
@@ -91,13 +68,10 @@
               <span class="last-message">{{ getLastMessagePreview(room) }}</span>
             </div>
             <div class="room-meta">
-              <span class="timestamp">{{ formatTimestamp(room.lastEvent as ExtendedMatrixEvent | null | undefined) }}</span>
-              <n-badge
-                v-if="(room.unreadCount || 0) > 0"
-                :value="room.unreadCount || 0"
-                :max="99"
-                type="error"
-              />
+              <span class="timestamp">
+                {{ formatTimestamp(room.lastEvent as ExtendedMatrixEvent | null | undefined) }}
+              </span>
+              <n-badge v-if="(room.unreadCount || 0) > 0" :value="room.unreadCount || 0" :max="99" type="error" />
             </div>
           </div>
         </div>
@@ -110,14 +84,12 @@
             :key="room.roomId"
             class="room-item group"
             :class="{ active: selectedRoomId === room.roomId }"
-            @click="selectRoom(room)"
-          >
+            @click="selectRoom(room)">
             <n-avatar
               v-bind="room.avatar !== undefined ? { src: room.avatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              size="small"
-            >
+              size="small">
               <n-icon :component="Users" />
             </n-avatar>
             <div class="room-info">
@@ -125,13 +97,10 @@
               <span class="last-message">{{ getLastMessagePreview(room) }}</span>
             </div>
             <div class="room-meta">
-              <span class="timestamp">{{ formatTimestamp(room.lastEvent as ExtendedMatrixEvent | null | undefined) }}</span>
-              <n-badge
-                v-if="(room.unreadCount || 0) > 0"
-                :value="room.unreadCount || 0"
-                :max="99"
-                type="error"
-              />
+              <span class="timestamp">
+                {{ formatTimestamp(room.lastEvent as ExtendedMatrixEvent | null | undefined) }}
+              </span>
+              <n-badge v-if="(room.unreadCount || 0) > 0" :value="room.unreadCount || 0" :max="99" type="error" />
             </div>
           </div>
         </div>
@@ -158,8 +127,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { NInput, NIcon, NButton, NAvatar, NBadge, NCollapseTransition, NSpin, useMessage } from 'naive-ui'
 import { Search, ChevronDown, ChevronRight, Users, Plus, MessageCircle } from '@vicons/tabler'
-import { matrixSpacesService } from '@/services/matrixSpacesService'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixSpacesService } from '@/matrix/services/room/spaces'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { usePrivateChatStore } from '@/stores/privateChat'
 import type { MatrixRoom, SpaceInfo, MatrixEvent, MatrixRoomMember } from '@/types/matrix'

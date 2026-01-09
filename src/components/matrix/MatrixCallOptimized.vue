@@ -8,12 +8,7 @@
           <span class="call-state">{{ callStateText }}</span>
         </div>
         <div class="call-actions">
-          <n-button
-            circle
-            quaternary
-            size="small"
-            @click="toggleFullscreen"
-          >
+          <n-button circle quaternary size="small" @click="toggleFullscreen">
             <n-icon :component="Minimize" />
           </n-button>
         </div>
@@ -29,15 +24,13 @@
             :srcObject="remoteVideoStream"
             autoplay
             playsinline
-            class="remote-video"
-          />
+            class="remote-video" />
           <div v-else class="audio-placeholder">
             <n-avatar
               v-bind="remoteUserAvatar !== undefined ? { src: remoteUserAvatar } : {}"
               :fallback-src="'/default-avatar.png'"
               round
-              :size="120"
-            >
+              :size="120">
               {{ remoteUserInitials }}
             </n-avatar>
             <span class="remote-user-name">{{ remoteUserName }}</span>
@@ -45,19 +38,8 @@
         </div>
 
         <!-- 本地视频 - 画中画 -->
-        <div
-          v-if="call.type === 'video'"
-          class="local-video-pip"
-          @click="togglePip"
-        >
-          <video
-            ref="localVideoRef"
-            :srcObject="localVideoStream"
-            autoplay
-            muted
-            playsinline
-            class="local-video"
-          />
+        <div v-if="call.type === 'video'" class="local-video-pip" @click="togglePip">
+          <video ref="localVideoRef" :srcObject="localVideoStream" autoplay muted playsinline class="local-video" />
         </div>
       </div>
 
@@ -65,12 +47,7 @@
       <div class="call-controls-fullscreen">
         <div class="control-buttons">
           <!-- 静音 -->
-          <n-button
-            circle
-            :type="isMuted ? 'error' : 'default'"
-            size="large"
-            @click="toggleMute"
-          >
+          <n-button circle :type="isMuted ? 'error' : 'default'" size="large" @click="toggleMute">
             <n-icon :component="isMuted ? MicrophoneOff : Microphone" />
           </n-button>
 
@@ -80,8 +57,7 @@
             circle
             :type="isVideoOff ? 'error' : 'default'"
             size="large"
-            @click="toggleVideo"
-          >
+            @click="toggleVideo">
             <n-icon :component="isVideoOff ? VideoOff : Video" />
           </n-button>
 
@@ -91,18 +67,12 @@
             circle
             :type="isScreenSharing ? 'primary' : 'default'"
             size="large"
-            @click="toggleScreenShare"
-          >
+            @click="toggleScreenShare">
             <n-icon :component="DeviceDesktop" />
           </n-button>
 
           <!-- 挂断 -->
-          <n-button
-            circle
-            type="error"
-            size="large"
-            @click="endCall"
-          >
+          <n-button circle type="error" size="large" @click="endCall">
             <n-icon :component="Phone" />
           </n-button>
         </div>
@@ -118,8 +88,7 @@
             v-bind="remoteUserAvatar !== undefined ? { src: remoteUserAvatar } : {}"
             :fallback-src="'/default-avatar.png'"
             round
-            size="small"
-          >
+            size="small">
             {{ remoteUserInitials }}
           </n-avatar>
           <div class="call-details">
@@ -133,44 +102,23 @@
 
         <!-- 中间状态 -->
         <div class="call-status">
-          <n-tag
-            :type="getCallStatusType()"
-            size="small"
-            round
-          >
+          <n-tag :type="getCallStatusType()" size="small" round>
             {{ callStateText }}
           </n-tag>
         </div>
 
         <!-- 右侧控制 -->
         <div class="call-controls">
-          <n-button
-            quaternary
-            size="small"
-            @click="toggleMute"
-          >
+          <n-button quaternary size="small" @click="toggleMute">
             <n-icon :component="isMuted ? MicrophoneOff : Microphone" />
           </n-button>
-          <n-button
-            v-if="call.type === 'video'"
-            quaternary
-            size="small"
-            @click="toggleVideo"
-          >
+          <n-button v-if="call.type === 'video'" quaternary size="small" @click="toggleVideo">
             <n-icon :component="isVideoOff ? VideoOff : Video" />
           </n-button>
-          <n-button
-            quaternary
-            size="small"
-            @click="toggleFullscreen"
-          >
+          <n-button quaternary size="small" @click="toggleFullscreen">
             <n-icon :component="Maximize" />
           </n-button>
-          <n-button
-            type="error"
-            size="small"
-            @click="endCall"
-          >
+          <n-button type="error" size="small" @click="endCall">
             <n-icon :component="PhoneOff" />
           </n-button>
         </div>
@@ -183,15 +131,13 @@
       :mask-closable="false"
       preset="dialog"
       title="来电"
-      class="incoming-call-modal"
-    >
+      class="incoming-call-modal">
       <div class="incoming-call-content">
         <n-avatar
           v-bind="incomingCallAvatar !== undefined ? { src: incomingCallAvatar } : {}"
           :fallback-src="'/default-avatar.png'"
           round
-          :size="64"
-        >
+          :size="64">
           {{ incomingCallInitials }}
         </n-avatar>
         <div class="incoming-call-info">
@@ -212,12 +158,7 @@
     </n-modal>
 
     <!-- 设置弹窗 -->
-    <n-modal
-      v-model:show="showSettings"
-      preset="dialog"
-      title="通话设置"
-      class="call-settings-modal"
-    >
+    <n-modal v-model:show="showSettings" preset="dialog" title="通话设置" class="call-settings-modal">
       <div class="call-settings">
         <n-form label-placement="left">
           <n-form-item label="麦克风">
@@ -225,8 +166,7 @@
               v-model:value="selectedAudioInput"
               :options="audioInputDevices"
               placeholder="选择麦克风"
-              @update:value="changeAudioInput"
-            />
+              @update:value="changeAudioInput" />
           </n-form-item>
 
           <n-form-item label="扬声器">
@@ -234,8 +174,7 @@
               v-model:value="selectedAudioOutput"
               :options="audioOutputDevices"
               placeholder="选择扬声器"
-              @update:value="changeAudioOutput"
-            />
+              @update:value="changeAudioOutput" />
           </n-form-item>
 
           <n-form-item v-if="call.type === 'video'" label="摄像头">
@@ -243,8 +182,7 @@
               v-model:value="selectedVideoInput"
               :options="videoInputDevices"
               placeholder="选择摄像头"
-              @update:value="changeVideoInput"
-            />
+              @update:value="changeVideoInput" />
           </n-form-item>
         </n-form>
       </div>
@@ -252,11 +190,7 @@
 
     <!-- 网络状态提示 -->
     <div v-if="showNetworkStatus" class="network-status">
-      <n-tag
-        :type="networkQuality.type"
-        size="small"
-        round
-      >
+      <n-tag :type="networkQuality.type" size="small" round>
         <n-icon :component="networkQuality.icon" class="mr-1" />
         {{ networkQuality.text }}
       </n-tag>
@@ -309,11 +243,11 @@ import {
   Wifi2
 } from '@vicons/tabler'
 import { matrixCallService, MatrixCall, CallState } from '@/services/matrixCallService'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import type { MatrixRoomLike } from '@/services/matrixRoomManager'
+import type { MatrixRoomLike } from '@/matrix/services/room/manager'
 
 interface Props {
   roomId?: string

@@ -4,8 +4,7 @@
     position="center"
     :style="{ width: '90%', maxWidth: '450px', borderRadius: '12px' }"
     :close-on-click-overlay="false"
-    @update:show="handleClose"
-  >
+    @update:show="handleClose">
     <div class="create-space-dialog">
       <!-- Header -->
       <div class="dialog-header">
@@ -25,8 +24,7 @@
             label="空间名称"
             placeholder="输入空间名称"
             maxlength="64"
-            :rules="[{ required: true, message: '请输入空间名称' }]"
-          />
+            :rules="[{ required: true, message: '请输入空间名称' }]" />
 
           <!-- Topic -->
           <van-field
@@ -36,8 +34,7 @@
             placeholder="描述这个空间的用途"
             :rows="3"
             maxlength="256"
-            show-word-limit
-          />
+            show-word-limit />
 
           <!-- Visibility -->
           <div class="form-section">
@@ -67,18 +64,10 @@
               :deletable="true"
               v-model="avatarFileList"
               :after-read="handleAvatarChange"
-              @delete="clearAvatar"
-            />
+              @delete="clearAvatar" />
             <div v-if="avatarPreview" class="avatar-preview">
               <van-image :width="60" :height="60" :src="avatarPreview" round />
-              <van-button
-                type="danger"
-                size="small"
-                icon="delete"
-                @click="clearAvatar"
-              >
-                移除
-              </van-button>
+              <van-button type="danger" size="small" icon="delete" @click="clearAvatar">移除</van-button>
             </div>
           </div>
 
@@ -93,8 +82,7 @@
                   clickable
                   placeholder="选择要邀请的用户"
                   :disabled="userOptions.length === 0"
-                  @click="showUserPicker = true"
-                >
+                  @click="showUserPicker = true">
                   <template #right-icon>
                     <van-icon name="arrow" />
                   </template>
@@ -109,12 +97,7 @@
       <!-- Footer Actions -->
       <div class="dialog-footer">
         <van-button @click="handleClose" :disabled="isCreating">取消</van-button>
-        <van-button
-          type="primary"
-          @click="handleCreate"
-          :loading="isCreating"
-          :disabled="!formData.name.trim()"
-        >
+        <van-button type="primary" @click="handleCreate" :loading="isCreating" :disabled="!formData.name.trim()">
           创建空间
         </van-button>
       </div>
@@ -124,7 +107,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { matrixSpacesService } from '@/services/matrixSpacesService'
+import { matrixSpacesService } from '@/matrix/services/room/spaces'
 import { useUserStore } from '@/stores/user'
 import { logger } from '@/utils/logger'
 import { msg } from '@/utils/SafeUI'

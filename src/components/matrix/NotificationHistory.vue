@@ -4,19 +4,11 @@
     <div class="notification-header">
       <h3>通知历史</h3>
       <div class="header-actions">
-        <n-button
-          quaternary
-          size="small"
-          @click="markAllAsRead"
-        >
+        <n-button quaternary size="small" @click="markAllAsRead">
           <n-icon :component="CircleCheck" />
           全部已读
         </n-button>
-        <n-button
-          quaternary
-          size="small"
-          @click="clearAllNotifications"
-        >
+        <n-button quaternary size="small" @click="clearAllNotifications">
           <n-icon :component="Trash" />
           清空
         </n-button>
@@ -41,11 +33,7 @@
 
     <!-- Search -->
     <div class="notification-search">
-      <n-input
-        v-model:value="searchQuery"
-        placeholder="搜索通知..."
-        clearable
-      >
+      <n-input v-model:value="searchQuery" placeholder="搜索通知..." clearable>
         <template #prefix>
           <n-icon :component="Search" />
         </template>
@@ -55,11 +43,7 @@
     <!-- Notification List -->
     <div class="notification-list">
       <!-- Group by Date -->
-      <div
-        v-for="group in groupedNotifications"
-        :key="group.date"
-        class="notification-group"
-      >
+      <div v-for="group in groupedNotifications" :key="group.date" class="notification-group">
         <div class="group-header">
           <span class="group-date">{{ group.date }}</span>
         </div>
@@ -69,32 +53,21 @@
           :key="notification.id"
           class="notification-item"
           :class="{
-            'unread': !notification.read,
-            'urgent': notification.urgent,
-            'mention': notification.type === 'mention'
+            unread: !notification.read,
+            urgent: notification.urgent,
+            mention: notification.type === 'mention'
           }"
-          @click="handleNotificationClick(notification)"
-        >
+          @click="handleNotificationClick(notification)">
           <!-- Room Avatar -->
           <div class="notification-avatar">
             <n-avatar
               v-bind="notification.roomAvatar !== undefined ? { src: notification.roomAvatar } : {}"
               round
               size="small"
-              :fallback-src="'/default-room-avatar.png'"
-            >
-              <n-icon
-                v-if="notification.type === 'invite'"
-                :component="UserPlus"
-              />
-              <n-icon
-                v-else-if="notification.type === 'mention'"
-                :component="At"
-              />
-              <n-icon
-                v-else
-                :component="MessageCircle"
-              />
+              :fallback-src="'/default-room-avatar.png'">
+              <n-icon v-if="notification.type === 'invite'" :component="UserPlus" />
+              <n-icon v-else-if="notification.type === 'mention'" :component="At" />
+              <n-icon v-else :component="MessageCircle" />
             </n-avatar>
             <div v-if="notification.urgent" class="urgent-indicator"></div>
           </div>
@@ -108,10 +81,7 @@
 
             <!-- Title -->
             <div class="notification-title">
-              <n-icon
-                :component="getNotificationIcon(notification.type || 'message')"
-                size="16"
-              />
+              <n-icon :component="getNotificationIcon(notification.type || 'message')" size="16" />
               <span>{{ notification.title }}</span>
             </div>
 
@@ -127,8 +97,7 @@
                 :key="action.action"
                 text
                 size="tiny"
-                @click.stop="handleNotificationAction(action, notification)"
-              >
+                @click.stop="handleNotificationAction(action, notification)">
                 {{ action.title }}
               </n-button>
             </div>
@@ -136,18 +105,12 @@
 
           <!-- Status -->
           <div class="notification-status">
-            <n-button
-              v-if="!notification.read"
-              text
-              size="small"
-              @click.stop="markAsRead(notification)"
-            >
+            <n-button v-if="!notification.read" text size="small" @click.stop="markAsRead(notification)">
               <n-icon :component="Check" />
             </n-button>
             <n-dropdown
               :options="getNotificationMenuOptions(notification)"
-              @select="handleNotificationMenuAction($event, notification)"
-            >
+              @select="handleNotificationMenuAction($event, notification)">
               <n-button text size="small">
                 <n-icon :component="DotsVertical" />
               </n-button>
@@ -158,10 +121,7 @@
 
       <!-- Empty State -->
       <div v-if="filteredNotifications.length === 0" class="empty-state">
-        <n-empty
-          :description="getEmptyDescription()"
-          size="large"
-        >
+        <n-empty :description="getEmptyDescription()" size="large">
           <template #icon>
             <n-icon size="48" :component="BellOff" />
           </template>
@@ -170,19 +130,12 @@
 
       <!-- Load More -->
       <div v-if="hasMore" class="load-more">
-        <n-button @click="loadMore" :loading="loading">
-          加载更多
-        </n-button>
+        <n-button @click="loadMore" :loading="loading">加载更多</n-button>
       </div>
     </div>
 
     <!-- Notification Settings Modal -->
-    <n-modal
-      v-model:show="showSettings"
-      preset="dialog"
-      title="通知设置"
-      class="notification-settings-modal"
-    >
+    <n-modal v-model:show="showSettings" preset="dialog" title="通知设置" class="notification-settings-modal">
       <div class="notification-settings">
         <n-form :model="settings" label-placement="left">
           <n-form-item label="桌面通知">
@@ -210,35 +163,20 @@
           </n-form-item>
 
           <n-form-item label="免打扰时段">
-            <n-time-picker
-              v-model:value="settings.doNotDisturbStart"
-              format="HH:mm"
-              placeholder="开始时间"
-            />
+            <n-time-picker v-model:value="settings.doNotDisturbStart" format="HH:mm" placeholder="开始时间" />
             <span class="time-picker-separator">至</span>
-            <n-time-picker
-              v-model:value="settings.doNotDisturbEnd"
-              format="HH:mm"
-              placeholder="结束时间"
-            />
+            <n-time-picker v-model:value="settings.doNotDisturbEnd" format="HH:mm" placeholder="结束时间" />
           </n-form-item>
         </n-form>
       </div>
       <template #action>
         <n-button @click="showSettings = false">取消</n-button>
-        <n-button type="primary" @click="saveSettings">
-          保存设置
-        </n-button>
+        <n-button type="primary" @click="saveSettings">保存设置</n-button>
       </template>
     </n-modal>
 
     <!-- Floating Settings Button -->
-    <n-button
-      circle
-      type="primary"
-      class="settings-fab"
-      @click="showSettings = true"
-    >
+    <n-button circle type="primary" class="settings-fab" @click="showSettings = true">
       <n-icon :component="Settings" />
     </n-button>
   </div>
@@ -278,7 +216,7 @@ import {
   Volume,
   AlertTriangle
 } from '@vicons/tabler'
-import type { NotificationContent, NotificationAction } from '@/services/matrixPushService'
+import type { NotificationContent, NotificationAction } from '@/matrix/services/notification/push'
 import { sanitizeHtml } from '@/utils/htmlSanitizer'
 import { logger } from '@/utils/logger'
 

@@ -54,7 +54,7 @@ import { useCommon } from '@/hooks/useCommon'
 import router from '@/router'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import { logger } from '@/utils/logger'
 import bgImage from '@/assets/mobile/chat-home/background.webp'
 

@@ -6,8 +6,7 @@
       @show-settings="handleShowSettings"
       @show-search="handleShowSearch"
       @show-notifications="handleShowNotifications"
-      @show-member-list="handleShowMemberList"
-    />
+      @show-member-list="handleShowMemberList" />
 
     <!-- 聊天内容区 -->
     <div class="chat-content">
@@ -18,63 +17,33 @@
           </n-spin>
         </div>
 
-        
         <!-- Matrix消息主区域 -->
-        <MatrixChatMain
-          v-else
-          :room-id="roomId"
-          :show-sidebar="showSidebar"
-          @toggle-sidebar="toggleSidebar"
-        />
+        <MatrixChatMain v-else :room-id="roomId" :show-sidebar="showSidebar" @toggle-sidebar="toggleSidebar" />
       </div>
 
       <!-- 侧边栏 -->
-      <MatrixChatSidebar
-        v-if="shouldShowSidebar"
-        :room-id="roomId"
-        :show="showSidebar"
-        @close="closeSidebar"
-      />
+      <MatrixChatSidebar v-if="shouldShowSidebar" :room-id="roomId" :show="showSidebar" @close="closeSidebar" />
     </div>
 
     <!-- 输入区域 -->
     <div class="chat-input-container">
-      <MatrixMsgInput
-        :room-id="roomId"
-        :disabled="isInCall"
-        @send="handleSendMessage"
-      />
+      <MatrixMsgInput :room-id="roomId" :disabled="isInCall" @send="handleSendMessage" />
     </div>
 
     <!-- 设置抽屉 -->
-    <n-drawer
-      v-model:show="showSettingsDrawer"
-      :width="400"
-      placement="right"
-      display-directive="show"
-    >
+    <n-drawer v-model:show="showSettingsDrawer" :width="400" placement="right" display-directive="show">
       <n-drawer-content title="房间设置" closable>
         <MatrixRoomSettings :room-id="roomId" />
       </n-drawer-content>
     </n-drawer>
 
     <!-- 搜索弹窗 -->
-    <n-modal
-      v-model:show="showSearchModal"
-      preset="dialog"
-      title="搜索消息"
-      class="search-modal"
-    >
+    <n-modal v-model:show="showSearchModal" preset="dialog" title="搜索消息" class="search-modal">
       <MatrixSearch :room-id="roomId" />
     </n-modal>
 
     <!-- 通知历史弹窗 -->
-    <n-modal
-      v-model:show="showNotificationsModal"
-      preset="dialog"
-      title="通知历史"
-      class="notifications-modal"
-    >
+    <n-modal v-model:show="showNotificationsModal" preset="dialog" title="通知历史" class="notifications-modal">
       <MatrixNotificationHistory />
     </n-modal>
 
@@ -83,19 +52,10 @@
       v-model:show="showMembersModal"
       preset="dialog"
       :title="`房间成员 (${members.length})`"
-      class="members-modal"
-    >
+      class="members-modal">
       <div class="member-list">
-        <div
-          v-for="member in members"
-          :key="member.userId"
-          class="member-item"
-        >
-          <n-avatar
-            v-bind="member.avatarUrl !== undefined ? { src: member.avatarUrl } : {}"
-            round
-            :size="32"
-          >
+        <div v-for="member in members" :key="member.userId" class="member-item">
+          <n-avatar v-bind="member.avatarUrl !== undefined ? { src: member.avatarUrl } : {}" round :size="32">
             {{ getMemberInitials(member) }}
           </n-avatar>
           <div class="member-info">
@@ -103,10 +63,7 @@
             <span class="member-role">{{ getMemberRole(member) }}</span>
           </div>
           <div class="member-status">
-            <n-tag
-              :type="member.membership === 'join' ? 'success' : 'default'"
-              size="small"
-            >
+            <n-tag :type="member.membership === 'join' ? 'success' : 'default'" size="small">
               {{ getMembershipText(member.membership) }}
             </n-tag>
           </div>
@@ -119,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { NSpin, NDrawer, NDrawerContent, NModal, NAvatar, NTag, useMessage } from 'naive-ui'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import { matrixCallService } from '@/services/matrixCallService'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'

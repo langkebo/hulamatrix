@@ -6,8 +6,7 @@
         v-bind="roomAvatar !== undefined ? { src: roomAvatar } : {}"
         :fallback-src="'/default-room-avatar.png'"
         round
-        :size="32"
-      >
+        :size="32">
         <n-icon v-if="isSpace" :component="Users" size="16" />
       </n-avatar>
       <div class="room-details">
@@ -18,9 +17,7 @@
             <n-icon :component="Lock" size="12" />
             加密
           </n-tag>
-          <span v-if="memberCount" class="member-count">
-            {{ memberCount }} 成员
-          </span>
+          <span v-if="memberCount" class="member-count">{{ memberCount }} 成员</span>
         </div>
       </div>
     </div>
@@ -38,13 +35,7 @@
       <!-- 语音通话 -->
       <n-tooltip trigger="hover" placement="bottom">
         <template #trigger>
-          <n-button
-            circle
-            quaternary
-            size="small"
-            :loading="isVoiceCallStarting"
-            @click="startVoiceCall"
-          >
+          <n-button circle quaternary size="small" :loading="isVoiceCallStarting" @click="startVoiceCall">
             <n-icon :component="Phone" size="18" />
           </n-button>
         </template>
@@ -54,13 +45,7 @@
       <!-- 视频通话 -->
       <n-tooltip trigger="hover" placement="bottom">
         <template #trigger>
-          <n-button
-            circle
-            quaternary
-            size="small"
-            :loading="isVideoCallStarting"
-            @click="startVideoCall"
-          >
+          <n-button circle quaternary size="small" :loading="isVideoCallStarting" @click="startVideoCall">
             <n-icon :component="Video" size="18" />
           </n-button>
         </template>
@@ -70,13 +55,7 @@
       <!-- 屏幕共享 -->
       <n-tooltip v-if="supportsScreenShare" trigger="hover" placement="bottom">
         <template #trigger>
-          <n-button
-            circle
-            quaternary
-            size="small"
-            :loading="isScreenSharing"
-            @click="toggleScreenShare"
-          >
+          <n-button circle quaternary size="small" :loading="isScreenSharing" @click="toggleScreenShare">
             <n-icon :component="DeviceDesktop" size="18" />
           </n-button>
         </template>
@@ -85,11 +64,7 @@
     </div>
 
     <!-- 设置按钮 -->
-    <n-dropdown
-      :options="headerMenuOptions"
-      placement="bottom-end"
-      @select="handleMenuAction"
-    >
+    <n-dropdown :options="headerMenuOptions" placement="bottom-end" @select="handleMenuAction">
       <n-button quaternary circle size="small">
         <n-icon :component="DotsVertical" size="18" />
       </n-button>
@@ -100,8 +75,7 @@
       :room-id="roomId"
       :compact="true"
       @call-started="handleCallStarted"
-      @call-ended="handleCallEnded"
-    />
+      @call-ended="handleCallEnded" />
   </div>
 </template>
 
@@ -122,7 +96,7 @@ import {
   Users as PeopleOutline
 } from '@vicons/tabler'
 import { matrixCallService, CallState, type MatrixCall } from '@/services/matrixCallService'
-import { matrixRoomManager } from '@/services/matrixRoomManager'
+import { matrixRoomManager } from '@/matrix/services/room/manager'
 import MatrixCallOptimized from './MatrixCallOptimized.vue'
 import type { MatrixRoom, MatrixMember } from '@/types/matrix'
 import { useUserStore } from '@/stores/user'
@@ -460,7 +434,9 @@ onUnmounted(() => {
 
 /* Typing animation */
 @keyframes typing {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.5;
   }

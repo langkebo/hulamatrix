@@ -8,8 +8,8 @@
 
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { logger } from '@/utils/logger'
-import { matrixThumbnailService } from '@/services/matrixThumbnailService'
-import type { ResponsiveImageOptions } from '@/services/matrixThumbnailService'
+import { matrixThumbnailService } from '@/matrix/services/media/thumbnail'
+import type { ResponsiveImageOptions } from '@/matrix/services/media/thumbnail'
 
 interface Props {
   /** MXC URL of the image */
