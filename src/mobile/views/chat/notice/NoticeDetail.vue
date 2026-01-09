@@ -42,7 +42,7 @@
 
               <!-- 阅读统计 -->
               <div class="justify-self-end self-center text-12px text-right flex gap-1 items-center">
-                <span class="text-#13987F">{{ announcement.readCount || 0 }}人已读</span>
+                <span class="text-var(--hula-brand-primary)">{{ announcement.readCount || 0 }}人已读</span>
               </div>
             </div>
 
@@ -185,7 +185,7 @@ onMounted(() => {
 }
 
 .edit-button {
-  background: linear-gradient(145deg, #7eb7ac, #6fb0a4, #5fa89c);
+  background: linear-gradient(145deg, var(--hula-success), var(--hula-success), var(--hula-brand-primary));
   border-radius: 30px;
   padding: 10px 30px;
   color: white;

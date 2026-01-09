@@ -28,7 +28,7 @@
 
                 <div class="flex items-center justify-between text-12px">
                   <span class="flex gap-5px text-var(--hula-gray-600)">{{ formatTimestamp(item.createTime) }}</span>
-                  <span class="text-#13987F">128人已读</span>
+                  <span class="text-var(--hula-brand-primary)">128人已读</span>
                 </div>
               </div>
             </div>

@@ -131,21 +131,21 @@ const timeOptions = computed(() => [
     label: '1分钟',
     desc: '短暂保留',
     value: 60,
-    color: '#f97316',
+    color: 'var(--hula-warning)',
     icon: Clock
   },
   {
     label: '5分钟',
     desc: '推荐设置',
     value: 300,
-    color: '#eab308',
+    color: 'var(--hula-warning)',
     icon: Clock
   },
   {
     label: '30分钟',
     desc: '较长保留',
     value: 1800,
-    color: '#22c55e',
+    color: 'var(--hula-success)',
     icon: Clock
   },
   {

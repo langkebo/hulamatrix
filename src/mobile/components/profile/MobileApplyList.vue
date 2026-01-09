@@ -28,7 +28,7 @@
             <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" />
           </div>
           <div class="flex-1 flex flex-col gap-10px">
-            <div @click="currentUserId = item.senderId" class="flex justify-between text-14px text-#2DA38D">
+            <div @click="currentUserId = item.senderId" class="flex justify-between text-14px text-var(--hula-brand-primary)">
               {{ getUserInfo(item)?.name || '未知用户' }}
             </div>
             <div class="flex justify-between text-gray-500 text-12px">
@@ -65,16 +65,16 @@
                 </svg>
               </n-icon>
             </n-dropdown>
-            <span class="text-(12px #64a29c)" v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
+            <span class="text-(12px var(--hula-success))" v-else-if="item.status === RequestNoticeAgreeStatus.ACCEPTED">
               已同意
             </span>
-            <span class="text-(12px #c14053)" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
+            <span class="text-(12px var(--hula-error))" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
               已拒绝
             </span>
             <span class="text-(12px var(--hula-gray-400))" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">已忽略</span>
             <span
-              class="text-(12px #64a29c)"
-              :class="{ 'text-(12px #c14053)': item.status === RequestNoticeAgreeStatus.REJECTED }"
+              class="text-(12px var(--hula-success))"
+              :class="{ 'text-(12px var(--hula-error))': item.status === RequestNoticeAgreeStatus.REJECTED }"
               v-else-if="isCurrentUser(item.senderId)">
               {{
                 isAccepted(item)

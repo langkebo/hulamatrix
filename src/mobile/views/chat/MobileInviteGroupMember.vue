@@ -62,7 +62,7 @@
                       </span>
                       <div class="text-12px text-gray-500 flex items-center gap-4px truncate">
                         <!-- 在线状态暂未从FriendsStore完全同步，默认离线或隐藏 -->
-                        <!-- <n-badge :color="(item.activeStatus === OnlineEnum.ONLINE) ? '#1ab292' : 'var(--hula-gray-400)'" dot /> -->
+                        <!-- <n-badge :color="(item.activeStatus === OnlineEnum.ONLINE) ? 'var(--hula-success)' : 'var(--hula-gray-400)'" dot /> -->
                         <!-- {{ (item.activeStatus === OnlineEnum.ONLINE) ? '在线' : '离线' }} -->
                       </div>
                     </div>

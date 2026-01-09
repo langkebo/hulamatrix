@@ -44,7 +44,7 @@
                 {{ currentSession?.name || '' }}
               </span>
               <span v-if="currentSession?.hotFlag === 1">
-                <svg class="w-18px h-18px iconpark-icon text-#1A9B83">
+                <svg class="w-18px h-18px iconpark-icon text-var(--hula-brand-primary)">
                   <use href="#auth"></use>
                 </svg>
               </span>
@@ -59,7 +59,7 @@
                 <div @click="toGroupChatMember" class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <div>
                     有
-                    <span class="text-#398D7E">
+                    <span class="text-var(--hula-brand-primary)">
                       {{
                         formattedStats.hasData ? formattedStats.memberCount : roomStore.currentRoom?.memberCount || 0
                       }}

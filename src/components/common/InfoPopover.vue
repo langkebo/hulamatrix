@@ -6,7 +6,7 @@
       class="absolute rounded-t-8px z-2 top-0 left-0 w-full h-100px"
       :class="
         groupStore.getUserInfo(uid)?.wearingItemId === '6'
-          ? 'object-contain bg-var(--hula-brand-primary)80 dark:bg-#111'
+          ? 'object-contain bg-var(--hula-brand-primary)80 dark:bg-var(--hula-gray-900)'
           : 'object-cover'
       "
       :src="groupStore.getUserInfo(uid)?.wearingItemId === '6' ? '/hula.png' : '/img/dispersion-bg.png'"

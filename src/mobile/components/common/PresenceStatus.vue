@@ -69,11 +69,11 @@ const statusText = computed(() => {
     }
 
     &.status-offline {
-      background: #c8c9cc;
+      background: var(--hula-gray-400);
     }
 
     &.status-unavailable {
-      background: #ff976a;
+      background: var(--hula-warning);
     }
 
     &.size-small {

@@ -13,7 +13,7 @@
         <div class="truncate whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
           {{ props.roomName }}
         </div>
-        <svg v-if="props.isOfficial" class="w-18px h-18px iconpark-icon text-#1A9B83"><use href="#auth"></use></svg>
+        <svg v-if="props.isOfficial" class="w-18px h-18px iconpark-icon text-var(--hula-brand-primary)"><use href="#auth"></use></svg>
       </div>
     </div>
     <div class="absolute left-0 right-0 top-42px flex justify-center items-center pointer-events-none">

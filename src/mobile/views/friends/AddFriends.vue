@@ -341,7 +341,7 @@ const offlineItems = computed(() => sortByMode(items.value.filter((i) => (i.pres
   background: var(--hula-success);
 }
 .status-dot.offline {
-  background: #c0c4cc;
+  background: var(--hula-gray-400);
 }
 .sort-label {
   font-size: 12px;

@@ -71,7 +71,7 @@ const navItems: NavItem[] = [
 </script>
 <style scoped lang="scss">
 .tab-bar {
-  border-top: 0.5px solid #e3e3e3;
+  border-top: 0.5px solid var(--hula-gray-200);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }

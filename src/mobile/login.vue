@@ -77,10 +77,10 @@
           clearable>
           <template #suffix>
             <n-flex v-if="loginHistories.length > 0" @click="arrowStatus = !arrowStatus">
-              <svg v-if="!arrowStatus" class="down w-18px h-18px color-#505050">
+              <svg v-if="!arrowStatus" class="down w-18px h-18px color-var(--hula-gray-600)">
                 <use href="#down"></use>
               </svg>
-              <svg v-else class="down w-18px h-18px color-#505050"><use href="#up"></use></svg>
+              <svg v-else class="down w-18px h-18px color-var(--hula-gray-600)"><use href="#up"></use></svg>
             </n-flex>
           </template>
         </n-input>
@@ -88,7 +88,7 @@
         <!-- 账号选择框-->
         <div
           v-if="loginHistories.length > 0 && arrowStatus"
-          class="account-box account-dropdown absolute w-80% max-h-140px bg-#fdfdfd mt-45px z-99 rounded-8px p-8px box-border">
+          class="account-box account-dropdown absolute w-80% max-h-140px bg-var(--hula-white) mt-45px z-99 rounded-8px p-8px box-border">
           <n-scrollbar class="account-scrollbar" trigger="none">
             <n-flex
               vertical
@@ -100,7 +100,7 @@
                 <n-avatar
                   :src="AvatarUtils.getAvatarUrl(item.avatar)"
                   class="size-28px bg-var(--hula-gray-300) rounded-50%" />
-                <p class="text-14px color-#505050">{{ item.account }}</p>
+                <p class="text-14px color-var(--hula-gray-600)">{{ item.account }}</p>
                 <svg @click.stop="delAccount(item)" class="w-12px h-12px">
                   <use href="#close"></use>
                 </svg>

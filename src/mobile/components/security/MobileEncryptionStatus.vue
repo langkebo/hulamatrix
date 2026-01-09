@@ -530,13 +530,13 @@ defineExpose({
     gap: 8px;
     padding: 12px;
     background: var(--hula-white)7e6;
-    border: 1px solid #ffd591;
+    border: 1px solid var(--hula-warning);
     border-radius: 8px;
-    color: #d46b08;
+    color: var(--hula-warning);
     font-size: 13px;
 
     .van-icon {
-      color: #fa8c16;
+      color: var(--hula-warning);
       flex-shrink: 0;
     }
   }
@@ -546,10 +546,10 @@ defineExpose({
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: #f6ffed;
-    border: 1px solid #b7eb8f;
+    background: rgba(var(--hula-success-rgb), 0.1);
+    border: 1px solid var(--hula-success);
     border-radius: 8px;
-    color: #389e0d;
+    color: var(--hula-success);
     font-size: 13px;
 
     .van-icon {

@@ -6,7 +6,7 @@
       </template>
 
       <template #container>
-        <div class="flex flex-col bg-#fefefe overflow-auto h-full">
+        <div class="flex flex-col bg-var(--hula-white) overflow-auto h-full">
           <div class="flex flex-col p-20px gap-20px">
             <!-- 加载状态 -->
             <div v-if="loading" class="flex justify-center items-center py-40px">

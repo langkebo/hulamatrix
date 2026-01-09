@@ -609,7 +609,7 @@ defineExpose({
     }
 
     &.action-icon-copy {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      background: linear-gradient(135deg, #f093fb 0%, var(--hula-error) 100%);
     }
 
     &.action-icon-forward {

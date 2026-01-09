@@ -5,9 +5,9 @@
       <div class="flex w-full flex-1 flex-col rounded-15px bg-white pt-40% items-center gap-20px">
         <div class="flex flex-col items-center gap-15px">
           <img class="w-100px h-100px" :src="qrCodeIcon" alt="HuLa 应用图标" />
-          <div class="text-20px font-bold text-#343434">
+          <div class="text-20px font-bold text-var(--hula-gray-700)">
             登录
-            <span class="text-#6B9C89">{{ props.deviceType }}</span>
+            <span class="text-var(--hula-brand-primary)">{{ props.deviceType }}</span>
             &nbsp;的HULA
           </div>
         </div>
@@ -35,7 +35,7 @@
         <n-button
           :disabled="countdown <= 0"
           @click="handleConfirmLogin"
-          class="px-50px bg-#6B9C89 text-white absolute bottom-20%">
+          class="px-50px bg-var(--hula-brand-primary) text-white absolute bottom-20%">
           {{ countdown > 0 ? `登录 (${countdown}s)` : '二维码已过期' }}
         </n-button>
       </div>

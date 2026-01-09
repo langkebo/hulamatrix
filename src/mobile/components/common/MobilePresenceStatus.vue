@@ -96,7 +96,7 @@ function formatLastActive(timestamp: number): string {
     }
 
     &.status-unavailable {
-      background: #ff976a;
+      background: var(--hula-warning);
       box-shadow: 0 0 0 2px rgba(255, 151, 106, 0.2);
     }
   }

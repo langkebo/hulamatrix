@@ -104,7 +104,7 @@
             :loading="loading"
             :disabled="loading"
             @click="handleDelete"
-            :color="'#d5304f'"
+            :color="'var(--hula-error)'"
             v-if="!props.isMyPage && isMyFriend && !isBotUser(uid)"
             class="px-5 py-10px font-bold text-center rounded-full text-12px">
             删除

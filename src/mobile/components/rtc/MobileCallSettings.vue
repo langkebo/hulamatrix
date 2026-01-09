@@ -174,7 +174,7 @@
           </div>
 
           <div class="stat-card">
-            <n-icon :size="20" color="#2080f0"><Database /></n-icon>
+            <n-icon :size="20" color="var(--hula-info)"><Database /></n-icon>
             <div class="stat-info">
               <div class="stat-label">数据使用</div>
               <div class="stat-value">{{ formatBytes(callStats.bytesTransferred) }}</div>

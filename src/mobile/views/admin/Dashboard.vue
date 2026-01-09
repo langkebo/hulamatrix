@@ -19,7 +19,7 @@
 
       <van-grid-item>
         <div class="stat-item">
-          <van-icon name="user" size="32" color="#1989fa" />
+          <van-icon name="user" size="32" color="var(--hula-info)" />
           <div class="stat-value">{{ stats.activeUsers }}</div>
           <div class="stat-label">{{ t('admin.stats.active_users') }}</div>
         </div>
@@ -27,7 +27,7 @@
 
       <van-grid-item>
         <div class="stat-item">
-          <van-icon name="chat" size="32" color="#ff976a" />
+          <van-icon name="chat" size="32" color="var(--hula-warning)" />
           <div class="stat-value">{{ stats.totalRooms }}</div>
           <div class="stat-label">{{ t('admin.stats.total_rooms') }}</div>
         </div>
@@ -35,7 +35,7 @@
 
       <van-grid-item>
         <div class="stat-item">
-          <van-icon name="folder" size="32" color="#ee0a24" />
+          <van-icon name="folder" size="32" color="var(--hula-error)" />
           <div class="stat-value">{{ formatBytes(stats.mediaStorage) }}</div>
           <div class="stat-label">{{ t('admin.stats.media_storage') }}</div>
         </div>
@@ -116,14 +116,14 @@ const recentActivities = ref([
     title: 'Room created: #general',
     timestamp: Date.now() - 600000,
     icon: 'chat',
-    color: '#1989fa'
+    color: 'var(--hula-info)'
   },
   {
     id: 3,
     title: 'Media cache purged: 1.2GB freed',
     timestamp: Date.now() - 3600000,
     icon: 'delete',
-    color: '#ff976a'
+    color: 'var(--hula-warning)'
   }
 ])
 

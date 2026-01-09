@@ -96,7 +96,7 @@
         <!-- Double Tap Heart Animation -->
         <transition name="heart-burst">
           <div v-if="showHeartAnimation" class="heart-animation">
-            <van-icon name="like" :size="60" color="#ff4757" />
+            <van-icon name="like" :size="60" color="var(--hula-error)" />
           </div>
         </transition>
       </div>
@@ -799,7 +799,7 @@ onMounted(() => {
         }
         &.copy {
           background: rgba(253, 203, 110, 0.1);
-          color: #fdcb6e;
+          color: var(--hula-warning);
         }
         &.pin {
           background: rgba(162, 155, 254, 0.1);
