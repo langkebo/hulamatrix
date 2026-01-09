@@ -108,7 +108,7 @@ let configuration: RTCConfiguration = { iceServers: [], iceTransportPolicy: 'all
 const fallbackIce: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }]
 async function ensureRtcConfig() {
   try {
-    if (flags.matrixEnabled && flags.matrixRtcEnabled) {
+    if (flags.matrixRtcEnabled) {
       const turn = await getTurnServer()
       configuration = composeRTCConfiguration(turn, fallbackIce)
       return

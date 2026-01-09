@@ -3,20 +3,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { logger } from '@/utils/logger'
-import { friendsServiceV2, privateChatServiceV2, useFriendsStoreV2, usePrivateChatStoreV2 } from '@/services/index-v2'
+import { useFriendsStoreV2 } from '@/stores/friendsSDK'
 
 // ==================== Store ====================
 
 const friendsStore = useFriendsStoreV2()
-const privateChatStore = usePrivateChatStoreV2()
 
 // ==================== 本地状态 ====================
 
 const searchQuery = ref('')
 const selectedFriendId = ref<string | null>(null)
-const messageInput = ref('')
 
 // ==================== 计算属性 ====================
+
+// 获取分类名称
+const getCategoryName = (categoryId: string | undefined): string => {
+  if (!categoryId) return '未分类'
+  const category = friendsStore.categories.find((c) => c.id === categoryId)
+  return category?.name || '未知分类'
+}
 
 // 过滤后的好友列表
 const filteredFriends = computed(() => {
@@ -27,8 +32,8 @@ const filteredFriends = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return friendsStore.friends.filter((friend) => {
     const name = (friend.display_name || '').toLowerCase()
-    const id = friend.user_id.toLowerCase()
-    return name.includes(query) || id.includes(query)
+    const id = friend.user_id || ''
+    return name.includes(query) || id.toLowerCase().includes(query)
   })
 })
 
@@ -62,11 +67,10 @@ onMounted(async () => {
 
   try {
     // 初始化服务
-    await Promise.all([friendsStore.initialize(), privateChatStore.initialize()])
+    await friendsStore.initialize()
 
     logger.debug('[Example] Services initialized')
     logger.debug('[Example] Friends:', friendsStore.totalFriendsCount)
-    logger.debug('[Example] Sessions:', privateChatStore.totalSessionsCount)
   } catch (error) {
     logger.error('[Example] Initialization failed:', error)
   }
@@ -74,9 +78,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   logger.debug('[Example] Component unmounted')
-
-  // 清理私聊资源
-  privateChatStore.dispose()
 })
 
 // ==================== 方法 ====================
@@ -86,11 +87,9 @@ onUnmounted(() => {
  */
 async function handleSendRequest(friendId: string) {
   try {
-    const requestId = await friendsStore.sendRequest(
-      friendId,
-      '请加我好友',
-      1 // 默认分类
-    )
+    const requestId = await friendsStore.sendFriendRequest(friendId, {
+      message: '请加我好友'
+    })
 
     logger.debug('[Example] Friend request sent:', requestId)
     alert(`好友请求已发送！ID: ${requestId}`)
@@ -101,52 +100,11 @@ async function handleSendRequest(friendId: string) {
 }
 
 /**
- * 开始私聊
- */
-async function handleStartChat(friendId: string) {
-  try {
-    const session = await privateChatStore.createSession({
-      participants: [friendId],
-      session_name: '私密聊天',
-      ttl_seconds: 3600 // 1小时
-    })
-
-    logger.debug('[Example] Session created:', session.session_id)
-
-    // 选择会话
-    await privateChatStore.selectSession(session.session_id)
-
-    alert(`会话已创建！ID: ${session.session_id}`)
-  } catch (error) {
-    logger.error('[Example] Failed to create session:', error)
-    alert(`创建会话失败: ${error}`)
-  }
-}
-
-/**
- * 搜索用户
- */
-async function handleSearch() {
-  if (!searchQuery.value.trim()) {
-    friendsStore.clearSearchResults()
-    return
-  }
-
-  try {
-    await friendsStore.searchUsers(searchQuery.value)
-    logger.debug('[Example] Search results:', friendsStore.searchResults)
-  } catch (error) {
-    logger.error('[Example] Search failed:', error)
-  }
-}
-
-/**
  * 刷新数据
  */
 async function handleRefresh() {
   try {
-    await friendsStore.refreshAll()
-    await privateChatStore.refreshSessions()
+    await friendsStore.refresh()
     logger.debug('[Example] Data refreshed')
   } catch (error) {
     logger.error('[Example] Refresh failed:', error)
@@ -157,28 +115,9 @@ async function handleRefresh() {
  * 清除缓存
  */
 function handleInvalidateCache() {
-  friendsStore.invalidateCache()
-  privateChatStore.invalidateCache()
+  friendsStore.reset()
   logger.debug('[Example] Cache invalidated')
   alert('缓存已清除')
-}
-
-/**
- * 发送消息
- */
-async function handleSendMessage() {
-  if (!messageInput.value.trim() || !privateChatStore.currentSessionId) {
-    return
-  }
-
-  try {
-    await privateChatStore.sendMessage(messageInput.value)
-    messageInput.value = ''
-    logger.debug('[Example] Message sent')
-  } catch (error) {
-    logger.error('[Example] Failed to send message:', error)
-    alert(`发送失败: ${error}`)
-  }
 }
 </script>
 
@@ -188,7 +127,7 @@ async function handleSendMessage() {
 
     <!-- 状态栏 -->
     <div class="status-bar">
-      <div v-if="friendsStore.loading || privateChatStore.loading">⏳ 加载中...</div>
+      <div v-if="friendsStore.loading">⏳ 加载中...</div>
       <div v-else>✅ 就绪</div>
 
       <div v-if="friendsStore.error" class="error">❌ {{ friendsStore.error }}</div>
@@ -208,16 +147,11 @@ async function handleSendMessage() {
         <span class="label">待处理请求:</span>
         <span class="value">{{ friendsStore.pendingCount }}</span>
       </div>
-      <div class="stat-item">
-        <span class="label">会话总数:</span>
-        <span class="value">{{ privateChatStore.totalSessionsCount }}</span>
-      </div>
     </div>
 
     <!-- 搜索框 -->
     <div class="search-bar">
-      <input v-model="searchQuery" type="text" placeholder="搜索好友..." @keyup.enter="handleSearch" />
-      <button @click="handleSearch">搜索</button>
+      <input v-model="searchQuery" type="text" placeholder="搜索好友..." />
     </div>
 
     <!-- 操作按钮 -->
@@ -248,14 +182,13 @@ async function handleSendMessage() {
             </div>
             <div class="friend-id">{{ friend.user_id }}</div>
             <div class="friend-category">
-              分类: {{ friendsStore.getCategoryName(friend.category_id ? String(friend.category_id) : undefined) }}
+              分类: {{ getCategoryName(friend.category_id) }}
             </div>
             <div class="friend-presence">状态: {{ friend.presence || 'unknown' }}</div>
           </div>
 
           <div class="friend-actions">
-            <button :disabled="!friendsStore.isLoaded" @click="handleSendRequest(friend.user_id)">➕ 添加</button>
-            <button :disabled="!privateChatStore.isLoaded" @click="handleStartChat(friend.user_id)">💬 聊天</button>
+            <button :disabled="!friendsStore.isLoaded || !friend.user_id" @click="friend.user_id && handleSendRequest(friend.user_id)">➕ 添加</button>
           </div>
         </div>
       </div>
@@ -275,76 +208,10 @@ async function handleSendMessage() {
           </div>
 
           <div class="request-actions">
-            <button @click="friendsStore.acceptRequest(request.id, 1)">✅ 接受</button>
+            <button @click="friendsStore.acceptRequest(request.id)">✅ 接受</button>
             <button @click="friendsStore.rejectRequest(request.id)">❌ 拒绝</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 会话列表 -->
-    <div class="section">
-      <h2>私聊会话 ({{ privateChatStore.totalSessionsCount }})</h2>
-
-      <div v-if="privateChatStore.loading" class="loading">加载中...</div>
-
-      <div v-else-if="privateChatStore.sessions.length === 0" class="empty">暂无私聊会话</div>
-
-      <div v-else class="session-list">
-        <div
-          v-for="session in privateChatStore.sessions"
-          :key="session.session_id"
-          class="session-item"
-          :class="{ active: session.session_id === privateChatStore.currentSessionId }">
-          <div class="session-info">
-            <div class="session-name">
-              {{ session.session_name || '未命名会话' }}
-            </div>
-            <div class="session-id">{{ session.session_id }}</div>
-            <div class="session-participants">参与者: {{ session.participant_ids.join(', ') }}</div>
-            <div v-if="session.expires_at" class="session-expiry">
-              过期: {{ new Date(session.expires_at).toLocaleString() }}
-            </div>
-          </div>
-
-          <div class="session-actions">
-            <button
-              v-if="session.session_id !== privateChatStore.currentSessionId"
-              @click="privateChatStore.selectSession(session.session_id)">
-              选择
-            </button>
-            <button v-else @click="privateChatStore.deselectSession()">取消选择</button>
-
-            <button @click="privateChatStore.deleteSession(session.session_id)">🗑️ 删除</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 当前会话消息 -->
-    <div class="section" v-if="privateChatStore.currentSession">
-      <h2>
-        当前会话: {{ privateChatStore.currentSession?.session_name }} ({{ privateChatStore.currentMessages.length }}
-        条消息)
-      </h2>
-
-      <div class="message-list">
-        <div
-          v-for="message in privateChatStore.currentMessages"
-          :key="message.message_id"
-          class="message-item"
-          :class="{ own: message.is_own }">
-          <div class="message-sender">{{ message.sender_id }}</div>
-          <div class="message-content">{{ message.content }}</div>
-          <div class="message-time">
-            {{ message.created_at ? new Date(message.created_at).toLocaleString() : '' }}
-          </div>
-        </div>
-      </div>
-
-      <div class="message-input">
-        <input v-model="messageInput" type="text" placeholder="输入消息..." @keyup.enter="handleSendMessage" />
-        <button @click="handleSendMessage">发送</button>
       </div>
     </div>
   </div>

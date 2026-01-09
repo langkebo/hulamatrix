@@ -2,7 +2,7 @@ import { ref, nextTick } from 'vue'
 import { UploadSceneEnum } from '@/enums'
 
 import { msg } from '@/utils/SafeUI'
-import { UploadProviderEnum, useUpload } from './useUpload'
+import { UploadProviderEnum, uploadFile, useUpload } from './useUpload'
 import { logger } from '@/utils/logger'
 
 export interface AvatarUploadOptions {
@@ -80,7 +80,7 @@ export const useAvatarUpload = (options: AvatarUploadOptions = {}) => {
       }
 
       // 使用useUpload中的上传功能
-      const { uploadFile, fileInfo } = useUpload()
+      const { fileInfo } = useUpload()
 
       // 执行上传，使用 Matrix 媒体服务器
       const result = (await uploadFile(file, {

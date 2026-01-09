@@ -148,8 +148,7 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { OnlineEnum, UserType } from '@/enums'
 import type { UserInfoType, UserItem } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
-import { useFriendsStore } from '@/stores/friends'
-import { useFriendsStoreV2 } from '@/stores/friendsV2'
+import { useFriendsStore, useFriendsStoreV2 } from '@/stores/friendsSDK'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 // 会话详情查询已迁移到 Matrix SDK
@@ -199,7 +198,7 @@ const userStatusStore = useUserStatusStore()
 const groupStore = useGroupStore()
 const route = useRoute()
 const friendsStore = useFriendsStore()
-const friendsStoreV2 = useFriendsStoreV2()
+const friendsStoreV2 = useFriendsStoreV2() // compatibility alias from friendsSDK
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()
 
@@ -300,7 +299,7 @@ onMounted(() => {
     hasUserOnlineState.value = true
   }
 
-  const foundedFriend = (friendsStore.friends || []).find((f: Friend) => String(f.user_id) === String(uid))
+  const foundedFriend = (friendsStore.friends || []).find((f) => f.user_id && String(f.user_id) === String(uid))
 
   if (foundedFriend) {
     isMyFriend.value = true

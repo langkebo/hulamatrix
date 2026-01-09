@@ -453,7 +453,7 @@ function getDefaultNotificationPolicy(): NotificationPolicy {
  * 设置推送器配置（如果启用推送功能）
  */
 export async function setupPusherIfEnabled(): Promise<void> {
-  if (!flags.matrixPushEnabled || !flags.matrixEnabled) {
+  if (!flags.matrixPushEnabled) {
     logger.info('[Pusher] Push notifications are disabled, skipping setup')
     return
   }

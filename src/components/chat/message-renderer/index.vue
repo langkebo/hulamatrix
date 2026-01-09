@@ -236,7 +236,7 @@
                 </svg>
               </n-icon>
               <span
-                v-if="flags.matrixEnabled && readCount > 0"
+                v-if="readCount > 0"
                 class="text-(10px #909090) whitespace-nowrap mt-2px select-none">
                 {{ readCount }} 已读
               </span>
@@ -315,8 +315,8 @@ import { formatTimestamp } from '@/utils/ComputedTime'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { createMacContextSelectionGuard } from '@/utils/MacSelectionGuard'
+import { addMessageReaction, removeMessageReaction } from '@/integrations/matrix/reactions'
 import { isMobile } from '@/utils/PlatformConstants'
 import { sdkGetReceipts } from '@/services/messages'
 import { flags } from '@/utils/envFlags'
@@ -384,7 +384,7 @@ const hoverMsgId = ref<string>('')
 const readCount = ref(0)
 
 onMounted(async () => {
-  if (flags.matrixEnabled && props.message.message.id && props.message.message.roomId) {
+  if (props.message.message.id && props.message.message.roomId) {
     try {
       const receipts = await sdkGetReceipts(props.message.message.roomId, props.message.message.id)
       readCount.value = receipts.length
@@ -548,15 +548,13 @@ const cancelReplyEmoji = async (item: MessageType, type: number): Promise<void> 
   // 只有当用户已标记时才发送取消请求
   if (userMarked) {
     try {
-      const data = {
-        msgId: item.message.id,
-        markType: type, // 使用对应的MarkEnum类型
-        actType: 2 // 使用Confirm作为操作类型
-      }
-      await requestWithFallback({
-        url: 'mark_msg',
-        body: data
-      })
+      // 将数字类型转换为表情字符串
+      const emoji = String.fromCodePoint(type)
+      const roomId = item.message.roomId
+      const eventId = item.message.id
+
+      // 使用 Matrix SDK 移除反应
+      await removeMessageReaction(roomId, eventId, emoji)
     } catch (error) {
       logger.error('取消表情标记失败:', toError(error))
     }
@@ -687,14 +685,13 @@ const handleEmojiSelect = async (
   // 只给没有标记过的图标标记
   if (!userMarked) {
     try {
-      await requestWithFallback({
-        url: 'mark_msg',
-        body: {
-          msgId: item.message.id,
-          markType: context.value,
-          actType: 1
-        }
-      })
+      // 将数字类型转换为表情字符串
+      const emoji = String.fromCodePoint(context.value)
+      const roomId = item.message.roomId
+      const eventId = item.message.id
+
+      // 使用 Matrix SDK 添加反应
+      await addMessageReaction(roomId, eventId, emoji)
     } catch (error) {
       logger.error('标记表情失败:', toError(error))
     }

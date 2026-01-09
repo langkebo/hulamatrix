@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { NModal, NSpace, NAlert, NForm, NFormItem, NSelect, NRadioGroup, NRadio, NButton } from 'naive-ui'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 import type { FormInst, FormRules } from 'naive-ui'
 

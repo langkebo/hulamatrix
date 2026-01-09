@@ -157,7 +157,7 @@ import { darkTheme, lightTheme, type FormInst } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import Validation from '@/components/common/Validation.vue'
 import { useSettingStore } from '@/stores/setting'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+import { matrixPasswordResetService } from '@/integrations/matrix/password-reset'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import { msg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
@@ -245,6 +245,10 @@ const noSideSpace = (value: string) => !value.startsWith(' ') && !value.endsWith
 /** 密码验证函数 */
 const validateMinLength = (value: string) => value.length >= 6
 // 获取图片验证码
+/**
+ * @deprecated 验证码功能需要第三方服务（如 Google reCAPTCHA）
+ * 此功能已暂时禁用，等待集成第三方验证码服务
+ */
 const getCaptchaImage = async () => {
   // 检查是否可以获取新的验证码
   if (captchaInCooldown.value) {
@@ -256,11 +260,12 @@ const getCaptchaImage = async () => {
     // 更新上次获取时间并设置冷却状态
     lastCaptchaTime.value = Date.now()
     captchaInCooldown.value = true
-    const result = (await requestWithFallback({
-      url: 'get_captcha'
-    })) as { img?: string; uuid?: string }
-    captchaImage.value = result.img || ''
-    formData.value.uuid = result.uuid || ''
+
+    // @deprecated 验证码服务已迁移
+    msg.warning('验证码功能需要第三方服务支持，暂时使用直接邮箱验证')
+    captchaImage.value = ''
+    formData.value.uuid = ''
+
     // 获取成功后，启动冷却计时器
     timerWorker.postMessage({
       type: 'startTimer',
@@ -274,6 +279,12 @@ const getCaptchaImage = async () => {
   }
 }
 // 发送邮箱验证码
+/**
+ * @migration 从旧 WebSocket API 迁移到 Matrix 密码重置服务
+ *
+ * Matrix SDK 提供了基于电子邮件的密码重置 API
+ * 但需要服务器支持 /_matrix/client/v3/password/reset/email.hs 端点
+ */
 const sendEmailCode = async () => {
   // 邮箱校验
   if (!formData.value.email) {
@@ -284,23 +295,20 @@ const sendEmailCode = async () => {
     msg.warning(t('auth.forget.messages.email_format'))
     return
   }
+
   // 设置loading状态
   sendingEmailCode.value = true
   try {
-    await requestWithFallback({
-      url: 'send_captcha',
-      body: {
-        email: formData.value.email,
-        uuid: formData.value.uuid,
-        operationType: 'forgot',
-        templateCode: 'PASSWORD_EDIT'
-      }
-    })
+    // 使用 Matrix 密码重置服务
+    await matrixPasswordResetService.requestPasswordReset(formData.value.email)
+
     msg.success(t('auth.forget.messages.code_sent'))
+
     // 接口成功返回后才开始倒计时 - 使用 Web Worker
     sendBtnDisabled.value = true
     countDown.value = 60
     emailCodeBtnText.value = t('auth.forget.actions.retry_in', { seconds: countDown.value })
+
     // 发送消息给 Worker 开始计时
     timerWorker.postMessage({
       type: 'startTimer',
@@ -309,8 +317,8 @@ const sendEmailCode = async () => {
     })
   } catch (error) {
     logger.error('发送验证码失败', error instanceof Error ? error : new Error(String(error)))
-    // 验证码可能错误，刷新图片验证码
-    getCaptchaImage()
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    msg.error(`发送失败: ${errorMessage}`)
   } finally {
     // 无论成功或失败，都需要关闭loading状态
     sendingEmailCode.value = false
@@ -341,23 +349,35 @@ const submitNewPassword = async () => {
   try {
     await passwordFormRef.value.validate()
     submitLoading.value = true
-    // 调用忘记密码接口
-    await requestWithFallback({
-      url: 'forget_password',
-      body: {
-        email: formData.value.email,
-        code: formData.value.emailCode,
-        uuid: formData.value.uuid,
-        password: passwordForm.value.password,
-        confirmPassword: passwordForm.value.confirmPassword,
-        key: 'PASSWORD_EDIT'
-      }
-    })
+
+    // 首先验证重置令牌（邮箱验证码）
+    const verified = await matrixPasswordResetService.verifyResetToken(
+      formData.value.email,
+      formData.value.emailCode
+    )
+
+    if (!verified) {
+      msg.error(t('auth.forget.messages.invalid_code'))
+      submitLoading.value = false
+      return
+    }
+
+    // 使用 Matrix 密码重置服务重置密码
+    await matrixPasswordResetService.resetPassword(
+      formData.value.email,
+      passwordForm.value.password,
+      formData.value.emailCode
+    )
+
     currentStep.value = 3
     stepStatus.value = 'finish'
-    submitLoading.value = false
+    msg.success(t('auth.forget.messages.reset_success'))
   } catch (error) {
     logger.error('重置密码失败', error instanceof Error ? error : new Error(String(error)))
+    const errorMessage =
+      error instanceof Error ? error.message : t('auth.forget.messages.reset_failed')
+    msg.error(errorMessage)
+  } finally {
     submitLoading.value = false
   }
 }

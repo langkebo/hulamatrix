@@ -273,10 +273,8 @@ onMounted(async () => {
     currentDevice.value.displayName = '当前设备'
     currentDevice.value.verified = true
 
-    // 如果启用了 Matrix，获取设备列表
-    if (flags.matrixEnabled) {
-      await loadMatrixDevices()
-    }
+    // 获取设备列表
+    await loadMatrixDevices()
   } catch (e) {
     logger.error('[Sessions] Failed to load devices:', e)
   } finally {

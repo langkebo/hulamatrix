@@ -66,7 +66,7 @@
 
           <div @click.stop="addPanels.show = false" class="add-item">
             <div class="menu-list">
-              <div v-for="item in addPanels.list" :key="item.icon">
+              <div v-for="(item, index) in addPanels.list" :key="`add-${index}`">
                 <div class="menu-item" @click="() => item.click()">
                   <svg><use :href="`#${item.icon}`"></use></svg>
                   {{ t(item.label) }}
@@ -174,7 +174,7 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { sdkCreateRoom } from '@/services/rooms'
 import SearchFriendModal from '@/components/friends/SearchFriendModal.vue'

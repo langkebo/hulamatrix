@@ -4,7 +4,7 @@
  * 基于 SDK v2.0 API 的好友适配器（可选迁移工具）
  *
  * 推荐方式：直接使用 useFriendsStoreV2
- * import { useFriendsStoreV2 } from '@/stores/friendsV2'
+ * import { useFriendsStoreV2 } from '@/stores/friendsSDK'
  *
  * 此适配器仅用于平滑迁移，保持与旧适配器相同的接口
  */

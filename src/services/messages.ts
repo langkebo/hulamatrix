@@ -1,4 +1,3 @@
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { MsgEnum, MessageStatusEnum } from '@/enums'
 import type { MatrixEventLike } from '@/types/matrix'
@@ -84,10 +83,46 @@ export async function markRoomRead(roomId: string): Promise<void> {
 }
 
 export async function getSessionDetail(params: { id: string }): Promise<unknown> {
-  return await requestWithFallback({
-    url: 'get_session_detail',
-    params
-  })
+  /**
+   * getSessionDetail is a legacy API that doesn't have a direct Matrix SDK equivalent.
+   * Matrix doesn't have a concept of "session details" - rooms are the primary entity.
+   *
+   * This function now returns room information from Matrix SDK:
+   * - params.id is treated as a roomId
+   * - Returns basic room information available from the SDK
+   *
+   * If you need more detailed room information, consider using:
+   * - client.getRoom(roomId) - Get room state from SDK
+   * - RoomStore - Use the Pinia room store for cached room data
+   */
+  try {
+    const client = matrixClientService.getClient()
+    if (!client) {
+      throw new Error('Matrix client 未初始化')
+    }
+
+    const getRoomMethod = client.getRoom as ((roomId: string) => MatrixRoomLike | null) | undefined
+    const room = getRoomMethod?.(params.id)
+
+    if (!room) {
+      throw new Error(`未找到房间: ${params.id}`)
+    }
+
+    // Return basic room information
+    return {
+      roomId: params.id,
+      // Add other room properties as needed
+      exists: true
+    }
+  } catch (error) {
+    // Log error but don't throw - maintain backward compatibility
+    console.error('[getSessionDetail] Failed to get room details:', error)
+    return {
+      roomId: params.id,
+      exists: false,
+      error: error instanceof Error ? error.message : String(error)
+    }
+  }
 }
 
 export async function runInBatches<T, R>(

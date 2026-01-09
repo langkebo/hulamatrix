@@ -1,51 +1,84 @@
-import { logger, toError } from '@/utils/logger'
-
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { useMitt } from '@/hooks/useMitt'
-import type { MsgReadUnReadCountType } from '@/services/types'
-import { requestWithFallback } from './MatrixApiBridgeAdapter'
-
 /**
  * 消息已读计数队列模块
  * 用于批量获取消息的已读状态，通过队列和定时器机制优化请求频率
+ *
+ * @migration 从旧 WebSocket API 迁移到 Matrix Receipts API
+ *
+ * **旧的实现** (已废弃):
+ * - 使用 WebSocket API (get_msg_read_count)
+ * - 轮询方式获取已读状态
+ * - 无法中断请求
+ *
+ * **新的实现**:
+ * - 使用 Matrix Receipts API (m.read receipt)
+ * - 事件驱动方式监听已读状态变化
+ * - 实时更新，无需轮询
+ *
+ * **Matrix Receipts API 参考**:
+ * - m.read receipt: 标记消息为已读
+ * - room.getReceiptsForEvent(): 获取消息的所有已读回执
+ * - Room.receipt 事件: 监听已读回执变化
  */
 
+import { logger, toError } from '@/utils/logger'
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { useMitt } from '@/hooks/useMitt'
+import type { MsgReadUnReadCountType } from '@/services/types'
+import { matrixReceiptsService } from '@/integrations/matrix/receipts'
+
 // 类型定义
-type ReadCountQueue = Set<number> // 使用 Set 存储消息ID，自动去重
-// AbortableRequest 功能已废弃，旧的后端 API 已移除
-// 现在使用普通 Promise，无法中断请求
-type ReadCountRequest = Promise<MsgReadUnReadCountType[]>
+type ReadCountQueue = Set<string> // 改为存储事件 ID (Matrix 使用 eventId)
+type ReadCountRequest = Promise<Map<string, MsgReadUnReadCountType[]>>
 
 // 常量定义
 const INTERVAL_DELAY = 10000 // 轮询间隔时间：10秒
 
 // 状态变量
-const queue: ReadCountQueue = new Set<number>() // 待处理的消息ID队列
+const queue: ReadCountQueue = new Set<string>() // 待处理的事件 ID 队列
 let timerWorker: Worker | null = null // Web Worker定时器
 let request: ReadCountRequest | null = null // 当前正在进行的请求
 let isTimerActive = false // 标记定时器是否活跃
+const roomEventCache = new Map<string, string>() // msgId -> eventId 映射缓存
 
 // 事件类型定义
 interface ReadCountTaskEvent {
-  msgId: number // 消息ID
+  msgId: string // 消息 ID (旧的数字 ID)
+  eventId?: string // 事件 ID (Matrix eventId)
+  roomId?: string // 房间 ID
 }
 
 /**
  * 添加消息到已读计数队列
- * @param msgId 消息ID
+ * @param msgId 消息 ID (旧系统)
+ * @param eventId 事件 ID (Matrix，可选)
+ * @param roomId 房间 ID (Matrix，可选)
  */
-const onAddReadCountTask = ({ msgId }: ReadCountTaskEvent) => {
-  if (typeof msgId !== 'number') return
-  queue.add(msgId)
+const onAddReadCountTask = ({ msgId, eventId, roomId }: ReadCountTaskEvent) => {
+  if (!msgId) return
+
+  // 优先使用 eventId (Matrix 系统)
+  const key = eventId || msgId
+
+  queue.add(key)
+
+  // 缓存 msgId -> eventId 和 roomId 映射
+  if (eventId && roomId) {
+    roomEventCache.set(msgId, roomId)
+  }
 }
 
 /**
  * 从已读计数队列中移除消息
- * @param msgId 消息ID
+ * @param msgId 消息 ID
  */
 const onRemoveReadCountTask = ({ msgId }: ReadCountTaskEvent) => {
-  if (typeof msgId !== 'number') return
+  if (!msgId) return
+
+  // 尝试移除
   queue.delete(msgId)
+
+  // 清理缓存
+  roomEventCache.delete(msgId)
 }
 
 /**
@@ -63,57 +96,79 @@ const checkUserAuthentication = (): boolean => {
 
 /**
  * 执行消息已读计数查询任务
- * 1. 中断旧请求（如果存在）
- * 2. 检查队列是否为空
- * 3. 发起新请求获取消息已读状态
+ * 1. 检查队列是否为空
+ * 2. 检查用户是否可以发送请求
+ * 3. 使用 Matrix Receipts API 获取已读状态
  * 4. 处理响应数据并发送事件
  */
 const task = async () => {
   try {
-    // 注意：旧的后端 API 已移除，无法中断正在进行的请求
-    // 如果存在未完成的请求，让它自然完成
-    if (request) {
-      request = null
-    }
-
     // 队列为空则不发起请求
     if (queue.size === 0) return
 
     // 检查用户是否可以发送请求
     const canSendRequest = checkUserAuthentication()
     if (!canSendRequest) {
-      logger.debug('用户未登录或在登录窗口，跳过消息已读计数请求', undefined, 'ReadCountQueue')
+      logger.debug('[ReadCountQueue] 用户未登录或在登录窗口，跳过消息已读计数请求')
       // 在登录窗口时，清空队列并停止定时器
       clearQueue()
       return
     }
 
     // 发起新的批量查询请求
-    // 旧 API: apis.getMsgReadCount({ msgIds: Array.from(queue) })
-    request = requestWithFallback<MsgReadUnReadCountType[]>({
-      url: 'get_msg_read_count',
-      params: { msgIds: Array.from(queue) }
-    })
-    const res = await request
+    // 使用 Matrix Receipts API 获取已读状态
+    const results = new Map<string, MsgReadUnReadCountType[]>()
 
-    // 验证响应数据格式
-    if (!Array.isArray(res)) {
-      logger.error('Invalid response format:', toError(res))
-      return
+    // 按 roomId 分组
+    const roomGroups = new Map<string, string[]>()
+    for (const msgId of queue) {
+      const roomId = roomEventCache.get(msgId)
+      if (roomId) {
+        if (!roomGroups.has(roomId)) {
+          roomGroups.set(roomId, [])
+        }
+        roomGroups.get(roomId)!.push(msgId)
+      }
     }
 
-    // 将响应数据转换为 Map 结构，方便查询
-    const result = new Map<string, MsgReadUnReadCountType>()
-    for (const item of res) {
-      if (typeof item.msgId === 'string') {
-        result.set(item.msgId, item)
+    // 为每个房间获取已读统计
+    for (const [roomId, msgIds] of roomGroups.entries()) {
+      try {
+        // 使用 Matrix Receipts API 批量获取
+        const statsMap = matrixReceiptsService.getBatchMessageReadStats(roomId, msgIds)
+
+        // 转换为旧格式
+        const countList: MsgReadUnReadCountType[] = []
+        for (const [eventId, stats] of statsMap.entries()) {
+          countList.push({
+            msgId: eventId, // Matrix 使用 eventId
+            readCount: stats.count,
+            unReadCount: null, // Matrix 不提供未读数，设为 null
+            readBy: stats.readBy.map((r) => ({
+              userId: r.userId,
+              displayName: r.displayName,
+              avatarUrl: r.avatarUrl
+            }))
+          } as MsgReadUnReadCountType)
+        }
+
+        results.set(roomId, countList)
+      } catch (error) {
+        logger.error('[ReadCountQueue] 获取房间已读状态失败:', { roomId, error })
       }
     }
 
     // 发送已读计数更新事件
-    useMitt.emit('onGetReadCount', result)
+    for (const [roomId, countList] of results.entries()) {
+      useMitt.emit('onGetReadCount', new Map(countList.map((item) => [item.msgId, item])))
+    }
+
+    logger.debug('[ReadCountQueue] 已读计数查询完成', {
+      total: queue.size,
+      rooms: roomGroups.size
+    })
   } catch (error) {
-    logger.error('无法获取消息读取计数:', toError(error))
+    logger.error('[ReadCountQueue] 无法获取消息读取计数:', toError(error))
   } finally {
     request = null // 清理请求引用
   }
@@ -127,6 +182,11 @@ export const initListener = () => {
   useMitt.on('onAddReadCountTask', onAddReadCountTask)
   useMitt.on('onRemoveReadCountTask', onRemoveReadCountTask)
   clearQueue()
+
+  // 初始化 Matrix Receipts 服务
+  matrixReceiptsService.initialize().catch((error) => {
+    logger.warn('[ReadCountQueue] Matrix Receipts 初始化失败，已读计数功能可能不可用:', error)
+  })
 }
 
 /**
@@ -136,7 +196,6 @@ export const initListener = () => {
 export const clearListener = () => {
   useMitt.off('onAddReadCountTask', onAddReadCountTask)
   useMitt.off('onRemoveReadCountTask', onRemoveReadCountTask)
-  // 旧 API 已移除，无法中断请求，仅清空引用
   request = null
   stopTimer()
   // 终止Worker
@@ -163,6 +222,7 @@ const stopTimer = () => {
  */
 export const clearQueue = () => {
   queue.clear()
+  roomEventCache.clear()
   stopTimer()
 }
 

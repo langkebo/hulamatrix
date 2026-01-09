@@ -6,6 +6,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useDebounceFn } from '@vueuse/core'
 import { computeNotificationPolicy } from '@/utils/notificationPolicy'
 import { IsAllUserEnum } from '@/services/types'
+import type { MessageType } from '@/services/types'
 import { EventType } from 'matrix-js-sdk'
 import type { MatrixEventLike, MatrixRoomLike } from '@/types/matrix'
 import { notificationService } from '@/services/notificationService'
@@ -123,13 +124,13 @@ export function setupMatrixNotificationBridge() {
           current.count = (current.count || 0) + 1
           marks[key] = current
           msg.message.messageMarks = marks
-          chatStore.updateMsg({ msgId: targetId, status: msg.message.status, body: msg.message.body })
+          chatStore.updateMsg({ msgId: targetId, status: msg.message.status, message: { body: msg.message.body } as Partial<MessageType> })
         }
       }
     }
   })
 
-  if (flags.matrixPushEnabled && flags.matrixEnabled) {
+  if (flags.matrixPushEnabled) {
     clientLike.on('Room.timeline', (...args: unknown[]) => {
       const ev = args[0] as MatrixEventLike
       const room = args[1] as MatrixRoomLike

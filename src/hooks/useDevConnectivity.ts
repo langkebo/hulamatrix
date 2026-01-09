@@ -10,7 +10,6 @@ export const useDevConnectivity = () => {
   const hasCreds = computed(() => !!store.accessToken && !!store.getHomeserverBaseUrl())
   const matrixReady = computed(() => !!matrixClientService.getClient())
   const backendConnected = computed(() => {
-    if (!flags.matrixEnabled) return false
     if (!hasCreds.value) return false
     return matrixReady.value
   })

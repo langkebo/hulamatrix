@@ -207,7 +207,7 @@ import { useGlobalShortcut } from '@/hooks/useGlobalShortcut'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import type { SessionItem } from '@/services/types'
-import type { FriendItem } from '@/stores/friends'
+import type { FriendItem } from '@/stores/friendsSDK'
 import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useHistoryStore } from '@/stores/history'
@@ -336,7 +336,7 @@ const isFriend = computed(() => {
   const target = detailId.value
   if (!target) return false
   try {
-    const friendsStore = require('@/stores/friends').useFriendsStore()
+    const friendsStore = require('@/stores/friendsSDK').useFriendsStore()
     const friends = friendsStore.friends || []
     // 调试日志
     logger.info('[ChatFooter] isFriend check', {
@@ -701,7 +701,7 @@ onMounted(async () => {
     ;(window as unknown as Record<string, unknown>).__debugChatFooter = {
       refreshFriends: async () => {
         try {
-          const friendsStore = require('@/stores/friends').useFriendsStore()
+          const friendsStore = require('@/stores/friendsSDK').useFriendsStore()
           await friendsStore.refreshAll()
           logger.info('[Debug] Friends list refreshed')
         } catch (error) {
@@ -710,7 +710,7 @@ onMounted(async () => {
       },
       getFriends: () => {
         try {
-          const friendsStore = require('@/stores/friends').useFriendsStore()
+          const friendsStore = require('@/stores/friendsSDK').useFriendsStore()
           return friendsStore.friends
         } catch {
           return []

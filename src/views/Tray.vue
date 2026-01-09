@@ -79,7 +79,6 @@ import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 import { logger, toError } from '@/utils/logger'
@@ -133,11 +132,25 @@ const handleExit = () => {
 
 const toggleStatus = async (item: UserState) => {
   try {
-    await requestWithFallback({
-      url: 'change_user_state',
-      body: { id: item.id }
-    })
+    // 使用 Matrix Presence API 替代老后端 API
+    const { usePresenceStore } = await import('@/stores/presence')
+    const presenceStore = usePresenceStore()
 
+    // 将用户状态映射到 Matrix Presence 状态
+    // 简单映射：假设 item.id 对应某种状态选择
+    // 这里需要根据实际业务逻辑调整映射关系
+    const presenceMap: Record<string, 'online' | 'offline' | 'unavailable'> = {
+      '1': 'online',
+      '2': 'offline',
+      '3': 'unavailable'
+    }
+
+    const presence = presenceMap[item.id] || 'online'
+
+    // 设置当前用户的 Presence（使用 setMyPresence 方法）
+    await presenceStore.setMyPresence(presence, item.title || '')
+
+    // 更新本地状态
     userStatusStore.setStateId(item.id)
     userStore.userInfo!.userStateId = item.id.toString()
     appWindow.hide()

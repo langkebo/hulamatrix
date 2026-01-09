@@ -83,7 +83,7 @@ import { initializeEncryption } from '@/integrations/matrix/encryption'
 const router = useRouter()
 const showHelp = ref(false)
 
-const e2eeEnabled = computed(() => flags.matrixE2eeEnabled && flags.matrixEnabled)
+const e2eeEnabled = computed(() => flags.matrixE2eeEnabled )
 
 const goBack = () => {
   router.back()

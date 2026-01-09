@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, onBeforeUnmount } from 'vue'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useGlobalStore } from '@/stores/global'
 import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
@@ -111,12 +111,14 @@ const scrollArea = ref<HTMLElement>()
 
 // 获取所有好友列表（排除已在群中的成员和机器人）
 const allContacts = computed(() => {
-  const contacts = (friendsStore.friends || []).map((f) => ({
-    uid: f.user_id,
-    name: f.display_name || f.name || f.user_id,
-    avatar: f.avatar_url
-    // activeStatus: ... // FriendsStore info
-  }))
+  const contacts = (friendsStore.friends || [])
+    .filter((f) => f.user_id) // 过滤掉没有 user_id 的好友
+    .map((f) => ({
+      uid: f.user_id!,
+      name: f.display_name || f.name || f.user_id!,
+      avatar: f.avatar_url
+      // activeStatus: ... // FriendsStore info
+    }))
 
   return contacts.filter((item) => {
     // 排除机器人（uid === '1'）
@@ -138,7 +140,9 @@ const filteredContacts = computed(() => {
 
   const searchKeyword = keyword.value.toLowerCase()
   return allContacts.value.filter((item) => {
-    return item.name.toLowerCase().includes(searchKeyword) || item.uid.toLowerCase().includes(searchKeyword)
+    const name = (item.name || '').toLowerCase()
+    const uid = (item.uid || '').toLowerCase()
+    return name.includes(searchKeyword) || uid.includes(searchKeyword)
   })
 })
 

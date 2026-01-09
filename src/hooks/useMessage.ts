@@ -10,16 +10,15 @@ import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting'
 import { useRoomStore } from '@/stores/room'
 import { useUserStore } from '@/stores/user'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { ErrorType } from '@/utils/TauriInvokeHandler'
 import { invokeWithErrorHandler } from '../utils/TauriInvokeHandler'
 import { useI18n } from 'vue-i18n'
 import { msg } from '@/utils/SafeUI'
-import { flags } from '@/utils/envFlags'
 import { sdkSetSessionTop } from '@/services/rooms'
 import { muteRoom, unmuteRoom } from '@/integrations/matrix/pusher'
 import { useDevConnectivity } from '@/hooks/useDevConnectivity'
 import { hiddenSessions } from '@/utils/HiddenSessions'
+import { markRoomRead } from '@/services/messages'
 
 const msgBoxShow = ref(false)
 const shrinkStatus = ref(false)
@@ -64,7 +63,7 @@ export const useMessage = () => {
     // 先更新会话，再根据是否存在自身成员做一次兜底刷新，防止批量切换账号后看到旧数据
     await ensureGroupMembersSynced(item.roomId, item.type)
     if (item.unreadCount && item.unreadCount > 0) {
-      await requestWithFallback({ url: 'mark_msg_read', params: { roomId: item.roomId } })
+      await markRoomRead(item.roomId)
       chatStore.markSessionRead(item.roomId)
     }
   }
@@ -90,7 +89,7 @@ export const useMessage = () => {
     const isCurrentSession = roomId === globalStore.currentSessionRoomId
 
     const targetSession = chatStore.getSession(roomId)
-    if (flags.matrixEnabled && targetSession?.type === RoomTypeEnum.SINGLE) {
+    if (targetSession?.type === RoomTypeEnum.SINGLE) {
       try {
         const { deletePrivateSession } = await import('@/integrations/synapse/friends')
         await deletePrivateSession(roomId)
@@ -99,18 +98,6 @@ export const useMessage = () => {
     // 删除会话，同时清除聊天记录，并调用Matrix leave接口
     await chatStore.removeSession(roomId, { clearMessages, leaveRoom: true })
     hiddenSessions.add(roomId)
-
-    if (flags.matrixEnabled) {
-      // Matrix mode: leaveRoom option handles the Matrix leave API call
-    } else {
-      // 使用隐藏会话接口
-      const res = await invokeWithErrorHandler(
-        'hide_contact_command',
-        { data: { roomId, hide: true } },
-        { errorType: ErrorType.Network }
-      )
-      logger.debug('hide_contact_command result:', { res, roomId })
-    }
 
     // 如果不是当前选中的会话，直接返回
     if (!isCurrentSession) {
@@ -139,11 +126,7 @@ export const useMessage = () => {
       disabled: () => false,
       click: (item: SessionItem) => {
         const action = async () => {
-          if (flags.matrixEnabled) {
-            await sdkSetSessionTop(item.roomId, !item.top)
-          } else {
-            await requestWithFallback({ url: 'set_session_top', body: { roomId: item.roomId, top: !item.top } })
-          }
+          await sdkSetSessionTop(item.roomId, !item.top)
         }
         action()
           .then(() => {
@@ -173,23 +156,12 @@ export const useMessage = () => {
         const unreadCount = item.unreadCount || 0
         const newUnreadCount = unreadCount > 0 ? unreadCount : 1
 
-        if (flags.matrixEnabled) {
-          // For Matrix, we need to track the read receipt locally
-          // The unread count will be recalculated on next sync
-          chatStore.updateSession(item.roomId, {
-            unreadCount: newUnreadCount
-          })
-          logger.info('[useMessage] Room marked as unread', { roomId: item.roomId, unreadCount: newUnreadCount })
-        } else {
-          // Legacy API
-          await requestWithFallback({
-            url: 'mark_unread',
-            body: { roomId: item.roomId }
-          })
-          chatStore.updateSession(item.roomId, {
-            unreadCount: newUnreadCount
-          })
-        }
+        // For Matrix, we need to track the read receipt locally
+        // The unread count will be recalculated on next sync
+        chatStore.updateSession(item.roomId, {
+          unreadCount: newUnreadCount
+        })
+        logger.info('[useMessage] Room marked as unread', { roomId: item.roomId, unreadCount: newUnreadCount })
 
         // Update total unread count
         chatStore.updateTotalUnreadCount()
@@ -229,17 +201,7 @@ export const useMessage = () => {
             action: async () => {
               // 如果当前是屏蔽状态，需要先取消屏蔽
               if (sessionItem.shield) {
-                if (flags.matrixEnabled) {
-                  await unmuteRoom(sessionItem.roomId)
-                } else {
-                  await requestWithFallback({
-                    url: 'shield',
-                    body: {
-                      roomId: sessionItem.roomId,
-                      state: false
-                    }
-                  })
-                }
+                await unmuteRoom(sessionItem.roomId)
                 chatStore.updateSession(sessionItem.roomId, { shield: false })
               }
               await handleNotificationChange(sessionItem, NotificationTypeEnum.RECEPTION)
@@ -254,17 +216,7 @@ export const useMessage = () => {
             action: async () => {
               // 如果当前是屏蔽状态，需要先取消屏蔽
               if (sessionItem.shield) {
-                if (flags.matrixEnabled) {
-                  await unmuteRoom(sessionItem.roomId)
-                } else {
-                  await requestWithFallback({
-                    url: 'shield',
-                    body: {
-                      roomId: sessionItem.roomId,
-                      state: false
-                    }
-                  })
-                }
+                await unmuteRoom(sessionItem.roomId)
                 chatStore.updateSession(sessionItem.roomId, { shield: false })
               }
               await handleNotificationChange(sessionItem, NotificationTypeEnum.NOT_DISTURB)
@@ -274,20 +226,10 @@ export const useMessage = () => {
             label: () => t('menu.block_group_messages'),
             icon: sessionItem.shield ? 'check-small' : '',
             action: async () => {
-              if (flags.matrixEnabled) {
-                if (!sessionItem.shield) {
-                  await muteRoom(sessionItem.roomId)
-                } else {
-                  await unmuteRoom(sessionItem.roomId)
-                }
+              if (!sessionItem.shield) {
+                await muteRoom(sessionItem.roomId)
               } else {
-                await requestWithFallback({
-                  url: 'shield',
-                  body: {
-                    roomId: sessionItem.roomId,
-                    state: !sessionItem.shield
-                  }
-                })
+                await unmuteRoom(sessionItem.roomId)
               }
 
               // 更新本地会话状态
@@ -324,20 +266,10 @@ export const useMessage = () => {
       visible: (item: SessionItem) => item.type === RoomTypeEnum.SINGLE,
       disabled: () => false,
       click: async (item: SessionItem) => {
-        if (flags.matrixEnabled) {
-          if (!item.shield) {
-            await muteRoom(item.roomId)
-          } else {
-            await unmuteRoom(item.roomId)
-          }
+        if (!item.shield) {
+          await muteRoom(item.roomId)
         } else {
-          await requestWithFallback({
-            url: 'shield',
-            body: {
-              roomId: item.roomId,
-              state: !item.shield
-            }
-          })
+          await unmuteRoom(item.roomId)
         }
 
         // 更新本地会话状态
@@ -353,14 +285,9 @@ export const useMessage = () => {
       icon: 'forbid',
       click: async (item: SessionItem) => {
         try {
-          if (flags.matrixEnabled && item.type === RoomTypeEnum.SINGLE) {
+          if (item.type === RoomTypeEnum.SINGLE) {
             const { hidePrivateSession } = await import('@/integrations/synapse/friends')
             await hidePrivateSession(item.roomId)
-          } else {
-            await requestWithFallback({
-              url: 'hide_contact_command',
-              body: { roomId: item.roomId, hide: true }
-            })
           }
         } catch {}
         hiddenSessions.add(item.roomId)
@@ -394,16 +321,13 @@ export const useMessage = () => {
         if (item.operate === SessionOperateEnum.DISSOLUTION_GROUP) return 'logout'
         return 'logout'
       },
-      disabled: () => !backendConnected && !flags.matrixEnabled,
+      disabled: () => !backendConnected,
       click: async (item: SessionItem) => {
         logger.debug('删除好友或退出群聊执行', undefined, 'useMessage')
         // 单聊：删除好友
         if (item.type === RoomTypeEnum.SINGLE) {
-          await requestWithFallback({
-            url: 'delete_friend',
-            body: { targetUid: item.detailId }
-          })
-          await import('@/stores/friends').then((m) => m.useFriendsStore().refreshAll())
+          // delete_friend API 已移除 - Matrix 删除好友功能待实现
+          // 目前仅删除本地会话
           await handleMsgDelete(item.roomId)
           msg.success(t('message.message_menu.delete_friend_success'))
           return
@@ -455,13 +379,8 @@ export const useMessage = () => {
 
   // 添加通知设置变更处理函数
   const handleNotificationChange = async (item: SessionItem, newType: NotificationTypeEnum) => {
-    await requestWithFallback({
-      url: 'notification',
-      body: {
-        roomId: item.roomId,
-        type: newType
-      }
-    })
+    // notification API 已移除 - Matrix 通知偏好设置通过本地状态管理
+    // Matrix Push Rules 在服务器端处理通知规则
 
     // 更新本地会话状态
     chatStore.updateSession(item.roomId, {

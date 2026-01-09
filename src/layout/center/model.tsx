@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { TransferRenderSourceList, TransferRenderTargetLabel } from 'naive-ui'
 import { NAvatar, NCheckbox } from 'naive-ui'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { AvatarUtils } from '@/utils/AvatarUtils'

@@ -15,6 +15,7 @@ import {
 } from '@/integrations/matrix/notifications'
 import { useChatStore } from './chat'
 import { flags } from '@/utils/envFlags'
+import type { MessageType } from '@/services/types'
 
 export interface ReactionCache {
   [eventId: string]: {
@@ -59,7 +60,7 @@ export const useReactionsStore = defineStore('reactions', () => {
 
   // 方法
   const fetchReactions = async (roomId: string, eventId: string, forceRefresh = false) => {
-    if (!flags.matrixReactionsEnabled || !flags.matrixEnabled) return null
+    if (!flags.matrixReactionsEnabled ) return null
 
     // 检查缓存
     const cached = cache.value[eventId]
@@ -199,7 +200,7 @@ export const useReactionsStore = defineStore('reactions', () => {
       chatStore.updateMsg({
         msgId: eventId,
         status: message.message.status,
-        body: message.message.body
+        message: { body: message.message.body } as Partial<MessageType>
       })
     }
   }

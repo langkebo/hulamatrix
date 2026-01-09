@@ -53,7 +53,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { MsgEnum } from '@/enums'
 import { useImageViewer } from '@/hooks/useImageViewer'
-import type { ImageBody, MsgType, MessageBodyExtensions } from '@/services/types'
+import type { ImageBody, MsgType, MessageBodyExtensions, MessageType } from '@/services/types'
 import { isMobile } from '@/utils/PlatformConstants'
 import { useCacheStore } from '@/stores/mediaCache'
 import { useMediaStore } from '@/stores/useMediaStore'
@@ -205,7 +205,7 @@ const fetchEncryptedImagePreview = async (): Promise<string | null> => {
       const msg = chatStore.getMessage(props.message.id)
       if (msg) {
         const nextBody = { ...(msg.message.body || {}), thumbnailPath: abs }
-        chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, body: nextBody })
+        chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, message: { body: nextBody } as Partial<MessageType> })
         const updated = { ...msg, message: { ...msg.message, body: nextBody } }
         await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as MessageForSave })
       }
@@ -262,7 +262,7 @@ const downloadOriginalEncryptedImage = async () => {
     const msg = chatStore.getMessage(props.message.id)
     if (msg) {
       const nextBody = { ...(msg.message.body || {}), localPath: abs }
-      chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, body: nextBody })
+      chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, message: { body: nextBody } as Partial<MessageType> })
       const updated = { ...msg, message: { ...msg.message, body: nextBody } }
       await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as MessageForSave })
     }

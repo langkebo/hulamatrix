@@ -284,20 +284,27 @@ export class ImageMessageStrategyImpl extends AbstractMessageStrategy {
 
   /**
    * 执行实际的文件上传
+   * @deprecated 使用 Matrix SDK 的 uploadImage 方法
    */
-  override async doUpload(path: string, uploadUrl: string, options?: UploadConfig): Promise<QiniuUploadResult | void> {
+  async doUpload(path: string, uploadUrl: string, options?: UploadConfig): Promise<QiniuUploadResult | void> {
     // 如果是URL，跳过上传
     if (this.isImageUrl(path)) {
       return
     }
 
     try {
-      // enableDeduplication启用文件去重
-      const result = await this.uploadHook.doUpload(path, uploadUrl, { ...options, enableDeduplication: true })
-      // 如果是七牛云上传，返回qiniuUrl
-      if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+      // 使用新的 Matrix SDK API 上传
+      const file = await fetch(path).then((r) => r.blob())
+      const mxcUrl = await this.uploadHook.uploadImage(file as File, {
+        onProgress: options?.onProgress as (progress: number) => void
+      })
+
+      if (!mxcUrl) {
+        throw new AppException('图片上传失败')
       }
+
+      // 返回 mxcUrl 作为下载URL
+      return { qiniuUrl: mxcUrl.mxcUrl }
     } catch (error) {
       logger.error('文件上传失败:', toError(error))
       if (error instanceof AppException) {

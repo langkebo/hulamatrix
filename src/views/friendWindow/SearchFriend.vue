@@ -142,14 +142,13 @@ import { RoomTypeEnum } from '@/enums/index'
 import { useWindow } from '@/hooks/useWindow'
 import type { GroupDetailReq } from '@/services/types'
 import { useCachedStore } from '@/stores/dataCache'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { useMitt } from '@/hooks/useMitt'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { msg } from '@/utils/SafeUI'
 import router from '@/router'
 import { searchUsers as synapseSearchUsers, sendRequest } from '@/integrations/synapse/friends'
@@ -171,7 +170,7 @@ interface SearchResultItem {
 }
 
 interface FriendStoreItem {
-  user_id: string
+  user_id?: string
   [key: string]: unknown
 }
 
@@ -299,20 +298,10 @@ const handleSearch = useDebounceFn(async () => {
   hasSearched.value = true
   try {
     if (searchType.value === 'group') {
-      // 调用群聊搜索接口
-      const res = (await requestWithFallback({
-        url: 'search_group',
-        params: { account: searchValue.value }
-      })) as GroupSearchResult[]
-      searchResults.value = (res || []).map((group: GroupSearchResult) => ({
-        uid: group.roomId || group.account, // Use roomId or account as unique key
-        account: group.account,
-        name: group.name,
-        avatar: group.avatar,
-        deleteStatus: group.deleteStatus,
-        extJson: group.extJson,
-        roomId: group.roomId
-      }))
+      // 群聊搜索暂不支持，返回空结果
+      // TODO: 实现 Matrix 房间搜索功能
+      logger.warn('[SearchFriend] 群聊搜索暂不支持 Matrix SDK')
+      searchResults.value = []
     } else if (searchType.value === 'user') {
       // SDK Integration: Prioritize Matrix SDK's searchUserDirectory (standard API)
       let searchSucceeded = false
@@ -391,23 +380,10 @@ const handleSearch = useDebounceFn(async () => {
         }
       }
 
-      // Final fallback to legacy search interface
+      // 如果所有搜索方法都失败，返回空结果
       if (!searchSucceeded) {
-        try {
-          const res = (await requestWithFallback({
-            url: 'search_friend',
-            params: { key: searchValue.value }
-          })) as LegacyUserSearchResult[]
-          searchResults.value = (res || []).map((user: LegacyUserSearchResult) => ({
-            uid: user.uid,
-            name: user.name,
-            avatar: user.avatar,
-            account: user.account
-          }))
-        } catch (fallbackError) {
-          logger.warn('[SearchFriend] Fallback search also failed', { error: fallbackError })
-          searchResults.value = []
-        }
+        logger.warn('[SearchFriend] All search methods failed, returning empty results')
+        searchResults.value = []
       }
     } else {
       // 推荐标签搜索结果
@@ -469,7 +445,7 @@ const sortSearchResults = (items: SearchResultItem[], type: 'user' | 'group' | '
 }
 // 判断是否已经是好友
 const isFriend = (uid: string) => {
-  return (friendsStore.friends || []).some((f: FriendStoreItem) => String(f.user_id) === String(uid))
+  return (friendsStore.friends || []).some((f) => f.user_id && String(f.user_id) === String(uid))
 }
 // 判断是否是当前登录用户
 const isCurrentUser = (uid: string) => {

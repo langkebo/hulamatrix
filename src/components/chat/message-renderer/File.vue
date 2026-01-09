@@ -112,7 +112,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { openPath, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { MessageStatusEnum, TauriCommand } from '@/enums'
 import { fileService } from '@/services/file-service'
-import type { FileBody, MsgType } from '@/services/types'
+import type { FileBody, MsgType, MessageType } from '@/services/types'
 import { useMediaStore } from '@/stores/useMediaStore'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
@@ -168,7 +168,7 @@ const persistFileLocalPath = async (absolutePath: string) => {
   if (target.message.body?.localPath === absolutePath) return
 
   const nextBody = { ...(target.message.body || {}), localPath: absolutePath }
-  chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, body: nextBody })
+  chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, message: { body: nextBody } as Partial<MessageType> })
   const updated = { ...target, message: { ...target.message, body: nextBody } }
   await invokeSilently(TauriCommand.SAVE_MSG, {
     data: updated as {

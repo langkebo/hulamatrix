@@ -211,7 +211,7 @@ const AsyncRight = defineAsyncComponent({
 })
 
 const globalStore = useGlobalStore()
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 const friendsStore = useFriendsStore()
 const shrinkStatus = ref(false)
 const shouldShowRight = computed(() => {

@@ -16,19 +16,7 @@
       <svg class="size-16px rotate-270 color-[--text-color]"><use href="#down"></use></svg>
     </n-flex>
   </n-flex>
-
-  <n-flex
-    @click="handleApply('group')"
-    align="center"
-    justify="space-between"
-    class="my-10px p-12px hover:(bg-[--list-hover-color] cursor-pointer)">
-    <div class="text-(14px [--text-color])">{{ t('home.friends_list.notice.group') }}</div>
-    <n-flex align="center" :size="4">
-      <n-badge :value="globalStore.unReadMark.newGroupUnreadCount" :max="15" />
-      <!-- <n-badge v-if="globalStore.unReadMark.newGroupUnreadCount === 0" dot color="#d5304f" /> -->
-      <svg class="size-16px rotate-270 color-[--text-color]"><use href="#down"></use></svg>
-    </n-flex>
-  </n-flex>
+  <!-- 群通知入口已移除 - 使用 Matrix SDK 原生房间邀请机制 -->
   <n-tabs v-model:value="tabValue" type="segment" animated class="mt-4px p-[4px_10px_0px_8px]">
     <n-tab-pane name="1" :tab="t('home.friends_list.tabs.friend')">
       <n-collapse :display-directive="'show'" accordion :default-expanded-names="['1']">
@@ -69,13 +57,15 @@
                     <template v-if="group.items.length > 100">
                       <VirtualList
                         :items="
-                          group.items.map(
-                            (u: FriendItem): FriendVirtualListItem => ({
-                              message: { id: u.user_id },
-                              user_id: u.user_id,
-                              user_info: u // 传递完整的用户信息
-                            })
-                          )
+                          group.items
+                            .filter((u: FriendItem) => u.user_id) // 过滤掉没有 user_id 的好友
+                            .map(
+                              (u: FriendItem): FriendVirtualListItem => ({
+                                message: { id: u.user_id! },
+                                user_id: u.user_id!,
+                                user_info: u // 传递完整的用户信息
+                              })
+                            )
                         "
                         :estimated-item-height="60">
                         <template #default="slotProps">
@@ -118,12 +108,12 @@
                     </template>
                     <template v-else>
                       <n-flex
+                        v-for="item in group.items.filter((i: FriendItem) => i.user_id)"
+                        :key="item.user_id"
                         :size="10"
-                        @click="handleClick(item.user_id, RoomTypeEnum.SINGLE)"
+                        @click="handleClick(item.user_id!, RoomTypeEnum.SINGLE)"
                         :class="{ active: activeItem === item.user_id }"
-                        class="item-box w-full h-56px md:h-60px mb-5px"
-                        v-for="item in group.items"
-                        :key="item.user_id">
+                        class="item-box w-full h-56px md:h-60px mb-5px">
                         <n-flex align="center" :size="10" class="h-56px md:h-60px pl-6px pr-8px flex-1 truncate">
                           <n-avatar
                             round
@@ -132,7 +122,7 @@
                             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'" />
                           <n-flex vertical justify="space-between" class="h-fit flex-1 truncate">
                             <span class="text-13px leading-tight flex-1 truncate">
-                              <n-badge :color="isOnline(item.user_id) ? '#1ab292' : '#909090'" dot />
+                              <n-badge :color="isOnline(item.user_id!) ? '#1ab292' : '#909090'" dot />
                               {{ item.display_name || item.name || item.user_id }}
                             </span>
                             <span class="text-10px text-gray-500 truncate">
@@ -154,20 +144,20 @@
                 {{ friendsStore.error }}
               </n-alert>
               <n-list v-else>
-                <n-list-item v-for="p in friendsStore.pending" :key="p.request_id">
+                <n-list-item v-for="p in friendsStore.pending" :key="p.id">
                   <div class="flex items-center justify-between">
                     <span>{{ p.requester_id }} → {{ p.target_id }}</span>
                     <n-space>
                       <n-button
                         size="small"
                         type="primary"
-                        @click="friendsStore.accept(p.request_id).then(() => msg.success('已接受'))">
+                        @click="friendsStore.accept(p.id).then(() => msg.success('已接受'))">
                         接受
                       </n-button>
                       <n-button
                         size="small"
                         type="error"
-                        @click="friendsStore.reject(p.request_id).then(() => msg.success('已拒绝'))">
+                        @click="friendsStore.reject(p.id).then(() => msg.success('已拒绝'))">
                         拒绝
                       </n-button>
                     </n-space>
@@ -193,8 +183,9 @@ import { useI18n } from 'vue-i18n'
 import { MittEnum, RoomTypeEnum, ThemeEnum } from '@/enums'
 import { useMitt } from '@/hooks/useMitt'
 import type { DetailsContent } from '@/services/types'
-import type { FriendItem } from '@/stores/friends'
-import { useFriendsStore } from '@/stores/friends'
+import type { FriendItem } from '@/stores/friendsSDK'
+import type { Friend } from '@/sdk/matrix-friends/types'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { usePresenceStore } from '@/stores/presence'
 import { useGlobalStore } from '@/stores/global'
 //
@@ -249,13 +240,15 @@ interface FriendVirtualListItem {
 
 /** 统计在线用户人数（SDK presence 事件） */
 const onlineCount = computed(() => {
-  const ids = friendsStore.friends.map((f) => f.user_id)
+  const ids = friendsStore.friends
+    .map((f) => f.user_id)
+    .filter((id): id is string => id !== undefined && id !== null && id !== '')
   return presenceStore.onlineCount(ids)
 })
 /** Synapse 扩展好友分组 */
 const groupedFriends = computed(() => {
-  const map = friendsStore.friendsByCategory()
-  return friendsStore.categories.map((c) => ({ cat: c, items: map[c.id] || [] }))
+  const map = friendsStore.friendsByCategory
+  return friendsStore.categories.map((c) => ({ cat: c, items: map.get(c.id) || [] }))
 })
 const searchQuery = ref('')
 const debouncedQuery = ref('')
@@ -277,8 +270,8 @@ const filteredGroupedFriends = computed<GroupedFriendItem[]>(() => {
     .map((g: GroupedFriendItem) => ({
       cat: g.cat,
       items: g.items.filter((it: FriendItem) => {
-        const matchQ = !q || String(it.user_id).toLowerCase().includes(q)
-        const matchOnline = !showOnlineOnly.value || isOnline(it.user_id)
+        const matchQ = !q || (it.user_id && String(it.user_id).toLowerCase().includes(q))
+        const matchOnline = !showOnlineOnly.value || (it.user_id && isOnline(it.user_id))
         return matchQ && matchOnline
       })
     }))
@@ -316,13 +309,11 @@ const resetSelection = () => {
   })
 }
 
-const handleApply = async (applyType: 'friend' | 'group') => {
+// 群通知处理已移除 - 使用 Matrix SDK 原生房间邀请机制
+const handleApply = async (applyType: 'friend') => {
   if (applyType === 'friend') {
     await friendsStore.refreshAll()
     globalStore.unReadMark.newFriendUnreadCount = (friendsStore.pending || []).length
-  } else {
-    await friendsStore.refreshGroupPending()
-    globalStore.unReadMark.newGroupUnreadCount = (friendsStore.pendingGroups || []).length
   }
   unreadCountManager.refreshBadge(globalStore.unReadMark)
 

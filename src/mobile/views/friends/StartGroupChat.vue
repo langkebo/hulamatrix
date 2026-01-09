@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useRoomStore } from '@/stores/room'
 import { useUserStore } from '@/stores/user'
 import { useGlobalStore } from '@/stores/global'
@@ -122,7 +122,8 @@ const doSearch = () => {
 
 const filteredContacts = computed(() => {
   const contactsList = (friendsStore.friends || [])
-    .map((f: { user_id: string | number; display_name?: string; name?: string; avatar_url?: string }) => ({
+    .filter((f) => f.user_id) // 过滤掉没有 user_id 的好友
+    .map((f) => ({
       uid: String(f.user_id),
       name: String(f.display_name || f.name || f.user_id),
       avatar: f.avatar_url
@@ -137,7 +138,7 @@ const filteredContacts = computed(() => {
 
   if (!keyword.value) return contactsList
   return contactsList.filter((c) => {
-    return c.name.toLowerCase().includes(keyword.value.toLowerCase())
+    return (c.name || '').toLowerCase().includes(keyword.value.toLowerCase())
   })
 })
 

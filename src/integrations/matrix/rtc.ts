@@ -587,7 +587,7 @@ function createPeerConnection(): RTCPeerConnection {
  * 设置WebRTC通话功能（如果启用）
  */
 export function setupRtcIfEnabled(): void {
-  if (!flags.matrixRtcEnabled || !flags.matrixEnabled) {
+  if (!flags.matrixRtcEnabled ) {
     return
   }
 

@@ -111,7 +111,7 @@ const fileManagerState = inject<FileManagerState>('fileManagerState')!
 const { activeNavigation, selectedUser, selectedRoom, setSelectedUser, setSelectedRoom } = fileManagerState
 
 // Store 实例
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 const friendsStore = useFriendsStore()
 const groupStore = useGroupStore()

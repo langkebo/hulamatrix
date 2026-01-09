@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { TauriCommand } from '@/enums'
 import type { CacheUserItem } from '@/services/types'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
 
 // 定义基础用户信息类型，只包含uid、头像和名称
@@ -13,15 +12,29 @@ export const useCachedStore = defineStore('dataCache', () => {
 
   /**
    * 获取群组公告
+   *
+   * @deprecated 此 API 已废弃，Matrix 没有直接对应的公告功能。
+   * 建议使用 Matrix Room State Events (m.room.topic) 或自定义事件来实现公告功能。
+   * @see https://spec.matrix.org/v1.11/client-server-api/#mroomtopic
+   *
+   * 替代方案：
+   * 1. 使用 room topic 作为公告：client.setRoomTopic(roomId, topic)
+   * 2. 使用自定义房间事件：client.sendEvent(roomId, 'm.room.custom.announcement', content)
+   * 3. 使用 room state events 存储结构化公告数据
+   *
    * @roomId 群组ID
-   * @reload 是否强制重新加载
+   * @param page 页码（废弃）
+   * @param size 每页大小（废弃）
    * @returns 群组公告列表
    */
-  const getGroupAnnouncementList = async (roomId: string, page: number, size: number) => {
-    return await requestWithFallback({
-      url: 'get_announcement_list',
-      params: { roomId, page, pageSize: size }
-    })
+  const getGroupAnnouncementList = async (_roomId: string, _page: number, _size: number) => {
+    throw new Error(
+      'getGroupAnnouncementList API is deprecated. Please use Matrix Room State Events or room topic instead.'
+    )
+    // return await requestWithFallback({
+    //   url: 'get_announcement_list',
+    //   params: { roomId, page, pageSize: size }
+    // })
   }
 
   const updateMyRoomInfo = async (data: Record<string, unknown>) => {

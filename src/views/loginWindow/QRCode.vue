@@ -92,6 +92,12 @@ import { useSettingStore } from '@/stores/setting'
 import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { logger, toError } from '@/utils/logger'
 
+/**
+ * @deprecated QR code login is a legacy feature and should be replaced with Matrix-based authentication.
+ * This component uses old backend APIs (generate_qr_code, check_qr_status) which are not part of Matrix spec.
+ * Consider migrating to Matrix's native authentication flows or implement a custom QR login via Matrix events.
+ */
+
 const settingStore = useSettingStore()
 const themes = computed(() => settingStore.themes)
 const naiveTheme = computed(() => (themes.value.content === 'dark' ? darkTheme : lightTheme))
@@ -229,6 +235,7 @@ const startPolling = () => {
     }
     pollingRequesting.value = true
     try {
+      // @deprecated Legacy API - should be replaced with Matrix-based authentication
       const res = (await requestWithFallback({
         url: 'check_qr_status',
         body: {
@@ -271,6 +278,7 @@ const startPolling = () => {
 /** 处理二维码显示和刷新 */
 const handleQRCodeLogin = async () => {
   try {
+    // @deprecated Legacy API - should be replaced with Matrix-based authentication
     qrCodeResp.value = await requestWithFallback({
       url: 'generate_qr_code'
     })

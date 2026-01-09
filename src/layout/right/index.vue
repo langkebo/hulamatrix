@@ -18,10 +18,10 @@
 
         <Details :content="detailsContent" v-else-if="detailsShow && isDetails && isSessionItem(detailsContent)" />
 
-        <!-- 好友申请列表 -->
+        <!-- 好友申请列表 - 仅处理好友请求，群通知已移除 -->
         <ApplyList
-          v-else-if="detailsContent && isDetails && isDetailsContent(detailsContent)"
-          :type="detailsContent.applyType" />
+          v-else-if="detailsContent && isDetails && isDetailsContent(detailsContent) && detailsContent.applyType === 'friend'"
+          type="friend" />
 
         <!-- 聊天界面背景图标 (only show when not in standard layout mode) -->
         <div v-else-if="!isStandardLayout" class="flex-center size-full select-none" style="pointer-events: none">

@@ -12,7 +12,6 @@ import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { removeTag } from '@/utils/Formatting'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { getImageCache } from '@/utils/PathUtil'
 import { isMobile } from '@/utils/PlatformConstants'
 
@@ -738,8 +737,15 @@ export const useCommon = () => {
 
   /**
    * 打开消息会话(右键发送消息功能)
-   * @param uid 用户id
-   * @param type
+   *
+   * @deprecated 原有 WebSocket API (get_session_detail_with_friends) 已废弃
+   *
+   * Matrix 替代方案：
+   * 1. 使用 getOrCreateDirectRoom(userId) 获取或创建私信房间
+   * 2. 如果房间不存在，函数会自动创建并返回 roomId
+   *
+   * @param uid 用户id (Matrix user ID)
+   * @param type 房间类型 (2 = 单聊, 3 = 群聊，仅作兼容保留)
    */
   const openMsgSession = async (uid: string, type: number = 2) => {
     // 获取home窗口实例
@@ -749,31 +755,41 @@ export const useCommon = () => {
       router.push('/message')
     }
 
-    logger.info('打开消息会话')
-    const res = (await requestWithFallback({
-      url: 'get_session_detail_with_friends',
-      params: { id: uid, roomType: type }
-    })) as { roomId: string }
-    // 把隐藏的会话先显示
+    logger.info('打开消息会话', { uid, type })
+
+    // Matrix SDK 实现：获取或创建私信房间
     try {
-      await invokeWithErrorHandler('hide_contact_command', { data: { roomId: res.roomId, hide: false } })
-    } catch (_error) {
-      msg.error('显示会话失败')
-    }
+      const { getOrCreateDirectRoom } = await import('@/integrations/matrix/contacts')
+      const roomId = await getOrCreateDirectRoom(uid)
 
-    // 先检查会话是否已存在
-    const existingSession = chatStore.getSession(res.roomId)
-    if (!existingSession) {
-      // 只有当会话不存在时才更新会话列表顺序
-      chatStore.updateSessionLastActiveTime(res.roomId)
-      // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
-      await chatStore.getSessionList()
-    }
-    globalStore.updateCurrentSessionRoomId(res.roomId)
+      if (!roomId) {
+        throw new Error('Failed to get or create direct room')
+      }
 
-    // 发送消息定位
-    useMitt.emit(MittEnum.LOCATE_SESSION, { roomId: res.roomId })
-    useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
+      // 把隐藏的会话先显示
+      try {
+        await invokeWithErrorHandler('hide_contact_command', { data: { roomId, hide: false } })
+      } catch (_error) {
+        msg.error('显示会话失败')
+      }
+
+      // 先检查会话是否已存在
+      const existingSession = chatStore.getSession(roomId)
+      if (!existingSession) {
+        // 只有当会话不存在时才更新会话列表顺序
+        chatStore.updateSessionLastActiveTime(roomId)
+        // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
+        await chatStore.getSessionList()
+      }
+      globalStore.updateCurrentSessionRoomId(roomId)
+
+      // 发送消息定位
+      useMitt.emit(MittEnum.LOCATE_SESSION, { roomId })
+      useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
+    } catch (error) {
+      logger.error('打开消息会话失败:', error)
+      msg.error('打开消息会话失败')
+    }
   }
 
   /**

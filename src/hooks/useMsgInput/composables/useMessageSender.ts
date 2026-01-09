@@ -242,31 +242,28 @@ export function useMessageSender(
     }
 
     try {
-      // 上传文件
-      if (!msg.path || !msg.fileUrl) {
-        throw new Error('Missing file path or URL')
+      // 上传文件 - 使用新的 Matrix SDK API
+      if (!msg.path) {
+        throw new Error('Missing file path')
       }
 
-      const uploadRes = await _uploadHook.doUpload(msg.path, msg.fileUrl, uploadOptions)
-      const downloadUrl = typeof uploadRes === 'string' ? uploadRes : uploadRes.qiniuUrl
-      await chatStore.updateMessageFileUrl(tempMsgId, downloadUrl)
+      // 读取文件并上传到 Matrix Content Repository
+      const file = await fetch(msg.path).then((r) => r.blob())
+      const mxcUrl = await _uploadHook.upload(file, uploadOptions)
 
-      // 如果有缩略图，上传缩略图
+      if (mxcUrl) {
+        await chatStore.updateMessageFileUrl(tempMsgId, mxcUrl)
+      }
+
+      // 如果有缩略图，上传缩略图（使用 Matrix SDK 的内置缩略图支持）
       if (msg.thumbnail) {
-        // 如果 thumbnail 是 File 对象，直接使用；否则跳过缩略图上传
         const thumbnailFile = msg.thumbnail instanceof File ? msg.thumbnail : undefined
         if (thumbnailFile) {
-          const thumbnailUploadInfo = await _uploadHook.uploadThumbnail(thumbnailFile, {})
-
-          const thumbnailUploadResult = await _uploadHook.doUploadThumbnail(
-            thumbnailFile,
-            thumbnailUploadInfo.uploadUrl,
-            {
-              onProgress: () => {}
-            }
-          )
-
-          await chatStore.updateMessageThumbnailUrl(tempMsgId, thumbnailUploadResult.downloadUrl)
+          // Matrix SDK 自动处理缩略图，直接上传即可
+          const thumbnailMxcUrl = await _uploadHook.uploadImage(thumbnailFile, uploadOptions)
+          if (thumbnailMxcUrl) {
+            await chatStore.updateMessageThumbnailUrl(tempMsgId, thumbnailMxcUrl.mxcUrl)
+          }
         }
       }
     } catch (error) {

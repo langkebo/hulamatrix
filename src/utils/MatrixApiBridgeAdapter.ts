@@ -1,8 +1,29 @@
 /**
  * Matrix API Bridge Adapter
  *
- * 将旧的API调用桥接到新的 Matrix SDK 实现
- * 这个适配器主要用于向后兼容，逐步迁移后使用
+ * @deprecated 此适配器已废弃，大部分功能已迁移到 Matrix SDK
+ *
+ * 将旧的 API 调用桥接到新的 Matrix SDK 实现
+ * 此适配器主要用于向后兼容，逐步迁移后使用
+ *
+ * **已迁移的功能**（不再使用此适配器）:
+ * - `search_group` → 使用 Matrix User Directory API
+ * - `search_friend` → 使用 Matrix User Directory API
+ * - `get_user_info` → 使用 `matrixClientService.getClient().getUser()`
+ * - `get_room_list` → 使用 `client.getRooms()`
+ *
+ * **保留的功能**（需要独立服务）:
+ * - `get_captcha`, `send_captcha` - 验证码服务
+ * - `forget_password` - 密码重置服务
+ * - `generate_qr_code`, `check_qr_status` - 二维码登录
+ * - `send_add_friend_request` - 好友请求
+ *
+ * **迁移计划**:
+ * 这些保留的功能应该迁移到独立的服务：
+ * 1. 使用 Matrix Account Data 存储用户偏好
+ * 2. 使用 Matrix Room Events 处理好友请求
+ * 3. 使用第三方验证码服务（如 Google reCAPTCHA）
+ * 4. 实现基于 Matrix 的二维码登录
  */
 
 import { matrixSearchServiceCompat as matrixSearchService } from '@/integrations/matrix/search'
@@ -24,6 +45,25 @@ interface MatrixRoom {
   getTopic?(): string
 }
 
+/**
+ * 请求并回退到 Matrix SDK 实现
+ *
+ * @deprecated 此函数已废弃，请直接使用 Matrix SDK
+ *
+ * @param options - 请求选项
+ * @param options.url - API 端点
+ * @param options.body - 请求体
+ * @param options.params - 查询参数
+ * @returns Promise<T> - API 响应
+ *
+ * @example
+ * // 旧用法（已废弃）
+ * await requestWithFallback({ url: 'search_group', params: { account: 'keyword' } })
+ *
+ * // 新用法 - 直接使用 Matrix SDK
+ * import { matrixSearchService } from '@/integrations/matrix/search'
+ * await matrixSearchService.searchRooms('keyword', 20)
+ */
 export async function requestWithFallback<T = unknown>(options: {
   url: string
   body?: unknown
@@ -113,9 +153,19 @@ export async function requestWithFallback<T = unknown>(options: {
         return [] as T
       }
 
+    case 'get_captcha':
+    case 'send_captcha':
+    case 'forget_password':
+    case 'generate_qr_code':
+    case 'check_qr_status':
+    case 'send_add_friend_request':
+      // 这些功能需要迁移到独立服务
+      logger.warn(`[MatrixApiBridgeAdapter] Legacy API '${url}' called. This feature needs to be reimplemented using Matrix or independent services.`)
+      throw new Error(`Legacy API '${url}' is deprecated and needs to be reimplemented. See docs/LEGACY_API_MIGRATION.md for guidance.`)
+
     default:
       // 对于不支持的 URL，记录并返回空值（保持向后兼容）
-      logger.debug('[MatrixApiBridgeAdapter] Unsupported URL:', url)
+      logger.warn('[MatrixApiBridgeAdapter] Unsupported URL:', url)
       return undefined as T
   }
 }

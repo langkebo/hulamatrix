@@ -12,7 +12,7 @@ export { privateChatServiceV2 } from './privateChatServiceV2'
 
 // ==================== Store ====================
 
-export { useFriendsStoreV2 } from '@/stores/friendsV2'
+export { useFriendsStoreV2 } from '@/stores/friendsSDK'
 export { usePrivateChatStoreV2 } from '@/stores/privateChatV2'
 
 // ==================== 类型 ====================
@@ -62,22 +62,16 @@ export function disposeV2Services(): void {
  */
 export async function getV2ServicesSummary(): Promise<{
   friendsInitialized: boolean
-  privateChatInitialized: boolean
   totalFriends: number
-  totalSessions: number
   pendingRequests: number
 }> {
-  const { useFriendsStoreV2 } = await import('@/stores/friendsV2')
-  const { usePrivateChatStoreV2 } = await import('@/stores/privateChatV2')
+  const { useFriendsStoreV2 } = await import('@/stores/friendsSDK')
 
   const friendsStore = useFriendsStoreV2()
-  const pcStore = usePrivateChatStoreV2()
 
   return {
     friendsInitialized: friendsStore.initialized,
-    privateChatInitialized: pcStore.initialized,
     totalFriends: friendsStore.totalFriendsCount,
-    totalSessions: pcStore.totalSessionsCount,
     pendingRequests: friendsStore.pendingCount
   }
 }

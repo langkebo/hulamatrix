@@ -55,7 +55,7 @@ export function useRoomStats(roomId?: string) {
   const initializeAdapter = () => {
     try {
       const client = matrixClientService.getClient() as unknown as MatrixClient | null
-      if (flags.matrixEnabled && client && !adapter.value) {
+      if (client && !adapter.value) {
         adapter.value = createGroupToRoomAdapter(client)
       }
     } catch {}
@@ -72,7 +72,7 @@ export function useRoomStats(roomId?: string) {
 
     try {
       // 优先使用适配器（Matrix 房间）
-      if (adapter.value && flags.matrixEnabled) {
+      if (adapter.value ) {
         const roomStats = await adapter.value.getGroupStats(rid)
         const total = roomStats.totalNum || 0
         if (total === 0) {
@@ -147,7 +147,7 @@ export function useRoomStats(roomId?: string) {
   watch(
     () => [groupStore.memberList, groupStore.countInfo],
     () => {
-      if (!flags.matrixEnabled && currentRoomId.value) {
+      if (currentRoomId.value) {
         fetchRoomStats()
       }
     }

@@ -133,7 +133,7 @@ import { fileService } from '@/services/file-service'
 import { useIntersectionTaskQueue } from '@/hooks/useIntersectionTaskQueue'
 import { useMitt } from '@/hooks/useMitt'
 import { useVideoViewer } from '@/hooks/useVideoViewer'
-import type { MsgType, VideoBody } from '@/services/types'
+import type { MsgType, VideoBody, MessageType } from '@/services/types'
 import { useCacheStore } from '@/stores/mediaCache'
 import { useChatStore } from '@/stores/chat'
 import { formatBytes } from '@/utils/Formatting'
@@ -190,7 +190,7 @@ const persistVideoLocalPath = async (absolutePath: string) => {
   const nextBody = { ...(target.message.body || {}), localPath: absolutePath }
   if (target.message.body?.localPath === absolutePath) return
 
-  chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, body: nextBody })
+  chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, message: { body: nextBody } as Partial<MessageType> })
   const updated = { ...target, message: { ...target.message, body: nextBody } }
   await invokeSilently(TauriCommand.SAVE_MSG, {
     data: updated as {

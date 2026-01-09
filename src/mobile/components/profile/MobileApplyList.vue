@@ -5,7 +5,7 @@
       align="center"
       justify="space-between"
       class="color-[--text-color] px-20px py-10px">
-      <p class="text-16px">{{ props.type === 'friend' ? '好友通知' : '群通知' }}</p>
+      <p class="text-16px">好友通知</p>
       <svg class="size-18px cursor-pointer">
         <use href="#delete"></use>
       </svg>
@@ -25,18 +25,11 @@
       <template #default="{ item }">
         <div class="flex gap-2 w-full text-14px mb-15px">
           <div class="flex h-full">
-            <n-avatar
-              round
-              size="large"
-              :src="
-                props.type === 'friend'
-                  ? avatarSrc(getUserInfo(item)?.avatar || '')
-                  : avatarSrc(groupDetailsMap[item.roomId]?.avatar || '/default-group-avatar.png')
-              " />
+            <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" />
           </div>
           <div class="flex-1 flex flex-col gap-10px">
             <div
-              @click="isCurrentUser(item.senderId) ? (currentUserId = item.operateId) : (currentUserId = item.senderId)"
+              @click="currentUserId = item.senderId"
               class="flex justify-between text-14px text-#2DA38D">
               {{ getUserInfo(item)?.name || '未知用户' }}
             </div>
@@ -49,12 +42,6 @@
               <div class="whitespace-nowrap">留言:</div>
               <n-ellipsis :tooltip="true" expand-trigger="click" line-clamp="2" style="max-width: 100%">
                 {{ item.content }}
-              </n-ellipsis>
-            </div>
-            <div v-else class="flex gap-2 flex-1 text-12px text-gray-500">
-              <div class="whitespace-nowrap">处理人:</div>
-              <n-ellipsis :tooltip="true" expand-trigger="click" line-clamp="2" style="max-width: 100%">
-                {{ groupStore.getUserInfo(item.senderId)?.name || '未知用户' }}
               </n-ellipsis>
             </div>
           </div>
@@ -106,37 +93,30 @@
 
     <!-- 空数据提示 -->
     <n-flex v-if="applyList.length === 0" vertical justify="center" align="center" class="py-40px">
-      <n-empty :description="props.type === 'friend' ? '暂无好友申请' : '暂无群通知'" />
+      <n-empty description="暂无好友申请" />
     </n-flex>
   </n-flex>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { uniq } from 'es-toolkit'
-import { NoticeType, RequestNoticeAgreeStatus } from '@/services/types'
-import { useFriendsStore } from '@/stores/friends'
+import { computed, onMounted, ref } from 'vue'
+import { RequestNoticeAgreeStatus } from '@/services/types'
+import type { NoticeItem } from '@/services/types'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { useGroupStore } from '@/stores/group'
-import type { NoticeItem } from '@/services/types'
-import { logger } from '@/utils/logger'
 
+// 群邀请功能已移除 - 仅处理好友请求
 const userStore = useUserStore()
 const friendsStore = useFriendsStore()
-const groupStore = useGroupStore()
 const currentUserId = ref('0')
 const loadingMap = ref<Record<string, boolean>>({})
 const virtualListRef = ref()
 const isLoadingMore = ref(false)
 const props = defineProps<{
-  type: 'friend' | 'group'
+  type: 'friend'
   customHeight?: number
   closeHeader?: boolean
 }>()
-
-// 存储群组信息的响应式对象
-const groupDetailsMap = ref<Record<string, { name: string; avatar?: string }>>({})
-const loadingGroups = ref<Set<string>>(new Set())
 
 // 检查好友申请是否已被接受
 type MinimalNotice = Pick<NoticeItem, 'status' | 'senderId' | 'eventType' | 'roomId' | 'operateId' | 'applyId'>
@@ -144,88 +124,23 @@ const isAccepted = (item: MinimalNotice) => {
   return item.status !== RequestNoticeAgreeStatus.UNTREATED
 }
 
+// 简化为仅处理好友请求
 const applyList = computed<MinimalNotice[]>(() => {
-  if (props.type === 'friend') {
-    return (friendsStore.pending || []).map((p: { request_id: string; requester_id: string }) => ({
-      applyId: p.request_id,
-      senderId: p.requester_id,
-      operateId: p.requester_id,
-      eventType: NoticeType.FRIEND_APPLY,
-      roomId: '',
-      status: RequestNoticeAgreeStatus.UNTREATED
-    }))
-  }
-  return friendsStore.pendingGroups || []
+  return (friendsStore.pending || []).map((p: { id: string; requester_id: string }) => ({
+    applyId: p.id,
+    senderId: p.requester_id,
+    operateId: p.requester_id,
+    eventType: 2, // FRIEND_APPLY
+    roomId: '',
+    status: RequestNoticeAgreeStatus.UNTREATED
+  }))
 })
 
-// 获取群组信息的函数
-const getGroupDetail = async (roomId: string) => {
-  if (!roomId) return null
+// 群组相关代码已移除 - 仅处理好友请求
 
-  // 如果已经在加载中，直接返回
-  if (loadingGroups.value.has(roomId)) {
-    return null
-  }
-
-  // 如果已经有缓存，直接返回
-  if (groupDetailsMap.value[roomId]) {
-    return groupDetailsMap.value[roomId]
-  }
-
-  // 开始加载
-  loadingGroups.value.add(roomId)
-  try {
-    // 使用 groupStore 获取群组信息
-    const groupDetail = await groupStore.fetchGroupDetailSafely(roomId)
-    if (groupDetail) {
-      const groupInfo = {
-        name: groupDetail.groupName || '',
-        avatar: groupDetail.avatar || ''
-      }
-      groupDetailsMap.value[roomId] = groupInfo
-      return groupInfo
-    }
-  } catch (error) {
-    logger.error('获取群组信息失败:', error)
-  } finally {
-    loadingGroups.value.delete(roomId)
-  }
-
-  return null
-}
-
-// 异步获取群组信息的计算属性
+// 简化消息显示 - 仅处理好友请求
 const applyMsg = computed(() => (item: MinimalNotice) => {
-  if (props.type === 'friend') {
-    return isCurrentUser(item.senderId) ? (isAccepted(item) ? '已同意你的请求' : '正在验证你的邀请') : '请求加为好友'
-  } else {
-    const groupDetail = groupDetailsMap.value[item.roomId]
-    if (!groupDetail) {
-      if (item.roomId && !loadingGroups.value.has(item.roomId)) {
-        getGroupDetail(item.roomId)
-      }
-      return '加载中...'
-    }
-
-    if (item.eventType === NoticeType.GROUP_APPLY) {
-      return '申请加入 [' + groupDetail.name + ']'
-    } else if (item.eventType === NoticeType.GROUP_INVITE) {
-      const inviter = item.operateId ? groupStore.getUserInfo(item.operateId)?.name || '未知用户' : '未知用户'
-      return '邀请' + inviter + '加入 [' + groupDetail.name + ']'
-    } else if (isFriendApplyOrGroupInvite(item)) {
-      return isCurrentUser(item.senderId)
-        ? '已同意加入 [' + groupDetail.name + ']'
-        : '邀请你加入 [' + groupDetail.name + ']'
-    } else if (item.eventType === NoticeType.GROUP_MEMBER_DELETE) {
-      const operator = item.senderId ? groupStore.getUserInfo(item.senderId)?.name || '未知用户' : '未知用户'
-      return '已被' + operator + '踢出 [' + groupDetail.name + ']'
-    } else if (item.eventType === NoticeType.GROUP_SET_ADMIN) {
-      return '已被群主设置为 [' + groupDetail.name + '] 的管理员'
-    } else if (item.eventType === NoticeType.GROUP_RECALL_ADMIN) {
-      return '已被群主取消 [' + groupDetail.name + '] 的管理员权限'
-    }
-    return '通知'
-  }
+  return isCurrentUser(item.senderId) ? (isAccepted(item) ? '已同意你的请求' : '正在验证你的邀请') : '请求加为好友'
 })
 
 // 下拉菜单选项
@@ -248,7 +163,7 @@ const isCurrentUser = (uid: string) => {
 }
 
 /**
- * 获取当前用户查询视角
+ * 获取当前用户查询视角 - 仅处理好友请求
  * @param item 通知消息
  */
 const getUserInfo = (item: MinimalNotice) => {
@@ -259,23 +174,9 @@ const getUserInfo = (item: MinimalNotice) => {
     [key: string]: unknown
   }
 
-  let userInfo: UserInfo | undefined
-  switch (item.eventType) {
-    case NoticeType.FRIEND_APPLY:
-    case NoticeType.GROUP_MEMBER_DELETE:
-    case NoticeType.GROUP_SET_ADMIN:
-    case NoticeType.GROUP_RECALL_ADMIN:
-      userInfo = item.operateId ? groupStore.getUserInfo(item.operateId) : undefined
-      break
-    case NoticeType.ADD_ME:
-    case NoticeType.GROUP_INVITE:
-    case NoticeType.GROUP_INVITE_ME:
-    case NoticeType.GROUP_APPLY:
-      userInfo = item.senderId ? groupStore.getUserInfo(item.senderId) : undefined
-      break
-    default:
-      userInfo = undefined
-  }
+  // 简化为仅处理好友请求 - 发送者信息需要从好友列表获取
+  // 这里返回 undefined，让 UI 使用默认值
+  const userInfo = undefined
 
   return (
     userInfo || {
@@ -286,15 +187,9 @@ const getUserInfo = (item: MinimalNotice) => {
   )
 }
 
-// 判断是否为好友申请或者群申请、群邀请
+// 简化为仅判断好友申请
 const isFriendApplyOrGroupInvite = (item: MinimalNotice) => {
-  return (
-    item.eventType === NoticeType.FRIEND_APPLY ||
-    item.eventType === NoticeType.GROUP_APPLY ||
-    item.eventType === NoticeType.GROUP_INVITE ||
-    item.eventType === NoticeType.GROUP_INVITE_ME ||
-    item.eventType === NoticeType.ADD_ME
-  )
+  return item.eventType === 2 // FRIEND_APPLY
 }
 
 // 处理滚动事件
@@ -315,16 +210,13 @@ const loadMoreFriendRequests = async () => {
   return
 }
 
+// 接受好友请求 - 仅处理好友请求
 const handleAgree = async (item: NoticeItem) => {
   const applyId = item.applyId
   loadingMap.value[applyId] = true
   try {
-    if (props.type === 'friend') {
-      await friendsStore.accept(applyId)
-      await friendsStore.refreshAll()
-    } else {
-      await friendsStore.acceptGroupInvite(applyId)
-    }
+    await friendsStore.accept(applyId)
+    await friendsStore.refreshAll()
   } finally {
     setTimeout(() => {
       loadingMap.value[applyId] = false
@@ -332,17 +224,12 @@ const handleAgree = async (item: NoticeItem) => {
   }
 }
 
-// 处理好友请求操作
+// 处理好友请求操作 - 仅处理好友请求
 const handleFriendAction = async (action: string, applyId: string) => {
   loadingMap.value[applyId] = true
   try {
-    if (props.type === 'friend') {
-      if (action === 'reject') await friendsStore.reject(applyId)
-      await friendsStore.refreshAll()
-    } else {
-      if (action === 'reject') await friendsStore.rejectGroupInvite(applyId)
-      await friendsStore.refreshGroupPending()
-    }
+    if (action === 'reject') await friendsStore.reject(applyId)
+    await friendsStore.refreshAll()
   } finally {
     setTimeout(() => {
       loadingMap.value[applyId] = false
@@ -352,26 +239,9 @@ const handleFriendAction = async (action: string, applyId: string) => {
 
 onMounted(async () => {
   await friendsStore.refreshAll()
-  await friendsStore.refreshGroupPending()
 })
 
-// 监听applyList变化，批量加载群组信息
-watch(
-  () => applyList.value,
-  (newList) => {
-    const roomIds = uniq(newList.filter((item) => item.roomId && Number(item.roomId) > 0).map((item) => item.roomId))
-
-    if (roomIds.length > 0) {
-      // 批量加载群组信息
-      roomIds.forEach((roomId) => {
-        if (!groupDetailsMap.value[roomId] && !loadingGroups.value.has(roomId)) {
-          getGroupDetail(roomId)
-        }
-      })
-    }
-  },
-  { immediate: true, deep: true }
-)
+// 群组信息监听已移除 - 仅处理好友请求
 </script>
 
 <style scoped lang="scss"></style>

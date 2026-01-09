@@ -6,7 +6,7 @@
 
 import type { MessageType } from '@/services/types'
 import { MsgEnum } from '@/enums'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 
 /**

@@ -31,7 +31,6 @@ export const useVoiceRecordRust = (options: VoiceRecordRustOptions = {}) => {
   const startTime = ref(0)
   const audioMonitor = ref<NodeJS.Timeout | null>(null)
   const timerMsgId = 'voiceRecordTimer' // worker计时器的消息ID
-  const { generateHashKey } = useUpload()
 
   /** 开始录音 */
   const startRecordingAudio = async () => {
@@ -224,16 +223,12 @@ export const useVoiceRecordRust = (options: VoiceRecordRustOptions = {}) => {
 
   /** 保存音频到本地缓存 */
   const saveAudioToCache = async (audioBlob: Blob, duration: number) => {
+    // Matrix SDK 使用 mxc:// URL 作为内容标识符，不再需要手动生成哈希文件名
     const getFileHashName = async (tempFileName: string) => {
-      const audioFile = new File([audioBlob], tempFileName)
-      // 计算文件真正的资源哈希文件名
-      const resourceFileName = await generateHashKey(
-        { scene: UploadSceneEnum.CHAT, enableDeduplication: true }, // 这里的UploadSceneEnum随便选，反正只需要哈希值文件名
-        audioFile,
-        tempFileName
-      )
-
-      return resourceFileName.split('/').pop() as string
+      // 直接使用时间戳生成文件名
+      const timestamp = Date.now()
+      const randomStr = Math.random().toString(36).substring(2, 9)
+      return `${timestamp}_${randomStr}_${tempFileName}`
     }
 
     try {

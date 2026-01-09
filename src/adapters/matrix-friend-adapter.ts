@@ -246,7 +246,7 @@ export class MatrixFriendAdapter implements FriendAdapter {
   /**
    * 接受好友请求
    */
-  async acceptFriendRequest(requestId: string, categoryId?: string): Promise<void> {
+  async acceptFriendRequest(requestId: string, _categoryId?: string): Promise<void> {
     try {
       const client = matrixClientService.getClient() as MatrixClientExtended | null
       if (!client) throw new Error('Matrix 客户端未初始化')
@@ -255,13 +255,8 @@ export class MatrixFriendAdapter implements FriendAdapter {
       const myUserId = client.credentials?.userId || client.getUserId?.()
       if (!myUserId) throw new Error('无法获取当前用户ID')
 
-      // EnhancedFriendsService.acceptFriendRequest 需要 roomId, fromUserId, requestId?, categoryId?
-      await enhancedFriendsService.acceptFriendRequest(
-        requestId,
-        myUserId,
-        undefined, // requestId 是可选的
-        categoryId
-      )
+      // acceptFriendRequest now takes roomId and optional requestId
+      await enhancedFriendsService.acceptFriendRequest(requestId)
       logger.info('[MatrixFriendAdapter] 接受好友请求成功:', { requestId })
     } catch (error) {
       logger.error('[MatrixFriendAdapter] 接受好友请求失败:', error)

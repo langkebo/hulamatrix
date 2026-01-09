@@ -885,11 +885,17 @@ export class UnifiedMessageService {
     // 使用 ChatStore 的 markThreadAsRead 方法更新线程已读状态
     const chatStore = useChatStore()
     if (
-      typeof (chatStore as { markThreadAsRead?: (threadRootId: string) => Promise<void> }).markThreadAsRead ===
+      typeof (chatStore as { markThreadAsRead?: (threadRootId: string) => Promise<boolean> }).markThreadAsRead ===
       'function'
     ) {
-      await (chatStore as { markThreadAsRead: (threadRootId: string) => Promise<void> }).markThreadAsRead(threadRootId)
-      logger.info('[UnifiedMessageService] Thread marked as read:', threadRootId)
+      const result = await (chatStore as { markThreadAsRead: (threadRootId: string) => Promise<boolean> }).markThreadAsRead(
+        threadRootId
+      )
+      if (result) {
+        logger.info('[UnifiedMessageService] Thread marked as read:', threadRootId)
+      } else {
+        logger.warn('[UnifiedMessageService] Failed to mark thread as read:', threadRootId)
+      }
     } else {
       logger.debug('[UnifiedMessageService] markThreadAsRead not available in chatStore')
     }

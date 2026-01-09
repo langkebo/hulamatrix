@@ -452,7 +452,7 @@ defineExpose({
 
 // 生命周期
 onMounted(() => {
-  if (flags.matrixRtcEnabled && flags.matrixEnabled && webrtcSupported.value) {
+  if (flags.matrixRtcEnabled && webrtcSupported.value) {
     // 设置Matrix RTC桥接
     setupMatrixRtcBridge(undefined, handleCallEvent)
   } else if (!webrtcSupported.value) {

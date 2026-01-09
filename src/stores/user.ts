@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { StoresEnum, SexEnum } from '@/enums'
 import type { UserInfoType } from '@/services/types'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
+// requestWithFallback 已移除 - Matrix 用户信息在 auth-state.ts 中设置
 import * as PathUtil from '@/utils/PathUtil'
 import { useGlobalStore } from './global'
 import { computed, ref } from 'vue'
@@ -32,18 +32,8 @@ export const useUserStore = defineStore(
     const globalStore = useGlobalStore()
     const isInitialized = ref(false)
 
-    const getUserDetailAction = async () => {
-      try {
-        const res = (await requestWithFallback({
-          url: 'get_user_info'
-        })) as Partial<UserInfoType>
-        userInfo.value = { ...userInfo.value, ...res }
-        isInitialized.value = true
-      } catch (e) {
-        logger.error('获取用户详情失败:', e)
-        // 保留默认值，不覆盖
-      }
-    }
+    // getUserDetailAction 已移除 - Matrix 用户信息在 auth-state.ts 的 loadCurrentUser() 中设置
+    // 老后端的 get_user_info API 已不再使用
 
     const isMe = computed(() => (id: string) => {
       return userInfo.value?.uid === id
@@ -148,7 +138,7 @@ export const useUserStore = defineStore(
     return {
       userInfo,
       user,
-      getUserDetailAction,
+      // getUserDetailAction 已移除
       isMe,
       getUserRoomDir,
       getUserRoomAbsoluteDir,

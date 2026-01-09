@@ -117,7 +117,7 @@ interface SasData {
   reason?: string
 }
 
-const e2eeEnabledFlag = computed(() => flags.matrixE2eeEnabled && flags.matrixEnabled)
+const e2eeEnabledFlag = computed(() => flags.matrixE2eeEnabled )
 const devices = ref<DeviceRow[]>([])
 const loading = ref(false)
 const showGuide = ref(false)

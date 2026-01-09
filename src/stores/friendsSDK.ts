@@ -25,6 +25,45 @@ import { logger } from '@/utils/logger'
 // Re-export types for components
 export type { CategoryWithColor, FriendWithProfile, FriendRequestWithProfile }
 
+/**
+ * @deprecated 旧 API 类型别名
+ * 保持向后兼容性，便于组件迁移
+ */
+export interface FriendItem extends FriendWithProfile {
+  /** 兼容字段：显示名称别名 */
+  name?: string
+  /** 兼容字段：状态文本（备注） */
+  status_text?: string
+}
+
+export type CategoryItem = CategoryWithColor
+export type NoticeItem = FriendRequestWithProfile
+export type PendingItem = FriendRequest
+
+/**
+ * 将 SDK Friend 类型转换为兼容的 FriendItem 格式
+ * 处理字段名称差异和可选字段
+ */
+function adaptFriendToFriendItem(friend: Friend): FriendItem {
+  return {
+    // SDK 使用 friend_id，组件期望 user_id
+    user_id: friend.user_id || friend.friend_id,
+    // 保留 SDK 字段
+    friend_id: friend.friend_id,
+    category_id: friend.category_id,
+    category_name: friend.category_name,
+    created_at: friend.created_at,
+    status: friend.status,
+    // 映射显示名称
+    display_name: friend.display_name || friend.remark || friend.user_id || friend.friend_id,
+    avatar_url: friend.avatar_url,
+    presence: friend.presence,
+    // 兼容旧字段
+    name: friend.display_name || friend.remark || friend.user_id || friend.friend_id,
+    status_text: friend.remark || ''
+  } as FriendItem
+}
+
 export const useFriendsSDKStore = defineStore('friendsSDK', () => {
   // ==================== 辅助函数 ====================
 
@@ -96,6 +135,36 @@ export const useFriendsSDKStore = defineStore('friendsSDK', () => {
    * 已加载
    */
   const isLoaded = computed(() => !loading.value && initialized.value)
+
+  /**
+   * 适配后的好友列表（兼容旧组件）
+   * 将 SDK 的 Friend 类型转换为 FriendItem 格式
+   */
+  const adaptedFriends = computed(() => friends.value.map(adaptFriendToFriendItem))
+
+  /**
+   * 适配后的分组好友（兼容旧组件）
+   */
+  const adaptedFriendsByCategory = computed(() => {
+    const map = new Map<string | null, FriendItem[]>()
+    map.set(null, []) // 未分组
+
+    // 初始化所有分组
+    for (const cat of categories.value) {
+      map.set(cat.id, [])
+    }
+
+    // 分组好友并转换类型
+    for (const friend of friends.value) {
+      const adapted = adaptFriendToFriendItem(friend)
+      const key = friend.category_id || null
+      const group = map.get(key) || []
+      group.push(adapted)
+      map.set(key, group)
+    }
+
+    return map
+  })
 
   // ==================== 辅助方法 ====================
 
@@ -504,21 +573,100 @@ export const useFriendsSDKStore = defineStore('friendsSDK', () => {
     await initialize()
   }
 
+  // ==================== 兼容层方法 ====================
+
+  /**
+   * @deprecated 使用 refresh() 代替
+   * 刷新所有数据（向后兼容方法）
+   */
+  async function refreshAll(): Promise<void> {
+    await refresh()
+  }
+
+  /**
+   * @deprecated 使用 sendFriendRequest() 代替
+   * 发送好友请求（向后兼容方法）
+   */
+  async function request(target_id: string, message?: string, category_id?: string): Promise<string> {
+    return await sendFriendRequest(target_id, { message, categoryId: category_id })
+  }
+
+  /**
+   * @deprecated 使用 acceptFriendRequest() 代替
+   * 接受好友请求（向后兼容方法）
+   */
+  async function accept(request_id: string, category_id?: string): Promise<{ requester_id: string; dm_room_id?: string }> {
+    return await acceptFriendRequest(request_id, { categoryId: category_id })
+  }
+
+  /**
+   * @deprecated 使用 rejectFriendRequest() 代替
+   * 拒绝好友请求（向后兼容方法）
+   */
+  async function reject(request_id: string): Promise<void> {
+    await rejectFriendRequest(request_id)
+  }
+
+  /**
+   * 检查用户是否为好友
+   */
+  function isFriend(userId: string): boolean {
+    if (!userId) return false
+    return friends.value.some((friend) => friend.user_id === userId)
+  }
+
+  /**
+   * 根据用户 ID 获取好友信息
+   */
+  function getFriend(userId: string): FriendWithProfile | undefined {
+    if (!userId) return undefined
+    return friends.value.find((friend) => friend.user_id === userId)
+  }
+
+  // ==================== Friends V2 兼容层方法 ====================
+
+  /**
+   * @deprecated 使用 request() 或 sendFriendRequest() 代替
+   * 发送好友请求（friendsV2 兼容方法）
+   */
+  async function sendRequest(targetId: string, message?: string, categoryId?: string | number): Promise<string> {
+    const categoryIdStr = categoryId !== undefined ? String(categoryId) : undefined
+    return await request(targetId, message, categoryIdStr)
+  }
+
+  /**
+   * @deprecated 使用 accept() 或 acceptFriendRequest() 代替
+   * 接受好友请求（friendsV2 兼容方法）
+   */
+  async function acceptRequest(requestId: string, categoryId?: string | number): Promise<void> {
+    const categoryIdStr = categoryId !== undefined ? String(categoryId) : undefined
+    await accept(requestId, categoryIdStr)
+  }
+
+  /**
+   * @deprecated 使用 reject() 或 rejectFriendRequest() 代替
+   * 拒绝好友请求（friendsV2 兼容方法）
+   */
+  async function rejectRequest(requestId: string): Promise<void> {
+    await reject(requestId)
+  }
+
   // ==================== 返回 ====================
 
   return {
-    // 状态
+    // 状态（使用适配后的数据，向后兼容）
     loading,
     error,
-    friends,
+    friends: adaptedFriends, // 覆盖：返回适配后的数据
     categories,
     pendingRequests,
+    pending: pendingRequests, // 向后兼容别名
     blockedUsers,
     stats,
     initialized,
 
-    // 计算属性
-    friendsByCategory,
+    // 计算属性（使用适配后的数据，向后兼容）
+    friendsByCategory: adaptedFriendsByCategory, // 覆盖：返回适配后的数据
     onlineFriendsCount,
     pendingCount,
     totalFriendsCount,
@@ -556,6 +704,30 @@ export const useFriendsSDKStore = defineStore('friendsSDK', () => {
 
     // 清理操作
     reset,
-    refresh
+    refresh,
+
+    // 兼容层方法（向后兼容）
+    refreshAll,
+    request,
+    accept,
+    reject,
+    isFriend,
+    getFriend,
+    // Friends V2 兼容层方法
+    sendRequest,
+    acceptRequest,
+    rejectRequest
   }
 })
+
+/**
+ * @deprecated 使用 useFriendsSDKStore 代替
+ * 向后兼容性别名，允许组件从旧 API 迁移
+ */
+export const useFriendsStore = useFriendsSDKStore
+
+/**
+ * @deprecated 使用 useFriendsSDKStore 代替
+ * Friends V2 兼容性别名，允许从 friendsV2 迁移
+ */
+export const useFriendsStoreV2 = useFriendsSDKStore

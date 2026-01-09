@@ -808,23 +808,20 @@ onMounted(() => {
 const showConnectionIndicator = computed(() => {
   if (chatStore.syncLoading) return true
   if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return true
-  if (flags.matrixEnabled && matrixStore.syncState === 'ERROR') return true
+  if (matrixStore.syncState === 'ERROR') return true
   return false
 })
 
 const connectionIndicatorState = computed(() => {
-  if (chatStore.syncLoading || (flags.matrixEnabled && matrixStore.isSyncing)) return 'SYNCING'
+  if (chatStore.syncLoading || matrixStore.isSyncing) return 'SYNCING'
   if (wsConnectionState.value && wsConnectionState.value !== 'CONNECTED') return 'DISCONNECTED'
-  if (flags.matrixEnabled && matrixStore.syncState === 'ERROR') return 'DISCONNECTED'
+  if (matrixStore.syncState === 'ERROR') return 'DISCONNECTED'
   return 'CONNECTED'
 })
 
 const connectionIndicatorText = computed(() => {
   const ws = wsConnectionState.value || 'UNKNOWN'
-  if (flags.matrixEnabled) {
-    return `WS:${ws} · Matrix:${matrixStore.syncState}`
-  }
-  return `WS:${ws}`
+  return `WS:${ws} · Matrix:${matrixStore.syncState}`
 })
 </script>
 <style lang="scss">

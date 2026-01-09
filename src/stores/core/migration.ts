@@ -171,7 +171,12 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
             deviceId: authData.deviceId,
             userId: authData.userId,
             homeserver: authData.homeserver,
-            loginHistory: authData.loginHistory || []
+            // 转换 loginHistory: { timestamp, userId } -> { timestamp, deviceId }
+            loginHistory:
+              authData.loginHistory?.map((entry) => ({
+                timestamp: entry.timestamp,
+                deviceId: entry.userId // 迁移：将 userId 作为 deviceId
+              })) || []
           }
         }
         break
@@ -182,9 +187,9 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
         if (userData.profile) {
           appStore.currentUser = {
             userId: userData.userId,
-            displayName: userData.profile.displayName,
-            avatarUrl: userData.profile.avatarUrl,
-            presence: userData.profile.presence || 'offline',
+            displayName: userData.profile.displayName || '',
+            avatarUrl: userData.profile.avatarUrl || '',
+            presence: (userData.profile.presence || 'offline') as 'offline' | 'online' | 'away' | 'busy',
             lastActive: userData.lastActive
           }
         }
@@ -193,7 +198,9 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
 
       case 'friends': {
         const friendsData = data as FriendsData
-        appStore.friends = friendsData.friends || []
+        // 转换好友列表：(string | { userId: string })[] -> string[]
+        appStore.friends =
+          friendsData.friends?.map((f) => (typeof f === 'string' ? f : f.userId || '')) || []
         break
       }
 
@@ -243,10 +250,18 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
         const searchData = data as SearchData
         appStore.search = {
           query: searchData.query || '',
-          results: searchData.results || [],
+          results: (searchData.results as {
+            id: string
+            type: 'message' | 'user' | 'room'
+            title: string
+            content: string
+            roomId: string
+            timestamp: number
+            highlights?: string[]
+          }[]) || [],
           filters: searchData.filters || {},
           loading: searchData.loading || false,
-          history: searchData.history || []
+          history: (searchData.history as string[]) || []
         }
         break
       }
@@ -254,17 +269,20 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
       case 'settings': {
         const settingsData = data as SettingsData
         appStore.settings = {
-          theme: settingsData.theme || 'auto',
+          theme: (settingsData.theme || 'auto') as 'light' | 'dark' | 'auto',
           language: settingsData.language || 'zh-CN',
-          fontSize: settingsData.fontSize || 'medium',
-          messageDensity: settingsData.messageDensity || 'comfortable',
+          fontSize: (settingsData.fontSize || 'medium') as 'small' | 'medium' | 'large',
+          messageDensity: (settingsData.messageDensity || 'comfortable') as
+            | 'compact'
+            | 'comfortable'
+            | 'spacious',
           autoPlayGifs: settingsData.autoPlayGifs !== false,
           showReadReceipts: settingsData.showReadReceipts !== false,
           showTypingNotifications: settingsData.showTypingNotifications !== false,
           enableEncryption: settingsData.enableEncryption !== false,
-          backupFrequency: settingsData.backupFrequency || 'weekly',
-          cache: settingsData.cache || appStore.cacheSettings,
-          notifications: settingsData.notifications || appStore.notifications
+          backupFrequency: (settingsData.backupFrequency || 'weekly') as 'daily' | 'weekly' | 'monthly',
+          cache: ((settingsData.cache || appStore.cacheSettings) as unknown) as import('./types').CacheSettings,
+          notifications: ((settingsData.notifications || appStore.notifications) as unknown) as import('./types').NotificationSettings
         }
         break
       }
@@ -272,13 +290,13 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
       case 'pushRules': {
         const pushRulesData = data as PushRulesData
         appStore.notifications = {
-          global: pushRulesData.global || {
-            enabled: true,
-            soundEnabled: true,
-            doNotDisturb: false
+          global: {
+            enabled: pushRulesData.global?.enabled ?? true,
+            soundEnabled: pushRulesData.global?.soundEnabled ?? true,
+            doNotDisturb: pushRulesData.global?.doNotDisturb ?? false
           },
-          room: pushRulesData.room || {},
-          rules: pushRulesData.rules || []
+          room: (pushRulesData.room as Record<string, { enabled: boolean; mentionsOnly: boolean; keywords: string[] }>) || {},
+          rules: (pushRulesData.rules as import('./types').NotificationRule[]) || []
         }
         break
       }

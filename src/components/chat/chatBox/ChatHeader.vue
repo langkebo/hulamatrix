@@ -714,7 +714,7 @@ const shouldShowDeleteFriend = computed(() => {
   const session = currentSession.value
   if (!session || session.type === RoomTypeEnum.GROUP) return false
   try {
-    const friendsStore = require('@/stores/friends').useFriendsStore()
+    const friendsStore = require('@/stores/friendsSDK').useFriendsStore()
     return (friendsStore.friends || []).some((f: FriendItem) => String(f.user_id) === String(session.detailId))
   } catch {
     return false
@@ -1064,7 +1064,7 @@ const handleConfirm = async () => {
     try {
       // 使用 Matrix SDK 删除好友
       await friendsServiceV2.removeFriend(targetDetailId)
-      await require('@/stores/friends').useFriendsStore().refreshAll()
+      await require('@/stores/friendsSDK').useFriendsStore().refreshAll()
       useMitt.emit(MittEnum.DELETE_SESSION, targetRoomId)
       msg.success(t('home.chat_header.toast.delete_friend_success'))
       modalShow.value = false

@@ -94,13 +94,6 @@ export interface MessageStrategy {
     userUid: Ref<string | number | undefined>
   ) => MessageType
   uploadFile?: (path: string, options?: { provider?: UploadProviderEnum }) => Promise<UploadResult>
-  doUpload?: (path: string, uploadUrl: string, options?: UploadConfig) => Promise<QiniuUploadResult | void>
-  uploadThumbnail?: (thumbnailFile: File, options?: { provider?: UploadProviderEnum }) => Promise<UploadResult>
-  doUploadThumbnail?: (
-    thumbnailFile: File,
-    uploadUrl: string,
-    options?: UploadConfig
-  ) => Promise<QiniuUploadResult | void>
   getUploadProgress?: () => UploadProgressInfo
 }
 
@@ -166,13 +159,6 @@ export abstract class AbstractMessageStrategy implements MessageStrategy {
 
   uploadFile?(path: string, options?: { provider?: UploadProviderEnum }): Promise<UploadResult> {
     void path
-    void options
-    throw new AppException('该消息类型不支持文件上传')
-  }
-
-  doUpload?(path: string, uploadUrl: string, options?: UploadConfig): Promise<QiniuUploadResult | void> {
-    void path
-    void uploadUrl
     void options
     throw new AppException('该消息类型不支持文件上传')
   }

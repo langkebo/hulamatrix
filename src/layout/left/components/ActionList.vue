@@ -255,7 +255,7 @@
           </template>
           <div class="setting-item">
             <div class="menu-list">
-              <div v-for="item in moreList" :key="item.icon">
+              <div v-for="(item, index) in moreList" :key="`more-${index}`">
                 <div class="menu-item" @click="() => item.click()">
                   <svg>
                     <use :href="`#${item.icon}`"></use>

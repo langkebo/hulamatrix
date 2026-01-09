@@ -239,7 +239,6 @@ import { useRoomStore } from '@/stores/room'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { logger } from '@/utils/logger'
 import { useAnnouncementStore } from '@/stores/announcement'
 
@@ -423,25 +422,39 @@ const onClickMember = async (item: UserItem) => {
   selectKey.value = item.uid
 
   // 获取用户的最新数据，并更新 pinia
-  requestWithFallback({
-    url: 'get_user_by_ids',
-    params: { uids: [item.uid] }
-  }).then((users) => {
-    const userList = users as { name?: string; avatar?: string }[] | undefined
-    if (userList && userList.length > 0) {
-      const firstUser = userList[0]
-      if (!firstUser) return
-      // Build update object with only defined properties
-      const updateData: { displayName?: string; avatarUrl?: string } = {}
-      if (firstUser.name !== undefined) {
-        updateData.displayName = firstUser.name
-      }
-      if (firstUser.avatar !== undefined) {
-        updateData.avatarUrl = firstUser.avatar
-      }
-      roomStore.updateMember(globalStore.currentSessionRoomId, item.uid, updateData)
+  // 使用 Matrix SDK 的 getProfileInfo 方法
+  try {
+    const { matrixClientService } = await import('@/integrations/matrix/client')
+    const client = matrixClientService.getClient()
+    if (!client) {
+      logger.warn('[ChatSidebar] Matrix client 未初始化，无法获取用户信息')
+      return
     }
-  })
+
+    const getProfileInfoMethod = client.getProfileInfo as
+      | ((userId: string) => Promise<{ displayname?: string; avatar_url?: string }>)
+      | undefined
+
+    if (!getProfileInfoMethod) {
+      logger.warn('[ChatSidebar] getProfileInfo 方法不可用')
+      return
+    }
+
+    const profile = await getProfileInfoMethod(item.uid)
+
+    // Build update object with only defined properties
+    const updateData: { displayName?: string; avatarUrl?: string } = {}
+    if (profile?.displayname !== undefined) {
+      updateData.displayName = profile.displayname
+    }
+    if (profile?.avatar_url !== undefined) {
+      updateData.avatarUrl = profile.avatar_url
+    }
+
+    roomStore.updateMember(globalStore.currentSessionRoomId, item.uid, updateData)
+  } catch (error) {
+    logger.error('[ChatSidebar] 获取用户信息失败:', error)
+  }
 }
 
 // 监听成员源列表变化

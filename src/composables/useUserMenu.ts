@@ -45,9 +45,6 @@ export interface UserMenuResult {
   closeMenu: () => void
   toggleMenu: () => void
   handleMenuItem: (itemId: string) => Promise<void>
-
-  // Utilities
-  refreshUserInfo: () => Promise<void>
 }
 
 /**
@@ -240,17 +237,8 @@ export function useUserMenu(options: UserMenuOptions = {}): UserMenuResult {
     }
   }
 
-  /**
-   * Refresh user information
-   */
-  const refreshUserInfo = async (): Promise<void> => {
-    try {
-      await userStore.getUserDetailAction()
-      logger.info('[useUserMenu] User info refreshed')
-    } catch (error) {
-      logger.error('[useUserMenu] Failed to refresh user info', error)
-    }
-  }
+  // refreshUserInfo 已移除 - Matrix 用户信息会自动同步
+  // 用户刷新功能已不再需要，因为 Matrix 客户端会自动更新用户信息
 
   return {
     // State
@@ -265,10 +253,9 @@ export function useUserMenu(options: UserMenuOptions = {}): UserMenuResult {
     openMenu,
     closeMenu,
     toggleMenu,
-    handleMenuItem,
+    handleMenuItem
 
-    // Utilities
-    refreshUserInfo
+    // refreshUserInfo 已移除
   }
 }
 

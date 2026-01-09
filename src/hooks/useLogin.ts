@@ -260,14 +260,8 @@ export const useLogin = () => {
     globalStore.updateCurrentSessionRoomId('')
     // WebSocket 已废弃，使用 Matrix SDK 同步
 
-    // 获取用户详细信息
-    try {
-      await userStore.getUserDetailAction()
-      logger.info('[useLogin] 用户信息加载成功')
-    } catch (error) {
-      logger.warn('[useLogin] 用户信息加载失败，使用默认值:', error)
-      // 保留现有的 userInfo 作为后备
-    }
+    // 用户详细信息已在 auth-state.ts 的 loadCurrentUser() 中设置
+    // 老后端的 get_user_info API 已不再使用
 
     // 用户相关数据初始化（带健壮性保护）
     userStatusStore.stateList = []

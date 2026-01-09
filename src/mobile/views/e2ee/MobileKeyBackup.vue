@@ -313,7 +313,7 @@ const backupMethod = ref<'passphrase' | 'recoveryKey'>('recoveryKey')
 const passphrase = ref('')
 
 // Computed
-const e2eeEnabled = computed(() => flags.matrixE2eeEnabled && flags.matrixEnabled)
+const e2eeEnabled = computed(() => flags.matrixE2eeEnabled )
 
 const statusTitle = computed(() => {
   switch (backupStatus.value) {

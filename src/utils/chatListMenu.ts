@@ -16,7 +16,6 @@ import { useRoomStore } from '@/stores/room'
 import { msg } from './SafeUI'
 import { sdkSetSessionTop } from '@/services/rooms'
 import { muteRoom, unmuteRoom } from '@/integrations/matrix/pusher'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { hiddenSessions } from './HiddenSessions'
 import { logger } from '@/utils/logger'
 
@@ -164,19 +163,10 @@ export function createNotificationMenuItem(): SessionMenuItem {
 async function handleNotificationChange(item: SessionItem, newType: NotificationTypeEnum) {
   const chatStore = useChatStore()
 
-  try {
-    await requestWithFallback({
-      url: 'notification',
-      body: {
-        roomId: item.roomId,
-        type: newType
-      }
-    })
-  } catch (error) {
-    logger.warn('[handleNotificationChange] Failed to update notification on server:', error)
-  }
+  // notification API 已移除 - Matrix 通知偏好设置通过本地状态管理
+  // Matrix Push Rules 在服务器端处理通知规则
 
-  // 无论服务器是否成功，都更新本地状态
+  // 更新本地状态
   chatStore.updateSession(item.roomId, {
     muteNotification: newType
   })
@@ -329,11 +319,8 @@ export function createDeleteFriendMenuItem(): SessionMenuItem {
     click: async (item: SessionItem) => {
       // Direct chat: delete friend
       if (item.type === RoomTypeEnum.SINGLE) {
-        await requestWithFallback({
-          url: 'delete_friend',
-          body: { targetUid: item.detailId }
-        })
-        await import('@/stores/friends').then((m) => m.useFriendsStore().refreshAll())
+        // delete_friend API 已移除 - Matrix 删除好友功能待实现
+        // 目前仅删除本地会话
         await handleMsgDelete(item.roomId)
         msg.success('已删除好友')
         return

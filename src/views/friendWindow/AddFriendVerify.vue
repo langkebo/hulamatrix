@@ -54,9 +54,8 @@ import { useCommon } from '@/hooks/useCommon'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { useGroupStore } from '@/stores/group'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsSDK'
 import { useI18n } from 'vue-i18n'
 
 import { msg } from '@/utils/SafeUI'
@@ -90,24 +89,9 @@ const addFriend = async () => {
   try {
     const targetUid = globalStore.addFriendModalInfo.uid as string
 
-    // 检查是否是 Matrix 用户 ID（格式：@username:server）
-    const isMatrixUser = targetUid.startsWith('@')
-
-    if (isMatrixUser) {
-      // 使用 Matrix Friends API 发送好友请求
-      logger.info('[AddFriendVerify] Sending Matrix friend request', { targetUid })
-      await friendsStore.request(targetUid, requestMsg.value)
-    } else {
-      // 使用旧的接口发送好友请求（fallback）
-      logger.info('[AddFriendVerify] Sending legacy friend request', { targetUid })
-      await requestWithFallback({
-        url: 'send_add_friend_request',
-        body: {
-          msg: requestMsg.value,
-          targetUid
-        }
-      })
-    }
+    // 使用 Matrix Friends API 发送好友请求
+    logger.info('[AddFriendVerify] Sending friend request', { targetUid })
+    await friendsStore.request(targetUid, requestMsg.value)
 
     msg.success(t('message.friend_verify.toast_success'))
     setTimeout(async () => {

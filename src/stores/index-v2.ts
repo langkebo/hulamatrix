@@ -3,5 +3,4 @@
  * 导出所有 v2.0 Store
  */
 
-export { useFriendsStoreV2 } from './friendsV2'
-export { usePrivateChatStoreV2 } from './privateChatV2'
+export { useFriendsStoreV2, useFriendsStore } from './friendsSDK'

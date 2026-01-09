@@ -218,7 +218,7 @@
 // Category option type for select component
 interface CategoryOption {
   label: string
-  value: number | -1 // Use -1 instead of null for "no category"
+  value: string | 'none' // Use 'none' instead of null for "no category"
 }
 
 import { ref, computed, onMounted, h } from 'vue'
@@ -248,8 +248,8 @@ import {
   type FormRules,
   type FormInst
 } from 'naive-ui'
-import { useFriendsStoreV2 } from '@/stores/friendsV2'
-import type { FriendItem, FriendCategoryItem, PendingRequestItem } from '@/types/matrix-sdk-v2'
+import { useFriendsStoreV2 } from '@/stores/friendsSDK'
+import type { FriendItem, CategoryItem, PendingItem } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 import { checkAppReady, withAppCheck, handleAppError, AppErrorType } from '@/utils/appErrorHandler'
 import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
@@ -264,7 +264,7 @@ const friendsStore = useFriendsStoreV2()
 
 // 状态
 const searchQuery = ref('')
-const selectedCategoryId = ref<number | null>(null)
+const selectedCategoryId = ref<string | null>(null)
 
 // 对话框状态
 const showAddFriendDialog = ref(false)
@@ -275,7 +275,7 @@ const addFriendFormRef = ref<FormInst>()
 const addFriendForm = ref({
   userId: '',
   message: '',
-  categoryId: null as number | null
+  categoryId: null as string | null
 })
 
 // 表单验证规则
@@ -295,8 +295,11 @@ const filteredFriends = computed(() => {
   // 按搜索关键词过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(
-      (f: FriendItem) => (f.display_name || '').toLowerCase().includes(query) || f.user_id.toLowerCase().includes(query)
+    result = result.filter((f: FriendItem) =>
+      f.user_id && (
+        (f.display_name || '').toLowerCase().includes(query) ||
+        f.user_id.toLowerCase().includes(query)
+      )
     )
   }
 
@@ -304,8 +307,8 @@ const filteredFriends = computed(() => {
 })
 
 const categoryOptions = computed(() => [
-  { label: '无分类', value: -1, type: null },
-  ...friendsStore.categories.map((cat: FriendCategoryItem) => ({ label: cat.name, value: cat.id, type: null }))
+  { label: '无分类', value: 'none' },
+  ...friendsStore.categories.map((cat) => ({ label: cat.name, value: cat.id }))
 ])
 
 const categoryMenuOptions = computed(() => [
@@ -316,7 +319,7 @@ const categoryMenuOptions = computed(() => [
 ])
 
 // 方法
-const getCategoryFriendCount = (categoryId: number) => {
+const getCategoryFriendCount = (categoryId: string) => {
   return friendsStore.friends.filter((f: FriendItem) => f.category_id === categoryId).length
 }
 
@@ -324,7 +327,7 @@ const handleSearch = () => {
   // 搜索由计算属性自动处理
 }
 
-const handleSelectCategory = (categoryId: number | null) => {
+const handleSelectCategory = (categoryId: string | null) => {
   selectedCategoryId.value = categoryId
 }
 
@@ -346,17 +349,23 @@ const handleFriendClick = (friend: FriendItem) => {
 const handleFriendAction = async (key: string, friend: FriendItem) => {
   switch (key) {
     case 'chat':
-      router.push({ path: '/private-chat', query: { userId: friend.user_id } })
+      if (friend.user_id) {
+        router.push({ path: '/private-chat', query: { userId: friend.user_id } })
+      }
       break
     case 'remove':
+      if (!friend.user_id) {
+        message.error('无效的好友ID')
+        return
+      }
       dialog.warning({
         title: t('friends.remove.confirm_title'),
-        content: t('friends.remove.confirm_content', { name: friend.display_name || friend.user_id }),
+        content: t('friends.remove.confirm_content', { name: friend.display_name || friend.user_id || '' }),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
           try {
-            await friendsStore.removeFriend(friend.user_id)
+            await friendsStore.removeFriend(friend.user_id!)
             message.success(t('friends.remove.success'))
           } catch (error) {
             message.error(t('friends.remove.failed'))
@@ -375,9 +384,9 @@ const getFriendActions = (_friend: FriendItem) => {
   ]
 }
 
-const handleAcceptRequest = async (request: PendingRequestItem) => {
+const handleAcceptRequest = async (request: PendingItem) => {
   try {
-    await friendsStore.acceptRequest(request.id, 1) // 默认分类 ID 为 1
+    await friendsStore.acceptRequest(request.id) // 使用 SDK 默认分类
     message.success(t('friends.requests.accepted'))
   } catch (error) {
     message.error(t('friends.requests.error'))
@@ -385,7 +394,7 @@ const handleAcceptRequest = async (request: PendingRequestItem) => {
   }
 }
 
-const handleRejectRequest = async (request: PendingRequestItem) => {
+const handleRejectRequest = async (request: PendingItem) => {
   try {
     await friendsStore.rejectRequest(request.id)
     message.success(t('friends.requests.rejected'))

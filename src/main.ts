@@ -509,7 +509,7 @@ app.config.errorHandler = (err, instance, info) => {
   }
 }
 
-if (flags.matrixEnabled) {
+if (true) {
   try {
     const { useMatrixAuthStore } = await import('@/stores/matrixAuth')
     const auth = useMatrixAuthStore()
@@ -534,7 +534,7 @@ if (flags.matrixEnabled) {
   }
 }
 
-if (flags.matrixEnabled && import.meta.env.VITE_MATRIX_DEV_SYNC === 'true') {
+if (import.meta.env.VITE_MATRIX_DEV_SYNC === 'true') {
   import('@/hooks/useMatrixDevSync').then((m) => m.useMatrixDevSync())
 }
 // Register service worker (web-only, not in Tauri)

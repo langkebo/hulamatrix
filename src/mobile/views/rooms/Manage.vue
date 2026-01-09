@@ -188,7 +188,7 @@ const applyAll = async () => {
   await setRoomTopic(roomId.value, topic.value)
   await setJoinRule(roomId.value, joinRule.value)
   await setHistoryVisibility(roomId.value, historyVisibility.value)
-  if (flags.matrixE2eeEnabled && flags.matrixEnabled) {
+  if (flags.matrixE2eeEnabled) {
     try {
       await setEncryption(roomId.value, encryption.value)
     } catch {

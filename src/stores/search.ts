@@ -130,7 +130,7 @@ export const useSearchStore = defineStore('search', () => {
 
   // 搜索方法
   const search = async (searchQuery: string, options: Partial<ExtendedSearchOptions> = {}) => {
-    if (!flags.matrixSearchEnabled || !flags.matrixEnabled) return
+    if (!flags.matrixSearchEnabled ) return
 
     // 防抖处理
     if (searchQuery === state.value.query && state.value.loading) return

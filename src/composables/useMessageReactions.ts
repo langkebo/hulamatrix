@@ -113,7 +113,7 @@ export function useMessageReactions(options: MessageReactionsOptions): MessageRe
 
   // Fetch reactions for a message
   const fetchReactions = async (messageId?: string): Promise<void> => {
-    if (!flags.matrixReactionsEnabled || !flags.matrixEnabled) return
+    if (!flags.matrixReactionsEnabled ) return
 
     const eventId = messageId || getEventId()
     if (!eventId) return

@@ -7,8 +7,6 @@ import { useWindow } from '../hooks/useWindow'
 import { useLoginHistoriesStore } from '../stores/loginHistory'
 import { useSettingStore } from '../stores/setting'
 import { useUserStore } from '../stores/user'
-import { useUserStatusStore } from '../stores/userStatus'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { getEnhancedFingerprint } from './fingerprint'
 import { ensureAppStateReady } from '@/utils/AppStateReady'
 import type { UserInfoType } from './types'
@@ -19,29 +17,6 @@ interface LoginResponse {
   token: string
   refreshToken: string
   client: string
-}
-
-/** 扩展的用户信息接口，包含可选属性 */
-interface UserInfoTypeExtended extends UserInfoType {
-  power?: number
-  phone?: string
-  wearingItemId?: string
-  itemIds?: string[]
-}
-
-/** 用户详情响应接口 */
-interface UserDetailResponse {
-  userStateId: string | number
-  uid?: string | number
-  account?: string | number
-  email?: string
-  avatar?: string
-  nickname?: string
-  name?: string
-  signature?: string
-  sex?: string | number
-  birthday?: string
-  [key: string]: unknown
 }
 
 export type Settings = {
@@ -122,67 +97,34 @@ export const loginCommand = async (
 }
 
 const loginProcess = async (_token: string, _refreshToken: string, client: string) => {
-  const userStatusStore = useUserStatusStore()
-  const userStore = useUserStore()
   const loginHistoriesStore = useLoginHistoriesStore()
+  const userStore = useUserStore()
   const { setLoginState } = useLogin()
 
-  userStatusStore.stateList = (await requestWithFallback({ url: 'get_all_user_state' })) as {
-    bgColor?: string
-    id: string
-    title: string
-    url: string
-  }[]
+  // get_all_user_state 和 get_user_info API 已移除
+  // 用户状态和用户信息现在通过 Matrix SDK 和 auth-state.ts 处理
+  // Matrix Presence API 在 matrix-client.ts 中处理用户状态
+  // 用户详细信息在 auth-state.ts 的 loadCurrentUser() 中设置
 
-  const userDetail: UserDetailResponse = (await requestWithFallback({ url: 'get_user_info' })) as UserDetailResponse
-  userStatusStore.stateId = String(userDetail.userStateId)
-
-  // Create the account object without the optional power property
+  // 创建基本用户对象（将在 auth-state.ts 中填充完整信息）
   const account: UserInfoType = {
-    uid: String(userDetail.uid || userDetail.userStateId || ''),
-    account: String(userDetail.account || userDetail.uid || userDetail.userStateId || ''),
-    email: String(userDetail.email || ''),
-    avatar: String(userDetail.avatar || ''),
-    name: String(userDetail.nickname || userDetail.name || ''),
+    uid: '',
+    account: '',
+    email: '',
+    avatar: '',
+    name: '',
     password: '',
     modifyNameChance: 0,
-    sex: (userDetail.sex as SexEnum) || SexEnum.MAN,
-    userStateId: String(userDetail.userStateId || ''),
+    sex: SexEnum.MAN,
+    userStateId: '',
     avatarUpdateTime: Date.now(),
     client,
-    resume: String(userDetail.signature || '')
+    resume: ''
   }
 
-  // Add optional properties separately to avoid exactOptionalPropertyTypes issues
-  const accountExtended = account as UserInfoTypeExtended
-  if (userDetail.power !== undefined && userDetail.power !== null) {
-    accountExtended.power = Number(userDetail.power)
-  }
-  if (userDetail.phone) {
-    accountExtended.phone = String(userDetail.phone)
-  }
-  if (userDetail.wearingItemId) {
-    accountExtended.wearingItemId = String(userDetail.wearingItemId)
-  }
-  if (userDetail.itemIds) {
-    accountExtended.itemIds = userDetail.itemIds as string[]
-  }
   userStore.userInfo = account
 
   loginHistoriesStore.addLoginHistory(account)
-
-  // SAVE_USER_INFO 命令已在 Phase 4 清理时移除
-  // 用户信息现在通过 Pinia store 持久化存储
-  // await invokeWithErrorHandler(
-  //   TauriCommand.SAVE_USER_INFO,
-  //   {
-  //     userInfo: userDetail
-  //   },
-  //   {
-  //     customErrorMessage: '保存用户信息失败',
-  //     errorType: ErrorType.Client
-  //   }
-  // )
 
   await setLoginState()
   await openHomeWindow()

@@ -229,8 +229,7 @@ import { useMyRoomInfoUpdater } from '@/hooks/useMyRoomInfoUpdater'
 import router from '@/router'
 import { useCachedStore } from '@/stores/dataCache'
 import { useChatStore } from '@/stores/chat'
-import { useFriendsStore } from '@/stores/friends'
-import { useFriendsStoreV2 } from '@/stores/friendsV2'
+import { useFriendsStore, useFriendsStoreV2 } from '@/stores/friendsSDK'
 import { useGlobalStore } from '@/stores/global'
 import { useRoomStore } from '@/stores/room'
 import { AvatarUtils } from '@/utils/AvatarUtils'
@@ -250,7 +249,7 @@ const globalStore = useGlobalStore()
 const roomStore = useRoomStore()
 const cacheStore = useCachedStore()
 const friendsStore = useFriendsStore()
-const friendsStoreV2 = useFriendsStoreV2()
+const friendsStoreV2 = useFriendsStoreV2() // compatibility alias from friendsSDK
 const { persistMyRoomInfo } = useMyRoomInfoUpdater()
 
 // 房间统计信息
@@ -292,7 +291,7 @@ const nicknameValue = ref('')
 const currentSession = computed(() => globalStore.currentSession)
 const friend = computed(() =>
   (friendsStore.friends || []).find(
-    (f: { user_id: string | number }) => String(f.user_id) === String(currentSession.value?.detailId)
+    (f: { user_id?: string }) => f.user_id && String(f.user_id) === String(currentSession.value?.detailId)
   )
 )
 

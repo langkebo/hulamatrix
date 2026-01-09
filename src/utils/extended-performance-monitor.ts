@@ -397,17 +397,14 @@ class ExtendedPerformanceMonitor {
 
       try {
         const isDev = !!(import.meta as ImportMetaWithEnv)?.env?.DEV
-        const matrixDisabled = !flags.matrixEnabled
 
         // 检查是否有有效的 Matrix 凭据
         const hasValidCredentials = this.hasValidMatrixCredentials()
 
         // 只在以下条件下启用 URL 重写：
         // 1. 开发环境
-        // 2. Matrix 已启用
-        // 3. 有有效的凭据（避免无凭据时的 ERR_ABORTED）
+        // 2. 有有效的凭据（避免无凭据时的 ERR_ABORTED）
         if (
-          !matrixDisabled &&
           isDev &&
           hasValidCredentials &&
           typeof urlStr === 'string' &&
@@ -418,7 +415,6 @@ class ExtendedPerformanceMonitor {
           args[0] = rel
           urlStr = rel
         } else if (
-          !matrixDisabled &&
           isDev &&
           hasValidCredentials &&
           typeof urlStr === 'string' &&
@@ -429,7 +425,6 @@ class ExtendedPerformanceMonitor {
           args[0] = rel
           urlStr = rel
         } else if (
-          !matrixDisabled &&
           isDev &&
           hasValidCredentials &&
           typeof Request !== 'undefined' &&
@@ -465,7 +460,7 @@ class ExtendedPerformanceMonitor {
         const duration = performance.now() - start
 
         // Track API response times
-        if (!!flags.matrixEnabled && typeof urlStr === 'string' && urlStr.includes('/_matrix/')) {
+        if (typeof urlStr === 'string' && urlStr.includes('/_matrix/')) {
           this.trackMetric('apiResponseTime', duration)
           if (duration > 1000) {
             logger.warn('[Performance] Slow API call:', { url: urlStr, duration })

@@ -55,8 +55,8 @@ import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewW
 import { useCommon } from '@/hooks/useCommon'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { requestWithFallback } from '@/utils/MatrixApiBridgeAdapter'
 import { useI18n } from 'vue-i18n'
+import { logger, toError } from '@/utils/logger'
 
 import { msg } from '@/utils/SafeUI'
 
@@ -75,19 +75,48 @@ watch(
   }
 )
 
+/**
+ * 申请加入群组
+ *
+ * @deprecated 原有 WebSocket API (apply_group) 已废弃
+ *
+ * Matrix 替代方案：
+ * 1. 如果房间是公开的：使用 joinRoom(roomId) 直接加入
+ * 2. 如果房间需要邀请：需要管理员邀请
+ * 3. 如果需要申请：发送房间消息申请加入，由管理员审核
+ *
+ * 当前实现：直接尝试加入房间，如果失败则提示用户联系管理员
+ */
 const addFriend = async () => {
-  await requestWithFallback({
-    url: 'apply_group',
-    body: {
-      msg: requestMsg.value,
-      account: String(globalStore.addGroupModalInfo.account),
-      type: 1
+  try {
+    const roomId = globalStore.addGroupModalInfo.roomId
+    if (!roomId) {
+      msg.error(t('message.group_verify.toast_error'))
+      return
     }
-  })
-  msg.success(t('message.group_verify.toast_success'))
-  setTimeout(async () => {
-    await getCurrentWebviewWindow().close()
-  }, 2000)
+
+    // 使用 Matrix rooms 模块的 joinRoom 加入房间
+    const { joinRoom: matrixJoinRoom } = await import('@/integrations/matrix/rooms')
+    await matrixJoinRoom(roomId)
+
+    // 如果有申请消息，可以作为欢迎消息发送
+    if (requestMsg.value.trim()) {
+      const { unifiedMessageService } = await import('@/services/unified-message-service')
+      await unifiedMessageService.sendMessage({
+        roomId,
+        type: 1, // TEXT
+        body: { text: requestMsg.value }
+      })
+    }
+
+    msg.success(t('message.group_verify.toast_success'))
+    setTimeout(async () => {
+      await getCurrentWebviewWindow().close()
+    }, 2000)
+  } catch (error) {
+    logger.error('加入群组失败:', toError(error))
+    msg.error(t('message.group_verify.toast_error'))
+  }
 }
 
 onMounted(async () => {
