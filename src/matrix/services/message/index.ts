@@ -4,7 +4,9 @@
  * Message handling and event processing
  */
 
+export * from './decrypt'
 export * from './event-handler'
+export * from './sync'
 
 // Re-export core message utilities
 export * from '@/matrix/core/messages'
