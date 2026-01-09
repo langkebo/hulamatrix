@@ -3,6 +3,8 @@
  * 实现下载优先级、并发控制和失败重试
  */
 
+import { LRUCache, createLRUCache } from './cache/lru'
+
 /** Download progress callback type */
 export type DownloadProgressCallback = (loaded: number, total: number) => void
 
@@ -299,68 +301,33 @@ export class DownloadQueue {
   }
 }
 
-/** 文件下载缓存 */
+/** 文件下载缓存 (uses common LRU implementation) */
 export class DownloadCache {
-  private cache = new Map<
-    string,
-    {
-      blob: Blob
-      timestamp: number
-      expires: number
-    }
-  >()
-  private maxSize: number
-  private defaultTTL: number
+  private cache: LRUCache<string, Blob>
 
   constructor(maxSize = 100, defaultTTL = 24 * 60 * 60 * 1000) {
     // 24小时
-    this.maxSize = maxSize
-    this.defaultTTL = defaultTTL
+    this.cache = createLRUCache<string, Blob>({
+      maxSize,
+      defaultTTL,
+      sizeCalculator: (blob) => blob.size,
+      cleanupInterval: 60 * 60 * 1000 // 1 hour
+    })
   }
 
   /** 添加到缓存 */
   set(key: string, blob: Blob, ttl?: number) {
-    // 清理过期缓存
-    this.cleanup()
-
-    // 如果缓存已满，删除最旧的
-    if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value as string | undefined
-      if (oldestKey) this.cache.delete(oldestKey)
-    }
-
-    this.cache.set(key, {
-      blob,
-      timestamp: Date.now(),
-      expires: Date.now() + (ttl || this.defaultTTL)
-    })
+    this.cache.set(key, blob, ttl)
   }
 
   /** 从缓存获取 */
   get(key: string): Blob | null {
-    const item = this.cache.get(key)
-    if (!item) return null
-
-    // 检查是否过期
-    if (Date.now() > item.expires) {
-      this.cache.delete(key)
-      return null
-    }
-
-    // 更新访问时间（LRU）
-    const { blob, expires } = item
-    this.cache.set(key, {
-      blob,
-      timestamp: Date.now(),
-      expires
-    })
-
-    return blob
+    return this.cache.get(key)
   }
 
   /** 检查是否存在 */
   has(key: string): boolean {
-    return this.get(key) !== null
+    return this.cache.has(key)
   }
 
   /** 删除缓存 */
@@ -370,12 +337,7 @@ export class DownloadCache {
 
   /** 清理过期缓存 */
   cleanup() {
-    const now = Date.now()
-    for (const [key, item] of this.cache.entries()) {
-      if (now > item.expires) {
-        this.cache.delete(key)
-      }
-    }
+    return this.cache.cleanup()
   }
 
   /** 清空缓存 */
@@ -390,20 +352,12 @@ export class DownloadCache {
 
   /** 获取缓存统计 */
   getStats() {
+    const stats = this.cache.getStats()
     return {
-      size: this.cache.size,
-      maxSize: this.maxSize,
-      memoryUsage: this.calculateMemoryUsage()
+      size: stats.size,
+      maxSize: stats.maxSize,
+      memoryUsage: stats.memoryUsage
     }
-  }
-
-  /** 计算内存使用量 */
-  private calculateMemoryUsage(): number {
-    let total = 0
-    for (const { blob } of this.cache.values()) {
-      total += blob.size
-    }
-    return total
   }
 }
 

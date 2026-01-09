@@ -51,16 +51,7 @@ export const useAppStore = defineStore('app', () => {
   const callState = new CallStateManager()
 
   // Cache management
-  const cacheState = new CacheStateManager(
-    () => roomState.messages.value,
-    () => roomState.rooms.value,
-    (messages) => {
-      roomState.messages.value = messages
-    },
-    (rooms) => {
-      roomState.rooms.value = rooms
-    }
-  )
+  const cacheState = new CacheStateManager(() => roomState.messages.value, () => roomState.rooms.value)
 
   // Settings and UI management
   const settingsState = new SettingsStateManager()

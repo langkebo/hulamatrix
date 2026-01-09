@@ -5,6 +5,7 @@
 
 import { ref, type Ref } from 'vue'
 import { logger } from '@/utils/logger'
+import { LRUList, createLRUList } from '@/utils/cache/lru'
 import type { CacheSettings, CacheMetrics, CacheClearOptions, ChatMessage, Room } from './types'
 import { MAX_RECENT_ROOMS } from './types'
 
@@ -19,7 +20,7 @@ export class CacheStateManager {
   cacheMetrics: Ref<CacheMetrics>
 
   /** Recent rooms for LRU */
-  recentRooms: Ref<string[]>
+  recentRooms: LRUList<string>
 
   /** Current room ID */
   currentRoomId: Ref<string | null>
@@ -30,24 +31,14 @@ export class CacheStateManager {
   /** Rooms map reference */
   private getRooms: () => Map<string, Room>
 
-  /** Set messages function */
-  private setMessages: (messages: Map<string, ChatMessage[]>) => void
-
-  /** Set rooms function */
-  private setRooms: (rooms: Map<string, Room>) => void
-
   constructor(
     getMessages: () => Map<string, ChatMessage[]>,
-    getRooms: () => Map<string, Room>,
-    setMessages: (messages: Map<string, ChatMessage[]>) => void,
-    setRooms: (rooms: Map<string, Room>) => void
+    getRooms: () => Map<string, Room>
   ) {
     this.getMessages = getMessages
     this.getRooms = getRooms
-    this.setMessages = setMessages
-    this.setRooms = setRooms
     this.currentRoomId = ref<string | null>(null)
-    this.recentRooms = ref<string[]>([])
+    this.recentRooms = createLRUList<string>(MAX_RECENT_ROOMS)
     this.cacheSettings = ref<CacheSettings>({
       maxSize: 500,
       ttl: 24,
@@ -274,9 +265,10 @@ export class CacheStateManager {
       let itemsRemoved = 0
       const targetItems = Math.floor(maxSizeItems * 0.9)
 
-      // Clean up from least recently used rooms
-      for (let i = this.recentRooms.value.length - 1; i >= 0; i--) {
-        const roomId = this.recentRooms.value[i]
+      // Clean up from least recently used rooms (using LRUList)
+      const allRooms = this.recentRooms.getAll()
+      for (let i = allRooms.length - 1; i >= 0; i--) {
+        const roomId = allRooms[i]
 
         // Skip current room
         if (roomId === this.currentRoomId.value) continue
@@ -311,20 +303,8 @@ export class CacheStateManager {
    */
   updateRecentRoom(roomId: string): void {
     if (!roomId) return
-
-    // Remove existing
-    const index = this.recentRooms.value.indexOf(roomId)
-    if (index > -1) {
-      this.recentRooms.value.splice(index, 1)
-    }
-
-    // Add to beginning
-    this.recentRooms.value.unshift(roomId)
-
-    // Limit length
-    if (this.recentRooms.value.length > MAX_RECENT_ROOMS) {
-      this.recentRooms.value = this.recentRooms.value.slice(0, MAX_RECENT_ROOMS)
-    }
+    // LRUList handles adding and moving to front
+    this.recentRooms.touch(roomId)
   }
 
   /**
