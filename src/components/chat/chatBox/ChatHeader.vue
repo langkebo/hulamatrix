@@ -559,6 +559,10 @@ import { sdkSetSessionTop, sdkUpdateRoomName } from '@/services/rooms'
 import { flags } from '@/utils/envFlags'
 import { logger } from '@/utils/logger'
 
+// Composables
+import { useChatHeaderActions } from '@/composables/useChatHeaderActions'
+import { useChatHeaderSessionSettings } from '@/composables/useChatHeaderSessionSettings'
+
 const { t } = useI18n()
 const { createModalWindow, startRtcCall } = useWindow()
 // 使用useDisplayMedia获取屏幕共享的媒体流
@@ -579,6 +583,22 @@ const showQRCodeModal = ref(false)
 const showManageGroupMemberModal = ref(false)
 const currentSession = computed(() => globalStore.currentSession)
 const { persistMyRoomInfo, resolveMyRoomNickname } = useMyRoomInfoUpdater()
+
+// Initialize composables
+const headerActions = useChatHeaderActions({ currentSession })
+const sessionSettings = useChatHeaderSessionSettings({ currentSession })
+
+// Use composable's isChannel
+const isChannel = headerActions.isChannel
+
+// Destructure session settings functions for convenience
+const {
+  handleTop,
+  handleNotification,
+  handleShield,
+  handleMessageSetting,
+  deleteRoomMessages: deleteRoomMessagesFromSettings
+} = sessionSettings
 
 // 房间统计信息
 const { formattedStats } = useRoomStats()
@@ -608,10 +628,6 @@ const onlineCount = computed(() => {
   }
 })
 
-// 是否为频道（仅显示 more 按钮）
-const isChannel = computed(
-  () => currentSession.value?.hotFlag === IsAllUserEnum.Yes || currentSession.value?.roomId === '1'
-)
 // 是否为群主
 const isGroupOwner = computed(() => {
   if (currentSession.value?.type !== RoomTypeEnum.GROUP) return false
@@ -783,31 +799,7 @@ const handleCopy = () => {
 
 /** 处理创建群聊或邀请进群 */
 const handleCreateGroupOrInvite = () => {
-  const session = currentSession.value
-  if (!session) return
-  if (session.type === RoomTypeEnum.GROUP) {
-    handleInvite()
-  } else {
-    handleCreateGroup()
-  }
-}
-
-/** 处理创建群聊 */
-const handleCreateGroup = () => {
-  const session = currentSession.value
-  if (!session) return
-  useMitt.emit(MittEnum.CREATE_GROUP, { id: session.detailId })
-}
-
-/** 处理邀请进群 */
-const handleInvite = async () => {
-  const session = currentSession.value
-  if (!session) return
-  // 使用封装后的createModalWindow方法创建模态窗口，并传递当前会话的 roomId
-  await createModalWindow(t('home.chat_header.modal.invite_friends'), 'modal-invite', 600, 500, 'home', {
-    roomId: session.roomId,
-    type: session.type
-  })
+  headerActions.handleCreateGroupOrInvite()
 }
 
 /** 处理管理群成员 */
@@ -849,101 +841,11 @@ const saveGroupInfo = async () => {
 }
 
 const handleAssist = () => {
-  msg.warning(t('home.chat_header.toast.todo'))
+  headerActions.handleAssist()
 }
 
 const handleMedia = () => {
-  msg.warning(t('home.chat_header.toast.todo'))
-}
-
-/** 置顶 */
-const handleTop = async (value: boolean) => {
-  const session = currentSession.value
-  if (!session) return
-
-  try {
-    await sessionSettingsService.setSessionTop(session.roomId, value)
-    // 更新本地会话状态
-    chatStore.updateSession(session.roomId, { top: value })
-    msg.success(value ? t('home.chat_header.toast.pin_on') : t('home.chat_header.toast.pin_off'))
-  } catch (e) {
-    msg.error(t('home.chat_header.toast.pin_failed'))
-  }
-}
-
-/** 处理消息免打扰 */
-const handleNotification = async (value: boolean) => {
-  const session = currentSession.value
-  if (!session) return
-  const newMode = value ? 'not_disturb' : 'reception'
-  // 如果当前是屏蔽状态，需要先取消屏蔽
-  if (session.shield) {
-    await handleShield(false)
-  }
-  try {
-    // 使用 Matrix SDK 设置通知模式
-    await sessionSettingsService.setNotificationMode(session.roomId, newMode)
-    // 更新本地会话状态
-    const newType = value ? NotificationTypeEnum.NOT_DISTURB : NotificationTypeEnum.RECEPTION
-    chatStore.updateSession(session.roomId, {
-      muteNotification: newType
-    })
-
-    // 如果从免打扰切换到允许提醒，需要重新计算全局未读数
-    if (session.muteNotification === NotificationTypeEnum.NOT_DISTURB && newType === NotificationTypeEnum.RECEPTION) {
-      chatStore.updateTotalUnreadCount()
-    }
-
-    // 如果设置为免打扰，也需要更新全局未读数，因为该会话的未读数将不再计入
-    if (newType === NotificationTypeEnum.NOT_DISTURB) {
-      chatStore.updateTotalUnreadCount()
-    }
-
-    msg.success(value ? t('home.chat_header.toast.mute_on') : t('home.chat_header.toast.mute_off'))
-  } catch (error) {
-    msg.error(t('home.chat_header.toast.action_failed'))
-  }
-}
-
-/** 处理屏蔽消息 */
-const handleShield = async (value: boolean) => {
-  const session = currentSession.value
-  if (!session) return
-  try {
-    await sessionSettingsService.setSessionShield(session.roomId, value)
-    // 更新本地会话状态
-    chatStore.updateSession(session.roomId, {
-      shield: value
-    })
-
-    // 1. 先保存当前聊天室ID
-    const tempRoomId = globalStore.currentSessionRoomId
-
-    // 3. 在下一个tick中恢复原来的聊天室ID，触发重新加载消息
-    nextTick(() => {
-      globalStore.updateCurrentSessionRoomId(tempRoomId)
-    })
-
-    msg.success(value ? t('home.chat_header.toast.shield_on') : t('home.chat_header.toast.shield_off'))
-  } catch (error) {
-    msg.error(t('home.chat_header.toast.action_failed'))
-  }
-}
-
-const handleMessageSetting = async (value: string) => {
-  const session = currentSession.value
-  if (!session) return
-  if (value === 'shield') {
-    // 设置为屏蔽消息
-    if (!session.shield) {
-      await handleShield(true)
-    }
-  } else if (value === 'notification') {
-    // 设置为接收消息但不提醒
-    if (session.shield) {
-      await handleShield(false)
-    }
-  }
+  headerActions.handleMedia()
 }
 
 /** 处理房间加入规则修改 */
@@ -1011,24 +913,8 @@ const handleGroupInfoChange = () => {
 }
 
 const deleteRoomMessages = async (roomId: string) => {
-  if (!roomId) return
-  try {
-    await invokeWithErrorHandler(
-      TauriCommand.DELETE_ROOM_MESSAGES,
-      { roomId },
-      {
-        customErrorMessage: t('home.chat_header.toast.delete_history_failed'),
-        errorType: ErrorType.Client
-      }
-    )
-    chatStore.clearRoomMessages(roomId)
-    useMitt.emit(MittEnum.UPDATE_SESSION_LAST_MSG, { roomId })
-    msg.success(t('home.chat_header.toast.delete_history_success'))
-    modalShow.value = false
-    sidebarShow.value = false
-  } catch (error) {
-    logger.error('删除聊天记录失败:', error instanceof Error ? error : new Error(String(error)))
-  }
+  await deleteRoomMessagesFromSettings(roomId)
+  sidebarShow.value = false
 }
 
 /** 删除操作二次提醒 */
