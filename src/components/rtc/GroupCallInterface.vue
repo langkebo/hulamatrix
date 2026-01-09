@@ -3,7 +3,7 @@
     <!-- 主通话界面 -->
     <div v-if="!isMinimized" class="call-main">
       <!-- 视频网格区域 -->
-      <div class="video-grid" :class="getGridClass()">
+      <div class="video-grid" :class="getGridClass(totalParticipants)">
         <!-- 本地视频 -->
         <div class="video-participant local-participant">
           <div class="video-container">
@@ -139,7 +139,7 @@
             </div>
             <div class="participant-actions">
               <n-dropdown
-                :options="getParticipantActions(participant)"
+                :options="getParticipantActions(currentUser?.isHost || false)"
                 @select="handleParticipantAction($event, participant)"
               >
                 <n-button quaternary circle size="tiny">
@@ -432,6 +432,14 @@ import { useWebRtc } from '@/hooks/useWebRtc'
 import { usePlatformConstants } from '@/utils/PlatformConstants'
 import { CallTypeEnum } from '@/enums'
 import GroupCallSettings from './GroupCallSettings.vue'
+import {
+  getCallTypeEnum,
+  getGridClass,
+  formatCallDuration,
+  formatMessageTime,
+  getParticipantActions,
+  getNameInitials
+} from './groupCallUtils'
 import { dlg } from '@/utils/SafeUI'
 import { logger } from '@/utils/logger'
 
@@ -487,11 +495,6 @@ interface Props {
   groupConfig: GroupConfig
   currentUser?: CurrentUser
   participants?: CallParticipant[]
-}
-
-// Helper to convert string call type to CallTypeEnum
-const getCallTypeEnum = (callType: 'audio' | 'video'): CallTypeEnum => {
-  return callType === 'video' ? CallTypeEnum.VIDEO : CallTypeEnum.AUDIO
 }
 
 interface ChatMessage {
@@ -583,63 +586,6 @@ const currentUserId = computed(() => props.currentUser?.id || 'current-user')
 const totalParticipants = computed(() => 1 + remoteParticipants.value.length)
 
 const networkQuality = computed(() => ({ type: 'default' as const, text: '检测中' }))
-
-// ========== 方法 ==========
-
-const getGridClass = (): string => {
-  const count = totalParticipants.value
-  if (count <= 2) return 'grid-1x1'
-  if (count <= 4) return 'grid-2x2'
-  if (count <= 6) return 'grid-2x3'
-  if (count <= 9) return 'grid-3x3'
-  return 'grid-auto'
-}
-
-const formatCallDuration = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  } else {
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
-}
-
-const formatMessageTime = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const getParticipantActions = (_participant: CallParticipant) => {
-  const actions = [
-    {
-      label: '发送私信',
-      key: 'private-message',
-      icon: () => '💬'
-    }
-  ]
-
-  if (props.currentUser?.isHost) {
-    actions.push(
-      {
-        label: '静音',
-        key: 'mute',
-        icon: () => '🔇'
-      },
-      {
-        label: '移除',
-        key: 'remove',
-        icon: () => '🚪'
-      }
-    )
-  }
-
-  return actions
-}
 
 // ========== 群组通话控制 ==========
 
