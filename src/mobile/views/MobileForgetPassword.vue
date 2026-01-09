@@ -150,7 +150,7 @@
             <path fill="currentColor" d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" />
           </svg>
         </n-icon> -->
-          <img class="size-98px" src="/emoji/party-popper.webp" alt="" />
+          <img class="size-98px" src="/emoji/party-popper.webp" alt="Success celebration party popper emoji" />
 
           <div class="mt-16px text-18px">密码修改成功</div>
           <div class="mt-16px text-14px text-#666">您已成功重置密码，可以使用新密码登录</div>

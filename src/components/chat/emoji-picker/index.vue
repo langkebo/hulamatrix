@@ -691,7 +691,7 @@ onBeforeUnmount(() => {
   &:has(.n-image) {
     @apply size-60px;
     &:hover .n-image {
-      @apply hover:scale-116 bg-[--emoji-hover] rounded-8px;
+      @apply hover:opacity-90 bg-[--emoji-hover] rounded-8px transition-opacity duration-200;
     }
   }
 }

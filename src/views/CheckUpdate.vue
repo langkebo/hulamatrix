@@ -23,7 +23,8 @@
 
             <p class="relative text-(20px) text-brand font-500">{{ newVersion }}</p>
 
-            <span class="absolute top--10px right--44px p-[4px_8px] bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
+            <span
+              class="absolute top--10px right--44px p-[4px_8px] bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
               {{ t('message.check_update.new_tag') }}
             </span>
           </n-flex>
@@ -61,7 +62,8 @@
         :class="logVisible ? 'h-460px' : 'h-0'">
         <n-scrollbar class="p-[0_10px] box-border">
           <div v-if="newCommitLog.length > 0">
-            <div class="p-[4px_8px] mt-4px w-fit bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
+            <div
+              class="p-[4px_8px] mt-4px w-fit bg-var(--hula-brand-primary)ff rounded-6px text-(12px var(--hula-brand-primary))">
               {{ newVersion }}
             </div>
 
@@ -69,7 +71,7 @@
               <n-timeline-item v-for="(log, index) in newCommitLog" :key="log.message || index" :content="log.message">
                 <template #icon>
                   <n-icon :size="32">
-                    <img class="size-32px" :src="`/emoji/${log.icon}.webp`" alt="" />
+                    <img class="size-32px" :src="`/emoji/${log.icon}.webp`" :alt="`Emoji icon for ${log.icon}`" />
                   </n-icon>
                 </template>
               </n-timeline-item>
@@ -81,7 +83,9 @@
                   <use href="#RightArrow"></use>
                 </svg>
 
-                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px #999)">{{ currentVersion }}</span>
+                <span class="p-[4px_8px] w-fit bg-var(--hula-brand-primary) rounded-6px text-(12px #999)">
+                  {{ currentVersion }}
+                </span>
               </n-flex>
             </n-flex>
           </div>
@@ -90,7 +94,7 @@
             <n-timeline-item v-for="(log, index) in commitLog" :key="log.message || index" :content="log.message">
               <template #icon>
                 <n-icon :size="32">
-                  <img class="size-32px" :src="`/emoji/${log.icon}.webp`" alt="" />
+                  <img class="size-32px" :src="`/emoji/${log.icon}.webp`" :alt="`Emoji icon for ${log.icon}`" />
                 </n-icon>
               </template>
             </n-timeline-item>

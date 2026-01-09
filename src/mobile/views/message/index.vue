@@ -7,7 +7,7 @@
       v-if="showMask"
       @touchend="maskHandler.close"
       @mouseup="maskHandler.close"
-      class="fixed inset-0 z-[999] bg-black/20 backdrop-blur-sm transition-all duration-3000 ease-in-out opacity-100"></div>
+      class="fixed inset-0 z-[999] bg-black/20 backdrop-blur-sm transition-all duration-200 ease-in-out opacity-100"></div>
 
     <NavBar>
       <template #left>

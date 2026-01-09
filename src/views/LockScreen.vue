@@ -2,7 +2,7 @@
   <!-- 锁屏页面 -->
   <div
     data-tauri-drag-region
-    class="login-box overflow-y-hidden rounded-8px select-none absolute top-0 left-0 w-full h-full z-9999 transition-all duration-300 ease-in-out">
+    class="login-box overflow-y-hidden rounded-8px select-none absolute top-0 left-0 w-full h-full z-9999 transition-all duration-200 ease-in-out">
     <ActionBar class="absolute top-0 right-0 z-99999" :current-label="appWindow.label" :shrink="false" />
     <Transition name="slide-fade" appear>
       <!--  壁纸界面  -->
