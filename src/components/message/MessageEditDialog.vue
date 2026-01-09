@@ -163,7 +163,7 @@ watch(
     :show="show"
     preset="card"
     :title="t('matrix.messageEdit.title')"
-    :style="{ width: '600px' }"
+    class="w-600px"
     :mask-closable="false"
     :closable="!editing"
     @update:show="closeDialog">

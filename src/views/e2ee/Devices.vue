@@ -22,7 +22,7 @@
       <n-data-table v-else :columns="unverifiedCols" :data="unverified" />
       <n-alert v-if="lastVerifyError" type="error" class="mt-8px" :show-icon="true">{{ lastVerifyError }}</n-alert>
     </n-card>
-    <n-modal v-model:show="showVerifyModal" preset="card" title="设备验证" :style="{ width: '640px' }">
+    <n-modal v-model:show="showVerifyModal" preset="card" title="设备验证" class="w-640px">
       <n-space vertical :size="12" data-test="verify-modal">
         <div>设备：{{ currentVerify?.display_name || currentVerify?.device_id }}</div>
         <n-progress type="line" :percentage="verifyProgress" :show-indicator="false" />
@@ -58,7 +58,7 @@
         </n-alert>
       </n-space>
     </n-modal>
-    <n-modal v-model:show="showGuide" preset="card" title="设备验证指南" :style="{ width: '640px' }">
+    <n-modal v-model:show="showGuide" preset="card" title="设备验证指南" class="w-640px">
       <n-space vertical :size="10">
         <div>1. 确保已登录且启用端到端加密。</div>
         <div>2. 在“恢复密钥”页面创建 4S 并保存备份密钥。</div>

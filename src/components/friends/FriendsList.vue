@@ -174,11 +174,7 @@
     </n-flex>
 
     <!-- 添加好友对话框 -->
-    <n-modal
-      v-model:show="showAddFriendDialog"
-      preset="card"
-      :title="t('friends.list.add_friend')"
-      :style="{ width: '400px' }">
+    <n-modal v-model:show="showAddFriendDialog" preset="card" :title="t('friends.list.add_friend')" class="w-400px">
       <n-form
         ref="addFriendFormRef"
         :model="addFriendForm"

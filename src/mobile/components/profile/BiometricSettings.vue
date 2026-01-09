@@ -29,19 +29,13 @@
         <p class="not-available-text">
           {{ capability?.reason || '您的设备不支持生物识别功能' }}
         </p>
-        <n-text depth="3" class="not-available-hint">
-          需要在支持生物识别的设备上使用此功能
-        </n-text>
+        <n-text depth="3" class="not-available-hint">需要在支持生物识别的设备上使用此功能</n-text>
       </div>
 
       <!-- Available -->
       <div v-else class="settings-content">
         <!-- Status Banner -->
-        <n-alert
-          :type="isEnabled ? 'success' : 'info'"
-          :show-icon="true"
-          class="status-banner"
-        >
+        <n-alert :type="isEnabled ? 'success' : 'info'" :show-icon="true" class="status-banner">
           <template #icon>
             <n-icon v-if="isEnabled">
               <Check />
@@ -76,11 +70,7 @@
             <span>启用生物识别登录</span>
             <n-text depth="3">快速且安全</n-text>
           </div>
-          <n-switch
-            :value="isEnabled"
-            :loading="isAuthenticating"
-            @update:value="handleToggle"
-          />
+          <n-switch :value="isEnabled" :loading="isAuthenticating" @update:value="handleToggle" />
         </div>
 
         <!-- Security Info -->
@@ -101,34 +91,21 @@
             size="large"
             block
             :loading="isAuthenticating"
-            @click="handleEnable"
-          >
+            @click="handleEnable">
             <template #icon>
               <n-icon><Fingerprint /></n-icon>
             </template>
             启用生物识别
           </n-button>
 
-          <n-button
-            v-else
-            type="error"
-            size="large"
-            block
-            :loading="isAuthenticating"
-            @click="handleDisable"
-          >
+          <n-button v-else type="error" size="large" block :loading="isAuthenticating" @click="handleDisable">
             <template #icon>
               <n-icon><LockOff /></n-icon>
             </template>
             禁用生物识别
           </n-button>
 
-          <n-button
-            v-if="isEnabled"
-            size="large"
-            block
-            @click="handleTest"
-          >
+          <n-button v-if="isEnabled" size="large" block @click="handleTest">
             <template #icon>
               <n-icon><Fingerprint /></n-icon>
             </template>
@@ -143,14 +120,9 @@
       v-model:show="showTestResult"
       preset="card"
       :title="testResult?.success ? '验证成功' : '验证失败'"
-      :style="{ width: '90%', maxWidth: '320px' }"
-    >
+      class="w-90-max-w-320px">
       <div class="test-result">
-        <n-icon
-          :size="60"
-          :color="testResult?.success ? '#18a058' : '#d03050'"
-          class="result-icon"
-        >
+        <n-icon :size="60" :color="testResult?.success ? '#18a058' : '#d03050'" class="result-icon">
           <Check v-if="testResult?.success" />
           <X v-else />
         </n-icon>
@@ -160,9 +132,7 @@
       </div>
 
       <template #footer>
-        <n-button block @click="showTestResult = false">
-          确定
-        </n-button>
+        <n-button block @click="showTestResult = false">确定</n-button>
       </template>
     </n-modal>
   </div>

@@ -51,7 +51,7 @@
     </div>
 
     <!-- 创建房间对话框 -->
-    <n-modal v-model:show="showCreateRoomDialog" preset="card" title="创建房间" :style="{ width: '500px' }">
+    <n-modal v-model:show="showCreateRoomDialog" preset="card" title="创建房间" class="w-500px">
       <n-form ref="roomFormRef" :model="roomForm" :rules="roomRules">
         <n-form-item label="房间名称" path="name">
           <n-input v-model:value="roomForm.name" placeholder="请输入房间名称" />

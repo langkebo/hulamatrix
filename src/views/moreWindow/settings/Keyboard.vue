@@ -205,7 +205,7 @@
   </n-flex>
 
   <!-- 快捷键编辑对话框 -->
-  <n-modal v-model:show="showShortcutDialog" preset="card" title="编辑快捷键" :style="{ width: '400px' }">
+  <n-modal v-model:show="showShortcutDialog" preset="card" title="编辑快捷键" class="w-400px">
     <n-flex vertical :size="16">
       <n-text>按下要设置的快捷键组合</n-text>
 

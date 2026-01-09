@@ -350,7 +350,7 @@
       v-model:show="showNewChatDialog"
       preset="card"
       :title="t('privateChat.dialogs.new_chat_title')"
-      :style="{ width: '400px' }">
+      class="w-400px">
       <n-form label-placement="left" label-width="80">
         <n-form-item :label="t('privateChat.dialogs.user_id_label')">
           <n-input v-model:value="newChatUserId" :placeholder="t('privateChat.dialogs.user_id_placeholder')" />

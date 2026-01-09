@@ -119,7 +119,7 @@
     </div>
 
     <!-- Recovery Key Dialog -->
-    <n-modal v-model:show="showRecoveryKey" preset="card" title="恢复密钥" :style="{ width: '90%', maxWidth: '400px' }">
+    <n-modal v-model:show="showRecoveryKey" preset="card" title="恢复密钥" class="w-90-max-w-400px">
       <n-alert type="warning" :show-icon="true" class="mb-12px">
         请将此恢复密钥保存在安全的地方。任何获得此密钥的人都可以访问您的加密消息。
       </n-alert>
@@ -140,7 +140,7 @@
     </n-modal>
 
     <!-- Help Dialog -->
-    <n-modal v-model:show="showHelp" preset="card" title="密钥备份帮助" :style="{ width: '90%', maxWidth: '400px' }">
+    <n-modal v-model:show="showHelp" preset="card" title="密钥备份帮助" class="w-90-max-w-400px">
       <div class="help-content">
         <h4>什么是密钥备份？</h4>
         <p>密钥备份将您的加密密钥安全地存储在 Matrix 服务器上，使用您的账户密码进行加密保护。</p>
@@ -164,11 +164,7 @@
     </n-modal>
 
     <!-- Create Backup Dialog -->
-    <n-modal
-      v-model:show="showCreateBackup"
-      preset="card"
-      title="创建密钥备份"
-      :style="{ width: '90%', maxWidth: '400px' }">
+    <n-modal v-model:show="showCreateBackup" preset="card" title="创建密钥备份" class="w-90-max-w-400px">
       <n-alert type="info" :show-icon="true" class="mb-12px">创建密钥备份需要设置密码或生成恢复密钥</n-alert>
 
       <n-space vertical :size="12">

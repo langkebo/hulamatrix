@@ -421,7 +421,7 @@ watch(
       :show="!!selectedResult"
       preset="card"
       title="Message Context"
-      :style="{ width: '700px' }"
+      class="w-700px"
       @update:show="selectedResult = null">
       <div v-if="selectedResult" class="result-detail">
         <!-- Context Before -->

@@ -17,12 +17,7 @@
 
       <!-- Toggle Monitoring -->
       <div class="monitor-toggle">
-        <n-button
-          :type="isMonitoring ? 'error' : 'primary'"
-          size="large"
-          block
-          @click="toggleMonitoring"
-        >
+        <n-button :type="isMonitoring ? 'error' : 'primary'" size="large" block @click="toggleMonitoring">
           <template #icon>
             <n-icon>
               <Activity v-if="!isMonitoring" />
@@ -82,12 +77,7 @@
           <span>性能问题</span>
         </div>
         <div class="issues-list">
-          <div
-            v-for="(issue, index) in issues"
-            :key="index"
-            class="issue-item"
-            :class="issue.severity"
-          >
+          <div v-for="(issue, index) in issues" :key="index" class="issue-item" :class="issue.severity">
             <n-icon :size="16">
               <AlertCircle v-if="issue.severity === 'error'" />
               <AlertTriangle v-else-if="issue.severity === 'warning'" />
@@ -106,39 +96,28 @@
         </div>
 
         <div class="benchmark-grid">
-          <n-button
-            :loading="isRunningBenchmark.render"
-            @click="runRenderBenchmark"
-          >
+          <n-button :loading="isRunningBenchmark.render" @click="runRenderBenchmark">
             <template #icon>
               <n-icon><Layout /></n-icon>
             </template>
             渲染测试
           </n-button>
 
-          <n-button
-            :loading="isRunningBenchmark.network"
-            @click="runNetworkBenchmark"
-          >
+          <n-button :loading="isRunningBenchmark.network" @click="runNetworkBenchmark">
             <template #icon>
               <n-icon><Wifi /></n-icon>
             </template>
             网络测试
           </n-button>
 
-          <n-button
-            :loading="isRunningBenchmark.memory"
-            @click="runMemoryBenchmark"
-          >
+          <n-button :loading="isRunningBenchmark.memory" @click="runMemoryBenchmark">
             <template #icon>
               <n-icon><Database /></n-icon>
             </template>
             内存测试
           </n-button>
 
-          <n-button
-            @click="showSlowComponents = true"
-          >
+          <n-button @click="showSlowComponents = true">
             <template #icon>
               <n-icon><List /></n-icon>
             </template>
@@ -148,12 +127,7 @@
       </div>
 
       <!-- Slow Components Modal -->
-      <n-modal
-        v-model:show="showSlowComponents"
-        preset="card"
-        title="慢速组件分析"
-        :style="{ width: '90%', maxWidth: '400px' }"
-      >
+      <n-modal v-model:show="showSlowComponents" preset="card" title="慢速组件分析" class="w-90-max-w-400px">
         <div v-if="slowComponents.length === 0" class="empty-state">
           <n-icon :size="48" color="#18a058">
             <Check />
@@ -162,11 +136,7 @@
         </div>
 
         <div v-else class="slow-components-list">
-          <div
-            v-for="(component, index) in slowComponents"
-            :key="index"
-            class="component-item"
-          >
+          <div v-for="(component, index) in slowComponents" :key="index" class="component-item">
             <div class="component-header">
               <span class="component-name">{{ component.name }}</span>
               <span class="component-time">{{ component.avgRenderTime.toFixed(2) }}ms</span>
@@ -179,19 +149,12 @@
         </div>
 
         <template #footer>
-          <n-button block @click="showSlowComponents = false">
-            关闭
-          </n-button>
+          <n-button block @click="showSlowComponents = false">关闭</n-button>
         </template>
       </n-modal>
 
       <!-- Report Modal -->
-      <n-modal
-        v-model:show="showReport"
-        preset="card"
-        title="性能报告"
-        :style="{ width: '90%', maxWidth: '500px' }"
-      >
+      <n-modal v-model:show="showReport" preset="card" title="性能报告" class="w-90-max-w-500px">
         <pre class="report-content">{{ reportContent }}</pre>
 
         <template #footer>
@@ -202,9 +165,7 @@
               </template>
               复制报告
             </n-button>
-            <n-button block @click="showReport = false">
-              关闭
-            </n-button>
+            <n-button block @click="showReport = false">关闭</n-button>
           </n-space>
         </template>
       </n-modal>

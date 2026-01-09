@@ -406,9 +406,7 @@ watch(
     <!-- Header -->
     <div class="space-member-list__header">
       <h3>Space Members</h3>
-      <NButton v-if="showActions" type="primary" size="small" @click="emit('inviteMember')">
-        Invite Member
-      </NButton>
+      <NButton v-if="showActions" type="primary" size="small" @click="emit('inviteMember')">Invite Member</NButton>
     </div>
 
     <!-- Stats -->
@@ -424,20 +422,12 @@ watch(
 
     <!-- Filters and Search -->
     <div class="space-member-list__filters">
-      <NInput
-        v-model:value="searchQuery"
-        placeholder="Search members..."
-        clearable
-        class="search-input">
+      <NInput v-model:value="searchQuery" placeholder="Search members..." clearable class="search-input">
         <template #prefix>
           <span class="icon">🔍</span>
         </template>
       </NInput>
-      <NSelect
-        :value="filter"
-        :options="filterOptions"
-        class="filter-select"
-        @update:value="handleFilterChange" />
+      <NSelect :value="filter" :options="filterOptions" class="filter-select" @update:value="handleFilterChange" />
     </div>
 
     <!-- Members Table -->
@@ -461,7 +451,7 @@ watch(
       :show="showMemberDetail"
       preset="card"
       title="Member Details"
-      :style="{ width: '500px' }"
+      class="w-500px"
       @update:show="showMemberDetail = false">
       <div v-if="selectedMember" class="member-detail">
         <div class="member-detail__avatar">
@@ -497,12 +487,8 @@ watch(
 
         <div v-if="showActions" class="member-detail__actions">
           <NSpace justify="end">
-            <NButton type="warning" @click="kickMember(selectedMember!.userId)">
-              Kick Member
-            </NButton>
-            <NButton type="error" @click="banMember(selectedMember!.userId)">
-              Ban Member
-            </NButton>
+            <NButton type="warning" @click="kickMember(selectedMember!.userId)">Kick Member</NButton>
+            <NButton type="error" @click="banMember(selectedMember!.userId)">Ban Member</NButton>
           </NSpace>
         </div>
       </div>

@@ -25,11 +25,7 @@
         <div class="setting-item">
           <div class="item-header">
             <span class="item-label">麦克风</span>
-            <n-button
-              v-if="availableMicrophones.length > 1"
-              size="small"
-              @click="showMicrophoneSelector = true"
-            >
+            <n-button v-if="availableMicrophones.length > 1" size="small" @click="showMicrophoneSelector = true">
               {{ getMicrophoneLabel() }}
             </n-button>
             <span v-else class="item-value">{{ getMicrophoneLabel() }}</span>
@@ -40,11 +36,7 @@
         <div class="setting-item">
           <div class="item-header">
             <span class="item-label">扬声器</span>
-            <n-button
-              v-if="availableSpeakers.length > 1"
-              size="small"
-              @click="showSpeakerSelector = true"
-            >
+            <n-button v-if="availableSpeakers.length > 1" size="small" @click="showSpeakerSelector = true">
               {{ getSpeakerLabel() }}
             </n-button>
             <span v-else class="item-value">{{ getSpeakerLabel() }}</span>
@@ -62,8 +54,7 @@
             :min="0"
             :max="100"
             :step="1"
-            @update:value="handleInputVolumeChange"
-          />
+            @update:value="handleInputVolumeChange" />
           <!-- Audio Visualizer -->
           <div class="audio-visualizer">
             <div
@@ -71,8 +62,7 @@
               :key="index"
               class="audio-bar"
               :class="{ active: level > 20 }"
-              :style="{ height: `${Math.max(4, level)}px` }"
-            ></div>
+              :style="{ height: `${Math.max(4, level)}px` }"></div>
           </div>
         </div>
 
@@ -83,10 +73,7 @@
               <div class="toggle-label">降噪</div>
               <div class="toggle-desc">减少背景噪音</div>
             </div>
-            <n-switch
-              v-model:value="audioSettings.noiseCancellation"
-              @update:value="handleNoiseCancellationChange"
-            />
+            <n-switch v-model:value="audioSettings.noiseCancellation" @update:value="handleNoiseCancellationChange" />
           </div>
         </div>
 
@@ -96,10 +83,7 @@
               <div class="toggle-label">回声消除</div>
               <div class="toggle-desc">减少通话回声</div>
             </div>
-            <n-switch
-              v-model:value="audioSettings.echoCancellation"
-              @update:value="handleEchoCancellationChange"
-            />
+            <n-switch v-model:value="audioSettings.echoCancellation" @update:value="handleEchoCancellationChange" />
           </div>
         </div>
       </div>
@@ -115,11 +99,7 @@
         <div class="setting-item">
           <div class="item-header">
             <span class="item-label">摄像头</span>
-            <n-button
-              v-if="availableCameras.length > 1"
-              size="small"
-              @click="showCameraSelector = true"
-            >
+            <n-button v-if="availableCameras.length > 1" size="small" @click="showCameraSelector = true">
               {{ getCameraLabel() }}
             </n-button>
             <span v-else class="item-value">{{ getCameraLabel() }}</span>
@@ -130,16 +110,11 @@
         <div class="setting-item">
           <div class="item-header">
             <span class="item-label">视频质量</span>
-            <n-button
-              size="small"
-              @click="showQualitySelector = true"
-            >
+            <n-button size="small" @click="showQualitySelector = true">
               {{ getQualityLabel() }}
             </n-button>
           </div>
-          <div class="item-desc">
-            更高的质量需要更多的网络带宽
-          </div>
+          <div class="item-desc">更高的质量需要更多的网络带宽</div>
         </div>
 
         <!-- Video Enhancements -->
@@ -149,10 +124,7 @@
               <div class="toggle-label">美颜</div>
               <div class="toggle-desc">美化视频画面</div>
             </div>
-            <n-switch
-              v-model:value="videoSettings.beautification"
-              @update:value="handleBeautificationChange"
-            />
+            <n-switch v-model:value="videoSettings.beautification" @update:value="handleBeautificationChange" />
           </div>
         </div>
 
@@ -162,12 +134,7 @@
             <span class="item-label">美颜强度</span>
             <span class="item-value">{{ videoSettings.beautificationLevel }}%</span>
           </div>
-          <n-slider
-            v-model:value="videoSettings.beautificationLevel"
-            :min="0"
-            :max="100"
-            :step="1"
-          />
+          <n-slider v-model:value="videoSettings.beautificationLevel" :min="0" :max="100" :step="1" />
         </div>
       </div>
 
@@ -182,16 +149,11 @@
         <div class="setting-item">
           <div class="item-header">
             <span class="item-label">带宽限制</span>
-            <n-button
-              size="small"
-              @click="showBandwidthSelector = true"
-            >
+            <n-button size="small" @click="showBandwidthSelector = true">
               {{ getBandwidthLabel() }}
             </n-button>
           </div>
-          <div class="item-desc">
-            根据网络状况限制视频带宽
-          </div>
+          <div class="item-desc">根据网络状况限制视频带宽</div>
         </div>
       </div>
 
@@ -255,19 +217,13 @@
     </div>
 
     <!-- Device Selector Bottom Sheet -->
-    <n-modal
-      v-model:show="showMicrophoneSelector"
-      preset="card"
-      title="选择麦克风"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showMicrophoneSelector" preset="card" title="选择麦克风" class="w-90-max-w-400px">
       <n-list>
         <n-list-item
           v-for="mic in availableMicrophones"
           :key="mic.value"
           clickable
-          @click="selectMicrophone(mic.value)"
-        >
+          @click="selectMicrophone(mic.value)">
           <template #prefix>
             <n-icon><Microphone /></n-icon>
           </template>
@@ -276,19 +232,13 @@
       </n-list>
     </n-modal>
 
-    <n-modal
-      v-model:show="showSpeakerSelector"
-      preset="card"
-      title="选择扬声器"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showSpeakerSelector" preset="card" title="选择扬声器" class="w-90-max-w-400px">
       <n-list>
         <n-list-item
           v-for="speaker in availableSpeakers"
           :key="speaker.value"
           clickable
-          @click="selectSpeaker(speaker.value)"
-        >
+          @click="selectSpeaker(speaker.value)">
           <template #prefix>
             <n-icon><Volume2 /></n-icon>
           </template>
@@ -297,19 +247,13 @@
       </n-list>
     </n-modal>
 
-    <n-modal
-      v-model:show="showCameraSelector"
-      preset="card"
-      title="选择摄像头"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showCameraSelector" preset="card" title="选择摄像头" class="w-90-max-w-400px">
       <n-list>
         <n-list-item
           v-for="camera in availableCameras"
           :key="camera.value"
           clickable
-          @click="selectCamera(camera.value)"
-        >
+          @click="selectCamera(camera.value)">
           <template #prefix>
             <n-icon><Camera /></n-icon>
           </template>
@@ -319,20 +263,14 @@
     </n-modal>
 
     <!-- Quality Selector -->
-    <n-modal
-      v-model:show="showQualitySelector"
-      preset="card"
-      title="视频质量"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showQualitySelector" preset="card" title="视频质量" class="w-90-max-w-400px">
       <n-radio-group v-model:value="videoSettings.quality" name="quality">
         <n-space vertical>
           <n-radio
             v-for="quality in videoQualityOptions"
             :key="quality.value"
             :value="quality.value"
-            @click="selectQuality(quality.value)"
-          >
+            @click="selectQuality(quality.value)">
             {{ quality.label }}
           </n-radio>
         </n-space>
@@ -340,20 +278,14 @@
     </n-modal>
 
     <!-- Bandwidth Selector -->
-    <n-modal
-      v-model:show="showBandwidthSelector"
-      preset="card"
-      title="带宽限制"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showBandwidthSelector" preset="card" title="带宽限制" class="w-90-max-w-400px">
       <n-radio-group v-model:value="networkSettings.bandwidthLimit" name="bandwidth">
         <n-space vertical>
           <n-radio
             v-for="bandwidth in bandwidthOptions"
             :key="bandwidth.value"
             :value="bandwidth.value"
-            @click="selectBandwidth(bandwidth.value)"
-          >
+            @click="selectBandwidth(bandwidth.value)">
             {{ bandwidth.label }}
           </n-radio>
         </n-space>

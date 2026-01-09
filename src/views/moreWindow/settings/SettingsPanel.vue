@@ -2,7 +2,7 @@
   <n-modal
     v-model:show="visible"
     preset="card"
-    :style="{ width: '880px' }"
+    class="w-880px"
     :segmented="true"
     @close="handleClose"
     @update:show="handleClose">

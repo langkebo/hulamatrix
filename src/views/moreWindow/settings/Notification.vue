@@ -234,7 +234,7 @@
         </n-flex>
       </n-flex>
     </n-flex>
-    <n-modal v-model:show="showPresetEditor" preset="card" title="关键字预设编辑" :style="{ width: '720px' }">
+    <n-modal v-model:show="showPresetEditor" preset="card" title="关键字预设编辑" class="w-720px">
       <n-flex vertical :size="12">
         <n-flex align="center" justify="space-between">
           <span>分组列表</span>

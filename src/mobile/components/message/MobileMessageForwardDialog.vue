@@ -4,9 +4,8 @@
     v-model:show="showDialog"
     preset="card"
     :title="t('message.forward')"
-    :style="{ width: '90%', maxWidth: '500px' }"
-    @close="handleClose"
-  >
+    class="w-90-max-w-500px"
+    @close="handleClose">
     <div class="mobile-message-forward">
       <!-- Original Message Preview -->
       <div class="original-message">
@@ -20,12 +19,7 @@
 
         <!-- Search -->
         <div class="search-section">
-          <n-input
-            v-model:value="searchQuery"
-            :placeholder="t('message.searchRooms')"
-            clearable
-            @input="handleSearch"
-          >
+          <n-input v-model:value="searchQuery" :placeholder="t('message.searchRooms')" clearable @input="handleSearch">
             <template #prefix>
               <n-icon><Search /></n-icon>
             </template>
@@ -45,8 +39,7 @@
             :key="room.roomId"
             class="room-item"
             :class="{ selected: selectedRoomId === room.roomId }"
-            @click="selectRoom(room.roomId)"
-          >
+            @click="selectRoom(room.roomId)">
             <n-avatar :src="room.avatar" :size="40" round>
               <template #fallback>
                 <span>{{ room.name?.[0] || '?' }}</span>
@@ -80,8 +73,7 @@
             size="large"
             :loading="sending"
             :disabled="!selectedRoomId"
-            @click="forwardMessage"
-          >
+            @click="forwardMessage">
             <template #icon>
               <n-icon><Send /></n-icon>
             </template>

@@ -8,7 +8,7 @@
     @update:show="$emit('update:show', $event)"
     preset="card"
     title="创建私密聊天"
-    :style="{ width: '600px' }"
+    class="w-600px"
     :mask-closable="true">
     <n-space vertical :size="16">
       <n-alert type="info" title="私密聊天">私密聊天使用端到端加密技术，确保只有对话参与者能够阅读消息内容。</n-alert>

@@ -9,10 +9,7 @@
         {{ t('friends.categories.title') }}
         <n-badge v-if="categories.length > 0" :value="categories.length" />
       </h3>
-      <n-dropdown
-        :options="menuOptions"
-        placement="bottom-end"
-        @select="handleMenuSelect">
+      <n-dropdown :options="menuOptions" placement="bottom-end" @select="handleMenuSelect">
         <n-button circle size="small" quaternary>
           <template #icon>
             <svg class="size-14px">
@@ -31,10 +28,7 @@
       </div>
 
       <!-- 空状态 -->
-      <n-empty
-        v-else-if="categories.length === 0"
-        :description="t('friends.categories.no_categories')"
-        size="small">
+      <n-empty v-else-if="categories.length === 0" :description="t('friends.categories.no_categories')" size="small">
         <template #extra>
           <n-button size="small" type="primary" secondary @click="showCreateDialog = true">
             {{ t('friends.categories.create_first') }}
@@ -66,11 +60,12 @@
             v-for="category in categories"
             :key="category.id"
             class="category-item"
-            :class="{ 'is-active': selectedCategoryId === category.id, 'is-editing': editingCategoryId === category.id }"
+            :class="{
+              'is-active': selectedCategoryId === category.id,
+              'is-editing': editingCategoryId === category.id
+            }"
             @click="handleSelectCategory(category.id)">
-            <div
-              v-if="editingCategoryId === category.id"
-              class="category-edit">
+            <div v-if="editingCategoryId === category.id" class="category-edit">
               <n-input
                 ref="editInputRef"
                 v-model:value="editingCategoryName"
@@ -99,7 +94,7 @@
       v-model:show="showCreateDialog"
       preset="card"
       :title="t('friends.categories.create_title')"
-      :style="{ width: '400px' }">
+      class="w-400px">
       <n-form ref="createFormRef" :model="createForm" label-placement="left" label-width="80">
         <n-form-item :label="t('friends.categories.name_label')" required>
           <n-input

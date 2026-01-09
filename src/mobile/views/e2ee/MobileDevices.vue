@@ -33,7 +33,7 @@
     </div>
 
     <!-- Help Dialog -->
-    <n-modal v-model:show="showHelp" preset="card" title="设备验证帮助" :style="{ width: '90%', maxWidth: '400px' }">
+    <n-modal v-model:show="showHelp" preset="card" title="设备验证帮助" class="w-90-max-w-400px">
       <div class="help-content">
         <h4>什么是设备验证？</h4>
         <p>设备验证确保只有您信任的设备才能参与加密通信。验证所有设备后，您可以获得更高的安全性。</p>

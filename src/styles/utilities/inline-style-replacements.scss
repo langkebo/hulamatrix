@@ -40,6 +40,77 @@
   height: 100%;
 }
 
+// 固定宽度 (用于替换静态内联样式)
+.w-400px {
+  width: 400px;
+}
+
+.w-500px {
+  width: 500px;
+}
+
+.w-600px {
+  width: 600px;
+}
+
+.w-640px {
+  width: 640px;
+}
+
+.w-700px {
+  width: 700px;
+}
+
+.w-720px {
+  width: 720px;
+}
+
+.w-800px {
+  width: 800px;
+}
+
+.w-880px {
+  width: 880px;
+}
+
+// 最大宽度
+.max-w-320px {
+  max-width: 320px;
+}
+
+.max-w-400px {
+  max-width: 400px;
+}
+
+.max-w-500px {
+  max-width: 500px;
+}
+
+.max-w-600px {
+  max-width: 600px;
+}
+
+// 响应式宽度组合 (移动端常用)
+.w-90-max-w-320px {
+  width: 90%;
+  max-width: 320px;
+}
+
+.w-90-max-w-400px {
+  width: 90%;
+  max-width: 400px;
+}
+
+.w-90-max-w-500px {
+  width: 90%;
+  max-width: 500px;
+}
+
+.w-90-max-w-600px {
+  width: 90%;
+  max-width: 600px;
+}
+
 // ========== 间距 ==========
 .mt-8px {
   margin-top: 8px;

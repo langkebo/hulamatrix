@@ -3,7 +3,7 @@
     v-model:show="showModal"
     preset="card"
     :title="t('privateChat.create_session.title')"
-    :style="{ width: '500px' }"
+    class="w-500px"
     @close="handleClose">
     <n-form ref="formRef" :model="formData" :rules="formRules" label-placement="left" label-width="80">
       <!-- 用户 ID -->

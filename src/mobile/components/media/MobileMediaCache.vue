@@ -18,12 +18,7 @@
           <span class="usage-label">已用存储</span>
           <span class="usage-value">{{ formattedTotalSize }} / {{ formattedMaxSize }}</span>
         </div>
-        <n-progress
-          type="line"
-          :percentage="usagePercentage"
-          :color="getUsageColor()"
-          :show-indicator="false"
-        />
+        <n-progress type="line" :percentage="usagePercentage" :color="getUsageColor()" :show-indicator="false" />
         <div class="usage-details">
           <span>{{ usagePercentage }}% 已使用</span>
         </div>
@@ -64,8 +59,7 @@
             :options="cacheSizeOptions"
             size="small"
             style="width: 150px"
-            @update:value="handleMaxSizeChange"
-          />
+            @update:value="handleMaxSizeChange" />
         </div>
 
         <!-- Auto Cleanup -->
@@ -74,11 +68,7 @@
             <span>自动清理</span>
             <n-text depth="3">当缓存接近上限时自动清理</n-text>
           </div>
-          <n-switch
-            v-model:value="autoCleanup"
-            :disabled="!cacheEnabled"
-            @update:value="handleAutoCleanupChange"
-          />
+          <n-switch v-model:value="autoCleanup" :disabled="!cacheEnabled" @update:value="handleAutoCleanupChange" />
         </div>
 
         <!-- Cache Enabled -->
@@ -87,10 +77,7 @@
             <span>启用媒体缓存</span>
             <n-text depth="3">离线时也能查看已缓存的媒体</n-text>
           </div>
-          <n-switch
-            v-model:value="cacheEnabled"
-            @update:value="handleCacheEnableChange"
-          />
+          <n-switch v-model:value="cacheEnabled" @update:value="handleCacheEnableChange" />
         </div>
       </n-space>
     </n-card>
@@ -98,12 +85,7 @@
     <!-- Cache Actions -->
     <n-card :bordered="false" title="缓存操作" class="actions-card">
       <n-space vertical :size="12">
-        <n-button
-          type="primary"
-          block
-          :loading="refreshing"
-          @click="refreshCache"
-        >
+        <n-button type="primary" block :loading="refreshing" @click="refreshCache">
           <template #icon>
             <n-icon><Refresh /></n-icon>
           </template>
@@ -115,8 +97,7 @@
           block
           :disabled="cacheStats.totalItems === 0"
           :loading="cleaningExpired"
-          @click="cleanExpiredItems"
-        >
+          @click="cleanExpiredItems">
           <template #icon>
             <n-icon><Trash /></n-icon>
           </template>
@@ -128,8 +109,7 @@
           block
           :disabled="cacheStats.totalItems === 0"
           :loading="clearing"
-          @click="confirmClearAll"
-        >
+          @click="confirmClearAll">
           <template #icon>
             <n-icon><DatabaseExport /></n-icon>
           </template>
@@ -167,12 +147,7 @@
 
       <!-- Items List -->
       <div v-else class="items-list">
-        <div
-          v-for="item in paginatedItems"
-          :key="item.key"
-          class="cache-item"
-          @click="showPreviewDialog(item)"
-        >
+        <div v-for="item in paginatedItems" :key="item.key" class="cache-item" @click="showPreviewDialog(item)">
           <!-- Thumbnail -->
           <div class="item-thumbnail" @click.stop="openItem(item)">
             <img v-if="item.type === 'image'" :src="item.url" :alt="item.name" />
@@ -196,12 +171,7 @@
 
           <!-- Actions -->
           <div class="item-actions">
-            <n-button
-              text
-              type="error"
-              size="small"
-              @click.stop="deleteItem(item)"
-            >
+            <n-button text type="error" size="small" @click.stop="deleteItem(item)">
               <template #icon>
                 <n-icon><Trash /></n-icon>
               </template>
@@ -212,19 +182,12 @@
 
       <!-- Load More -->
       <div v-if="hasMore && filteredItems.length > itemsPerPage" class="load-more">
-        <n-button text block @click="loadMore">
-          加载更多
-        </n-button>
+        <n-button text block @click="loadMore">加载更多</n-button>
       </div>
     </n-card>
 
     <!-- Preview Modal -->
-    <n-modal
-      v-model:show="showPreview"
-      preset="card"
-      :style="{ width: '90%', maxWidth: '600px' }"
-      @close="closePreview"
-    >
+    <n-modal v-model:show="showPreview" preset="card" class="w-90-max-w-600px" @close="closePreview">
       <template #header>
         <div class="preview-header">
           <span>{{ previewItem?.name }}</span>
@@ -233,21 +196,9 @@
       </template>
 
       <div v-if="previewItem" class="preview-content">
-        <img
-          v-if="previewItem.type === 'image'"
-          :src="previewItem.url"
-          :alt="previewItem.name"
-        />
-        <video
-          v-else-if="previewItem.type === 'video'"
-          :src="previewItem.url"
-          controls
-        />
-        <audio
-          v-else-if="previewItem.type === 'audio'"
-          :src="previewItem.url"
-          controls
-        />
+        <img v-if="previewItem.type === 'image'" :src="previewItem.url" :alt="previewItem.name" />
+        <video v-else-if="previewItem.type === 'video'" :src="previewItem.url" controls />
+        <audio v-else-if="previewItem.type === 'audio'" :src="previewItem.url" controls />
         <div v-else class="file-preview">
           <n-icon :size="64">
             <File />
@@ -258,12 +209,8 @@
 
       <template #footer>
         <n-space vertical style="width: 100%">
-          <n-button type="primary" block @click="openItem(previewItem!)">
-            打开文件
-          </n-button>
-          <n-button block @click="closePreview">
-            关闭
-          </n-button>
+          <n-button type="primary" block @click="openItem(previewItem!)">打开文件</n-button>
+          <n-button block @click="closePreview">关闭</n-button>
         </n-space>
       </template>
     </n-modal>

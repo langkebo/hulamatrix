@@ -86,7 +86,10 @@
           @update-history-visibility="updateHistoryVisibility" />
 
         <!-- Encryption -->
-        <RoomEncryptionPanel :encrypted="roomInfo.encrypted || false" :enabling="enablingEncryption" @enable="enableEncryption" />
+        <RoomEncryptionPanel
+          :encrypted="roomInfo.encrypted || false"
+          :enabling="enablingEncryption"
+          @enable="enableEncryption" />
       </n-tab-pane>
 
       <!-- Members Management -->
@@ -203,12 +206,7 @@
     </n-modal>
 
     <!-- Member Profile Modal -->
-    <n-modal
-      v-model:show="showMemberProfileModal"
-      preset="card"
-      title="成员资料"
-      :style="{ width: '500px' }"
-      :bordered="false">
+    <n-modal v-model:show="showMemberProfileModal" preset="card" title="成员资料" class="w-500px" :bordered="false">
       <div v-if="selectedMember" class="member-profile-content">
         <!-- 头像和基本信息 -->
         <div class="member-header">
@@ -277,12 +275,7 @@
     </n-modal>
 
     <!-- Power Level Editor Modal -->
-    <n-modal
-      v-model:show="showPowerLevelEditor"
-      preset="card"
-      title="权限等级编辑"
-      :style="{ width: '800px' }"
-      :bordered="false">
+    <n-modal v-model:show="showPowerLevelEditor" preset="card" title="权限等级编辑" class="w-800px" :bordered="false">
       <PowerLevelEditor
         v-if="showPowerLevelEditor"
         :room-id="roomId"
