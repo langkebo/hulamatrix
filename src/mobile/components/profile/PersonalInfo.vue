@@ -36,7 +36,7 @@
         <div class="flex flex-warp gap-2 items-center">
           <span class="text-bold-style">账号:{{ userDetailInfo!.account }}</span>
           <span v-if="isMyPage" @click="toMyQRCode" class="pe-15px">
-            <img class="w-14px h-14px" :src="qrCodeImage" alt="" />
+            <img class="w-14px h-14px" :src="qrCodeImage" alt="二维码图标" />
           </span>
         </div>
         <Transition name="medal-fade">
@@ -45,7 +45,7 @@
             ref="medalBox"
             style="transform: translateZ(0)"
             class="relative w-118px overflow-hidden">
-            <img class="block w-full" :src="medalImage" alt="" />
+            <img class="block w-full" :src="medalImage" alt="用户勋章展示" />
             <div class="text-10px absolute inset-0 flex ps-2 items-center justify-around text-white font-medium">
               <span class="flex items-center">
                 <div v-if="(userStore.userInfo?.itemIds?.length ?? 0) > 0">

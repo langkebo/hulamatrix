@@ -123,7 +123,9 @@
             </div>
             <!-- 信息时间(群聊) -->
             <Transition name="fade-group">
-              <span v-if="isGroup && hoverMsgId === message.message.id" class="text-(12px var(--hula-brand-primary)) select-none">
+              <span
+                v-if="isGroup && hoverMsgId === message.message.id"
+                class="text-(12px var(--hula-brand-primary)) select-none">
                 {{ formatTimestamp(message.message.sendTime, true) }}
               </span>
             </Transition>
@@ -196,7 +198,9 @@
               <div v-if="message.message.body.translatedText" class="translated-text cursor-default flex flex-col">
                 <n-flex align="center" justify="space-between" class="mb-6px">
                   <n-flex align="center" :size="4">
-                    <span class="text-(12px var(--hula-brand-primary))">{{ message.message.body.translatedText.provider }}</span>
+                    <span class="text-(12px var(--hula-brand-primary))">
+                      {{ message.message.body.translatedText.provider }}
+                    </span>
                     <svg class="size-12px">
                       <use href="#success"></use>
                     </svg>
@@ -225,7 +229,7 @@
             <!-- 消息状态指示器 -->
             <div v-if="isMe" class="absolute -left-6 top-2 flex flex-col items-end">
               <n-icon v-if="message.message.status === MessageStatusEnum.SENDING" class="text-gray-400">
-                <img class="size-16px" src="@/assets/img/loading-one.svg" alt="" />
+                <img class="size-16px" src="@/assets/img/loading-one.svg" alt="消息发送中..." />
               </n-icon>
               <n-icon
                 v-if="message.message.status === MessageStatusEnum.FAILED"
@@ -284,7 +288,10 @@
                   :class="{ 'emoji-reply-bubble--active': hasUserMarkedEmoji(message, emoji.value) }"
                   @click.stop="message && cancelReplyEmoji(message, emoji.value)">
                   <img :title="emoji.title" class="size-18px" :src="emoji.url" :alt="emoji.title" />
-                  <span :class="hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'">
+                  <span
+                    :class="
+                      hasUserMarkedEmoji(message, emoji.value) ? 'text-var(--hula-brand-primary)' : 'text-(12px #eee)'
+                    ">
                     {{ message ? getEmojiCount(message, emoji.value) : 0 }}
                   </span>
                 </div>

@@ -42,7 +42,11 @@
             <template v-if="shouldShowDeleteFriend">
               <n-flex align="center" :size="6">
                 <!-- 状态图标 -->
-                <img v-if="hasCustomState && statusIcon" :src="statusIcon" class="size-18px rounded-50%" alt="" />
+                <img
+                  v-if="hasCustomState && statusIcon"
+                  :src="statusIcon"
+                  class="size-18px rounded-50%"
+                  :alt="`状态图标: ${statusTitle}`" />
                 <n-badge v-else :color="isOnline ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'" dot />
 
                 <!-- 状态文本 -->
@@ -312,7 +316,9 @@
             <!-- 群备注 -->
             <p class="flex-start-center gap-10px text-(12px [--chat-text-color]) mt-20px mb-10px">
               {{ t('home.chat_header.sidebar.group.remark') }}
-              <span class="text-(10px var(--hula-brand-primary))">{{ t('home.chat_header.sidebar.group.remark_desc') }}</span>
+              <span class="text-(10px var(--hula-brand-primary))">
+                {{ t('home.chat_header.sidebar.group.remark_desc') }}
+              </span>
             </p>
             <n-input
               class="border-(solid 1px [--line-color]) custom-shadow"
@@ -327,7 +333,9 @@
             <!-- 群设置选项 -->
             <div class="box-item cursor-default">
               <n-flex vertical justify="center" :size="4">
-                <p class="text-(12px var(--hula-brand-primary)) pb-14px">{{ t('home.chat_header.sidebar.group.settings.title') }}</p>
+                <p class="text-(12px var(--hula-brand-primary)) pb-14px">
+                  {{ t('home.chat_header.sidebar.group.settings.title') }}
+                </p>
 
                 <div class="flex-between-center">
                   <p>{{ t('home.chat_header.sidebar.group.settings.pin') }}</p>
@@ -465,7 +473,9 @@
             :value="JSON.stringify({ type: 'scanEnterGroup', roomId: currentSession?.roomId })"
             :size="200"
             :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)'"
-            :background-color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)82'"
+            :background-color="
+              themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-brand-primary)82'
+            "
             :icon-src="AvatarUtils.getAvatarUrl(currentSession?.avatar || '')" />
 
           <div class="text-center">

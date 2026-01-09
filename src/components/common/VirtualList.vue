@@ -10,7 +10,7 @@
       <span class="text-(12px var(--hula-brand-primary))">以下是全部消息内容</span>
     </n-flex>
     <n-flex v-if="isLoadingMore && !isLast" justify="center" class="box-border absolute-x-center pt-10px">
-      <img class="size-16px" src="@/assets/img/loading.svg" alt="" />
+      <img class="size-16px" src="@/assets/img/loading.svg" alt="加载中..." />
       <span class="text-(14px var(--hula-brand-primary))">加载中</span>
     </n-flex>
     <div ref="phantomRef" class="virtual-list-phantom"></div>

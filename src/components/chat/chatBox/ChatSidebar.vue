@@ -170,7 +170,10 @@ import { logger } from '@/utils/logger'
                         align="center"
                         :size="4"
                         class="flex-1">
-                        <img class="size-12px" :src="getUserState(item.userStateId)?.url" alt="" />
+                        <img
+                          class="size-12px"
+                          :src="getUserState(item.userStateId)?.url"
+                          :alt="`用户状态: ${translateStateTitle(getUserState(item.userStateId)?.title)}`" />
                         <span
                           class="text-10px text-[--chat-text-color] flex-1 min-w-0 truncate"
                           :title="translateStateTitle(getUserState(item.userStateId)?.title)">
