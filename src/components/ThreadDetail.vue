@@ -490,7 +490,7 @@ onMounted(() => {
 
 .thread-detail__header {
   padding: 16px;
-  background: var(--hula-white, #fff);
+  background: var(--hula-white, var(--hula-white));
   border-bottom: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
 }
 
@@ -504,7 +504,7 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .actions {
@@ -551,17 +551,17 @@ onMounted(() => {
 .message__sender {
   font-weight: 500;
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .message__time {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .message__content {
   font-size: 15px;
-  color: #333;
+  color: var(--hula-gray-900);
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
@@ -569,9 +569,9 @@ onMounted(() => {
 
 .message--root {
   padding: 16px;
-  background: #fff;
+  background: var(--hula-white);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.05);
 }
 
 .message__badge {
@@ -588,9 +588,9 @@ onMounted(() => {
 
 .message--reply {
   padding: 12px;
-  background: #fff;
+  background: var(--hula-white);
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(var(--hula-black-rgb), 0.05);
 }
 
 .thread-divider {
@@ -611,7 +611,7 @@ onMounted(() => {
 .thread-divider__text {
   font-size: 13px;
   font-weight: 500;
-  color: #999;
+  color: var(--hula-gray-400);
 }
 
 .load-more {
@@ -622,7 +622,7 @@ onMounted(() => {
 
 .thread-detail__input {
   padding: 16px;
-  background: #fff;
+  background: var(--hula-white);
   border-top: 1px solid var(--hula-brand-primary);
 }
 
@@ -632,7 +632,7 @@ onMounted(() => {
 
 .hint {
   font-size: 12px;
-  color: #999;
+  color: var(--hula-gray-400);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -665,21 +665,21 @@ onMounted(() => {
 
   .title,
   .message__sender {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .message__content {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .message--root,
   .message--reply {
-    background: #333;
+    background: var(--hula-gray-900);
   }
 
   .message__badge {
     background: var(--hula-brand-primary);
-    color: #fff;
+    color: var(--hula-white);
   }
 
   .thread-divider::before,
@@ -688,15 +688,15 @@ onMounted(() => {
   }
 
   .thread-divider__text {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .hint {
-    color: #666;
+    color: var(--hula-gray-700);
   }
 
   .hint kbd {
-    background: #333;
+    background: var(--hula-gray-900);
     border-color: #444;
   }
 }

@@ -3774,7 +3774,7 @@
     },
     {
       "file": "src/views/announWindow/index.vue",
-      "line": 130,
+      "line": 128,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleDel(announcement)\">"
     },
@@ -3984,55 +3984,55 @@
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 54,
+      "line": 58,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"giveAccount(item)\""
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 110,
+      "line": 119,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"createWebviewWindow('注册', 'register', 600, 600)\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 135,
+      "line": 144,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"normalLogin('PC', true, false)\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 170,
+      "line": 179,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"normalLogin('PC', true, true)\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 181,
+      "line": 190,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"router.push('/qrCode')\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 189,
+      "line": 198,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"removeToken\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 206,
+      "line": 215,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"createWebviewWindow('注册', 'register', 600, 600)\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 211,
+      "line": 220,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"createWebviewWindow('忘记密码', 'forgetPassword', 600, 600)\">"
     },
     {
       "file": "src/views/loginWindow/Login.vue",
-      "line": 216,
+      "line": 225,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"router.push('/network')\""
     },
@@ -4176,13 +4176,13 @@
     },
     {
       "file": "src/views/onlineStatusWindow/index.vue",
-      "line": 20,
+      "line": 19,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<n-flex @click=\"handleResetState\" vertical justify=\"center\" align=\"center\" :size=\"8\" class=\"status-item\">"
     },
     {
       "file": "src/views/onlineStatusWindow/index.vue",
-      "line": 29,
+      "line": 28,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleActive(item)\""
     },

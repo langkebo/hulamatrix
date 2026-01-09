@@ -350,7 +350,7 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: #333;
+  color: var(--hula-gray-900);
 }
 
 .threads-panel__list {
@@ -373,7 +373,7 @@ onMounted(() => {
 
 .thread-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.1);
 }
 
 .thread-card__root {
@@ -382,7 +382,7 @@ onMounted(() => {
 
 .message-content {
   font-size: 14px;
-  color: #333;
+  color: var(--hula-gray-900);
   line-height: 1.5;
   word-break: break-word;
   display: -webkit-box;
@@ -397,7 +397,7 @@ onMounted(() => {
 
 .stat {
   font-size: 12px;
-  color: #666;
+  color: var(--hula-gray-700);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -413,7 +413,7 @@ onMounted(() => {
 }
 
 .participant-avatar {
-  border: 2px solid #fff;
+  border: 2px solid var(--hula-white);
   margin-left: -8px;
 }
 
@@ -424,7 +424,7 @@ onMounted(() => {
 .more-avatars {
   margin-left: 4px;
   font-size: 11px;
-  color: #999;
+  color: var(--hula-gray-400);
   background: var(--hula-gray-100, var(--hula-brand-primary));
   border-radius: 12px;
   padding: 2px 6px;
@@ -437,11 +437,11 @@ onMounted(() => {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .title {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .message-content {
-    color: #eee;
+    color: var(--hula-gray-200);
   }
 
   .stat {
@@ -449,11 +449,11 @@ onMounted(() => {
   }
 
   .participant-avatar {
-    border-color: #fff;
+    border-color: var(--hula-white);
   }
 
   .more-avatars {
-    background: #333;
+    background: var(--hula-gray-900);
   }
 }
 </style>
