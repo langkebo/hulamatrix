@@ -243,7 +243,7 @@ export class MatrixPasswordResetService {
             type: 'm.login.dummy'
           }
 
-      await this.matrixRequest<{}>('/_matrix/client/v3/account/password', 'POST', {
+      await this.matrixRequest<Record<string, unknown>>('/_matrix/client/v3/account/password', 'POST', {
         new_password: newPassword,
         auth: authData
       })

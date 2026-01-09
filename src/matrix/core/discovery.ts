@@ -5,7 +5,10 @@
  * 确保 SDK 的 AutoDiscovery 功能被充分利用。
  */
 
-import { matrixServerDiscovery, type DiscoveryResult as ServerDiscoveryResult } from '@/integrations/matrix/server-discovery'
+import {
+  matrixServerDiscovery,
+  type DiscoveryResult as ServerDiscoveryResult
+} from '@/integrations/matrix/server-discovery'
 import { logger } from '@/utils/logger'
 
 export type DiscoveryResult = {
