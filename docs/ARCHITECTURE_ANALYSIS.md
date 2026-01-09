@@ -1,9 +1,9 @@
 # HuLa 项目架构分析报告
 
 **分析日期**: 2026-01-08
-**最后更新**: 2026-01-08 (v2.0 - 全面更新)
+**最后更新**: 2026-01-09 (v3.0 - 测试目录迁移)
 **范围**: 架构问题分析与改进建议
-**状态**: ✅ Phase 1-7 已完成，🔄 Phase 4 (大文件重构) 60% 进行中
+**状态**: ✅ Phase 1-7 已完成，✅ 测试目录已迁移，🔄 Phase 4 (大文件重构) 60% 进行中
 
 ---
 
@@ -11,20 +11,21 @@
 
 本文档分析 HuLa 项目的架构现状，重点关注已完成的重构工作和待优化项。
 
-### 关键成果 (2026-01-08)
+### 关键成果 (2026-01-09 更新)
 - ✅ **Friends Store 统一**: 3 个重复 store 已合并为 1 个
-- ✅ **大文件重构**: 6 个大型文件已完成模块化拆分
+- ✅ **大文件重构**: 7 个大型文件已完成模块化拆分 (新增 Chat Store)
 - ✅ **Spaces 组件拆分**: SpaceDetails.vue 已拆分为 5 个子组件
-- ⚠️ **Matrix 服务**: 仍分散在两个目录，待重组
-- ⚠️ **测试文件**: 部分与源代码混合
+- ✅ **测试目录迁移**: 72 个测试文件已迁移到 tests/ 目录
+- ✅ **Matrix SDK API 对齐**: 97.6% 总体对齐度
 - ✅ **类型安全**: 所有 `as any` 已从非测试文件中移除
 
 ### 项目统计
-- **总文件数**: 1037+ 个文件
+- **总文件数**: 1050+ 个文件
 - **TypeScript 覆盖**: 100%
 - **代码质量**: Biome 检查全部通过
 - **类型错误**: 0
-- **测试覆盖率**: 待提升
+- **测试文件**: 72 个 (已迁移到 tests/)
+- **Matrix API 对齐**: 97.6%
 
 ---
 
@@ -103,6 +104,54 @@ src/components/spaces/
 - ✅ 添加 `powerLevel` 权限等级
 - ✅ 添加 `membership` 成员状态
 - ✅ 添加 `via`, `suggested`, `order` 子房间属性
+
+### 1.4 测试目录迁移 ✅
+
+#### 迁移前
+```
+src/
+├── __tests__/           # 测试与源代码混合
+│   ├── e2e/            # E2E 测试
+│   ├── unit/           # 单元测试
+│   ├── integrations/   # 集成测试
+│   ├── services/       # 服务测试
+│   ├── stores/         # Store 测试
+│   ├── utils/          # 工具测试
+│   └── setup.ts        # 测试设置
+├── components/         # 源代码
+├── services/           # 源代码
+└── stores/             # 源代码
+```
+
+#### 迁移后
+```
+tests/                   # 独立的测试目录
+├── setup.ts            # 测试设置（统一）
+├── unit/               # 单元测试
+│   ├── services/       # 服务测试
+│   ├── stores/         # Store 测试
+│   ├── utils/          # 工具测试
+│   ├── config/         # 配置测试
+│   ├── adapters/       # 适配器测试
+│   ├── views/          # 视图测试
+│   └── matrix/         # Matrix 功能测试
+├── integrations/       # 集成测试
+├── e2e/                # E2E 测试
+└── types/              # 类型测试
+
+src/                    # 纯源代码目录
+├── components/
+├── services/
+├── stores/
+└── ...
+```
+
+**改进**:
+- ✅ 72 个测试文件已迁移
+- ✅ 源代码目录更清晰
+- ✅ vitest.config.ts 已更新
+- ✅ 测试路径：`tests/**/*.{test,spec}.{js,ts}`
+- ✅ 设置文件：`tests/setup.ts`
 
 ---
 
@@ -457,34 +506,36 @@ await call.getMediaDevices()
 
 ### 4.1 立即可执行 (高优先级)
 
-1. **Matrix SDK API 对齐验证** 🔴
-   - 运行验证脚本检查各组件
-   - 生成对齐报告
-   - 修复不对齐的 API 调用
+1. **完成剩余大文件重构** 🔴
+   - MatrixChatSidebar.vue (1655 行) - 成员列表、文件列表、搜索、房间信息
+   - ManageSpaceDialog.vue (1561 行) - 空间设置对话框
+   - GroupCallInterface.vue (1504 行) - 群组通话界面
 
-2. **重组 Matrix 服务** 🔴
+2. **重组 Matrix 服务** 🟡
    - 创建 `src/matrix/` 目录结构
    - 迁移核心模块
    - 更新所有导入路径
 
-3. **完成剩余大文件重构** 🟡
-   - ManageSpaceDialog.vue (1647 行)
-   - MatrixChatSidebar.vue (1641 行)
-   - GroupCallInterface.vue (1498 行)
-
 ### 4.2 需要规划 (中优先级)
 
-4. **测试文件迁移** 🟡
-   - 创建 `tests/` 目录
-   - 移动 `src/__tests__/`
-   - 更新 `vitest.config.ts`
-
-5. **提取公共 LRU 实现** 🟢
+3. **提取公共 LRU 实现** 🟢
    - 创建 `src/utils/cache/lru.ts`
    - 迁移 mediaCache.ts
    - 迁移 cache-state.ts
 
-### 4.3 文档更新 (低优先级)
+### 4.3 已完成 ✅
+
+4. **测试文件迁移** ✅ (2026-01-09 完成)
+   - ✅ 创建 `tests/` 目录
+   - ✅ 移动 `src/__tests__/` (72 个文件)
+   - ✅ 更新 `vitest.config.ts`
+
+5. **Matrix SDK API 对齐验证** ✅ (2026-01-09 完成)
+   - ✅ 5/5 模块已验证
+   - ✅ 总体对齐度：97.6%
+   - ✅ 生成 API 对齐报告
+
+### 4.4 文档更新 (低优先级)
 
 6. **更新项目文档**
    - 更新 `CLAUDE.md`
@@ -556,6 +607,6 @@ Matrix SDK (matrix-js-sdk)
 
 ---
 
-**文档版本**: v2.0
-**最后更新**: 2026-01-08
+**文档版本**: v3.0
+**最后更新**: 2026-01-09
 **下次审查**: Phase 4 完成后

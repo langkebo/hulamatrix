@@ -75,7 +75,10 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include: [
+      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+    ],
 
     // 增强的测试配置
     testTimeout: 10000, // 默认测试超时时间增加到10秒
@@ -91,7 +94,7 @@ export default defineConfig({
     },
 
     // 全局设置
-    setupFiles: ['src/__tests__/setup.ts'],
+    setupFiles: ['tests/setup.ts'],
 
     // Mock配置
     clearMocks: false, // 不自动清除所有mock，避免破坏复杂的mock结构
@@ -109,7 +112,8 @@ export default defineConfig({
         'src/**/index.ts', // 导出文件
         'src/**/types/**', // 类型定义文件
         'src/**/mock/**', // mock文件
-        'src/**/__tests__/**' // 测试工具文件
+        'src/**/__tests__/**', // 测试工具文件
+        'tests/**' // 测试目录
       ],
       thresholds: {
         global: {
