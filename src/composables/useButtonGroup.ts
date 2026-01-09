@@ -3,7 +3,7 @@
  * Handles button group positioning logic
  */
 
-import { ref, type Ref, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 
 export interface ButtonGroupConfig {
   screenConfig: {

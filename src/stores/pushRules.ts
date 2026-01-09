@@ -98,7 +98,7 @@ export const usePushRulesStore = defineStore('pushRules', () => {
 
   // 方法
   const loadPushRules = async () => {
-    if (!flags.matrixPushRulesEnabled ) return
+    if (!flags.matrixPushRulesEnabled) return
 
     loading.value = true
     error.value = null
@@ -496,7 +496,7 @@ export const usePushRulesStore = defineStore('pushRules', () => {
    * 监听 Matrix SDK 的 accountData 事件，自动同步服务器规则变更
    */
   const enableAutoSync = () => {
-    if (!flags.matrixPushRulesEnabled ) return
+    if (!flags.matrixPushRulesEnabled) return
 
     try {
       const client = matrixClientService.getClient() as unknown as {
@@ -553,7 +553,7 @@ export const usePushRulesStore = defineStore('pushRules', () => {
    * 同步推送规则（从服务器拉取最新规则）
    */
   const syncPushRules = async (): Promise<boolean> => {
-    if (!flags.matrixPushRulesEnabled ) {
+    if (!flags.matrixPushRulesEnabled) {
       logger.warn('[PushRulesStore] Push rules are disabled')
       return false
     }
@@ -597,7 +597,7 @@ export const usePushRulesStore = defineStore('pushRules', () => {
 
   // 初始化
   const initialize = async () => {
-    if (flags.matrixPushRulesEnabled ) {
+    if (flags.matrixPushRulesEnabled) {
       await loadPushRules()
       await loadNotificationPolicy()
       initializeRuleTemplates()

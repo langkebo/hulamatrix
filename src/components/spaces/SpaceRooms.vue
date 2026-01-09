@@ -2,21 +2,13 @@
   <div class="space-rooms">
     <!-- 搜索和操作栏 -->
     <div class="rooms-header">
-      <n-input
-        v-model:value="searchQuery"
-        size="small"
-        placeholder="搜索房间..."
-        clearable>
+      <n-input v-model:value="searchQuery" size="small" placeholder="搜索房间..." clearable>
         <template #prefix>
           <n-icon><Search /></n-icon>
         </template>
       </n-input>
 
-      <n-button
-        v-if="isAdmin"
-        type="primary"
-        size="small"
-        @click="$emit('create-room')">
+      <n-button v-if="isAdmin" type="primary" size="small" @click="$emit('create-room')">
         <template #icon>
           <n-icon><Plus /></n-icon>
         </template>
@@ -30,32 +22,18 @@
         <n-empty description="暂无房间" size="small" />
       </div>
 
-      <div
-        v-for="room in filteredRooms"
-        :key="room.id"
-        class="room-item"
-        @click="$emit('view-room', room)">
+      <div v-for="room in filteredRooms" :key="room.id" class="room-item" @click="$emit('view-room', room)">
         <div class="room-avatar">
           <n-avatar :size="48" round>
             <n-icon><Hash /></n-icon>
           </n-avatar>
-          <n-badge
-            v-if="room.isFavorite"
-            type="warning"
-            dot
-            :bottom="2"
-            :right="2" />
+          <n-badge v-if="room.isFavorite" type="warning" dot :bottom="2" :right="2" />
         </div>
 
         <div class="room-info">
           <div class="room-name">
             {{ room.name }}
-            <n-tag
-              v-if="room.type === 'space'"
-              size="tiny"
-              type="info">
-              空间
-            </n-tag>
+            <n-tag v-if="room.type === 'space'" size="tiny" type="info">空间</n-tag>
           </div>
 
           <div v-if="room.topic" class="room-topic">
@@ -119,9 +97,8 @@ const filteredRooms = computed(() => {
   if (!searchQuery.value) return props.rooms
 
   const query = searchQuery.value.toLowerCase()
-  return props.rooms.filter(room =>
-    room.name.toLowerCase().includes(query) ||
-    (room.topic && room.topic.toLowerCase().includes(query))
+  return props.rooms.filter(
+    (room) => room.name.toLowerCase().includes(query) || (room.topic && room.topic.toLowerCase().includes(query))
   )
 })
 

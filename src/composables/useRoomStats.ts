@@ -30,7 +30,7 @@ export interface RoomStats {
 export function useRoomStats(roomId?: string) {
   const groupStore = useGroupStore()
   const globalStore = useGlobalStore()
-  const flags = { matrixEnabled: true }
+  const _flags = { matrixEnabled: true }
   const badRoomIds = new Set<string>()
 
   const stats = ref<RoomStats>({
@@ -72,7 +72,7 @@ export function useRoomStats(roomId?: string) {
 
     try {
       // 优先使用适配器（Matrix 房间）
-      if (adapter.value ) {
+      if (adapter.value) {
         const roomStats = await adapter.value.getGroupStats(rid)
         const total = roomStats.totalNum || 0
         if (total === 0) {

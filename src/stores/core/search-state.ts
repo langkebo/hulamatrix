@@ -29,12 +29,26 @@ export class SearchStateManager {
   private getUsers: () => Map<string, UserProfile>
 
   /** Rooms map reference */
-  private getRooms: () => Map<string, { id: string; name: string; avatar?: string; type: string; members: string[]; topic?: string; unreadCount: number }>
+  private getRooms: () => Map<
+    string,
+    { id: string; name: string; avatar?: string; type: string; members: string[]; topic?: string; unreadCount: number }
+  >
 
   constructor(
     getClient: () => any,
     getUsers: () => Map<string, UserProfile>,
-    getRooms: () => Map<string, { id: string; name: string; avatar?: string; type: string; members: string[]; topic?: string; unreadCount: number }>
+    getRooms: () => Map<
+      string,
+      {
+        id: string
+        name: string
+        avatar?: string
+        type: string
+        members: string[]
+        topic?: string
+        unreadCount: number
+      }
+    >
   ) {
     this.getClient = getClient
     this.getUsers = getUsers

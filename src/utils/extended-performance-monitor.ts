@@ -3,7 +3,6 @@
  */
 
 import { logger } from '@/utils/logger'
-import { flags } from '@/utils/envFlags'
 import { errorLogManager } from '@/utils/error-handler'
 import { isDevNoise } from '@/utils/error-handler'
 
@@ -404,12 +403,7 @@ class ExtendedPerformanceMonitor {
         // 只在以下条件下启用 URL 重写：
         // 1. 开发环境
         // 2. 有有效的凭据（避免无凭据时的 ERR_ABORTED）
-        if (
-          isDev &&
-          hasValidCredentials &&
-          typeof urlStr === 'string' &&
-          /https?:\/\/.+\/_matrix\//.test(urlStr)
-        ) {
+        if (isDev && hasValidCredentials && typeof urlStr === 'string' && /https?:\/\/.+\/_matrix\//.test(urlStr)) {
           const u = new URL(urlStr)
           const rel = `${u.pathname}${u.search}`
           args[0] = rel
@@ -424,12 +418,7 @@ class ExtendedPerformanceMonitor {
           const rel = `${u.pathname}${u.search}`
           args[0] = rel
           urlStr = rel
-        } else if (
-          isDev &&
-          hasValidCredentials &&
-          typeof Request !== 'undefined' &&
-          args[0] instanceof Request
-        ) {
+        } else if (isDev && hasValidCredentials && typeof Request !== 'undefined' && args[0] instanceof Request) {
           const req = args[0] as Request
           const reqUrl = req.url
           if (/https?:\/\/.+\/_matrix\//.test(reqUrl) || /https?:\/\/.+\/_synapse\//.test(reqUrl)) {

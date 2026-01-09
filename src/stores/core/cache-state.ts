@@ -31,10 +31,7 @@ export class CacheStateManager {
   /** Rooms map reference */
   private getRooms: () => Map<string, Room>
 
-  constructor(
-    getMessages: () => Map<string, ChatMessage[]>,
-    getRooms: () => Map<string, Room>
-  ) {
+  constructor(getMessages: () => Map<string, ChatMessage[]>, getRooms: () => Map<string, Room>) {
     this.getMessages = getMessages
     this.getRooms = getRooms
     this.currentRoomId = ref<string | null>(null)

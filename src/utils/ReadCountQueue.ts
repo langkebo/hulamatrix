@@ -36,7 +36,7 @@ const INTERVAL_DELAY = 10000 // 轮询间隔时间：10秒
 // 状态变量
 const queue: ReadCountQueue = new Set<string>() // 待处理的事件 ID 队列
 let timerWorker: Worker | null = null // Web Worker定时器
-let request: ReadCountRequest | null = null // 当前正在进行的请求
+let _request: ReadCountRequest | null = null // 当前正在进行的请求
 let isTimerActive = false // 标记定时器是否活跃
 const roomEventCache = new Map<string, string>() // msgId -> eventId 映射缓存
 
@@ -159,7 +159,7 @@ const task = async () => {
     }
 
     // 发送已读计数更新事件
-    for (const [roomId, countList] of results.entries()) {
+    for (const [_roomId, countList] of results.entries()) {
       useMitt.emit('onGetReadCount', new Map(countList.map((item) => [item.msgId, item])))
     }
 
@@ -170,7 +170,7 @@ const task = async () => {
   } catch (error) {
     logger.error('[ReadCountQueue] 无法获取消息读取计数:', toError(error))
   } finally {
-    request = null // 清理请求引用
+    _request = null // 清理请求引用
   }
 }
 
@@ -196,7 +196,7 @@ export const initListener = () => {
 export const clearListener = () => {
   useMitt.off('onAddReadCountTask', onAddReadCountTask)
   useMitt.off('onRemoveReadCountTask', onRemoveReadCountTask)
-  request = null
+  _request = null
   stopTimer()
   // 终止Worker
   terminateWorker()

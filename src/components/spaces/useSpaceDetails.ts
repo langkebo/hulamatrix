@@ -120,7 +120,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
   const filteredRooms = computed<Room[]>(() => {
     if (!roomSearchQuery.value) return []
 
-    const query = roomSearchQuery.value.toLowerCase()
+    const _query = roomSearchQuery.value.toLowerCase()
     // 这里应该从实际的房间列表中过滤
     return []
   })
@@ -129,7 +129,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
   const filteredMembers = computed<Member[]>(() => {
     if (!memberSearchQuery.value) return []
 
-    const query = memberSearchQuery.value.toLowerCase()
+    const _query = memberSearchQuery.value.toLowerCase()
     // 这里应该从实际的成员列表中过滤
     return []
   })
@@ -197,7 +197,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
     return 0
   }
 
-  const getRoomIcon = (type: string): Component => {
+  const getRoomIcon = (_type: string): Component => {
     // 这里应该返回对应的图标组件
     return {} as Component
   }
@@ -301,7 +301,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
     try {
       emit('join', safeSpace.value.id)
       message.success('已加入空间')
-    } catch (error) {
+    } catch (_error) {
       message.error('加入空间失败')
     } finally {
       isJoining.value = false
@@ -362,7 +362,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
         isPublic: false
       }
       message.success('房间创建成功')
-    } catch (error) {
+    } catch (_error) {
       message.error('创建房间失败')
     } finally {
       isCreatingRoom.value = false
@@ -387,7 +387,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
         notification: notificationForm.value
       })
       message.success('设置已保存')
-    } catch (error) {
+    } catch (_error) {
       message.error('保存设置失败')
     } finally {
       isSaving.value = false
@@ -408,7 +408,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
     try {
       await navigator.clipboard.writeText(link)
       message.success('链接已复制到剪贴板')
-    } catch (error) {
+    } catch (_error) {
       message.error('复制链接失败')
     }
   }
@@ -423,7 +423,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
         try {
           emit('archive', safeSpace.value.id)
           message.success('空间已归档')
-        } catch (error) {
+        } catch (_error) {
           message.error('归档空间失败')
         }
       }
@@ -434,7 +434,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
     try {
       emit('unarchive', safeSpace.value.id)
       message.success('空间已取消归档')
-    } catch (error) {
+    } catch (_error) {
       message.error('取消归档失败')
     }
   }
@@ -449,7 +449,7 @@ export function useSpaceDetails(space: Ref<Space | null>, emit: any) {
         try {
           emit('leave', safeSpace.value.id)
           message.success('已退出空间')
-        } catch (error) {
+        } catch (_error) {
           message.error('退出空间失败')
         }
       }

@@ -2,8 +2,6 @@
  * Space Details - 类型定义
  */
 
-import type { Component } from 'vue'
-
 /** 房间接口 */
 export interface Room {
   id: string
@@ -107,14 +105,7 @@ export interface CreateRoomForm {
 }
 
 /** Space 动作类型 */
-export type SpaceAction =
-  | 'settings'
-  | 'invite'
-  | 'archive'
-  | 'unarchive'
-  | 'leave'
-  | 'copy_link'
-  | 'toggle_favorite'
+export type SpaceAction = 'settings' | 'invite' | 'archive' | 'unarchive' | 'leave' | 'copy_link' | 'toggle_favorite'
 
 /** 房间动作类型 */
 export type RoomAction = 'view' | 'favorite' | 'settings' | 'leave'

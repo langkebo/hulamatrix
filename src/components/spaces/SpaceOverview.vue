@@ -35,11 +35,7 @@
     <div v-if="space.tags && space.tags.length > 0" class="tags-section">
       <h3>标签</h3>
       <div class="tags-content">
-        <n-tag
-          v-for="tag in space.tags"
-          :key="tag"
-          type="info"
-          size="small">
+        <n-tag v-for="tag in space.tags" :key="tag" type="info" size="small">
           {{ tag }}
         </n-tag>
       </div>
@@ -49,10 +45,7 @@
     <div class="activity-section">
       <h3>最近活动</h3>
       <div v-if="activities.length > 0" class="activity-list">
-        <div
-          v-for="activity in activities"
-          :key="activity.id"
-          class="activity-item">
+        <div v-for="activity in activities" :key="activity.id" class="activity-item">
           <div class="activity-icon">
             <n-icon size="20">
               <component :is="getActivityIcon(activity.type)" />
@@ -72,11 +65,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NTag, NIcon, NEmpty } from 'naive-ui'
-import {
-  CirclePlus,
-  UserPlus,
-  Message
-} from '@vicons/tabler'
+import { CirclePlus, UserPlus, Message } from '@vicons/tabler'
 import type { SpaceDetailsProps, Activity } from './types'
 
 interface Props {

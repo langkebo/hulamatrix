@@ -205,7 +205,11 @@ const fetchEncryptedImagePreview = async (): Promise<string | null> => {
       const msg = chatStore.getMessage(props.message.id)
       if (msg) {
         const nextBody = { ...(msg.message.body || {}), thumbnailPath: abs }
-        chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, message: { body: nextBody } as Partial<MessageType> })
+        chatStore.updateMsg({
+          msgId: msg.message.id,
+          status: msg.message.status,
+          message: { body: nextBody } as Partial<MessageType>
+        })
         const updated = { ...msg, message: { ...msg.message, body: nextBody } }
         await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as MessageForSave })
       }
@@ -262,7 +266,11 @@ const downloadOriginalEncryptedImage = async () => {
     const msg = chatStore.getMessage(props.message.id)
     if (msg) {
       const nextBody = { ...(msg.message.body || {}), localPath: abs }
-      chatStore.updateMsg({ msgId: msg.message.id, status: msg.message.status, message: { body: nextBody } as Partial<MessageType> })
+      chatStore.updateMsg({
+        msgId: msg.message.id,
+        status: msg.message.status,
+        message: { body: nextBody } as Partial<MessageType>
+      })
       const updated = { ...msg, message: { ...msg.message, body: nextBody } }
       await invokeSilently(TauriCommand.SAVE_MSG, { data: updated as MessageForSave })
     }

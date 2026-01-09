@@ -1,10 +1,6 @@
 <template>
   <div class="space-settings">
-    <n-form
-      ref="formRef"
-      :model="formData"
-      label-placement="left"
-      label-width="120px">
+    <n-form ref="formRef" :model="formData" label-placement="left" label-width="120px">
       <!-- 基本信息 -->
       <div class="setting-section">
         <h3>基本信息</h3>
@@ -35,21 +31,15 @@
         <h3>隐私设置</h3>
         <n-form-item label="公开空间" path="isPublic">
           <n-switch v-model:value="formData.privacy.isPublic" />
-          <template #feedback>
-            公开空间可以被任何人搜索和查看
-          </template>
+          <template #feedback>公开空间可以被任何人搜索和查看</template>
         </n-form-item>
         <n-form-item label="允许访客" path="guestAllowed">
           <n-switch v-model:value="formData.privacy.guestAllowed" />
-          <template #feedback>
-            允许未注册用户作为访客访问
-          </template>
+          <template #feedback>允许未注册用户作为访客访问</template>
         </n-form-item>
         <n-form-item label="历史记录可见" path="historyVisible">
           <n-switch v-model:value="formData.privacy.historyVisible" />
-          <template #feedback>
-            新成员可以查看加入前的消息历史
-          </template>
+          <template #feedback>新成员可以查看加入前的消息历史</template>
         </n-form-item>
       </div>
 
@@ -58,36 +48,23 @@
         <h3>通知设置</h3>
         <n-form-item label="所有房间" path="allRooms">
           <n-switch v-model:value="formData.notification.allRooms" />
-          <template #feedback>
-            接收空间内所有房间的通知
-          </template>
+          <template #feedback>接收空间内所有房间的通知</template>
         </n-form-item>
         <n-form-item label="忽略提及" path="ignoreMentions">
           <n-switch v-model:value="formData.notification.ignoreMentions" />
-          <template #feedback>
-            不接收 @mention 的通知
-          </template>
+          <template #feedback>不接收 @mention 的通知</template>
         </n-form-item>
         <n-form-item label="关键词" path="keywords">
           <n-dynamic-tags v-model:value="formData.notification.keywords" />
-          <template #feedback>
-            当消息包含这些关键词时通知我
-          </template>
+          <template #feedback>当消息包含这些关键词时通知我</template>
         </n-form-item>
       </div>
 
       <!-- 操作按钮 -->
       <div class="setting-actions">
         <n-space>
-          <n-button
-            type="primary"
-            @click="$emit('save', formData)"
-            :loading="isSaving">
-            保存设置
-          </n-button>
-          <n-button @click="$emit('reset')">
-            重置
-          </n-button>
+          <n-button type="primary" @click="$emit('save', formData)" :loading="isSaving">保存设置</n-button>
+          <n-button @click="$emit('reset')">重置</n-button>
         </n-space>
       </div>
     </n-form>
@@ -96,22 +73,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import {
-  NForm,
-  NFormItem,
-  NInput,
-  NSwitch,
-  NDynamicTags,
-  NButton,
-  NSpace
-} from 'naive-ui'
+import { NForm, NFormItem, NInput, NSwitch, NDynamicTags, NButton, NSpace } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
-import type {
-  BasicSettingsForm,
-  PrivacySettingsForm,
-  NotificationSettingsForm,
-  SpaceDetailsProps
-} from './types'
+import type { BasicSettingsForm, PrivacySettingsForm, NotificationSettingsForm, SpaceDetailsProps } from './types'
 
 interface Props {
   space: NonNullable<SpaceDetailsProps['space']>
@@ -119,17 +83,23 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'save', data: {
-    basic: BasicSettingsForm
-    privacy: PrivacySettingsForm
-    notification: NotificationSettingsForm
-  }): void
+  (
+    e: 'save',
+    data: {
+      basic: BasicSettingsForm
+      privacy: PrivacySettingsForm
+      notification: NotificationSettingsForm
+    }
+  ): void
   (e: 'reset'): void
-  (e: 'update:formData', data: {
-    basic: BasicSettingsForm
-    privacy: PrivacySettingsForm
-    notification: NotificationSettingsForm
-  }): void
+  (
+    e: 'update:formData',
+    data: {
+      basic: BasicSettingsForm
+      privacy: PrivacySettingsForm
+      notification: NotificationSettingsForm
+    }
+  ): void
 }
 
 const props = withDefaults(defineProps<Props>(), {

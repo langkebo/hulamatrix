@@ -52,57 +52,36 @@
             密钥备份可以将您的加密密钥安全地存储在服务器上。这样即使您更换设备或丢失设备，也能恢复您的加密消息历史。
           </p>
           <n-alert type="info" :show-icon="true" class="mt-8px">
-            <strong>建议：</strong>创建密钥备份后，请保存好恢复密钥，以防万一
+            <strong>建议：</strong>
+            创建密钥备份后，请保存好恢复密钥，以防万一
           </n-alert>
         </n-card>
 
         <!-- Actions Section -->
         <n-card title="密钥备份操作" size="small">
           <n-space vertical :size="12">
-            <n-button
-              v-if="backupStatus === 'none'"
-              type="primary"
-              size="large"
-              block
-              @click="createBackup"
-            >
+            <n-button v-if="backupStatus === 'none'" type="primary" size="large" block @click="createBackup">
               <template #icon>
                 <n-icon><Plus /></n-icon>
               </template>
               创建密钥备份
             </n-button>
 
-            <n-button
-              v-if="backupStatus === 'warning'"
-              type="warning"
-              size="large"
-              block
-              @click="repairBackup"
-            >
+            <n-button v-if="backupStatus === 'warning'" type="warning" size="large" block @click="repairBackup">
               <template #icon>
                 <n-icon><Tool /></n-icon>
               </template>
               修复密钥备份
             </n-button>
 
-            <n-button
-              v-if="backupStatus === 'ok'"
-              type="info"
-              size="large"
-              block
-              @click="showRecoveryKey = true"
-            >
+            <n-button v-if="backupStatus === 'ok'" type="info" size="large" block @click="showRecoveryKey = true">
               <template #icon>
                 <n-icon><Key /></n-icon>
               </template>
               查看恢复密钥
             </n-button>
 
-            <n-button
-              size="large"
-              block
-              @click="showHelp = true"
-            >
+            <n-button size="large" block @click="showHelp = true">
               <template #icon>
                 <n-icon><HelpIcon /></n-icon>
               </template>
@@ -117,8 +96,7 @@
             <n-descriptions-item label="状态">
               <n-tag
                 :type="backupStatus === 'ok' ? 'success' : backupStatus === 'warning' ? 'warning' : 'default'"
-                size="small"
-              >
+                size="small">
                 {{ statusLabel }}
               </n-tag>
             </n-descriptions-item>
@@ -141,23 +119,13 @@
     </div>
 
     <!-- Recovery Key Dialog -->
-    <n-modal
-      v-model:show="showRecoveryKey"
-      preset="card"
-      title="恢复密钥"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showRecoveryKey" preset="card" title="恢复密钥" :style="{ width: '90%', maxWidth: '400px' }">
       <n-alert type="warning" :show-icon="true" class="mb-12px">
         请将此恢复密钥保存在安全的地方。任何获得此密钥的人都可以访问您的加密消息。
       </n-alert>
 
       <div v-if="recoveryKey" class="recovery-key-display">
-        <n-input
-          :value="recoveryKey"
-          type="textarea"
-          readonly
-          :autosize="{ minRows: 3, maxRows: 5 }"
-        />
+        <n-input :value="recoveryKey" type="textarea" readonly :autosize="{ minRows: 3, maxRows: 5 }" />
       </div>
 
       <n-space class="mt-12px" vertical>
@@ -167,19 +135,12 @@
           </template>
           复制恢复密钥
         </n-button>
-        <n-button block @click="showRecoveryKey = false">
-          关闭
-        </n-button>
+        <n-button block @click="showRecoveryKey = false">关闭</n-button>
       </n-space>
     </n-modal>
 
     <!-- Help Dialog -->
-    <n-modal
-      v-model:show="showHelp"
-      preset="card"
-      title="密钥备份帮助"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
+    <n-modal v-model:show="showHelp" preset="card" title="密钥备份帮助" :style="{ width: '90%', maxWidth: '400px' }">
       <div class="help-content">
         <h4>什么是密钥备份？</h4>
         <p>密钥备份将您的加密密钥安全地存储在 Matrix 服务器上，使用您的账户密码进行加密保护。</p>
@@ -194,15 +155,11 @@
         <h4>恢复密钥</h4>
         <p>恢复密钥是用于访问密钥备份的特殊密钥。请务必妥善保管，不要分享给他人。</p>
 
-        <n-alert type="info" :show-icon="true" class="mt-12px">
-          建议将恢复密钥写在纸上或存储在密码管理器中
-        </n-alert>
+        <n-alert type="info" :show-icon="true" class="mt-12px">建议将恢复密钥写在纸上或存储在密码管理器中</n-alert>
       </div>
 
       <template #footer>
-        <n-button type="primary" block @click="showHelp = false">
-          我知道了
-        </n-button>
+        <n-button type="primary" block @click="showHelp = false">我知道了</n-button>
       </template>
     </n-modal>
 
@@ -211,22 +168,15 @@
       v-model:show="showCreateBackup"
       preset="card"
       title="创建密钥备份"
-      :style="{ width: '90%', maxWidth: '400px' }"
-    >
-      <n-alert type="info" :show-icon="true" class="mb-12px">
-        创建密钥备份需要设置密码或生成恢复密钥
-      </n-alert>
+      :style="{ width: '90%', maxWidth: '400px' }">
+      <n-alert type="info" :show-icon="true" class="mb-12px">创建密钥备份需要设置密码或生成恢复密钥</n-alert>
 
       <n-space vertical :size="12">
         <n-form-item label="备份方式">
           <n-radio-group v-model:value="backupMethod" name="backupMethod">
             <n-space vertical>
-              <n-radio value="passphrase">
-                使用密码保护
-              </n-radio>
-              <n-radio value="recoveryKey">
-                生成恢复密钥
-              </n-radio>
+              <n-radio value="passphrase">使用密码保护</n-radio>
+              <n-radio value="recoveryKey">生成恢复密钥</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
@@ -237,8 +187,7 @@
           type="password"
           show-password-on="click"
           placeholder="输入备份密码"
-          size="large"
-        />
+          size="large" />
 
         <n-alert v-if="backupMethod === 'recoveryKey'" type="warning" :show-icon="true">
           系统将生成一个恢复密钥，请务必保存好
@@ -247,18 +196,10 @@
 
       <template #footer>
         <n-space vertical>
-          <n-button
-            type="primary"
-            block
-            size="large"
-            :loading="creatingBackup"
-            @click="doCreateBackup"
-          >
+          <n-button type="primary" block size="large" :loading="creatingBackup" @click="doCreateBackup">
             创建备份
           </n-button>
-          <n-button block @click="showCreateBackup = false">
-            取消
-          </n-button>
+          <n-button block @click="showCreateBackup = false">取消</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -313,7 +254,7 @@ const backupMethod = ref<'passphrase' | 'recoveryKey'>('recoveryKey')
 const passphrase = ref('')
 
 // Computed
-const e2eeEnabled = computed(() => flags.matrixE2eeEnabled )
+const e2eeEnabled = computed(() => flags.matrixE2eeEnabled)
 
 const statusTitle = computed(() => {
   switch (backupStatus.value) {

@@ -21,13 +21,10 @@
     </div>
 
     <!-- E2EE Status Warning -->
-    <n-alert
-      v-if="!e2eeEnabled"
-      type="warning"
-      :show-icon="true"
-      class="status-alert"
-    >
-      端到端加密功能未启用，请设置 <code>VITE_MATRIX_E2EE_ENABLED=on</code> 后重启应用
+    <n-alert v-if="!e2eeEnabled" type="warning" :show-icon="true" class="status-alert">
+      端到端加密功能未启用，请设置
+      <code>VITE_MATRIX_E2EE_ENABLED=on</code>
+      后重启应用
     </n-alert>
 
     <!-- Content -->
@@ -52,9 +49,18 @@
 
         <h4>安全级别说明</h4>
         <ul>
-          <li><strong>高安全性</strong>: 所有设备已验证，密钥已备份</li>
-          <li><strong>中等安全性</strong>: 部分设备已验证</li>
-          <li><strong>低安全性</strong>: 存在未验证设备</li>
+          <li>
+            <strong>高安全性</strong>
+            : 所有设备已验证，密钥已备份
+          </li>
+          <li>
+            <strong>中等安全性</strong>
+            : 部分设备已验证
+          </li>
+          <li>
+            <strong>低安全性</strong>
+            : 存在未验证设备
+          </li>
         </ul>
 
         <n-alert type="warning" :show-icon="true" class="mt-12px">
@@ -63,9 +69,7 @@
       </div>
 
       <template #footer>
-        <n-button type="primary" block @click="showHelp = false">
-          我知道了
-        </n-button>
+        <n-button type="primary" block @click="showHelp = false">我知道了</n-button>
       </template>
     </n-modal>
   </div>
@@ -83,7 +87,7 @@ import { initializeEncryption } from '@/integrations/matrix/encryption'
 const router = useRouter()
 const showHelp = ref(false)
 
-const e2eeEnabled = computed(() => flags.matrixE2eeEnabled )
+const e2eeEnabled = computed(() => flags.matrixE2eeEnabled)
 
 const goBack = () => {
   router.back()

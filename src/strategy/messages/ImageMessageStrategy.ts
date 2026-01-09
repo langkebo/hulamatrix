@@ -2,7 +2,6 @@ import { logger, toError } from '@/utils/logger'
 
 import { BaseDirectory, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { MsgEnum } from '@/enums'
-import { UploadProviderEnum } from '@/hooks/useUpload'
 import { useUpload } from '@/hooks/useUpload'
 import { fixFileMimeType } from '@/utils/FileType'
 import { getMimeTypeFromExtension } from '@/utils/Formatting'
@@ -286,7 +285,7 @@ export class ImageMessageStrategyImpl extends AbstractMessageStrategy {
    * 执行实际的文件上传
    * @deprecated 使用 Matrix SDK 的 uploadImage 方法
    */
-  async doUpload(path: string, uploadUrl: string, options?: UploadConfig): Promise<QiniuUploadResult | void> {
+  async doUpload(path: string, _uploadUrl: string, options?: UploadConfig): Promise<QiniuUploadResult | void> {
     // 如果是URL，跳过上传
     if (this.isImageUrl(path)) {
       return

@@ -42,10 +42,7 @@ export interface SelectionCallbacks {
   onUpdatePosition: () => void
 }
 
-export function useSelection(
-  selectionConfig: Ref<SelectionConfig>,
-  callbacks: SelectionCallbacks
-): SelectionState {
+export function useSelection(selectionConfig: Ref<SelectionConfig>, callbacks: SelectionCallbacks): SelectionState {
   const isDragging = ref(false)
   const isResizing = ref(false)
   const dragOffset = ref({ x: 0, y: 0 })

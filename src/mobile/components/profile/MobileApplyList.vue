@@ -28,9 +28,7 @@
             <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" />
           </div>
           <div class="flex-1 flex flex-col gap-10px">
-            <div
-              @click="currentUserId = item.senderId"
-              class="flex justify-between text-14px text-#2DA38D">
+            <div @click="currentUserId = item.senderId" class="flex justify-between text-14px text-#2DA38D">
               {{ getUserInfo(item)?.name || '未知用户' }}
             </div>
             <div class="flex justify-between text-gray-500 text-12px">
@@ -166,7 +164,7 @@ const isCurrentUser = (uid: string) => {
  * 获取当前用户查询视角 - 仅处理好友请求
  * @param item 通知消息
  */
-const getUserInfo = (item: MinimalNotice) => {
+const getUserInfo = (_item: MinimalNotice) => {
   interface UserInfo {
     uid: string
     name: string

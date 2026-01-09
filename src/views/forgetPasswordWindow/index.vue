@@ -351,10 +351,7 @@ const submitNewPassword = async () => {
     submitLoading.value = true
 
     // 首先验证重置令牌（邮箱验证码）
-    const verified = await matrixPasswordResetService.verifyResetToken(
-      formData.value.email,
-      formData.value.emailCode
-    )
+    const verified = await matrixPasswordResetService.verifyResetToken(formData.value.email, formData.value.emailCode)
 
     if (!verified) {
       msg.error(t('auth.forget.messages.invalid_code'))
@@ -374,8 +371,7 @@ const submitNewPassword = async () => {
     msg.success(t('auth.forget.messages.reset_success'))
   } catch (error) {
     logger.error('重置密码失败', error instanceof Error ? error : new Error(String(error)))
-    const errorMessage =
-      error instanceof Error ? error.message : t('auth.forget.messages.reset_failed')
+    const errorMessage = error instanceof Error ? error.message : t('auth.forget.messages.reset_failed')
     msg.error(errorMessage)
   } finally {
     submitLoading.value = false

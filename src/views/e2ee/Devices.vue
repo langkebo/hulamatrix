@@ -66,7 +66,7 @@
         <div>4. 完成后，安全状态应提升为“中/高”。</div>
         <n-space>
           <n-button type="primary" @click="goRecovery">前往恢复密钥</n-button>
-          <n-button @click="showGuide=false">关闭</n-button>
+          <n-button @click="showGuide = false">关闭</n-button>
         </n-space>
       </n-space>
     </n-modal>
@@ -117,7 +117,7 @@ interface SasData {
   reason?: string
 }
 
-const e2eeEnabledFlag = computed(() => flags.matrixE2eeEnabled )
+const e2eeEnabledFlag = computed(() => flags.matrixE2eeEnabled)
 const devices = ref<DeviceRow[]>([])
 const loading = ref(false)
 const showGuide = ref(false)

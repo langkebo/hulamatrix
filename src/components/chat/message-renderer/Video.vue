@@ -190,7 +190,11 @@ const persistVideoLocalPath = async (absolutePath: string) => {
   const nextBody = { ...(target.message.body || {}), localPath: absolutePath }
   if (target.message.body?.localPath === absolutePath) return
 
-  chatStore.updateMsg({ msgId: target.message.id, status: target.message.status, message: { body: nextBody } as Partial<MessageType> })
+  chatStore.updateMsg({
+    msgId: target.message.id,
+    status: target.message.status,
+    message: { body: nextBody } as Partial<MessageType>
+  })
   const updated = { ...target, message: { ...target.message, body: nextBody } }
   await invokeSilently(TauriCommand.SAVE_MSG, {
     data: updated as {

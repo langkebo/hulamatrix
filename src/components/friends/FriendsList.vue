@@ -295,11 +295,9 @@ const filteredFriends = computed(() => {
   // 按搜索关键词过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter((f: FriendItem) =>
-      f.user_id && (
-        (f.display_name || '').toLowerCase().includes(query) ||
-        f.user_id.toLowerCase().includes(query)
-      )
+    result = result.filter(
+      (f: FriendItem) =>
+        f.user_id && ((f.display_name || '').toLowerCase().includes(query) || f.user_id.toLowerCase().includes(query))
     )
   }
 

@@ -60,7 +60,7 @@ export const useReactionsStore = defineStore('reactions', () => {
 
   // 方法
   const fetchReactions = async (roomId: string, eventId: string, forceRefresh = false) => {
-    if (!flags.matrixReactionsEnabled ) return null
+    if (!flags.matrixReactionsEnabled) return null
 
     // 检查缓存
     const cached = cache.value[eventId]

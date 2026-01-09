@@ -160,8 +160,12 @@ export async function requestWithFallback<T = unknown>(options: {
     case 'check_qr_status':
     case 'send_add_friend_request':
       // 这些功能需要迁移到独立服务
-      logger.warn(`[MatrixApiBridgeAdapter] Legacy API '${url}' called. This feature needs to be reimplemented using Matrix or independent services.`)
-      throw new Error(`Legacy API '${url}' is deprecated and needs to be reimplemented. See docs/LEGACY_API_MIGRATION.md for guidance.`)
+      logger.warn(
+        `[MatrixApiBridgeAdapter] Legacy API '${url}' called. This feature needs to be reimplemented using Matrix or independent services.`
+      )
+      throw new Error(
+        `Legacy API '${url}' is deprecated and needs to be reimplemented. See docs/LEGACY_API_MIGRATION.md for guidance.`
+      )
 
     default:
       // 对于不支持的 URL，记录并返回空值（保持向后兼容）

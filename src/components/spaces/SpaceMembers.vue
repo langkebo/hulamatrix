@@ -2,21 +2,13 @@
   <div class="space-members">
     <!-- 搜索和操作栏 -->
     <div class="members-header">
-      <n-input
-        v-model:value="searchQuery"
-        size="small"
-        placeholder="搜索成员..."
-        clearable>
+      <n-input v-model:value="searchQuery" size="small" placeholder="搜索成员..." clearable>
         <template #prefix>
           <n-icon><Search /></n-icon>
         </template>
       </n-input>
 
-      <n-button
-        v-if="isAdmin"
-        type="primary"
-        size="small"
-        @click="$emit('invite-members')">
+      <n-button v-if="isAdmin" type="primary" size="small" @click="$emit('invite-members')">
         <template #icon>
           <n-icon><UserPlus /></n-icon>
         </template>
@@ -30,20 +22,12 @@
         <n-empty description="暂无成员" size="small" />
       </div>
 
-      <div
-        v-for="member in filteredMembers"
-        :key="member.id"
-        class="member-item">
+      <div v-for="member in filteredMembers" :key="member.id" class="member-item">
         <div class="member-avatar">
           <n-avatar :size="48" round :src="member.avatar">
             <n-icon><User /></n-icon>
           </n-avatar>
-          <n-badge
-            v-if="member.isActive"
-            type="success"
-            dot
-            :bottom="2"
-            :right="2" />
+          <n-badge v-if="member.isActive" type="success" dot :bottom="2" :right="2" />
         </div>
 
         <div class="member-info">
@@ -103,9 +87,7 @@ const filteredMembers = computed(() => {
   if (!searchQuery.value) return props.members
 
   const query = searchQuery.value.toLowerCase()
-  return props.members.filter(member =>
-    member.name.toLowerCase().includes(query)
-  )
+  return props.members.filter((member) => member.name.toLowerCase().includes(query))
 })
 
 const formatLastActive = (timestamp: number): string => {

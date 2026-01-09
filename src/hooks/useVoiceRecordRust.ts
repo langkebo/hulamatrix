@@ -7,8 +7,6 @@ import { useUserStore } from '@/stores/user'
 import { calculateCompressionRatio, compressAudioToMp3, getAudioInfo } from '@/utils/AudioCompression'
 import { getImageCache } from '@/utils/PathUtil'
 import { isMobile } from '@/utils/PlatformConstants'
-import { UploadSceneEnum } from '../enums'
-import { useUpload } from './useUpload'
 import { msg } from '@/utils/SafeUI'
 import { useI18n } from 'vue-i18n'
 

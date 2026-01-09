@@ -91,7 +91,7 @@ export const useFriendsSDKStore = defineStore('friendsSDK', () => {
   /**
    * 按分类分组的好友
    */
-  const friendsByCategory = computed(() => {
+  const _friendsByCategory = computed(() => {
     const map = new Map<string | null, Friend[]>()
     map.set(null, []) // 未分组
 
@@ -595,7 +595,10 @@ export const useFriendsSDKStore = defineStore('friendsSDK', () => {
    * @deprecated 使用 acceptFriendRequest() 代替
    * 接受好友请求（向后兼容方法）
    */
-  async function accept(request_id: string, category_id?: string): Promise<{ requester_id: string; dm_room_id?: string }> {
+  async function accept(
+    request_id: string,
+    category_id?: string
+  ): Promise<{ requester_id: string; dm_room_id?: string }> {
     return await acceptFriendRequest(request_id, { categoryId: category_id })
   }
 

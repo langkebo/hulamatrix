@@ -1,5 +1,4 @@
 import { computed } from 'vue'
-import { flags } from '@/utils/envFlags'
 import { useMatrixAuthStore } from '@/stores/matrixAuth'
 import { matrixClientService } from '@/integrations/matrix/client'
 import { isDesktop } from '@/utils/PlatformConstants'

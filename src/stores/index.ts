@@ -35,7 +35,7 @@ export { useAppStore } from './core'
 export * from './matrixAuth'
 export * from './chat'
 export * from './userStatus'
-export * from './friendsSDK'  // 使用新的 Friends SDK
+export * from './friendsSDK' // 使用新的 Friends SDK
 export * from './rtc'
 export * from './search'
 export * from './setting'

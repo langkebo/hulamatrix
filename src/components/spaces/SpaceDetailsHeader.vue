@@ -73,22 +73,14 @@
       </div>
 
       <div class="space-actions">
-        <n-button
-          v-if="!safeSpace.isJoined"
-          type="primary"
-          @click="$emit('join')"
-          :loading="isJoining">
+        <n-button v-if="!safeSpace.isJoined" type="primary" @click="$emit('join')" :loading="isJoining">
           <template #icon>
             <n-icon><Plus /></n-icon>
           </template>
           加入空间
         </n-button>
 
-        <n-dropdown
-          v-else
-          :options="spaceActions"
-          @select="$emit('space-action', $event)"
-          placement="bottom-end">
+        <n-dropdown v-else :options="spaceActions" @select="$emit('space-action', $event)" placement="bottom-end">
           <n-button type="primary">
             <template #icon>
               <n-icon><Settings /></n-icon>
@@ -97,9 +89,7 @@
           </n-button>
         </n-dropdown>
 
-        <n-button @click="$emit('close')">
-          关闭
-        </n-button>
+        <n-button @click="$emit('close')">关闭</n-button>
       </div>
     </div>
   </div>
@@ -107,24 +97,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  NButton,
-  NTag,
-  NIcon,
-  NDropdown
-} from 'naive-ui'
-import {
-  Building,
-  World,
-  Archive,
-  Star,
-  Users,
-  Hash,
-  Calendar,
-  Clock,
-  Plus,
-  Settings
-} from '@vicons/tabler'
+import { NButton, NTag, NIcon, NDropdown } from 'naive-ui'
+import { Building, World, Archive, Star, Users, Hash, Calendar, Clock, Plus, Settings } from '@vicons/tabler'
 import type { SpaceDetailsProps } from './types'
 import type { NaiveType } from './types'
 

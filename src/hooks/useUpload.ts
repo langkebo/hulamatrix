@@ -17,7 +17,7 @@
  * - 内置缓存支持
  */
 
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { createEventHook } from '@vueuse/core'
 import { uploadContent, uploadImage, type UploadContentOptions } from '@/integrations/matrix/media'
 import { msg } from '@/utils/SafeUI'
@@ -252,10 +252,7 @@ export const useUpload = () => {
    * @param options - 上传选项
    * @returns mxc:// URL 列表
    */
-  const uploadMultiple = async (
-    files: (Blob | File)[],
-    options?: UploadOptions
-  ): Promise<string[]> => {
+  const uploadMultiple = async (files: (Blob | File)[], options?: UploadOptions): Promise<string[]> => {
     const results: string[] = []
 
     for (let i = 0; i < files.length; i++) {
@@ -266,7 +263,7 @@ export const useUpload = () => {
         ...options,
         onProgress: (progress) => {
           // 计算总体进度
-          const overallProgress = ((i * 100) + progress) / files.length
+          const overallProgress = (i * 100 + progress) / files.length
           options?.onProgress?.(overallProgress)
         }
       })

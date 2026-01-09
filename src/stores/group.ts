@@ -7,7 +7,6 @@ import { useUserStore } from '@/stores/user'
 import { useChatStore } from './chat'
 import { sdkGetJoinedMembers } from '@/services/messages'
 import { sdkSetPowerLevel, sdkKickFromRoom, sdkLeaveRoom } from '@/services/rooms'
-import { flags } from '@/utils/envFlags'
 import { logger } from '@/utils/logger'
 import { onUnmounted } from 'vue'
 import { createGroupToRoomAdapter, type GroupToRoomAdapter } from '@/adapters/group-to-room-adapter'
@@ -616,7 +615,7 @@ export const useGroupStore = defineStore(
      */
     const refreshGroupStats = async (roomId: string): Promise<void> => {
       const adapter = getAdapter()
-      if (adapter ) {
+      if (adapter) {
         try {
           const stats = await adapter.getGroupStats(roomId)
 
@@ -656,7 +655,7 @@ export const useGroupStore = defineStore(
       } = {}
     ) => {
       const adapter = getAdapter()
-      if (adapter ) {
+      if (adapter) {
         try {
           const results = await adapter.searchGroups(options)
           logger.info(`[GroupStore] Found ${results.length} groups matching query: ${options.query}`)
@@ -677,7 +676,7 @@ export const useGroupStore = defineStore(
      */
     const searchPublicGroups = async (options: { query?: string; limit?: number; server?: string } = {}) => {
       const adapter = getAdapter()
-      if (adapter ) {
+      if (adapter) {
         try {
           const results = await adapter.searchPublicGroups(options)
           logger.info(`[GroupStore] Found ${results.length} public groups matching query: ${options.query}`)
@@ -697,7 +696,7 @@ export const useGroupStore = defineStore(
      */
     const getGroupSearchSuggestions = async (query: string, limit: number = 5) => {
       const adapter = getAdapter()
-      if (adapter ) {
+      if (adapter) {
         try {
           const suggestions = await adapter.getGroupSearchSuggestions(query, limit)
           logger.info(`[GroupStore] Got ${suggestions.length} search suggestions for query: ${query}`)

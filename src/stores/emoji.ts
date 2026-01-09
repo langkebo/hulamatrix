@@ -17,7 +17,7 @@ import { msg } from '@/utils/SafeUI'
  * 建议使用 Matrix m.room.emoji 事件或 Account Data 重新实现
  */
 export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
-  const isLoading = ref(false)
+  const _isLoading = ref(false)
   const emojiList = ref<EmojiItem[]>([])
 
   /**

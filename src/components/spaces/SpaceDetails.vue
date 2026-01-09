@@ -51,11 +51,7 @@
     </div>
 
     <!-- 创建房间对话框 -->
-    <n-modal
-      v-model:show="showCreateRoomDialog"
-      preset="card"
-      title="创建房间"
-      :style="{ width: '500px' }">
+    <n-modal v-model:show="showCreateRoomDialog" preset="card" title="创建房间" :style="{ width: '500px' }">
       <n-form ref="roomFormRef" :model="roomForm" :rules="roomRules">
         <n-form-item label="房间名称" path="name">
           <n-input v-model:value="roomForm.name" placeholder="请输入房间名称" />
@@ -77,9 +73,7 @@
       <template #footer>
         <n-space justify="end">
           <n-button @click="showCreateRoomDialog = false">取消</n-button>
-          <n-button type="primary" @click="handleCreateRoomConfirm" :loading="isCreatingRoom">
-            创建
-          </n-button>
+          <n-button type="primary" @click="handleCreateRoomConfirm" :loading="isCreatingRoom">创建</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -88,18 +82,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import {
-  NTabs,
-  NTabPane,
-  NModal,
-  NForm,
-  NFormItem,
-  NInput,
-  NSelect,
-  NSwitch,
-  NButton,
-  NSpace
-} from 'naive-ui'
+import { NTabs, NTabPane, NModal, NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NSpace } from 'naive-ui'
 import { usePlatformConstants } from '@/utils/PlatformConstants'
 import { useMatrixSpaces } from '@/hooks/useMatrixSpaces'
 import { msg } from '@/utils/SafeUI'
@@ -192,18 +175,15 @@ const safeSpace = computed(() => {
 const filteredRooms = computed(() => {
   if (!roomSearchQuery.value || !props.rooms) return props.rooms || []
   const query = roomSearchQuery.value.toLowerCase()
-  return props.rooms.filter((room: Room) =>
-    room.name.toLowerCase().includes(query) ||
-    (room.topic && room.topic.toLowerCase().includes(query))
+  return props.rooms.filter(
+    (room: Room) => room.name.toLowerCase().includes(query) || (room.topic && room.topic.toLowerCase().includes(query))
   )
 })
 
 const filteredMembers = computed(() => {
   if (!memberSearchQuery.value || !props.members) return props.members || []
   const query = memberSearchQuery.value.toLowerCase()
-  return props.members.filter((member: Member) =>
-    member.name.toLowerCase().includes(query)
-  )
+  return props.members.filter((member: Member) => member.name.toLowerCase().includes(query))
 })
 
 const recentActivities = computed(() => props.activities || [])
@@ -251,7 +231,7 @@ const handleSpaceAction = async (action: string) => {
         await navigator.clipboard.writeText(link)
         msg.success('链接已复制到剪贴板')
       } catch (error) {
-    msg.error('复制链接失败')
+        msg.error('复制链接失败')
       }
       break
     case 'toggle_favorite':
