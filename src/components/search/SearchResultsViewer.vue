@@ -598,7 +598,7 @@ watch(
 @media (prefers-color-scheme: dark) {
   .sender,
   .msg-sender {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .timestamp,

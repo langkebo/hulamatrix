@@ -666,7 +666,7 @@ watch(
   }
 
   .room-count {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .member-detail__info h4 {
@@ -674,7 +674,7 @@ watch(
   }
 
   .detail-section label {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .detail-section span {

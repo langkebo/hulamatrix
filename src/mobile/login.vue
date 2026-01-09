@@ -671,11 +671,11 @@ onUnmounted(() => {
   cursor: pointer;
 
   &:hover {
-    color: #0f7d69;
+    color: var(--hula-brand-hover);
   }
 
   &:active {
-    color: #0c6354;
+    color: var(--hula-brand-active);
   }
 }
 

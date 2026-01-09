@@ -849,7 +849,7 @@ canvas {
   input[type='range'] {
     width: 60px;
     height: 4px;
-    background: #ddd;
+    background: var(--hula-gray-300);
     border-radius: 2px;
     outline: none;
     margin: 0;

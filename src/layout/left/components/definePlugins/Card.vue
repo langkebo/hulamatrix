@@ -65,7 +65,7 @@
                   'filter-shadow': page.shadow
                 }
               ]">
-              <svg class="size-38px color-#555">
+              <svg class="size-38px color-var(--hula-gray-700)">
                 <use :href="`#${plugin.iconAction || plugin.icon}`"></use>
               </svg>
               <p class="text-(12px var(--hula-gray-700))">{{ plugin.title }}</p>
@@ -117,7 +117,7 @@
                   <div class="menu-list">
                     <div v-if="!plugin.isAdd" @click="handleAdd(plugin)" class="menu-item">
                       <svg class="color-var(--hula-brand-primary)">
-                        <use href="#add"></use>
+                        <use href="var(--hula-gray-300)"></use>
                       </svg>
                       <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.pin') }}</p>
                     </div>

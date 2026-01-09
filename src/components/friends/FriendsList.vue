@@ -111,7 +111,7 @@
       <!-- 好友列表 -->
       <template v-else>
         <n-virtual-list v-if="filteredFriends.length > 100" :items="filteredFriends" :item-size="76">
-          <template #default="{ item: friend }">
+          <template var(--hula-gray-100)ult="{ item: friend }">
             <div
               :key="friend.user_id"
               class="friend-item"

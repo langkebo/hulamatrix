@@ -101,7 +101,7 @@
 
         <n-scrollbar class="group-scrollbar" :style="{ pointerEvents: isDropdownShow ? 'none' : 'auto' }">
           <n-virtual-list v-if="filteredGroupSessions.length > 60" :items="filteredGroupSessions" :item-size="58">
-            <template #default="{ item: session, index }">
+            <template var(--hula-gray-100)ult="{ item: session, index }">
               <n-flex align="center" justify="space-between" class="py-14px" data-test="group-item">
                 <n-flex align="center" :size="12">
                   <n-checkbox

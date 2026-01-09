@@ -45,7 +45,7 @@
                   'cursor-pointer select-none transition-colors duration-150',
                   selectedList.includes(item.uid) ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'
                 ]">
-                <template #default>
+                <template var(--hula-gray-100)ult>
                   <div class="flex items-center gap-10px px-8px py-10px">
                     <!-- 头像 -->
                     <n-avatar
@@ -137,7 +137,7 @@
                 'cursor-pointer select-none transition-colors duration-150',
                 selectedList.includes(item.uid) ? 'bg-[rgba(19,152,127,0.1)]' : ''
               ]">
-              <template #default>
+              <template var(--hula-gray-100)ult>
                 <div class="flex items-center gap-10px px-8px py-10px">
                   <!-- 头像 -->
                   <n-avatar

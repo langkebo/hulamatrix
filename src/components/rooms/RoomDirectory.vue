@@ -426,7 +426,7 @@ watch(
   }
 
   .room-card__topic {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 }
 </style>

@@ -287,7 +287,7 @@ h2 {
 .search-bar input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--hula-gray-300);
   border-radius: 8px;
   font-size: 14px;
 }
@@ -558,7 +558,7 @@ h2 {
 .message-input input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--hula-gray-300);
   border-radius: 8px;
   font-size: 14px;
 }

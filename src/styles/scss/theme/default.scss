@@ -64,7 +64,7 @@ html[data-theme='dark'] {
     // 聊天框主体样式
     --right-chat-reply-color: var(--hula-gray-700);
     --right-chat-reply-active-color: rgba(var(--hula-white-rgb), 0.1);
-    --right-chat-footer-line-color: #555;
+    --right-chat-footer-line-color: var(--hula-gray-700);
 
     // 消息列表样式
     --msg-active-color: rgba(19, 152, 127, 0.4);

@@ -70,7 +70,7 @@
                             )
                         "
                         :estimated-item-height="60">
-                        <template #default="slotProps">
+                        <template var(--hula-gray-100)ult="slotProps">
                           <!-- Cast slotProps.item to FriendVirtualListItem -->
                           <div
                             v-if="slotProps.item"

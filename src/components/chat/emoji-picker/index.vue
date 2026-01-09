@@ -256,7 +256,7 @@ const emojiExtCache = new Map<string, string>()
 // 生成选项卡数组
 const tabList = computed<TabItem[]>(() => {
   const baseItems: TabItem[] = [
-    { id: 0, type: 'icon', name: t('emoticon.tabs.emoji'), icon: '#face' },
+    { id: 0, type: 'icon', name: t('emoticon.tabs.emoji'), icon: 'var(--hula-gray-200)' },
     { id: -1, type: 'icon', name: t('emoticon.tabs.favorites'), icon: '#heart' }
   ]
 

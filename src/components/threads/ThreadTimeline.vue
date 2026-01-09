@@ -479,7 +479,7 @@ watch(
   }
 
   .message__sender {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .message__content {

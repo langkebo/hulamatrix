@@ -4,7 +4,7 @@
   "missing-alt": [
     {
       "file": "src/App.vue",
-      "line": 118,
+      "line": 117,
       "issue": "图片缺少 alt 属性",
       "code": "// 检查目标元素是否是<img>元素"
     }
@@ -60,25 +60,25 @@
     },
     {
       "file": "src/components/chat/ApplyList.vue",
-      "line": 32,
+      "line": 28,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"currentUserId = item.senderId\""
     },
     {
       "file": "src/components/chat/Details.vue",
-      "line": 40,
+      "line": 46,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"item.click()\""
     },
     {
       "file": "src/components/chat/Details.vue",
-      "line": 97,
+      "line": 103,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleCopy(groupDetail.uid || groupDetail.roomId || '')\">"
     },
     {
       "file": "src/components/chat/Details.vue",
-      "line": 108,
+      "line": 114,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"footerOptions[0].click()\""
     },
@@ -102,43 +102,55 @@
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 30,
+      "line": 32,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<n-scrollbar @click=\"focusInput\">"
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 48,
+      "line": 50,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"updateSelectionRange\""
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 79,
+      "line": 73,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleDesktopSend\">"
+    },
+    {
+      "file": "src/components/chat/MsgInput.vue",
+      "line": 85,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"arrow = true\" v-if=\"!arrow\" class=\"w-22px h-22px mt-2px outline-none\">"
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 82,
+      "line": 88,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"arrow = false\" v-else class=\"w-22px h-22px mt-2px outline-none\">"
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 132,
+      "line": 138,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleAit(item)\""
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 158,
+      "line": 164,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<svg @click=\"handleEmojiClick\" class=\"w-25px h-25px mt-2px outline-none iconpark-icon\">"
     },
     {
       "file": "src/components/chat/MsgInput.vue",
-      "line": 175,
+      "line": 177,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleMobileSend\">"
+    },
+    {
+      "file": "src/components/chat/MsgInput.vue",
+      "line": 185,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleMoreClick\""
     },
@@ -377,6 +389,12 @@
       "code": "@click=\"groupNicknameModalVisible = false\""
     },
     {
+      "file": "src/components/chat/chatBox/ChatMain.vue",
+      "line": 191,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleGroupNicknameConfirm\">"
+    },
+    {
       "file": "src/components/chat/chatBox/ChatMsgMultiChoose.vue",
       "line": 26,
       "issue": "可点击元素缺少 cursor-pointer 样式",
@@ -384,9 +402,15 @@
     },
     {
       "file": "src/components/chat/chatBox/ChatMsgMultiChoose.vue",
-      "line": 115,
+      "line": 121,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showDeleteConfirm = false\""
+    },
+    {
+      "file": "src/components/chat/chatBox/ChatMsgMultiChoose.vue",
+      "line": 142,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleBatchDelete\">"
     },
     {
       "file": "src/components/chat/chatBox/ChatSidebar.vue",
@@ -462,7 +486,7 @@
     },
     {
       "file": "src/components/chat/message-renderer/Video.vue",
-      "line": 42,
+      "line": 46,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handlePlayButtonClick\""
     },
@@ -530,7 +554,7 @@
       "file": "src/components/common/BaseButton.vue",
       "line": 11,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/components/common/ButtonShowcase.vue",
@@ -572,7 +596,7 @@
       "file": "src/components/common/ConnectionStatus.vue",
       "line": 7,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/components/common/ContextMenu.vue",
@@ -612,27 +636,9 @@
     },
     {
       "file": "src/components/common/DarkModeToggle.vue",
-      "line": 6,
+      "line": 4,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleDarkMode\""
-    },
-    {
-      "file": "src/components/common/DarkModeToggle.vue",
-      "line": 34,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"setMode('system')\""
-    },
-    {
-      "file": "src/components/common/DarkModeToggle.vue",
-      "line": 41,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"setMode('light')\""
-    },
-    {
-      "file": "src/components/common/DarkModeToggle.vue",
-      "line": 48,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"setMode('dark')\""
+      "code": "<button :class=\"toggleClasses\" @click=\"toggleDarkMode\" :aria-label=\"isDark ? '切换到亮色模式' : '切换到暗色模式'\">"
     },
     {
       "file": "src/components/common/ErrorComponent.vue",
@@ -648,33 +654,39 @@
     },
     {
       "file": "src/components/common/FloatingButton.vue",
-      "line": 27,
+      "line": 22,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleMainClick\""
+      "code": "<button ref=\"mainButton\" :class=\"mainButtonClasses\" :disabled=\"disabled\" @click=\"handleMainClick\" v-bind=\"$attrs\">"
     },
     {
       "file": "src/components/common/IconButton.vue",
       "line": 12,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/components/common/InfoPopover.vue",
-      "line": 34,
+      "line": 36,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\""
     },
     {
       "file": "src/components/common/InfoPopover.vue",
-      "line": 62,
+      "line": 66,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\""
     },
     {
       "file": "src/components/common/InfoPopover.vue",
-      "line": 86,
+      "line": 90,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"openEditInfo\""
+    },
+    {
+      "file": "src/components/common/InfoPopover.vue",
+      "line": 117,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleCopy\">"
     },
     {
       "file": "src/components/common/LazyImage.vue",
@@ -684,15 +696,15 @@
     },
     {
       "file": "src/components/common/MessageBubble.vue",
-      "line": 8,
+      "line": 5,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/components/common/MessageBubble.vue",
-      "line": 51,
+      "line": 44,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"action.handler\""
+      "code": "<button class=\"h-message-action\" @click=\"action.handler\" :disabled=\"action.disabled\">"
     },
     {
       "file": "src/components/common/MessageBubbleWrapper.vue",
@@ -714,19 +726,19 @@
     },
     {
       "file": "src/components/common/MessageBubbleWrapper.vue",
-      "line": 161,
+      "line": 163,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleCopyTranslation(message.message.body.translatedText.text)\">"
     },
     {
       "file": "src/components/common/MessageBubbleWrapper.vue",
-      "line": 170,
+      "line": 172,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"delete (message.message.body as Record<string, unknown>).translatedText\">"
     },
     {
       "file": "src/components/common/MessageBubbleWrapper.vue",
-      "line": 183,
+      "line": 185,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"emit('jump2Reply', message.message.body.reply.id)\""
     },
@@ -780,15 +792,15 @@
     },
     {
       "file": "src/components/common/SidebarMenu.vue",
-      "line": 14,
+      "line": 10,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleItemClick(item)\""
+      "code": "<li v-for=\"item in group.items\" :key=\"item.key\" :class=\"getItemClasses(item)\" @click=\"handleItemClick(item)\">"
     },
     {
       "file": "src/components/common/SidebarMenu.vue",
-      "line": 57,
+      "line": 47,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleItemClick(child)\""
+      "code": "@click=\"handleItemClick(child)\">"
     },
     {
       "file": "src/components/common/ThemeSwitcher.vue",
@@ -798,25 +810,25 @@
     },
     {
       "file": "src/components/common/ThemeSwitcher.vue",
-      "line": 21,
+      "line": 20,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"setTheme('light')\""
     },
     {
       "file": "src/components/common/ThemeSwitcher.vue",
-      "line": 33,
+      "line": 31,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"setTheme('dark')\""
     },
     {
       "file": "src/components/common/ThemeSwitcher.vue",
-      "line": 82,
+      "line": 79,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleReduceMotion\""
     },
     {
       "file": "src/components/common/ThemeSwitcher.vue",
-      "line": 95,
+      "line": 91,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleHighContrast\""
     },
@@ -906,15 +918,15 @@
     },
     {
       "file": "src/components/examples/InputShowcase.vue",
-      "line": 220,
+      "line": 151,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<div class=\"switch-brand\" :class=\"{ active: notificationsEnabled }\" @click=\"toggleNotifications\">"
+      "code": "<div class=\"switch-brand\" :class=\"{ active: notificationsEnabled }\" @click=\"toggleNotifications\"></div>"
     },
     {
       "file": "src/components/examples/InputShowcase.vue",
-      "line": 246,
+      "line": 167,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"searchQuery = ''\""
+      "code": "<button v-if=\"searchQuery\" class=\"search-clear\" @click=\"searchQuery = ''\">"
     },
     {
       "file": "src/components/examples/MatrixSDKV2Example.vue",
@@ -932,19 +944,25 @@
       "file": "src/components/examples/MatrixSDKV2Example.vue",
       "line": 191,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button :disabled=\"!friendsStore.isLoaded || !friend.user_id\" @click=\"friend.user_id && handleSendRequest(friend.user_id)\">➕ 添加</button>"
+      "code": "@click=\"friend.user_id && handleSendRequest(friend.user_id)\">"
     },
     {
       "file": "src/components/examples/MatrixSDKV2Example.vue",
-      "line": 211,
+      "line": 213,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<button @click=\"friendsStore.acceptRequest(request.id)\">✅ 接受</button>"
     },
     {
       "file": "src/components/examples/MatrixSDKV2Example.vue",
-      "line": 212,
+      "line": 214,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<button @click=\"friendsStore.rejectRequest(request.id)\">❌ 拒绝</button>"
+    },
+    {
+      "file": "src/components/fileManager/FileContent.vue",
+      "line": 80,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"clearUserFilter\""
     },
     {
       "file": "src/components/fileManager/SideNavigation.vue",
@@ -984,13 +1002,13 @@
     },
     {
       "file": "src/components/friends/FriendRequestsPanel.vue",
-      "line": 71,
+      "line": 65,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleReject(request)\""
     },
     {
       "file": "src/components/friends/FriendRequestsPanel.vue",
-      "line": 83,
+      "line": 77,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleAccept(request)\""
     },
@@ -1044,39 +1062,15 @@
     },
     {
       "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 40,
+      "line": 39,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleToggleMute\""
+      "code": "@click=\"handleToggleCamera\">"
     },
     {
       "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 52,
+      "line": 49,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleToggleCamera\""
-    },
-    {
-      "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 63,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleToggleSpeaker\""
-    },
-    {
-      "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 77,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAccept\""
-    },
-    {
-      "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 88,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleReject\""
-    },
-    {
-      "file": "src/components/matrix/MatrixCallBar.vue",
-      "line": 99,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleEnd\""
+      "code": "@click=\"handleToggleSpeaker\">"
     },
     {
       "file": "src/components/matrix/MatrixCallOptimized.vue",
@@ -1098,63 +1092,33 @@
     },
     {
       "file": "src/components/matrix/MatrixChatMain.vue",
-      "line": 7,
+      "line": 4,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleCallBarClick\""
+      "code": "<MatrixCallBar v-if=\"activeCall\" :call=\"activeCall as never\" @click=\"handleCallBarClick\" />"
     },
     {
       "file": "src/components/matrix/MatrixChatMain.vue",
-      "line": 17,
+      "line": 126,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"loadHistory\""
-    },
-    {
-      "file": "src/components/matrix/MatrixChatMain.vue",
-      "line": 120,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"cancelReply\""
-    },
-    {
-      "file": "src/components/matrix/MatrixChatMain.vue",
-      "line": 139,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"cancelEdit\""
-    },
-    {
-      "file": "src/components/matrix/MatrixChatMain.vue",
-      "line": 161,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"scrollToBottom\""
+      "code": "<div v-if=\"showScrollToBottom\" class=\"scroll-to-bottom\" @click=\"scrollToBottom\">"
     },
     {
       "file": "src/components/matrix/MatrixMessage.vue",
-      "line": 51,
+      "line": 39,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"image-container\" @click=\"previewImage\">"
     },
     {
       "file": "src/components/matrix/MatrixMessage.vue",
-      "line": 99,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleVoicePlayback\""
-    },
-    {
-      "file": "src/components/matrix/MatrixMessage.vue",
-      "line": 125,
+      "line": 95,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"file-container\" @click=\"downloadFile\">"
     },
     {
       "file": "src/components/matrix/MatrixMessage.vue",
-      "line": 167,
+      "line": 141,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"decryptMessage\""
-    },
-    {
-      "file": "src/components/matrix/MatrixMessage.vue",
-      "line": 179,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleReaction(String(key))\""
+      "code": "@click=\"toggleReaction(String(key))\">"
     },
     {
       "file": "src/components/matrix/MatrixMsgInput.vue",
@@ -1209,30 +1173,6 @@
       "line": 207,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-for=\"user in userResults\" :key=\"user.userId\" class=\"user-result-item\" @click=\"openUserProfile(user)\">"
-    },
-    {
-      "file": "src/components/matrix/MatrixUserProfile.vue",
-      "line": 33,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleStartDM\""
-    },
-    {
-      "file": "src/components/matrix/MatrixUserProfile.vue",
-      "line": 42,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleKick\""
-    },
-    {
-      "file": "src/components/matrix/MatrixUserProfile.vue",
-      "line": 113,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleModifyPower\""
-    },
-    {
-      "file": "src/components/matrix/MatrixUserProfile.vue",
-      "line": 122,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleBan\""
     },
     {
       "file": "src/components/matrix/NotificationHistory.vue",
@@ -1290,21 +1230,21 @@
     },
     {
       "file": "src/components/message/EmojiPicker.vue",
-      "line": 26,
+      "line": 20,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectCategory(category.id)\""
+      "code": "@click=\"selectCategory(category.id)\">"
     },
     {
       "file": "src/components/message/EmojiPicker.vue",
-      "line": 40,
+      "line": 33,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"selectEmoji(emoji)\""
     },
     {
       "file": "src/components/message/EmojiPicker.vue",
-      "line": 61,
+      "line": 53,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectSkinTone(tone.value)\""
+      "code": "@click=\"selectSkinTone(tone.value)\">"
     },
     {
       "file": "src/components/message/MessageEditDialog.vue",
@@ -1374,33 +1314,15 @@
     },
     {
       "file": "src/components/message/MessageThread.vue",
-      "line": 7,
+      "line": 4,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"expandThread\""
+      "code": "<div v-if=\"!isExpanded\" class=\"thread-trigger\" @click=\"expandThread\">"
     },
     {
       "file": "src/components/migration/MigrationEntry.vue",
-      "line": 69,
+      "line": 52,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleStartMigration\""
-    },
-    {
-      "file": "src/components/migration/MigrationEntry.vue",
-      "line": 77,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleViewDetails\""
-    },
-    {
-      "file": "src/components/migration/MigrationEntry.vue",
-      "line": 84,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleViewReport\""
-    },
-    {
-      "file": "src/components/migration/MigrationEntry.vue",
-      "line": 90,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleLearnMore\""
     },
     {
       "file": "src/components/migration/MigrationMonitorPanel.vue",
@@ -1412,73 +1334,43 @@
       "file": "src/components/migration/MigrationMonitorPanel.vue",
       "line": 131,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn primary\" @click=\"refreshData\">"
+      "code": "<button class=\"action-btn primary\" @click=\"refreshData\">刷新数据</button>"
+    },
+    {
+      "file": "src/components/migration/MigrationMonitorPanel.vue",
+      "line": 132,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "<button class=\"action-btn\" @click=\"copyReport\">复制报告</button>"
+    },
+    {
+      "file": "src/components/migration/MigrationMonitorPanel.vue",
+      "line": 133,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "<button class=\"action-btn\" @click=\"exportJSON\">导出 JSON</button>"
     },
     {
       "file": "src/components/migration/MigrationMonitorPanel.vue",
       "line": 134,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn\" @click=\"copyReport\">"
+      "code": "<button class=\"action-btn\" @click=\"exportCSV\">导出 CSV</button>"
+    },
+    {
+      "file": "src/components/migration/MigrationMonitorPanel.vue",
+      "line": 135,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "<button class=\"action-btn\" @click=\"triggerFileInput\">导入数据</button>"
     },
     {
       "file": "src/components/migration/MigrationMonitorPanel.vue",
       "line": 137,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn\" @click=\"exportJSON\">"
-    },
-    {
-      "file": "src/components/migration/MigrationMonitorPanel.vue",
-      "line": 140,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn\" @click=\"exportCSV\">"
-    },
-    {
-      "file": "src/components/migration/MigrationMonitorPanel.vue",
-      "line": 143,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn\" @click=\"triggerFileInput\">"
-    },
-    {
-      "file": "src/components/migration/MigrationMonitorPanel.vue",
-      "line": 153,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<button class=\"action-btn danger\" @click=\"resetStats\" :disabled=\"stats.totalMessages === 0\">"
+      "code": "<button class=\"action-btn danger\" @click=\"resetStats\" :disabled=\"stats.totalMessages === 0\">重置统计</button>"
     },
     {
       "file": "src/components/migration/MigrationProgress.vue",
-      "line": 80,
+      "line": 70,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleStart\""
-    },
-    {
-      "file": "src/components/migration/MigrationProgress.vue",
-      "line": 89,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleCancel\""
-    },
-    {
-      "file": "src/components/migration/MigrationProgress.vue",
-      "line": 97,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClose\""
-    },
-    {
-      "file": "src/components/migration/MigrationProgress.vue",
-      "line": 105,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleRollback\""
-    },
-    {
-      "file": "src/components/migration/MigrationProgress.vue",
-      "line": 112,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleDetails\""
-    },
-    {
-      "file": "src/components/migration/MigrationPrompt.vue",
-      "line": 68,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleConfirm\""
     },
     {
       "file": "src/components/mobile/layout/TabBar.vue",
@@ -1592,29 +1484,29 @@
       "file": "src/components/rooms/RoomDirectory.vue",
       "line": 246,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<NButton secondary type=\"primary\" :disabled=\"loading\" @click=\"handleSearch\">{{ t('matrix.roomDirectory.searchRooms') }}</NButton>"
+      "code": "<NButton secondary type=\"primary\" :disabled=\"loading\" @click=\"handleSearch\">"
     },
     {
       "file": "src/components/rooms/RoomDirectory.vue",
-      "line": 263,
+      "line": 267,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<NButton size=\"small\" @click=\"handleSearch\">{{ t('matrix.roomDirectory.refresh') }}</NButton>"
     },
     {
       "file": "src/components/rooms/RoomDirectory.vue",
-      "line": 296,
+      "line": 304,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<NButton size=\"small\" type=\"default\" @click=\"handlePreviewRoom(room.roomId)\">{{ t('matrix.roomDirectory.preview') }}</NButton>"
-    },
-    {
-      "file": "src/components/rooms/RoomDirectory.vue",
-      "line": 297,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<NButton size=\"small\" type=\"primary\" @click=\"handleJoinRoom(room.roomId, room.name)\">{{ t('matrix.roomDirectory.joinRoom') }}</NButton>"
+      "code": "<NButton size=\"small\" type=\"default\" @click=\"handlePreviewRoom(room.roomId)\">"
     },
     {
       "file": "src/components/rooms/RoomDirectory.vue",
       "line": 307,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "<NButton size=\"small\" type=\"primary\" @click=\"handleJoinRoom(room.roomId, room.name)\">"
+    },
+    {
+      "file": "src/components/rooms/RoomDirectory.vue",
+      "line": 319,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<NButton secondary :loading=\"loading\" @click=\"loadMore\">{{ t('matrix.roomDirectory.loadMore') }}</NButton>"
     },
@@ -1626,15 +1518,15 @@
     },
     {
       "file": "src/components/rooms/RoomTagsManager.vue",
-      "line": 372,
+      "line": 369,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<NButton type=\"primary\" :disabled=\"!newTagName.trim()\" @click=\"createTag\">"
+      "code": "<NButton type=\"primary\" :disabled=\"!newTagName.trim()\" @click=\"createTag\">Create</NButton>"
     },
     {
       "file": "src/components/rooms/RoomTagsManager.vue",
-      "line": 410,
+      "line": 398,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<NButton size=\"small\" type=\"error\" @click=\"deleteTag(tag.name)\">"
+      "code": "<NButton size=\"small\" type=\"error\" @click=\"deleteTag(tag.name)\">Delete</NButton>"
     },
     {
       "file": "src/components/rtc/CallControls.vue",
@@ -1662,73 +1554,37 @@
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 66,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleLocalVideo\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 107,
+      "line": 80,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleMicrophone\""
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 124,
+      "line": 96,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleCamera\""
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 140,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"endCall\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 153,
+      "line": 119,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"switchCamera\""
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 167,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleSpeaker\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 183,
+      "line": 143,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleScreenShare\""
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 196,
+      "line": 155,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleRecording\""
     },
     {
       "file": "src/components/rtc/CallInterface.vue",
-      "line": 209,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showCallSettings = true\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 220,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"minimizeCall\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 231,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleFullscreen\""
-    },
-    {
-      "file": "src/components/rtc/CallInterface.vue",
-      "line": 246,
+      "line": 192,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"minimized-content\" @click=\"restoreCall\">"
     },
@@ -1770,15 +1626,9 @@
     },
     {
       "file": "src/components/rtc/GroupCallSettings.vue",
-      "line": 179,
+      "line": 146,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectBackground(bg.id)\""
-    },
-    {
-      "file": "src/components/rtc/GroupCallSettings.vue",
-      "line": 272,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleCallLock\""
+      "code": "@click=\"selectBackground(bg.id)\">"
     },
     {
       "file": "src/components/rtc/group-call/GroupCallInterface.vue",
@@ -1812,13 +1662,13 @@
     },
     {
       "file": "src/components/search/EnhancedSearch.vue",
-      "line": 158,
+      "line": 164,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"openResult(result)\">"
     },
     {
       "file": "src/components/search/EnhancedSearch.vue",
-      "line": 228,
+      "line": 234,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-for=\"item in searchHistory\" :key=\"item.query\" class=\"history-item\" @click=\"searchFromHistory(item)\">"
     },
@@ -1896,75 +1746,39 @@
     },
     {
       "file": "src/components/sliding-sync/SlidingSyncRoomItem.vue",
-      "line": 9,
+      "line": 6,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "<div class=\"sliding-sync-room-item\" :class=\"{ active, unread: hasUnread }\" @click=\"handleClick\">"
     },
     {
       "file": "src/components/sliding-sync/SlidingSyncRoomList.vue",
-      "line": 46,
+      "line": 41,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"group-header\" @click=\"toggleGroup('favorites')\">"
     },
     {
       "file": "src/components/sliding-sync/SlidingSyncRoomList.vue",
-      "line": 67,
+      "line": 61,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"group-header\" @click=\"toggleGroup('unread')\">"
     },
     {
       "file": "src/components/sliding-sync/SlidingSyncRoomList.vue",
-      "line": 88,
+      "line": 81,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"group-header\" @click=\"toggleGroup('all')\">"
     },
     {
-      "file": "src/components/sliding-sync/SlidingSyncRoomList.vue",
-      "line": 111,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleLoadMore\""
-    },
-    {
-      "file": "src/components/sliding-sync/SlidingSyncStatusPanel.vue",
-      "line": 179,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleRefresh\""
-    },
-    {
-      "file": "src/components/sliding-sync/SlidingSyncStatusPanel.vue",
-      "line": 186,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showDetails = !showDetails\""
-    },
-    {
-      "file": "src/components/sliding-sync/SlidingSyncStatusPanel.vue",
-      "line": 193,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleReset\""
-    },
-    {
-      "file": "src/components/spaces/JoinSpaceDialog.vue",
-      "line": 182,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleJoin\""
-    },
-    {
       "file": "src/components/spaces/SpaceAnalytics.vue",
-      "line": 159,
+      "line": 161,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<n-list-item v-for=\"space in recentSpaces\" :key=\"space.roomId\" @click=\"handleSpaceClick(space)\">"
     },
     {
       "file": "src/components/spaces/SpaceCard.vue",
-      "line": 4,
+      "line": 9,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"space-cover\" @click=\"handleView\">"
-    },
-    {
-      "file": "src/components/spaces/SpaceCard.vue",
-      "line": 46,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleJoin\""
     },
     {
       "file": "src/components/spaces/SpaceMemberList.vue",
@@ -2075,6 +1889,12 @@
       "code": "@click=\"resetCreateGroupState\">"
     },
     {
+      "file": "src/layout/center/index.vue",
+      "line": 153,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"handleCreateGroup\">"
+    },
+    {
       "file": "src/layout/left/components/ActionList.vue",
       "line": 14,
       "issue": "可点击元素缺少 cursor-pointer 样式",
@@ -2178,7 +1998,7 @@
     },
     {
       "file": "src/layout/left/components/InfoEdit.vue",
-      "line": 78,
+      "line": 84,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"saveEditInfo(localUserInfo as ModifyUserInfoType)\">"
     },
@@ -2214,43 +2034,43 @@
     },
     {
       "file": "src/layout/left/components/definePlugins/Card.vue",
-      "line": 116,
+      "line": 118,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"!plugin.isAdd\" @click=\"handleAdd(plugin)\" class=\"menu-item\">"
     },
     {
       "file": "src/layout/left/components/definePlugins/Card.vue",
-      "line": 122,
+      "line": 124,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-else @click=\"handleDelete(plugin)\" class=\"menu-item\">"
     },
     {
       "file": "src/layout/left/components/definePlugins/Card.vue",
-      "line": 128,
+      "line": 130,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div @click=\"handleUnload(plugin)\" class=\"menu-item\">"
     },
     {
       "file": "src/layout/left/components/definePlugins/List.vue",
-      "line": 68,
+      "line": 70,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleState(plugin)\""
     },
     {
       "file": "src/layout/left/components/definePlugins/List.vue",
-      "line": 110,
+      "line": 112,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"!plugin.isAdd\" @click=\"handleAdd(plugin)\" class=\"menu-item\">"
     },
     {
       "file": "src/layout/left/components/definePlugins/List.vue",
-      "line": 114,
+      "line": 116,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-else @click=\"handleDelete(plugin)\" class=\"menu-item\">"
     },
     {
       "file": "src/layout/left/components/definePlugins/List.vue",
-      "line": 118,
+      "line": 120,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div @click=\"handleUnload(plugin)\" class=\"menu-item\">"
     },
@@ -2346,63 +2166,57 @@
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceList.vue",
-      "line": 58,
+      "line": 61,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"openDeviceMenu(device)\""
+      "code": "@click=\"openDeviceMenu(device)\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceList.vue",
-      "line": 96,
+      "line": 98,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"openDeviceMenu(device)\""
+      "code": "@click=\"openDeviceMenu(device)\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceList.vue",
-      "line": 136,
+      "line": 135,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"openDeviceMenu(device)\""
+      "code": "@click=\"openDeviceMenu(device)\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceList.vue",
-      "line": 176,
+      "line": 170,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"showActionMenu = false\"></div>"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceList.vue",
-      "line": 183,
+      "line": 177,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleDeviceAction(action.key)\""
+      "code": "@click=\"handleDeviceAction(action.key)\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceVerificationDialog.vue",
-      "line": 13,
+      "line": 12,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"handleClose\"></div>"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceVerificationDialog.vue",
-      "line": 102,
+      "line": 99,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"method-item\" @click=\"startEmojiVerification\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceVerificationDialog.vue",
-      "line": 110,
+      "line": 107,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"method-item\" @click=\"startQRVerification\">"
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceVerificationDialog.vue",
-      "line": 138,
+      "line": 135,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleAccept\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerificationDialog.vue",
-      "line": 148,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClose\""
     },
     {
       "file": "src/mobile/components/e2ee/MobileDeviceVerificationSheet.vue",
@@ -2417,42 +2231,6 @@
       "code": "<van-cell :title=\"t('setting.e2ee.devices.verify_key')\" is-link @click=\"verifyMethod = 'key'\">"
     },
     {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 54,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"startSasVerification\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 63,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"startQrVerification\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 132,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"confirmSas\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 140,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"cancelVerification\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 154,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"confirmQr\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileDeviceVerifyDialog.vue",
-      "line": 162,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"cancelVerification\""
-    },
-    {
       "file": "src/mobile/components/e2ee/MobileEncryptionStatusIndicator.vue",
       "line": 5,
       "issue": "可点击元素缺少 cursor-pointer 样式",
@@ -2460,57 +2238,39 @@
     },
     {
       "file": "src/mobile/components/e2ee/MobileEncryptionStatusIndicator.vue",
-      "line": 12,
+      "line": 15,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"status-header\" @click=\"showDetail = true\">"
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileEncryptionStatusIndicator.vue",
-      "line": 142,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleVerifyDevices\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileEncryptionStatusIndicator.vue",
-      "line": 150,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleResetSession\""
-    },
-    {
-      "file": "src/mobile/components/e2ee/MobileEncryptionStatusIndicator.vue",
-      "line": 161,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleEnableEncryption\""
     },
     {
       "file": "src/mobile/components/friends/MobileFriendCategories.vue",
       "line": 17,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSelectCategory(category.categoryId)\""
+      "code": "@click=\"handleSelectCategory(category.categoryId)\">"
     },
     {
       "file": "src/mobile/components/friends/MobileFriendCategories.vue",
-      "line": 26,
+      "line": 25,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSelectCategory(null)\""
+      "code": "@click=\"handleSelectCategory(null)\">"
     },
     {
       "file": "src/mobile/components/friends/MobileFriendCategories.vue",
-      "line": 35,
+      "line": 28,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showCreateDialog = true\""
+      "code": "<n-tag type=\"info\" :bordered=\"false\" size=\"medium\" round @click=\"showCreateDialog = true\">"
     },
     {
       "file": "src/mobile/components/friends/MobileFriendCategories.vue",
-      "line": 65,
+      "line": 57,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSelectCategory(category.categoryId)\""
+      "code": "@click=\"handleSelectCategory(category.categoryId)\">"
     },
     {
       "file": "src/mobile/components/friends/MobileFriendCategories.vue",
-      "line": 96,
+      "line": 78,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSelectCategory(null)\""
+      "code": "<div class=\"category-item\" :class=\"{ active: selectedCategoryId === null }\" @click=\"handleSelectCategory(null)\">"
     },
     {
       "file": "src/mobile/components/media/MobileMediaCache.vue",
@@ -2538,39 +2298,33 @@
     },
     {
       "file": "src/mobile/components/message/MobileMessageActions.vue",
-      "line": 42,
+      "line": 38,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAction(action.key)\""
+      "code": "@click=\"handleAction(action.key)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageActions.vue",
-      "line": 61,
+      "line": 56,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAction(action.key)\""
+      "code": "@click=\"handleAction(action.key)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageActions.vue",
-      "line": 81,
+      "line": 75,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAction(action.key)\""
+      "code": "@click=\"handleAction(action.key)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageEditDialog.vue",
-      "line": 10,
+      "line": 6,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"handleClose\"></div>"
     },
     {
       "file": "src/mobile/components/message/MobileMessageEditDialog.vue",
-      "line": 50,
+      "line": 68,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showHistory = !showHistory\""
-    },
-    {
-      "file": "src/mobile/components/message/MobileMessageEditDialog.vue",
-      "line": 82,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"saveEdit\""
+      "code": "@click=\"saveEdit\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageForwardDialog.vue",
@@ -2588,49 +2342,43 @@
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
       "line": 11,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleToggleReaction(reaction.key)\""
+      "code": "@click=\"handleToggleReaction(reaction.key)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
-      "line": 19,
+      "line": 18,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"showAddButton\" class=\"add-reaction-btn\" @click=\"openReactionPicker\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
-      "line": 48,
+      "line": 43,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"activeCategory = category.name\""
+      "code": "@click=\"activeCategory = category.name\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
-      "line": 61,
+      "line": 55,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectEmoji(emoji)\""
+      "code": "@click=\"selectEmoji(emoji)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
-      "line": 83,
+      "line": 75,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectEmoji(customEmoji)\""
+      "code": "@click=\"selectEmoji(customEmoji)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReactions.vue",
-      "line": 99,
+      "line": 86,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"selectEmoji(emoji)\""
+      "code": "<div v-for=\"emoji in userReactions\" :key=\"emoji\" class=\"user-reaction-item\" @click=\"selectEmoji(emoji)\">"
     },
     {
       "file": "src/mobile/components/message/MobileMessageReplyDialog.vue",
-      "line": 10,
+      "line": 6,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"handleClose\"></div>"
-    },
-    {
-      "file": "src/mobile/components/message/MobileMessageReplyDialog.vue",
-      "line": 57,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"sendReply\""
     },
     {
       "file": "src/mobile/components/message/MobileMessageThread.vue",
@@ -2640,7 +2388,7 @@
     },
     {
       "file": "src/mobile/components/message/MobileMessageThread.vue",
-      "line": 175,
+      "line": 159,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"sendReply\""
     },
@@ -2838,117 +2586,57 @@
     },
     {
       "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 67,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"startCall\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 100,
+      "line": 87,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div v-if=\"localVideoStream\" class=\"local-pip\" @click=\"togglePipExpanded\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 156,
+      "line": 142,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleMute\""
+      "code": "@click=\"toggleMute\">"
+    },
+    {
+      "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
+      "line": 158,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"toggleVideo\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
       "line": 173,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleVideo\""
+      "code": "@click=\"switchCamera\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 189,
+      "line": 187,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"switchCamera\""
+      "code": "@click=\"endCall\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 204,
+      "line": 201,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"endCall\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileGroupCallInterface.vue",
-      "line": 219,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleSpeaker\""
+      "code": "@click=\"toggleSpeaker\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 49,
+      "line": 38,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleLocalVideo\""
+      "code": "@click=\"toggleLocalVideo\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 94,
+      "line": 104,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleMicrophone\""
+      "code": "@click=\"toggleSpeaker\">"
     },
     {
       "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 109,
+      "line": 185,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleCamera\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 124,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"endCall\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 136,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleSpeaker\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 150,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"switchCamera\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 163,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleLocalVideo\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 220,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleMicrophone\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 235,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"toggleSpeaker\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 250,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"endCall\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 280,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"rejectCall\""
-    },
-    {
-      "file": "src/mobile/components/rtc/MobileSingleCallInterface.vue",
-      "line": 290,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"acceptCall\""
+      "code": "@click=\"toggleSpeaker\">"
     },
     {
       "file": "src/mobile/components/search/MobileRoomSearch.vue",
@@ -2976,45 +2664,27 @@
     },
     {
       "file": "src/mobile/components/search/MobileSearchHistory.vue",
-      "line": 21,
+      "line": 17,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSelectHistory(item)\""
+      "code": "<div v-for=\"item in displayHistory\" :key=\"item.id\" class=\"history-item\" @click=\"handleSelectHistory(item)\">"
     },
     {
       "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 26,
+      "line": 32,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSearch\""
+      "code": "<div v-for=\"item in searchHistory\" :key=\"item.userId\" class=\"history-item\" @click=\"searchFromHistory(item)\">"
     },
     {
       "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 47,
+      "line": 74,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"searchFromHistory(item)\""
+      "code": "<div v-for=\"user in searchResults\" :key=\"user.userId\" class=\"user-item\" @click=\"handleUserClick(user)\">"
     },
     {
       "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 98,
+      "line": 142,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleUserClick(user)\""
-    },
-    {
-      "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 183,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAddFriend(selectedUser)\""
-    },
-    {
-      "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 195,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleStartChat(selectedUser)\""
-    },
-    {
-      "file": "src/mobile/components/search/MobileUserSearch.vue",
-      "line": 206,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleViewProfile(selectedUser)\""
+      "code": "@click=\"handleAddFriend(selectedUser)\">"
     },
     {
       "file": "src/mobile/components/security/MobileEncryptionStatus.vue",
@@ -3030,27 +2700,27 @@
     },
     {
       "file": "src/mobile/components/security/MobileEncryptionStatus.vue",
-      "line": 26,
+      "line": 22,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"handle-bar\" @click=\"showDetails = false\"></div>"
     },
     {
       "file": "src/mobile/components/security/MobileEncryptionStatus.vue",
-      "line": 115,
+      "line": 111,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleSetupCrossSigning\""
     },
     {
       "file": "src/mobile/components/settings/MobileSettingsItem.vue",
-      "line": 5,
+      "line": 9,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\">"
     },
     {
       "file": "src/mobile/components/settings/MobileSettingsList.vue",
-      "line": 20,
+      "line": 19,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleClick\""
+      "code": "@click=\"handleClick\" />"
     },
     {
       "file": "src/mobile/components/settings/MobileUserAvatarMenu.vue",
@@ -3062,11 +2732,11 @@
       "file": "src/mobile/components/settings/MobileUserAvatarMenu.vue",
       "line": 26,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleItemClick(item)\""
+      "code": "@click=\"handleItemClick(item)\">"
     },
     {
       "file": "src/mobile/components/settings/MobileUserAvatarMenu.vue",
-      "line": 40,
+      "line": 39,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"cancel-button\" @click=\"handleClose\">"
     },
@@ -3174,93 +2844,45 @@
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 45,
+      "line": 40,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"setFilter(option.value)\""
+      "code": "@click=\"setFilter(option.value)\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 65,
+      "line": 59,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleMemberClick(member)\""
+      "code": "@click=\"handleMemberClick(member)\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 185,
+      "line": 140,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showRoleModal = true\""
+      "code": "@click=\"handleResendInvite\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 193,
+      "line": 168,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleResendInvite\""
+      "code": "<van-cell title=\"管理员\" label=\"完全权限 (100)\" clickable @click=\"newRole = 'admin'\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 201,
+      "line": 173,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleKick(selectedMember)\""
+      "code": "<van-cell title=\"版主\" label=\"管理权限 (50)\" clickable @click=\"newRole = 'moderator'\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 209,
+      "line": 178,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleBan(selectedMember)\""
+      "code": "<van-cell title=\"成员\" label=\"普通权限 (0)\" clickable @click=\"newRole = 'member'\">"
     },
     {
       "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 237,
+      "line": 234,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"newRole = 'admin'\""
-    },
-    {
-      "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 247,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"newRole = 'moderator'\""
-    },
-    {
-      "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 257,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"newRole = 'member'\""
-    },
-    {
-      "file": "src/mobile/components/spaces/MobileSpaceMemberManagement.vue",
-      "line": 321,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showInviteModal = true\""
-    },
-    {
-      "file": "src/mobile/components/spaces/MobileSpacePermissions.vue",
-      "line": 61,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleSaveAll\""
-    },
-    {
-      "file": "src/mobile/components/spaces/permissions/EventPermissions.vue",
-      "line": 65,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleAddCustomEvent\""
-    },
-    {
-      "file": "src/mobile/components/spaces/permissions/EventPermissions.vue",
-      "line": 88,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleRemoveCustomEvent(event.type)\""
-    },
-    {
-      "file": "src/mobile/components/spaces/permissions/RoomPermissions.vue",
-      "line": 49,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"showAddModal = true\""
-    },
-    {
-      "file": "src/mobile/components/spaces/permissions/UserPermissions.vue",
-      "line": 53,
-      "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"handleRemove(user)\""
+      "code": "@click=\"showInviteModal = true\" />"
     },
     {
       "file": "src/mobile/login.vue",
@@ -3402,7 +3024,7 @@
     },
     {
       "file": "src/mobile/views/chat/GroupChatMember.vue",
-      "line": 35,
+      "line": 31,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div @click=\"toFriendInfo(item.uid)\" :key=\"item.uid\" class=\"flex items-start h-48 md:h-52\">"
     },
@@ -3438,13 +3060,13 @@
     },
     {
       "file": "src/mobile/views/chat/notice/NoticeDetail.vue",
-      "line": 53,
+      "line": 56,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "<div @click=\"goToNoticeEdit\" class=\"edit-button\">"
+      "code": "<div @click=\"goToNoticeEdit\" class=\"edit-button\">编辑公告</div>"
     },
     {
       "file": "src/mobile/views/chat/notice/NoticeList.vue",
-      "line": 18,
+      "line": 14,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div @click=\"goToNoticeDetail(String(item.id))\" class=\"shadow flex p-15px bg-white rounded-10px\">"
     },
@@ -3510,13 +3132,13 @@
     },
     {
       "file": "src/mobile/views/profile/MobileSettings.vue",
-      "line": 41,
+      "line": 37,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleLogout\""
     },
     {
       "file": "src/mobile/views/profile/MyAlbum.vue",
-      "line": 34,
+      "line": 30,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleImageClick(image)\">"
     },
@@ -3618,7 +3240,7 @@
     },
     {
       "file": "src/mobile/views/settings/privacy/index.vue",
-      "line": 73,
+      "line": 69,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<div class=\"settings-item\" @click=\"goToManage\">"
     },
@@ -3674,29 +3296,29 @@
       "file": "src/views/DesignSystemShowcase.vue",
       "line": 23,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"activeTab = tab.key\""
+      "code": "@click=\"activeTab = tab.key\">"
     },
     {
       "file": "src/views/DesignSystemShowcase.vue",
-      "line": 215,
+      "line": 211,
       "issue": "可点击元素缺少 cursor-pointer 样式",
-      "code": "@click=\"isExpanded = !isExpanded\""
+      "code": "<button :aria-expanded=\"isExpanded\" aria-controls=\"demo-panel\" @click=\"isExpanded = !isExpanded\">"
     },
     {
       "file": "src/views/DesignSystemShowcase.vue",
-      "line": 234,
+      "line": 222,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"notificationEnabled = !notificationEnabled\""
     },
     {
       "file": "src/views/DesignSystemShowcase.vue",
-      "line": 339,
+      "line": 326,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<pre><code>&lt;button @click=\"toggle\"&gt;"
     },
     {
       "file": "src/views/DesignSystemShowcase.vue",
-      "line": 348,
+      "line": 335,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggle\""
     },
@@ -3804,85 +3426,85 @@
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 155,
+      "line": 159,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showDeviceDrawer = true\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 166,
+      "line": 170,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleSpeaker\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 178,
+      "line": 186,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"switchCameraFacing\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 189,
+      "line": 197,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleVideo\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 201,
+      "line": 213,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showDeviceDrawer = true\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 212,
+      "line": 224,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"hangUp()\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 259,
+      "line": 271,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleMute\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 274,
+      "line": 290,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleSpeaker\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 289,
+      "line": 309,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleVideo\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 304,
+      "line": 328,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"showDeviceDrawer = true\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 316,
+      "line": 340,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"hangUp()\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 335,
+      "line": 359,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleMute\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 350,
+      "line": 378,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"toggleSpeaker\""
     },
     {
       "file": "src/views/callWindow/index.vue",
-      "line": 366,
+      "line": 398,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"hangUp()\""
     },
@@ -3905,6 +3527,12 @@
       "code": "@click=\"submitNewPassword\""
     },
     {
+      "file": "src/views/friendWindow/AddFriendVerify.vue",
+      "line": 48,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"addFriend\">"
+    },
+    {
       "file": "src/views/friendWindow/SearchFriend.vue",
       "line": 79,
       "issue": "可点击元素缺少 cursor-pointer 样式",
@@ -3924,25 +3552,25 @@
     },
     {
       "file": "src/views/homeWindow/FriendsList.vue",
-      "line": 76,
+      "line": 78,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\""
     },
     {
       "file": "src/views/homeWindow/FriendsList.vue",
-      "line": 114,
+      "line": 116,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleClick(item.user_id!, RoomTypeEnum.SINGLE)\""
     },
     {
       "file": "src/views/homeWindow/FriendsList.vue",
-      "line": 154,
+      "line": 160,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"friendsStore.accept(p.id).then(() => msg.success('已接受'))\">"
     },
     {
       "file": "src/views/homeWindow/FriendsList.vue",
-      "line": 160,
+      "line": 166,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"friendsStore.reject(p.id).then(() => msg.success('已拒绝'))\">"
     },
@@ -3960,7 +3588,7 @@
     },
     {
       "file": "src/views/homeWindow/message/index.vue",
-      "line": 26,
+      "line": 28,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"handleItemClick\""
     },
@@ -4068,7 +3696,7 @@
     },
     {
       "file": "src/views/moreWindow/settings/E2EE.vue",
-      "line": 120,
+      "line": 126,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "<n-list-item v-for=\"device in userDevices\" :key=\"device.deviceId\" @click=\"handleDeviceClick(device)\">"
     },
@@ -4109,20 +3737,26 @@
       "code": "@click=\"selectCustomDirectory\""
     },
     {
+      "file": "src/views/moreWindow/settings/ManageStore.vue",
+      "line": 144,
+      "issue": "可点击元素缺少 cursor-pointer 样式",
+      "code": "@click=\"startScan\""
+    },
+    {
       "file": "src/views/moreWindow/settings/Notification.vue",
-      "line": 60,
+      "line": 62,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"batchSetNotification('allow')\">"
     },
     {
       "file": "src/views/moreWindow/settings/Notification.vue",
-      "line": 68,
+      "line": 70,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"batchSetNotification('mute')\">"
     },
     {
       "file": "src/views/moreWindow/settings/Notification.vue",
-      "line": 77,
+      "line": 79,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"batchSetNotification('shield')\">"
     },
@@ -4134,13 +3768,13 @@
     },
     {
       "file": "src/views/moreWindow/settings/Shortcut.vue",
-      "line": 48,
+      "line": 50,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"resetScreenshotShortcut\""
     },
     {
       "file": "src/views/moreWindow/settings/Shortcut.vue",
-      "line": 92,
+      "line": 94,
       "issue": "可点击元素缺少 cursor-pointer 样式",
       "code": "@click=\"resetOpenMainPanelShortcut\""
     },

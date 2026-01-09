@@ -654,7 +654,7 @@ onMounted(() => {
   }
 
   .permission-row label {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .user-name {

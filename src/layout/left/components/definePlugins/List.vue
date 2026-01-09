@@ -17,7 +17,7 @@
                   <use :href="`#${plugin.icon}`"></use>
                 </svg>
                 <template v-else>
-                  <svg class="size-34px color-#555">
+                  <svg class="size-34px color-var(--hula-gray-700)">
                     <use :href="`#${plugin.iconAction || plugin.icon}`"></use>
                   </svg>
                 </template>
@@ -110,7 +110,7 @@
             <div class="action-item">
               <div class="menu-list">
                 <div v-if="!plugin.isAdd" @click="handleAdd(plugin)" class="menu-item">
-                  <svg class="color-var(--hula-brand-primary)"><use href="#add"></use></svg>
+                  <svg class="color-var(--hula-brand-primary)"><use href="var(--hula-gray-300)"></use></svg>
                   <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.pin') }}</p>
                 </div>
                 <div v-else @click="handleDelete(plugin)" class="menu-item">

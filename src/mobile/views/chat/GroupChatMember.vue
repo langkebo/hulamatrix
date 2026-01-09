@@ -27,7 +27,7 @@
                 :style="{ height: virtualScrollerHeight + 'px', width: '100%' }"
                 :item-size="42"
                 :items="filteredList">
-                <template #default="{ item }">
+                <template var(--hula-gray-100)ult="{ item }">
                   <div @click="toFriendInfo(item.uid)" :key="item.uid" class="flex items-start h-48 md:h-52">
                     <div class="flex items-center gap-10px">
                       <n-avatar

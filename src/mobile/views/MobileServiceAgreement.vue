@@ -179,7 +179,7 @@
 
       p {
         font-size: 14px;
-        color: #555;
+        color: var(--hula-gray-700);
         margin-bottom: 10px;
         text-indent: 2em;
       }

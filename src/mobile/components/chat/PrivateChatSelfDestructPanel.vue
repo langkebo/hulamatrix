@@ -124,7 +124,7 @@ const timeOptions = computed(() => [
     label: '30秒',
     desc: '快速自毁',
     value: 30,
-    color: '#ef4444',
+    color: 'var(--hula-error)',
     icon: Clock
   },
   {
@@ -152,7 +152,7 @@ const timeOptions = computed(() => [
     label: '1小时',
     desc: '长时间保留',
     value: 3600,
-    color: '#3b82f6',
+    color: 'var(--hula-info)',
     icon: Clock
   },
   {
@@ -188,7 +188,7 @@ const formattedTime = computed(() => {
 // Switch 轨道样式
 const railStyle = ({ checked }: { focused: boolean; checked: boolean }) => {
   return {
-    backgroundColor: checked ? 'var(--hula-brand-primary)' : '#d1d5db'
+    backgroundColor: checked ? 'var(--hula-brand-primary)' : 'var(--hula-gray-300)'
   }
 }
 

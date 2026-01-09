@@ -445,7 +445,7 @@ onMounted(() => {
   }
 
   .stat {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .participant-avatar {

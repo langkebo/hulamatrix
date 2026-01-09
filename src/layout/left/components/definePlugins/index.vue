@@ -43,12 +43,12 @@
 
         <n-tabs :value="viewMode" class="w-76px h-28px mr-22px flex-shrink-0" type="segment" animated>
           <n-tab name="card">
-            <template #default>
+            <template var(--hula-gray-100)ult>
               <svg class="size-16px"><use href="#view-grid-card"></use></svg>
             </template>
           </n-tab>
           <n-tab name="list">
-            <template #default>
+            <template var(--hula-gray-100)ult>
               <svg class="size-16px"><use href="#view-grid-list"></use></svg>
             </template>
           </n-tab>

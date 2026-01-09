@@ -207,7 +207,7 @@ const itemClasses = computed(() => ({
 .chat-list-item-message {
   flex: 1;
   font-size: 12px;
-  color: var(--text-color-secondary, #555);
+  color: var(--text-color-secondary, var(--hula-gray-700));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

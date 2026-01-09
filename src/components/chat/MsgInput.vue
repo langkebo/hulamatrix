@@ -131,7 +131,7 @@
             :item-size="36"
             :items="personList"
             v-model:selectedKey="selectedAitKey">
-            <template #default="{ item }">
+            <template var(--hula-gray-100)ult="{ item }">
               <n-flex
                 @mouseover="() => (selectedAitKey = item.uid)"
                 :class="{ active: selectedAitKey === item.uid }"
@@ -162,7 +162,7 @@
           :class="msgInput ? 'grid-cols-[2rem_3rem]' : 'grid-cols-[2rem_2rem]'">
           <div class="w-full flex-center h-full">
             <svg @click="handleEmojiClick" class="w-25px h-25px mt-2px outline-none iconpark-icon">
-              <use :href="mobilePanelState === MobilePanelStateEnum.EMOJI ? '#face' : '#smiling-face'"></use>
+              <use :href="mobilePanelState === MobilePanelStateEnum.EMOJI ? 'var(--hula-gray-200)' : '#smiling-face'"></use>
             </svg>
           </div>
           <div
@@ -185,7 +185,7 @@
               @click="handleMoreClick"
               :class="mobilePanelState === MobilePanelStateEnum.MORE ? 'rotate-45' : 'rotate-0'"
               class="w-25px h-25px mt-2px outline-none iconpark-icon transition-transform duration-300 ease">
-              <use href="#add-one"></use>
+              <use href="var(--hula-gray-300)-one"></use>
             </svg>
           </div>
         </div>

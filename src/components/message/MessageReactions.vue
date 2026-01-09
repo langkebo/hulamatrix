@@ -370,13 +370,13 @@ defineExpose({
   .add-reaction-btn {
     background: rgba(var(--hula-white-rgb), 0.03);
     border-color: rgba(var(--hula-white-rgb), 0.2);
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .add-reaction-btn:hover {
     background: rgba(var(--hula-white-rgb), 0.06);
     border-color: rgba(var(--hula-white-rgb), 0.3);
-    color: #ddd;
+    color: var(--hula-gray-300);
   }
 }
 </style>

@@ -22,7 +22,7 @@
       :item-resizable="true"
       @scroll="handleScroll"
       ref="virtualListRef">
-      <template #default="{ item }">
+      <template var(--hula-gray-100)ult="{ item }">
         <div class="flex gap-2 w-full text-14px mb-15px">
           <div class="flex h-full">
             <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" />

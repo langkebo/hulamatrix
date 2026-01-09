@@ -265,7 +265,7 @@ watch(
 .hint kbd {
   padding: 2px 6px;
   background: var(--hula-gray-200);
-  border: 1px solid #ddd;
+  border: 1px solid var(--hula-gray-300);
   border-radius: 4px;
   font-family: monospace;
   font-size: 11px;
@@ -274,7 +274,7 @@ watch(
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .label {
-    color: #aaa;
+    color: var(--hula-gray-400);
   }
 
   .message-edit-dialog__original .content {

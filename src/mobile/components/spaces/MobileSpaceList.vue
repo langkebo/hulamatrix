@@ -154,7 +154,7 @@
                   key-field="id"
                   type-field="type"
                   class="space-scroller">
-                  <template #default="{ item: space, index: index }">
+                  <template var(--hula-gray-100)ult="{ item: space, index: index }">
                     <div class="space-item" :class="{ 'first-item': index === 0 }" @click="handleSpaceClick(space)">
                       <div class="space-avatar">
                         <n-avatar
