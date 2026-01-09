@@ -24,6 +24,11 @@ const CONFIG = {
   srcDir: path.join(process.cwd(), 'src'),
   dryRun: false,
   maxFiles: 477, // 处理所有文件
+  excludePatterns: [
+    /tokens\/_colors-unified\.scss$/, // 排除设计令牌文件
+    /node_modules/,
+    /\.git/,
+  ],
 };
 
 // 颜色映射表
@@ -41,23 +46,51 @@ const COLOR_MAP = {
   // 灰色文字
   '#333': 'var(--hula-gray-900)',
   '#333333': 'var(--hula-gray-900)',
-  '#666': 'var(--hula-gray-700)',
-  '#666666': 'var(--hula-gray-700)',
+  '#444': 'var(--hula-gray-700)',
+  '#555': 'var(--hula-gray-700)',
+  '#666': 'var(--hula-gray-600)',
+  '#666666': 'var(--hula-gray-600)',
+  '#777': 'var(--hula-gray-500)',
+  '#777777': 'var(--hula-gray-500)',
+  '#888': 'var(--hula-gray-400)',
+  '#888888': 'var(--hula-gray-400)',
   '#999': 'var(--hula-gray-400)',
   '#999999': 'var(--hula-gray-400)',
+  '#aaa': 'var(--hula-gray-400)',
+  '#bbb': 'var(--hula-gray-300)',
 
   // 灰色背景/边框
+  '#ddd': 'var(--hula-gray-300)',
+  '#dddddd': 'var(--hula-gray-300)',
   '#eee': 'var(--hula-gray-200)',
   '#eeeeee': 'var(--hula-gray-200)',
   '#f3f3f3': 'var(--hula-gray-100)',
   '#f5f5f5': 'var(--hula-gray-50)',
 
+  // 特殊颜色（保留透明度）
+  '#add': 'var(--hula-gray-300)',
+  '#face': 'var(--hula-gray-200)',
+  '#defa': 'var(--hula-gray-100)',
+
   // 阴影
   'rgba(0, 0, 0, 0.05)': 'var(--hula-shadow-sm)',
   'rgba(0, 0, 0, 0.1)': 'var(--hula-shadow-md)',
+  'rgba(0, 0, 0, 0.15)': 'var(--hula-shadow-lg)',
 
-  // 品牌色 (如果需要)
+  // 品牌色
   '#13987f': 'var(--hula-brand-primary)',
+  '#0f7d69': 'var(--hula-brand-hover)',
+  '#0c6354': 'var(--hula-brand-active)',
+
+  // 功能色
+  '#10b981': 'var(--hula-success)',
+  '#f59e0b': 'var(--hula-warning)',
+  '#ef4444': 'var(--hula-error)',
+  '#3b82f6': 'var(--hula-info)',
+
+  // 边框色
+  '#e5e7eb': 'var(--hula-gray-200)',
+  '#d1d5db': 'var(--hula-gray-300)',
 };
 
 // 统计
@@ -79,6 +112,17 @@ function getSourceFiles(dir) {
 
     for (const item of items) {
       const fullPath = path.join(currentDir, item);
+      const relativePath = path.relative(process.cwd(), fullPath);
+
+      // 检查是否在排除列表中
+      const shouldExclude = CONFIG.excludePatterns.some(pattern =>
+        pattern.test(relativePath) || pattern.test(fullPath) || pattern.test(item)
+      );
+
+      if (shouldExclude) {
+        continue;
+      }
+
       const stat = fs.statSync(fullPath);
 
       if (stat.isDirectory() && !item.includes('node_modules') && !item.includes('.git')) {
