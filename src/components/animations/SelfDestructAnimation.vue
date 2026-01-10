@@ -281,6 +281,8 @@ export default {
 
 // Add ember effect for burn
 .self-destruct-burn-leave-active {
-  box-shadow: 0 0 30px rgba(var(--hula-danger-rgb), 0.4), inset 0 0 20px rgba(var(--hula-warning-rgb), 0.2);
+  box-shadow:
+    0 0 30px rgba(var(--hula-danger-rgb), 0.4),
+    inset 0 0 20px rgba(var(--hula-warning-rgb), 0.2);
 }
 </style>

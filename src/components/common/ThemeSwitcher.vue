@@ -246,7 +246,10 @@ defineExpose({
   border-radius: var(--hula-radius-md);
   background: var(--hula-bg-component, var(--hula-brand-primary));
   cursor: pointer;
-  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   .theme-icon {
     font-size: var(--hula-text-2xl);

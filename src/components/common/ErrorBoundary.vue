@@ -41,11 +41,7 @@
   </div>
 
   <!-- Minimal Error Fallback -->
-  <div
-    v-else-if="fallback === 'minimal'"
-    class="error-boundary-minimal"
-    role="alert"
-    aria-live="assertive">
+  <div v-else-if="fallback === 'minimal'" class="error-boundary-minimal" role="alert" aria-live="assertive">
     <span class="error-text">{{ $t('error.boundary.something_wrong') }}</span>
     <n-button text size="small" @click="handleRetry">
       {{ $t('error.boundary.retry') }}

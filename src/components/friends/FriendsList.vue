@@ -680,7 +680,9 @@ defineExpose({
   border: 1px solid var(--line-color);
   border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);

@@ -108,7 +108,9 @@
                 trigger="click"
                 placement="bottom">
                 <template #trigger>
-                  <svg @click.stop="isCurrently = index" class="absolute color-var(--hula-gray-700) right-0 top-0 size-18px rotate-90">
+                  <svg
+                    @click.stop="isCurrently = index"
+                    class="absolute color-var(--hula-gray-700) right-0 top-0 size-18px rotate-90">
                     <use href="#more"></use>
                   </svg>
                 </template>
@@ -298,7 +300,12 @@ onUnmounted(() => {
     top: 0;
     width: 100px;
     height: 100px;
-    background-image: linear-gradient(90deg, rgba(var(--hula-white-rgb), 0), rgba(var(--hula-white-rgb), 0.5), rgba(var(--hula-white-rgb), 0));
+    background-image: linear-gradient(
+      90deg,
+      rgba(var(--hula-white-rgb), 0),
+      rgba(var(--hula-white-rgb), 0.5),
+      rgba(var(--hula-white-rgb), 0)
+    );
     transform: skew(-30deg);
     pointer-events: none;
   }

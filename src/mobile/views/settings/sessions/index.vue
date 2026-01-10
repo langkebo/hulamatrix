@@ -222,7 +222,11 @@ onMounted(() => {
 }
 
 .current-device-card {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-hover, var(--hula-brand-hover)) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-color-hover, var(--hula-brand-hover)) 100%
+  );
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
@@ -278,7 +282,7 @@ onMounted(() => {
   }
 
   &.status-unverified {
-    background: var(--hula-white)4e6;
+    background: var(--hula-white) 4e6;
     color: var(--hula-warning);
   }
 }

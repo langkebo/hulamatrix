@@ -132,7 +132,9 @@ defineExpose({
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease;
   }
 
   &.status-online .indicator-dot {

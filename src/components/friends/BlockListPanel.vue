@@ -9,12 +9,7 @@
           {{ blockedCount }}
         </n-tag>
       </n-flex>
-      <n-button
-        v-if="blockedUsers.length > 0"
-        size="small"
-        type="error"
-        secondary
-        @click="handleClearAll">
+      <n-button v-if="blockedUsers.length > 0" size="small" type="error" secondary @click="handleClearAll">
         {{ t('friends.block.clear_all') }}
       </n-button>
     </n-flex>
@@ -26,10 +21,7 @@
     </div>
 
     <!-- 空状态 -->
-    <n-empty
-      v-else-if="blockedUsers.length === 0"
-      :description="t('friends.block.empty')"
-      size="small">
+    <n-empty v-else-if="blockedUsers.length === 0" :description="t('friends.block.empty')" size="small">
       <template #icon>
         <svg class="size-48px"><use href="#shield-check"></use></svg>
       </template>
@@ -39,11 +31,7 @@
     </n-empty>
 
     <!-- 黑名单列表 -->
-    <n-virtual-list
-      v-else
-      :items="blockedUsers"
-      :item-size="80"
-      class="block-list">
+    <n-virtual-list v-else :items="blockedUsers" :item-size="80" class="block-list">
       <template #default="{ item: blockedUser }">
         <div class="blocked-user-item">
           <n-flex align="center" :size="12" class="flex-1">
@@ -259,7 +247,9 @@ defineExpose({
   background: var(--bg-setting-item);
   border: 1px solid var(--line-color);
   border-radius: var(--hula-radius-sm);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);

@@ -217,7 +217,9 @@ defineExpose({
   border: 1px solid rgba(var(--hula-black-rgb), 0.1);
   border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
   font-size: var(--hula-text-xs);
   user-select: none;
 }
@@ -259,7 +261,9 @@ defineExpose({
   border: 1px dashed rgba(var(--hula-black-rgb), 0.2);
   border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
   font-size: var(--hula-text-xs);
   color: var(--hula-gray-700);
 }
@@ -303,7 +307,9 @@ defineExpose({
   border: 1px solid rgba(var(--hula-black-rgb), 0.1);
   border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .reaction-emoji-item:hover {

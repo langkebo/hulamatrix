@@ -550,7 +550,9 @@ watch(
   border: 2px dashed var(--n-border-color);
   border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .upload-area:hover {

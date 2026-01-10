@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="empty-state"
-    :class="[`size-${size}`, `type-${type}`]"
-    role="status"
-    :aria-label="ariaLabel">
+  <div class="empty-state" :class="[`size-${size}`, `type-${type}`]" role="status" :aria-label="ariaLabel">
     <!-- Icon -->
     <div v-if="showIcon" class="empty-state-icon">
       <slot name="icon">

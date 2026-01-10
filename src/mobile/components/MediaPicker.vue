@@ -555,7 +555,7 @@ function formatFileSize(bytes: number): string {
   padding: 12px;
   font-size: 14px;
   color: var(--color-error, var(--hula-error));
-  background-color: var(--color-bg-error, var(--hula-white)2f0);
+  background-color: var(--color-bg-error, var(--hula-white) 2f0);
   border-radius: 8px;
 }
 

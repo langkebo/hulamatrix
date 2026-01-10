@@ -48,10 +48,7 @@
     </div>
 
     <!-- No More State -->
-    <div
-      v-if="!hasMore && showNoMore && !loading"
-      class="infinite-scroll-no-more"
-      role="status">
+    <div v-if="!hasMore && showNoMore && !loading" class="infinite-scroll-no-more" role="status">
       <slot name="no-more">
         <n-empty :description="noMoreText" size="small" />
       </slot>

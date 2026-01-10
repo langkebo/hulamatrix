@@ -45,7 +45,12 @@
       </div>
 
       <!-- Trust Level Badge -->
-      <div v-if="isEncrypted && trustLevel" class="trust-badge" :class="trustClass" role="status" :aria-label="`信任级别: ${trustLevelText}`">
+      <div
+        v-if="isEncrypted && trustLevel"
+        class="trust-badge"
+        :class="trustClass"
+        role="status"
+        :aria-label="`信任级别: ${trustLevelText}`">
         <van-icon
           :name="
             getVantIconName(
@@ -138,7 +143,12 @@
                 role="listitem"
                 :aria-label="`设备 ${device.displayName || '未知设备'}, ${formatDeviceId(device.deviceId)}, ${device.verified ? '已验证' : '未验证'}`">
                 <div class="device-info">
-                  <van-image :width="32" :height="32" round class="device-avatar" :alt="device.displayName || '未知设备'">
+                  <van-image
+                    :width="32"
+                    :height="32"
+                    round
+                    class="device-avatar"
+                    :alt="device.displayName || '未知设备'">
                     <template #error>
                       <div class="avatar-fallback" aria-hidden="true">
                         {{ device.displayName?.[0] || '?' }}
@@ -150,7 +160,11 @@
                     <div class="device-id">{{ formatDeviceId(device.deviceId) }}</div>
                   </div>
                 </div>
-                <div class="device-status" :class="device.verified ? 'verified' : 'unverified'" role="status" :aria-label="device.verified ? '已验证' : '未验证'">
+                <div
+                  class="device-status"
+                  :class="device.verified ? 'verified' : 'unverified'"
+                  role="status"
+                  :aria-label="device.verified ? '已验证' : '未验证'">
                   <van-icon :name="getVantIconName(device.verified ? 'ShieldCheck' : 'AlertTriangle')" :size="16" />
                   <span>{{ device.verified ? '已验证' : '未验证' }}</span>
                 </div>
@@ -170,19 +184,11 @@
         <!-- Actions Footer -->
         <div class="detail-modal-footer" role="group" aria-label="操作按钮">
           <div v-if="isEncrypted" class="action-buttons">
-            <van-button
-              type="primary"
-              size="small"
-              @click="handleVerifyDevices"
-              icon="shield-o"
-              aria-label="验证设备">验证设备
+            <van-button type="primary" size="small" @click="handleVerifyDevices" icon="shield-o" aria-label="验证设备">
+              验证设备
             </van-button>
-            <van-button
-              type="default"
-              size="small"
-              @click="handleResetSession"
-              icon="replay"
-              aria-label="重置加密会话">重置会话
+            <van-button type="default" size="small" @click="handleResetSession" icon="replay" aria-label="重置加密会话">
+              重置会话
             </van-button>
           </div>
           <van-button

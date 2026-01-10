@@ -876,7 +876,9 @@ defineExpose({
   border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
   border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .result-item:hover {

@@ -720,7 +720,9 @@ canvas {
   height: var(--hula-spacing-xs);
   border-radius: 50%;
   z-index: 4;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .resize-handle.disabled {

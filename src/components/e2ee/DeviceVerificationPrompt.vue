@@ -61,7 +61,7 @@
             </n-button>
           </div>
         </div>
-      </collapse_transition>
+      </collapse-transition>
 
       <!-- Actions -->
       <div class="prompt-actions">

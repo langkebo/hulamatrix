@@ -311,7 +311,9 @@ const createRipple = (event: Event) => {
   border: none;
   box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   cursor: pointer;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 
   &:hover {
@@ -347,7 +349,9 @@ const createRipple = (event: Event) => {
   background: var(--hula-white, var(--hula-brand-primary));
   box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   cursor: pointer;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
   outline: none;
 
   &:hover {

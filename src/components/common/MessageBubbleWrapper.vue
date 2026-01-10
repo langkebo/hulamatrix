@@ -520,7 +520,9 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 
 .reply-bubble {
   cursor: pointer;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     opacity: 0.9;

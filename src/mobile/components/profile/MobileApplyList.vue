@@ -28,7 +28,9 @@
             <n-avatar round size="large" :src="avatarSrc(getUserInfo(item)?.avatar || '')" />
           </div>
           <div class="flex-1 flex flex-col gap-10px">
-            <div @click="currentUserId = item.senderId" class="flex justify-between text-14px text-var(--hula-brand-primary)">
+            <div
+              @click="currentUserId = item.senderId"
+              class="flex justify-between text-14px text-var(--hula-brand-primary)">
               {{ getUserInfo(item)?.name || '未知用户' }}
             </div>
             <div class="flex justify-between text-gray-500 text-12px">
@@ -71,7 +73,9 @@
             <span class="text-(12px var(--hula-error))" v-else-if="item.status === RequestNoticeAgreeStatus.REJECTED">
               已拒绝
             </span>
-            <span class="text-(12px var(--hula-gray-400))" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">已忽略</span>
+            <span class="text-(12px var(--hula-gray-400))" v-else-if="item.status === RequestNoticeAgreeStatus.IGNORE">
+              已忽略
+            </span>
             <span
               class="text-(12px var(--hula-success))"
               :class="{ 'text-(12px var(--hula-error))': item.status === RequestNoticeAgreeStatus.REJECTED }"

@@ -48,7 +48,9 @@
               class="timer-option"
               :class="{ active: selectedTimer === option.value }"
               @click="selectTimer(option.value)">
-              <n-icon :size="24" :color="selectedTimer === option.value ? 'var(--hula-success)' : 'var(--hula-gray-300)'">
+              <n-icon
+                :size="24"
+                :color="selectedTimer === option.value ? 'var(--hula-success)' : 'var(--hula-gray-300)'">
                 <component :is="option.icon" />
               </n-icon>
               <div class="timer-info">

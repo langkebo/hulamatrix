@@ -47,7 +47,8 @@
             </div>
 
             <!-- 公告内容 -->
-            <div class="announcement-content whitespace-pre-wrap break-words text-14px leading-6 text-var(--hula-gray-900)">
+            <div
+              class="announcement-content whitespace-pre-wrap break-words text-14px leading-6 text-var(--hula-gray-900)">
               {{ announcement.content }}
             </div>
 
@@ -57,7 +58,9 @@
             </div>
           </div>
 
-          <div v-else class="flex justify-center items-center h-200px text-var(--hula-gray-400)">公告不存在或已被删除</div>
+          <div v-else class="flex justify-center items-center h-200px text-var(--hula-gray-400)">
+            公告不存在或已被删除
+          </div>
         </div>
       </div>
     </template>

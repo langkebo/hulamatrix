@@ -50,7 +50,13 @@
           </div>
 
           <!-- Verification Steps -->
-          <div class="steps-section" role="progressbar" :aria-valuenow="currentStep + 1" aria-valuemin="1" aria-valuemax="3" aria-label="验证进度">
+          <div
+            class="steps-section"
+            role="progressbar"
+            :aria-valuenow="currentStep + 1"
+            aria-valuemin="1"
+            aria-valuemax="3"
+            aria-label="验证进度">
             <div class="custom-steps" role="list">
               <div
                 v-for="(step, index) in ['请求', '验证', '完成']"
@@ -97,11 +103,8 @@
                 <p>显示二维码供对方扫描</p>
               </div>
             </div>
-            <van-button
-              block
-              plain
-              @click="switchToEmoji"
-              aria-label="切换到表情符号验证方式">改用表情符号验证
+            <van-button block plain @click="switchToEmoji" aria-label="切换到表情符号验证方式">
+              改用表情符号验证
             </van-button>
           </div>
 
@@ -112,7 +115,10 @@
               :class="`trust-${currentTrustLevel}`"
               role="status"
               :aria-label="`设备信任状态: ${getTrustLabel(currentTrustLevel)}, ${getTrustDescription(currentTrustLevel)}`">
-              <van-icon :name="getVantIconName(getTrustIconName(currentTrustLevel))" :size="24" :aria-label="getTrustLabel(currentTrustLevel)" />
+              <van-icon
+                :name="getVantIconName(getTrustIconName(currentTrustLevel))"
+                :size="24"
+                :aria-label="getTrustLabel(currentTrustLevel)" />
               <div class="trust-info">
                 <span class="trust-label">{{ getTrustLabel(currentTrustLevel) }}</span>
                 <span class="trust-desc">{{ getTrustDescription(currentTrustLevel) }}</span>
@@ -213,12 +219,8 @@
           <h3 id="success-title">验证成功!</h3>
           <p>{{ successMessage }}</p>
         </div>
-        <van-button
-          type="primary"
-          size="large"
-          block
-          @click="showSuccess = false"
-          aria-label="关闭成功提示">完成
+        <van-button type="primary" size="large" block @click="showSuccess = false" aria-label="关闭成功提示">
+          完成
         </van-button>
       </div>
     </van-popup>

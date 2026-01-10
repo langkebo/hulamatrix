@@ -43,8 +43,7 @@
         @view="(s) => view(s.id)"
         @create-room="(s) => openCreateRoom(s.id)"
         @invite="(s) => invite(s.id)"
-        @leave="(s) => handleLeaveSpace(s.id)"
-      />
+        @leave="(s) => handleLeaveSpace(s.id)" />
 
       <n-card size="small" class="mt-16px" hoverable>
         <template #header>房间搜索结果</template>

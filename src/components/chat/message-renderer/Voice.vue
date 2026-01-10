@@ -334,7 +334,9 @@ onUnmounted(() => {
     height: 100%;
     border-radius: 1px;
     opacity: 0;
-    transition: opacity 0.1s ease, width 0.1s ease;
+    transition:
+      opacity 0.1s ease,
+      width 0.1s ease;
     pointer-events: none;
     z-index: 1;
 

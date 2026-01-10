@@ -568,7 +568,9 @@ watch(
   backdrop-filter: blur(10px);
   background: rgba(var(--hula-white-rgb), 0.1);
   border: 1px solid rgba(var(--hula-white-rgb), 0.2);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .control-btn:hover {

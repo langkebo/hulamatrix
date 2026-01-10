@@ -7,7 +7,8 @@
           <div class="flex flex-col flex-1 p-20px gap-20px">
             <div class="flex items-center">
               <div class="py-15px flex gap-10px w-full items-center justify-end">
-                <div class="bg-rgba(var(--hula-success-rgb), 0.05) flex flex-wrap ps-2 items-center rounded-full gap-1 w-50px h-24px">
+                <div
+                  class="bg-rgba(var(--hula-success-rgb), 0.05) flex flex-wrap ps-2 items-center rounded-full gap-1 w-50px h-24px">
                   <span class="w-12px h-12px rounded-15px bg-var(--hula-success)"></span>
                   <span class="online-status-text">在线</span>
                 </div>

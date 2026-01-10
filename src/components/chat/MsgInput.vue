@@ -162,7 +162,10 @@
           :class="msgInput ? 'grid-cols-[2rem_3rem]' : 'grid-cols-[2rem_2rem]'">
           <div class="w-full flex-center h-full">
             <svg @click="handleEmojiClick" class="w-25px h-25px mt-2px outline-none iconpark-icon">
-              <use :href="mobilePanelState === MobilePanelStateEnum.EMOJI ? 'var(--hula-gray-200)' : '#smiling-face'"></use>
+              <use
+                :href="
+                  mobilePanelState === MobilePanelStateEnum.EMOJI ? 'var(--hula-gray-200)' : '#smiling-face'
+                "></use>
             </svg>
           </div>
           <div

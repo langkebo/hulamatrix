@@ -22,10 +22,7 @@
     <!-- 分类列表 -->
     <div v-else class="category-manage-container">
       <!-- 空状态 -->
-      <n-empty
-        v-if="categories.length === 0"
-        :description="t('friends.category.no_categories')"
-        size="small">
+      <n-empty v-if="categories.length === 0" :description="t('friends.category.no_categories')" size="small">
         <template #extra>
           <n-button size="small" type="primary" secondary @click="handleCreateNew">
             {{ t('friends.category.create_button') }}
@@ -34,20 +31,16 @@
       </n-empty>
 
       <!-- 分类列表 -->
-      <n-virtual-list
-        v-else
-        :items="categories"
-        :item-size="72"
-        class="category-list">
+      <n-virtual-list v-else :items="categories" :item-size="72" class="category-list">
         <template #default="{ item: category }">
           <div class="category-item" :class="{ 'is-editing': editingCategoryId === category.id }">
             <div class="category-info">
-              <div
-                class="category-color-dot"
-                :style="{ backgroundColor: category.color || '#18A058' }"></div>
+              <div class="category-color-dot" :style="{ backgroundColor: category.color || '#18A058' }"></div>
               <div v-if="editingCategoryId !== category.id" class="category-details">
                 <span class="category-name">{{ category.name }}</span>
-                <span class="category-count">{{ getCategoryFriendCount(category.id) }} {{ t('friends.category.friends') }}</span>
+                <span class="category-count">
+                  {{ getCategoryFriendCount(category.id) }} {{ t('friends.category.friends') }}
+                </span>
               </div>
               <n-input
                 v-else
@@ -298,7 +291,9 @@ watch(
   background: var(--bg-setting-item);
   border: 1px solid var(--line-color);
   border-radius: var(--hula-radius-sm);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);

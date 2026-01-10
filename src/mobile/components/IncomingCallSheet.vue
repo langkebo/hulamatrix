@@ -6,7 +6,9 @@
       <div class="flex items-center gap-8px mb-12px">
         <svg class="size-18px"><use href="#Telephone"></use></svg>
         <span class="text-15px">来电</span>
-        <span class="ml-auto text-12px color-var(--hula-gray-400)">{{ rtc.callType === 'video' ? '视频' : '语音' }}</span>
+        <span class="ml-auto text-12px color-var(--hula-gray-400)">
+          {{ rtc.callType === 'video' ? '视频' : '语音' }}
+        </span>
       </div>
       <div class="flex gap-12px">
         <n-button type="primary" class="flex-1" @click="rtc.acceptCall()">接听</n-button>

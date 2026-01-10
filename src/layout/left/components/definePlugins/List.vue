@@ -29,7 +29,9 @@
                 <p class="text-(14px var(--hula-gray-700)) pl-4px">{{ plugin.title }}</p>
 
                 <Transition>
-                  <svg v-if="plugin.isAdd && plugin.state !== PluginEnum.BUILTIN" class="color-var(--hula-gray-700) size-14px">
+                  <svg
+                    v-if="plugin.isAdd && plugin.state !== PluginEnum.BUILTIN"
+                    class="color-var(--hula-gray-700) size-14px">
                     <use href="#notOnTop"></use>
                   </svg>
                 </Transition>

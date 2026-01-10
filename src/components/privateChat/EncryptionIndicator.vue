@@ -293,7 +293,9 @@ defineExpose({
   gap: var(--hula-spacing-xs);
   padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
   border-radius: var(--hula-radius-sm);
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 
   &.encrypted {
     background-color: rgba(var(--hula-success-rgb), 0.1);

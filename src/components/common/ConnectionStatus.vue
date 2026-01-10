@@ -122,7 +122,9 @@ const handleClick = () => {
   font-size: var(--hula-text-xs);
   line-height: 1;
   user-select: none;
-  transition: opacity 0.2s ease, background 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
 
   &__dot {
     width: var(--hula-spacing-sm);

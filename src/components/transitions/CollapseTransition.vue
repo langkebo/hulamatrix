@@ -103,7 +103,9 @@ const onAfterLeave = (el: Element) => {
 // Fallback CSS transition for when JavaScript fails
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition:
+    height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
   overflow: hidden;
 }
 

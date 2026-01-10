@@ -740,7 +740,7 @@ onMounted(() => {
 
   &.danger {
     color: var(--hula-error);
-    
+
     .action-icon {
       color: var(--hula-error);
     }
@@ -765,28 +765,28 @@ onMounted(() => {
 
 .rename-dialog {
   background: var(--bg-color);
-  
+
   .dialog-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px;
     border-bottom: 1px solid var(--divider-color);
-    
+
     .header-title {
       font-weight: 600;
       font-size: 16px;
     }
   }
-  
+
   .dialog-content {
     padding: 24px 16px;
   }
-  
+
   .dialog-footer {
     padding: 16px;
     border-top: 1px solid var(--divider-color);
-    
+
     .button-group {
       display: flex;
       gap: 12px;

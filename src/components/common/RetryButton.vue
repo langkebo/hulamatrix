@@ -214,7 +214,8 @@ defineExpose({
 // Retry button styles are handled by Naive UI
 // Custom animations for retry indication
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   25% {

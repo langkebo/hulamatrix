@@ -257,7 +257,9 @@ defineExpose({
   width: 100%;
   background: var(--float-block-hover-color, rgba(var(--hula-black-rgb), 0.06));
   pointer-events: none;
-  transition: top 0.2s ease-in-out, opacity 0.2s ease;
+  transition:
+    top 0.2s ease-in-out,
+    opacity 0.2s ease;
   z-index: 0;
 }
 

@@ -91,7 +91,9 @@
 
         <n-flex v-if="diskInfo" justify="space-between">
           <span class="text-(12px var(--hula-gray-700))">{{ t('setting.storage.disk_usage_percent') }}:</span>
-          <span class="text-(12px var(--hula-gray-700))" :style="{ color: getUsageColor(diskInfo.disk_usage_percentage) }">
+          <span
+            class="text-(12px var(--hula-gray-700))"
+            :style="{ color: getUsageColor(diskInfo.disk_usage_percentage) }">
             {{ diskInfo.disk_usage_percentage.toFixed(2) }}%
           </span>
         </n-flex>

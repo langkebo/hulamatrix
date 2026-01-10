@@ -8,26 +8,19 @@
           placeholder="搜索我的空间..."
           clearable
           class="w-240px"
-          @input="handleLocalSearch"
-        >
+          @input="handleLocalSearch">
           <template #prefix>
             <n-icon><Search /></n-icon>
           </template>
         </n-input>
 
-        <n-select
-          v-model:value="currentSort"
-          :options="sortOptions"
-          class="w-140px"
-          size="medium"
-        />
+        <n-select v-model:value="currentSort" :options="sortOptions" class="w-140px" size="medium" />
 
         <n-popselect
           v-model:value="activeQuickFilter"
           :options="filterOptions"
           trigger="click"
-          @update:value="handleFilterChange"
-        >
+          @update:value="handleFilterChange">
           <n-button dashed size="medium">
             <template #icon>
               <n-icon><Filter /></n-icon>
@@ -52,12 +45,7 @@
         <n-grid-item v-for="space in localDisplaySpaces" :key="space.id">
           <n-card size="small" hoverable class="h-full">
             <n-flex align="center" :size="10" class="mb-12px">
-              <n-avatar
-                round
-                :size="36"
-                :src="space.avatar || ''"
-                :fallback-src="fallbackAvatar"
-              />
+              <n-avatar round :size="36" :src="space.avatar || ''" :fallback-src="fallbackAvatar" />
               <div class="flex-1 overflow-hidden">
                 <div class="text-14px font-bold truncate">{{ space.name }}</div>
                 <div class="text-12px text-gray-500 truncate">
@@ -67,8 +55,7 @@
               <n-badge
                 :value="getUnread(space).highlight + getUnread(space).notification"
                 :max="99"
-                v-if="getUnread(space).highlight + getUnread(space).notification > 0"
-              />
+                v-if="getUnread(space).highlight + getUnread(space).notification > 0" />
             </n-flex>
 
             <n-space size="small" align="center" class="text-12px text-gray-400 mb-12px">
@@ -90,7 +77,10 @@
 
             <n-space justify="end" size="small">
               <n-button size="small" @click="$emit('view', space)">查看</n-button>
-              <n-dropdown trigger="click" :options="getActionOptions(space)" @select="(key) => handleAction(key, space)">
+              <n-dropdown
+                trigger="click"
+                :options="getActionOptions(space)"
+                @select="(key) => handleAction(key, space)">
                 <n-button size="small" tertiary circle>
                   <template #icon>
                     <n-icon><Dots /></n-icon>

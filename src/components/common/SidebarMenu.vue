@@ -267,7 +267,9 @@ const toggleSubmenu = (key: string) => {
     border: none;
     background: transparent;
     border-radius: var(--hula-radius-sm);
-    transition: background var(--transition-fast), color var(--transition-fast);
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast);
     cursor: pointer;
     position: relative;
     font-size: var(--hula-text-sm);

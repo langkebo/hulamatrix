@@ -529,7 +529,7 @@ defineExpose({
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: var(--hula-white)7e6;
+    background: var(--hula-white) 7e6;
     border: 1px solid var(--hula-warning);
     border-radius: 8px;
     color: var(--hula-warning);

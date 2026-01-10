@@ -78,7 +78,9 @@ const getNavigationLabel = (item: NavigationItem) => {
   margin-bottom: var(--hula-spacing-xs);
   border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
   color: var(--text-color);
   user-select: none;
 

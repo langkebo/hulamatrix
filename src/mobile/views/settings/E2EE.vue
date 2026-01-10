@@ -1,7 +1,12 @@
 <template>
   <div class="mobile-e2ee-settings" role="main" aria-label="E2EE 设置页面">
     <!-- Navigation Header -->
-    <van-nav-bar :title="t('setting.e2ee.title')" left-arrow @click-left="handleBack" role="navigation" aria-label="导航栏" />
+    <van-nav-bar
+      :title="t('setting.e2ee.title')"
+      left-arrow
+      @click-left="handleBack"
+      role="navigation"
+      aria-label="导航栏" />
 
     <!-- Status Overview -->
     <div class="status-card" role="region" aria-label="E2EE 状态总览">
@@ -23,7 +28,11 @@
     </div>
 
     <!-- Cross-Signing Section -->
-    <van-cell-group :title="t('setting.e2ee.cross_signing.title')" inset role="region" :aria-label="t('setting.e2ee.cross_signing.title')">
+    <van-cell-group
+      :title="t('setting.e2ee.cross_signing.title')"
+      inset
+      role="region"
+      :aria-label="t('setting.e2ee.cross_signing.title')">
       <van-cell :title="t('setting.e2ee.cross_signing.status')" role="listitem">
         <template #icon>
           <van-icon
@@ -73,7 +82,11 @@
     </van-cell-group>
 
     <!-- Key Backup Section -->
-    <van-cell-group :title="t('setting.e2ee.key_backup.title')" inset role="region" :aria-label="t('setting.e2ee.key_backup.title')">
+    <van-cell-group
+      :title="t('setting.e2ee.key_backup.title')"
+      inset
+      role="region"
+      :aria-label="t('setting.e2ee.key_backup.title')">
       <van-cell
         :title="t('setting.e2ee.key_backup.storage')"
         is-link
@@ -100,7 +113,11 @@
     </van-cell-group>
 
     <!-- Devices Section -->
-    <van-cell-group :title="t('setting.e2ee.devices.title')" inset role="region" :aria-label="t('setting.e2ee.devices.title')">
+    <van-cell-group
+      :title="t('setting.e2ee.devices.title')"
+      inset
+      role="region"
+      :aria-label="t('setting.e2ee.devices.title')">
       <van-cell
         v-for="device in userDevices"
         :key="device.deviceId"
@@ -134,7 +151,11 @@
     </van-cell-group>
 
     <!-- Security Settings -->
-    <van-cell-group :title="t('setting.e2ee.security.title')" inset role="region" :aria-label="t('setting.e2ee.security.title')">
+    <van-cell-group
+      :title="t('setting.e2ee.security.title')"
+      inset
+      role="region"
+      :aria-label="t('setting.e2ee.security.title')">
       <van-cell :title="t('setting.e2ee.security.auto_verify')" role="listitem">
         <template #right-icon>
           <van-switch

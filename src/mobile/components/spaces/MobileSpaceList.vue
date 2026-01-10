@@ -163,7 +163,7 @@
                           round
                           :fallback="space.name?.charAt(0)?.toUpperCase() || ''" />
                         <div v-if="(space.notifications?.notificationCount ?? 0) > 0" class="unread-badge">
-                          {{ formatUnreadCount((space.notifications?.notificationCount ?? 0)) }}
+                          {{ formatUnreadCount(space.notifications?.notificationCount ?? 0) }}
                         </div>
                         <div v-if="space.encrypted" class="encrypted-badge">
                           <n-icon size="12"><Lock /></n-icon>

@@ -22,13 +22,18 @@
       <n-data-table v-else :columns="unverifiedCols" :data="unverifiedDevices" />
       <n-alert v-if="lastVerifyError" type="error" class="mt-8px" :show-icon="true">{{ lastVerifyError }}</n-alert>
     </n-card>
-    <n-modal v-model:show="showVerifyModal" preset="card" title="设备验证" class="w-640px" :on-after-leave="handleModalClose">
+    <n-modal
+      v-model:show="showVerifyModal"
+      preset="card"
+      title="设备验证"
+      class="w-640px"
+      :on-after-leave="handleModalClose">
       <n-space vertical :size="12" data-test="verify-modal">
         <div>设备：{{ currentVerify?.displayName || currentVerify?.deviceId }}</div>
-        
+
         <!-- Loading Indicator -->
         <n-spin v-if="verifyLoading" size="small" description="正在处理..." />
-        
+
         <!-- Method Selection -->
         <n-space v-if="verifyStep === 'method' && !verifyLoading">
           <n-button size="small" type="primary" data-test="sas-start" @click="beginSas">SAS 验证</n-button>
@@ -43,8 +48,23 @@
           </div>
           <div v-if="sasData.decimals?.length">或核对数字：{{ sasData.decimals.join(' ') }}</div>
           <n-space class="mt-8px">
-            <n-button size="small" type="primary" data-test="sas-confirm" :loading="confirming" @click="handleConfirmSas">确认匹配</n-button>
-            <n-button size="small" type="error" ghost data-test="sas-cancel" :disabled="confirming" @click="handleCancel">取消</n-button>
+            <n-button
+              size="small"
+              type="primary"
+              data-test="sas-confirm"
+              :loading="confirming"
+              @click="handleConfirmSas">
+              确认匹配
+            </n-button>
+            <n-button
+              size="small"
+              type="error"
+              ghost
+              data-test="sas-cancel"
+              :disabled="confirming"
+              @click="handleCancel">
+              取消
+            </n-button>
           </n-space>
         </div>
 
@@ -53,8 +73,18 @@
           <div>请使用另一设备扫描二维码以完成验证：</div>
           <img :src="qrDataUri" alt="QR" class="qr-code" />
           <n-space class="mt-8px">
-            <n-button size="small" type="primary" data-test="qr-confirm" :loading="confirming" @click="handleConfirmQr">已扫描/完成验证</n-button>
-            <n-button size="small" type="error" ghost data-test="qr-cancel" :disabled="confirming" @click="handleCancel">取消</n-button>
+            <n-button size="small" type="primary" data-test="qr-confirm" :loading="confirming" @click="handleConfirmQr">
+              已扫描/完成验证
+            </n-button>
+            <n-button
+              size="small"
+              type="error"
+              ghost
+              data-test="qr-cancel"
+              :disabled="confirming"
+              @click="handleCancel">
+              取消
+            </n-button>
           </n-space>
         </div>
 
@@ -63,7 +93,7 @@
 
         <!-- Error Message -->
         <n-alert v-if="verifyError" type="error" :show-icon="true">{{ verifyError }}</n-alert>
-        
+
         <n-alert type="default" :show-icon="true" v-if="verifyStep !== 'success'">
           若验证失败，请在“恢复密钥”页面确保已完成 4S 初始化，并重试设备验证。
         </n-alert>

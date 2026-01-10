@@ -122,7 +122,10 @@
       :title="testResult?.success ? '验证成功' : '验证失败'"
       class="w-90-max-w-320px">
       <div class="test-result">
-        <n-icon :size="60" :color="testResult?.success ? 'var(--hula-success)' : 'var(--hula-error)'" class="result-icon">
+        <n-icon
+          :size="60"
+          :color="testResult?.success ? 'var(--hula-success)' : 'var(--hula-error)'"
+          class="result-icon">
           <Check v-if="testResult?.success" />
           <X v-else />
         </n-icon>

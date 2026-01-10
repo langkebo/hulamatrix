@@ -16,13 +16,7 @@
           </feMerge>
         </filter>
       </defs>
-      <circle
-        cx="20"
-        cy="20"
-        r="16"
-        :fill="glowColor"
-        :filter="`url(#glow-${uniqueId})`"
-        opacity="0.3" />
+      <circle cx="20" cy="20" r="16" :fill="glowColor" :filter="`url(#glow-${uniqueId})`" opacity="0.3" />
     </svg>
 
     <!-- 圆形进度条 -->
@@ -59,7 +53,12 @@
 
     <!-- Warning icon for low time -->
     <transition name="icon-fade">
-      <svg v-if="remainingSeconds <= 5 && showWarningIcon" class="countdown-warning" :width="size / 2" :height="size / 2" viewBox="0 0 24 24">
+      <svg
+        v-if="remainingSeconds <= 5 && showWarningIcon"
+        class="countdown-warning"
+        :width="size / 2"
+        :height="size / 2"
+        viewBox="0 0 24 24">
         <path
           d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16v2h2v-2h-2zm0-6v4h2v-4h-2z"
           fill="currentColor"
@@ -214,7 +213,9 @@ onUnmounted(() => {
 }
 
 .countdown-ring-progress {
-  transition: stroke-dashoffset 1s linear, stroke 0.3s var(--ease-out-cubic);
+  transition:
+    stroke-dashoffset 1s linear,
+    stroke 0.3s var(--ease-out-cubic);
 }
 
 .countdown-text {

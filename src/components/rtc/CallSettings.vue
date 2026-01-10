@@ -719,7 +719,9 @@ watch(
         width: calc(var(--hula-spacing-xs) * 1);
         background: var(--border-color);
         border-radius: calc(var(--hula-spacing-xs) * 0.5);
-        transition: background 0.1s ease, height 0.1s ease;
+        transition:
+          background 0.1s ease,
+          height 0.1s ease;
 
         &.active {
           background: var(--primary-color);

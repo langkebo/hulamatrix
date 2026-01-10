@@ -769,7 +769,9 @@ onUnmounted(() => {
   background: var(--hula-brand-primary);
   border-radius: calc(var(--hula-spacing-xs) * 0.5);
   opacity: 0.3;
-  transition: opacity 0.2s ease, background 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
   position: relative;
 
   &::before {
@@ -838,7 +840,9 @@ onUnmounted(() => {
 /* 使用 transform 实现高性能动画 - 从下往上滑出 */
 .panel-slide-enter-active,
 .panel-slide-leave-active {
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: bottom;
 }
 

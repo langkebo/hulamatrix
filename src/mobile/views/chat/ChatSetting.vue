@@ -56,7 +56,9 @@
               <!-- 群号 -->
               <div class="flex justify-between items-center">
                 <div class="text-14px">群聊成员</div>
-                <div @click="toGroupChatMember" class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
+                <div
+                  @click="toGroupChatMember"
+                  class="text-12px text-var(--hula-gray-500) flex flex-wrap gap-10px items-center">
                   <div>
                     有
                     <span class="text-var(--hula-brand-primary)">
@@ -80,7 +82,8 @@
                 v-for="i in groupMemberListSliced"
                 :key="i.uid"
                 class="flex flex-col justify-center items-center gap-5px">
-                <div class="rounded-full relative bg-rgba(var(--hula-success-rgb), 0.05) w-36px h-36px flex items-center justify-center">
+                <div
+                  class="rounded-full relative bg-rgba(var(--hula-success-rgb), 0.05) w-36px h-36px flex items-center justify-center">
                   <!-- 蒙板 -->
                   <div
                     v-if="i.activeStatus !== OnlineEnum.ONLINE"

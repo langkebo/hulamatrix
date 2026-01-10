@@ -108,18 +108,14 @@
         <template v-if="step === 'sas'">
           <div class="button-group">
             <van-button type="primary" block :loading="confirming" @click="handleConfirmSas">确认匹配</van-button>
-            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">
-              不匹配
-            </van-button>
+            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">不匹配</van-button>
           </div>
         </template>
 
         <template v-if="step === 'qr'">
           <div class="button-group">
             <van-button type="primary" block :loading="confirming" @click="handleConfirmQr">已扫描</van-button>
-            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">
-              取消
-            </van-button>
+            <van-button type="danger" block :disabled="confirming" @click="cancel" class="mt-8px">取消</van-button>
           </div>
         </template>
 
@@ -289,7 +285,7 @@ const getDeviceAvatar = (_device: { device_id: string; display_name?: string }):
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: var(--hula-white)2f0;
+  background: var(--hula-white) 2f0;
   border: 1px solid #ffccc7;
   border-radius: 8px;
   color: var(--hula-error);

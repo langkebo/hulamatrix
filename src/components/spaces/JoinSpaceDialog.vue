@@ -520,7 +520,9 @@ const dialog = useDialog()
         padding: var(--hula-spacing-md);
         border: 1px solid var(--border-color);
         border-radius: var(--hula-radius-sm);
-        transition: border-color 0.2s ease, background 0.2s ease;
+        transition:
+          border-color 0.2s ease,
+          background 0.2s ease;
 
         &:hover {
           border-color: var(--primary-color);

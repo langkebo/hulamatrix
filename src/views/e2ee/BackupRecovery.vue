@@ -144,7 +144,7 @@ const recoveryRate = computed(() => {
   const total = stats.value.restoreSuccess + stats.value.restoreFail
   return total > 0 ? Math.round((stats.value.restoreSuccess / total) * 100) : 0
 })
-const measure = async <T>(fn: () => Promise<T>, kind: 'backup' | 'restore'): Promise<T> => {
+const measure = async <T,>(fn: () => Promise<T>, kind: 'backup' | 'restore'): Promise<T> => {
   const t0 = performance.now()
   try {
     const res = await fn()

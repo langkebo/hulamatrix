@@ -372,7 +372,10 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 
   &.checked {
     border-color: var(--hula-brand-primary);

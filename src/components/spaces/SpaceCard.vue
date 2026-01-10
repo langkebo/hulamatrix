@@ -468,7 +468,9 @@ const handleArchiveSpace = async () => {
   border-radius: var(--hula-radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 280px;
