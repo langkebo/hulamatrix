@@ -4,14 +4,7 @@
  */
 
 import { ref, computed } from 'vue'
-import type { MatrixClient } from 'matrix-js-sdk'
 import { logger } from '@/utils/logger'
-
-// Extended MatrixClient interface with device methods
-interface MatrixClientWithDevices extends Omit<MatrixClient, 'getUserId'> {
-  getUserId(): string | null
-  getDeviceId?(): string
-}
 
 // Crypto API interfaces
 interface CryptoApi {
@@ -43,7 +36,7 @@ export interface DeviceVerificationResult {
 }
 
 export function useE2EE() {
-  const client = ref<MatrixClient | null>(null)
+  const client = ref<any>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -66,7 +59,7 @@ export function useE2EE() {
   /**
    * 初始化E2EE
    */
-  const initializeE2EE = async (matrixClient: MatrixClient) => {
+  const initializeE2EE = async (matrixClient: any) => {
     client.value = matrixClient
     isLoading.value = true
     error.value = null
@@ -101,9 +94,8 @@ export function useE2EE() {
       if (!crypto) return
 
       // 获取当前用户的设备列表
-      const clientWithDevices = client.value as unknown as MatrixClientWithDevices
-      const deviceId = clientWithDevices.getDeviceId?.()
-      const userId = clientWithDevices.getUserId?.()
+      const deviceId = client.value?.getDeviceId?.()
+      const userId = client.value?.getUserId?.()
 
       if (deviceId && userId) {
         const cryptoApi = crypto as unknown as CryptoApi

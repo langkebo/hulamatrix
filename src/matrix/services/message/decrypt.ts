@@ -7,7 +7,7 @@
 
 import { matrixClientService } from '@/integrations/matrix/client'
 import { logger } from '@/utils/logger'
-import { parseMatrixEvent } from '@/utils/messageUtils'
+import { parseMatrixEvent, type MatrixEventLike } from '@/utils/messageUtils'
 import type { MatrixEvent } from '@/types/matrix'
 import type { MsgType } from '@/services/types'
 
@@ -106,7 +106,7 @@ export class MessageDecryptService {
     try {
       // Check if message is encrypted
       if (!this.isEncryptedMessage(event)) {
-        return parseMatrixEvent(event as unknown as MatrixEvent) as DecryptedMessage
+        return parseMatrixEvent(event as MatrixEventLike) as DecryptedMessage
       }
 
       const client = matrixClientService.getClient()
@@ -118,7 +118,7 @@ export class MessageDecryptService {
       const crypto = getCryptoMethod?.() as MatrixCrypto | null | undefined
       if (!crypto) {
         logger.warn('[MessageDecryptService] E2EE not available, returning encrypted message')
-        return parseMatrixEvent(event as unknown as MatrixEvent) as DecryptedMessage
+        return parseMatrixEvent(event as MatrixEventLike) as DecryptedMessage
       }
 
       const eventId = event.getId ? event.getId() : ((event as Record<string, unknown>).eventId as string | undefined)
@@ -143,7 +143,7 @@ export class MessageDecryptService {
         // Update status
         this.status.decrypted++
 
-        return parseMatrixEvent(decryptedEvent as unknown as MatrixEvent) as DecryptedMessage
+        return parseMatrixEvent(decryptedEvent as MatrixEventLike) as DecryptedMessage
       } catch (error) {
         logger.error('[MessageDecryptService] Failed to decrypt message', {
           eventId,
