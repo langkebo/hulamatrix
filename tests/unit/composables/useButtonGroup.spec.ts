@@ -317,8 +317,8 @@ describe('useButtonGroup', () => {
         }
       }
 
-      const { updatePosition: updatePosition2, position: position2 } = useButtonGroup(newConfig)
-      position2.buttonGroup = mockElement
+      const { updatePosition: updatePosition2, position: position2, buttonGroup: buttonGroup2 } = useButtonGroup(newConfig)
+      buttonGroup2.value = mockElement
       updatePosition2(false, false)
 
       // Position should be different
