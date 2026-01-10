@@ -50,7 +50,7 @@ export function memoizeArray<T, R>(
 
   return computed(() => {
     const items = source()
-    const sourceKey = JSON.stringify(items.map(options?.key || ((item) => item)))
+    const sourceKey = JSON.stringify(items.map(options?.key || ((item: T) => item)))
 
     // Return cached result if source hasn't changed
     if (sourceKey === previousSource.value && cache.size > 0) {
@@ -164,7 +164,7 @@ export function debouncedComputed<T>(source: () => T, delay: number): ComputedRe
 
   // Update cached value immediately for initial render
   const result = computed(() => {
-    const newValue = debounced()
+    const newValue = debounced() as T
     cached.value = newValue
     return cached.value
   })
@@ -188,7 +188,7 @@ export function throttledComputed<T>(source: () => T, limit: number): ComputedRe
   const cached: Ref<T> = shallowRef(source()) as Ref<T>
 
   const result = computed(() => {
-    const newValue = throttled()
+    const newValue = throttled() as T
     cached.value = newValue
     return cached.value
   })
@@ -236,7 +236,7 @@ const metricsStore = new Map<string, PerformanceMetrics[]>()
 export function recordPerformance(componentName: string, metrics: Partial<PerformanceMetrics>): void {
   const entry: PerformanceMetrics = {
     renderTime: metrics.renderTime ?? 0,
-    memoryUsage: metrics.memoryUsage ?? performance.memory?.usedJSHeapSize ?? 0,
+    memoryUsage: metrics.memoryUsage ?? (performance as any).memory?.usedJSHeapSize ?? 0,
     timestamp: Date.now()
   }
 
