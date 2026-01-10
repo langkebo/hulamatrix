@@ -25,10 +25,24 @@ const searchState = new SearchStateManager(
   () => authState.users.value,
   () => roomState.rooms.value
 )
-const mediaState = new MediaStateManager(() => authState.client.value)
+// MediaStateManager needs getClient and sendMessageFn
+const mediaState = new MediaStateManager(
+  () => authState.client.value,
+  async (roomId, content, type) => {
+    // Placeholder sendMessageFn - should be properly implemented
+    const client = authState.client.value
+    if (client?.sendEvent) {
+      await client.sendEvent(roomId, type, content)
+    }
+  }
+)
 const notificationState = new NotificationStateManager()
-const callState = new CallStateManager(() => authState.client.value)
-const cacheState = new CacheStateManager()
+const callState = new CallStateManager()
+// CacheStateManager needs getMessages and getRooms
+const cacheState = new CacheStateManager(
+  () => roomState.messages.value,
+  () => roomState.rooms.value
+)
 const settingsState = new SettingsStateManager()
 
 /**
@@ -49,7 +63,9 @@ export function useAppStore() {
 }
 
 // Export types for TypeScript users
-export type { AuthStateManager, RoomStateManager, SearchStateManager } from '../auth-state'
+export type { AuthStateManager } from '../auth-state'
+export type { RoomStateManager } from '../room-state'
+export type { SearchStateManager } from '../search-state'
 export type { MediaStateManager } from '../media-state'
 export type { NotificationStateManager } from '../notification-state'
 export type { CallStateManager } from '../call-state'

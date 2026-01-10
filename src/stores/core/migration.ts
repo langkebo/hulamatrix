@@ -165,7 +165,7 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
       case 'matrixAuth': {
         const authData = data as AuthData
         if (authData.isAuthenticated) {
-          appStore.auth = {
+          appStore.auth.auth.value = {
             isAuthenticated: true,
             accessToken: authData.accessToken,
             deviceId: authData.deviceId,
@@ -185,7 +185,7 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
       case 'user': {
         const userData = data as UserData
         if (userData.profile) {
-          appStore.currentUser = {
+          appStore.auth.currentUser.value = {
             userId: userData.userId,
             displayName: userData.profile.displayName || '',
             avatarUrl: userData.profile.avatarUrl || '',
@@ -199,7 +199,7 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
       case 'friends': {
         const friendsData = data as FriendsData
         // 转换好友列表：(string | { userId: string })[] -> string[]
-        appStore.friends = friendsData.friends?.map((f) => (typeof f === 'string' ? f : f.userId || '')) || []
+        appStore.auth.friends.value = friendsData.friends?.map((f) => (typeof f === 'string' ? f : f.userId || '')) || []
         break
       }
 
@@ -226,7 +226,7 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
               joinRule: room.joinRule
             })
           })
-          appStore.rooms = roomsMap
+          appStore.room.rooms.value = roomsMap
         }
 
         // 迁移消息数据
@@ -235,19 +235,19 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
           Object.entries(chatData.messages).forEach(([roomId, roomMessages]: [string, unknown]) => {
             messagesMap.set(roomId, roomMessages)
           })
-          appStore.messages = messagesMap
+          appStore.room.messages.value = messagesMap
         }
 
         // 设置当前房间
         if (chatData.currentRoomId) {
-          appStore.currentRoomId = chatData.currentRoomId
+          appStore.room.currentRoomId.value = chatData.currentRoomId
         }
         break
       }
 
       case 'search': {
         const searchData = data as SearchData
-        appStore.search = {
+        appStore.search.search.value = {
           query: searchData.query || '',
           results:
             (searchData.results as {
@@ -268,7 +268,7 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
 
       case 'settings': {
         const settingsData = data as SettingsData
-        appStore.settings = {
+        appStore.settings.settings.value = {
           theme: (settingsData.theme || 'auto') as 'light' | 'dark' | 'auto',
           language: settingsData.language || 'zh-CN',
           fontSize: (settingsData.fontSize || 'medium') as 'small' | 'medium' | 'large',
@@ -278,16 +278,16 @@ export const migrateStoreData = (oldStoreName: string, data: OldStoreData) => {
           showTypingNotifications: settingsData.showTypingNotifications !== false,
           enableEncryption: settingsData.enableEncryption !== false,
           backupFrequency: (settingsData.backupFrequency || 'weekly') as 'daily' | 'weekly' | 'monthly',
-          cache: (settingsData.cache || appStore.cacheSettings) as unknown as import('./types').CacheSettings,
+          cache: (settingsData.cache || appStore.cache.cacheSettings.value) as unknown as import('./types').CacheSettings,
           notifications: (settingsData.notifications ||
-            appStore.notifications) as unknown as import('./types').NotificationSettings
+            appStore.notification.notifications.value) as unknown as import('./types').NotificationSettings
         }
         break
       }
 
       case 'pushRules': {
         const pushRulesData = data as PushRulesData
-        appStore.notifications = {
+        appStore.notification.notifications.value = {
           global: {
             enabled: pushRulesData.global?.enabled ?? true,
             soundEnabled: pushRulesData.global?.soundEnabled ?? true,
@@ -376,15 +376,15 @@ export const backupCoreStore = () => {
   const appStore = useAppStore()
   const backup = {
     auth: appStore.auth,
-    currentUser: appStore.currentUser,
-    friends: appStore.friends,
-    rooms: Array.from((appStore.rooms as Map<string, unknown>).entries()),
-    messages: Array.from((appStore.messages as Map<string, unknown>).entries()),
-    settings: appStore.settings,
-    notifications: appStore.notifications,
-    search: appStore.search,
-    cacheSettings: appStore.cacheSettings,
-    cacheMetrics: appStore.cacheMetrics,
+    currentUser: appStore.auth.currentUser.value,
+    friends: appStore.auth.friends.value,
+    rooms: Array.from(appStore.room.rooms.value.entries()),
+    messages: Array.from(appStore.room.messages.value.entries()),
+    settings: appStore.settings.settings.value,
+    notifications: appStore.notification.notifications.value,
+    search: appStore.search.search.value,
+    cacheSettings: appStore.cache.cacheSettings.value,
+    cacheMetrics: appStore.cache.cacheMetrics.value,
     timestamp: Date.now()
   }
 
@@ -407,21 +407,21 @@ export const restoreCoreStore = () => {
     const appStore = useAppStore()
 
     // 恢复数据
-    appStore.auth = backup.auth || { isAuthenticated: false, loginHistory: [] }
-    appStore.currentUser = backup.currentUser
-    appStore.friends = backup.friends || []
+    appStore.auth.auth.value = backup.auth || { isAuthenticated: false, loginHistory: [] }
+    appStore.auth.currentUser.value = backup.currentUser
+    appStore.auth.friends.value = backup.friends || []
 
     if (backup.rooms) {
-      appStore.rooms = new Map(backup.rooms)
+      appStore.room.rooms.value = new Map(backup.rooms)
     }
 
     if (backup.messages) {
-      appStore.messages = new Map(backup.messages)
+      appStore.room.messages.value = new Map(backup.messages)
     }
 
-    appStore.settings = backup.settings || appStore.settings
-    appStore.notifications = backup.notifications || appStore.notifications
-    appStore.search = backup.search || { query: '', results: [], filters: {}, loading: false, history: [] }
+    appStore.settings.settings.value = backup.settings || appStore.settings.settings.value
+    appStore.notification.notifications.value = backup.notifications || appStore.notification.notifications.value
+    appStore.search.search.value = backup.search || { query: '', results: [], filters: {}, loading: false, history: [] }
 
     return true
   } catch (error) {
