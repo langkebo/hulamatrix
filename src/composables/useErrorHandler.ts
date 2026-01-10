@@ -1,5 +1,6 @@
 import { ref, computed, type ComputedRef, type Ref } from 'vue'
-import { useDialog, useMessage, type DialogApiInjection, type MessageApiInjection } from 'naive-ui'
+import { useDialog, useMessage } from 'naive-ui'
+import type { DialogApi, MessageApi } from 'naive-ui'
 
 export interface ErrorOptions {
   showDialog?: boolean
@@ -19,8 +20,8 @@ export interface ErrorResult {
 }
 
 export interface ErrorHandlerOptions {
-  dialog?: DialogApiInjection
-  message?: MessageApiInjection
+  dialog?: DialogApi
+  message?: MessageApi
   defaultNotification?: boolean
   defaultDialog?: boolean
   enableReporting?: boolean
@@ -50,8 +51,9 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}): ErrorResult 
     message: providedMessage,
     defaultNotification = true,
     defaultDialog = false,
-    enableReporting = false,
-    reportingEndpoint
+    enableReporting = false
+    // reportingEndpoint can be used for custom error reporting
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } = options
 
   const dialog = providedDialog || useDialog()
@@ -63,10 +65,7 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}): ErrorResult 
   /**
    * Handle error with multiple output options
    */
-  const handleError = async (
-    err: unknown,
-    opts: ErrorOptions = {}
-  ): Promise<void> => {
+  const handleError = async (err: unknown, opts: ErrorOptions = {}): Promise<void> => {
     const {
       showDialog = defaultDialog,
       showNotification = defaultNotification,
@@ -103,7 +102,6 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}): ErrorResult 
         case 'info':
           message.info(displayMessage)
           break
-        case 'error':
         default:
           message.error(displayMessage)
           break
@@ -392,4 +390,4 @@ function isNetworkError(err: unknown): boolean {
 // Types Export
 // ============================================
 
-export type { ErrorOptions, ErrorResult, ErrorHandlerOptions, ValidationErrorOptions }
+// Types are already exported inline above

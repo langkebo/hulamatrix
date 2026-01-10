@@ -7,19 +7,8 @@
  * @module utils/performance
  */
 
-import {
-  computed,
-  type ComputedRef,
-  type Ref,
-  shallowRef,
-  type ShallowRef
-} from 'vue'
-import {
-  useDebounceFn,
-  useThrottleFn,
-  type MaybeComputedRef,
-  type EventHookOn
-} from '@vueuse/core'
+import { computed, type ComputedRef, type Ref, shallowRef, type ShallowRef } from 'vue'
+import { useDebounceFn, useThrottleFn } from '@vueuse/core'
 
 // ============================================
 // Type Definitions
@@ -169,10 +158,7 @@ export function lazyComputed<T>(
  * )
  * ```
  */
-export function debouncedComputed<T>(
-  source: () => T,
-  delay: number
-): ComputedRef<T> {
+export function debouncedComputed<T>(source: () => T, delay: number): ComputedRef<T> {
   const debounced = useDebounceFn(source, delay)
   const cached: Ref<T> = shallowRef(source()) as Ref<T>
 
@@ -197,10 +183,7 @@ export function debouncedComputed<T>(
  * )
  * ```
  */
-export function throttledComputed<T>(
-  source: () => T,
-  limit: number
-): ComputedRef<T> {
+export function throttledComputed<T>(source: () => T, limit: number): ComputedRef<T> {
   const throttled = useThrottleFn(source, limit)
   const cached: Ref<T> = shallowRef(source()) as Ref<T>
 
@@ -250,10 +233,7 @@ const metricsStore = new Map<string, PerformanceMetrics[]>()
 /**
  * Record performance metrics for a component
  */
-export function recordPerformance(
-  componentName: string,
-  metrics: Partial<PerformanceMetrics>
-): void {
+export function recordPerformance(componentName: string, metrics: Partial<PerformanceMetrics>): void {
   const entry: PerformanceMetrics = {
     renderTime: metrics.renderTime ?? 0,
     memoryUsage: metrics.memoryUsage ?? performance.memory?.usedJSHeapSize ?? 0,
@@ -294,10 +274,7 @@ export function getAverageRenderTime(componentName: string): number {
  * })
  * ```
  */
-export function measurePerformance<T>(
-  label: string,
-  fn: () => T
-): T {
+export function measurePerformance<T>(label: string, fn: () => T): T {
   const start = performance.now()
   const result = fn()
   const end = performance.now()
@@ -350,10 +327,7 @@ export function createCancellable<T>(fn: () => Promise<T>) {
  * )
  * ```
  */
-export async function parallel<T>(
-  tasks: (() => Promise<T>)[],
-  concurrency: number
-): Promise<T[]> {
+export async function parallel<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<T[]> {
   const results: T[] = []
   const executing: Promise<void>[] = []
 
@@ -418,10 +392,7 @@ export function rafThrottle<T extends (...args: unknown[]) => void>(fn: T): T {
  * })
  * ```
  */
-export function runWhenIdle(
-  fn: () => void,
-  timeout?: number
-): void {
+export function runWhenIdle(fn: () => void, timeout?: number): void {
   if ('requestIdleCallback' in window) {
     ;(window as any).requestIdleCallback(() => fn(), { timeout })
   } else {

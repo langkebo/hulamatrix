@@ -6,7 +6,11 @@
       v-model:show="showDialog"
       :close-on-click-overlay="false"
       position="bottom"
-      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }">
+      :style="{ height: '80%', borderRadius: '16px 16px 0 0' }"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="dialogTitleId"
+      :aria-describedby="dialogDescId">
       <div class="verification-dialog">
         <!-- Handle bar -->
         <div class="handle-bar" @click="handleClose"></div>
@@ -14,10 +18,18 @@
         <!-- Header -->
         <div class="dialog-header">
           <div class="header-content">
-            <h3>设备验证</h3>
-            <span class="header-desc">验证设备以确保安全的加密通信</span>
+            <h3 :id="dialogTitleId">设备验证</h3>
+            <span :id="dialogDescId" class="header-desc">验证设备以确保安全的加密通信</span>
           </div>
-          <van-icon name="close" :size="18" @click="handleClose" class="close-icon" />
+          <van-icon
+            name="close"
+            :size="18"
+            @click="handleClose"
+            class="close-icon"
+            role="button"
+            tabindex="0"
+            aria-label="关闭对话框"
+            @keydown.enter="handleClose" />
         </div>
 
         <!-- Content -->
@@ -38,15 +50,17 @@
           </div>
 
           <!-- Verification Steps -->
-          <div class="steps-section">
-            <div class="custom-steps">
+          <div class="steps-section" role="progressbar" :aria-valuenow="currentStep + 1" aria-valuemin="1" aria-valuemax="3" aria-label="验证进度">
+            <div class="custom-steps" role="list">
               <div
                 v-for="(step, index) in ['请求', '验证', '完成']"
                 :key="index"
                 class="step-item"
-                :class="{ active: index === currentStep, completed: index < currentStep }">
-                <div class="step-circle">
-                  <van-icon v-if="index < currentStep" name="success" :size="16" />
+                :class="{ active: index === currentStep, completed: index < currentStep }"
+                role="listitem"
+                :aria-current="index === currentStep ? 'step' : undefined">
+                <div class="step-circle" :aria-label="`${step}, 步骤 ${index + 1} 共 3`">
+                  <van-icon v-if="index < currentStep" name="success" :size="16" aria-label="已完成" />
                   <span v-else>{{ index + 1 }}</span>
                 </div>
                 <div class="step-title">{{ step }}</div>
@@ -55,36 +69,50 @@
           </div>
 
           <!-- Emoji Verification (SAS) -->
-          <div v-if="showEmojiVerification" class="emoji-section">
-            <div class="section-title">验证表情符号</div>
-            <div class="emoji-grid">
-              <div v-for="(item, index) in verificationEmoji" :key="index" class="emoji-item">
-                <span class="emoji">{{ item.emoji }}</span>
+          <div v-if="showEmojiVerification" class="emoji-section" role="region" aria-label="表情符号验证">
+            <div class="section-title" id="emoji-title">验证表情符号</div>
+            <div class="emoji-grid" role="list" aria-describedby="emoji-desc">
+              <div
+                v-for="(item, index) in verificationEmoji"
+                :key="index"
+                class="emoji-item"
+                role="listitem"
+                :aria-label="`表情符号 ${item.emoji}, 数字 ${item.number}, 第 ${index + 1} 个共 7`">
+                <span class="emoji" :aria-hidden="true">{{ item.emoji }}</span>
                 <span class="number">{{ item.number }}</span>
               </div>
             </div>
-            <div class="alert-info" style="margin-top: 12px">
+            <div class="alert-info" style="margin-top: 12px" role="alert" aria-live="polite">
               <van-icon name="info-o" :size="16" />
-              <span>请确认对方设备显示的表情符号和数字与上面一致</span>
+              <span id="emoji-desc">请确认对方设备显示的表情符号和数字与上面一致</span>
             </div>
           </div>
 
           <!-- QR Code Verification -->
-          <div v-if="showQRVerification" class="qr-section">
+          <div v-if="showQRVerification" class="qr-section" role="region" aria-label="二维码验证">
             <div class="section-title">扫描二维码验证</div>
-            <div class="qr-container">
+            <div class="qr-container" role="img" aria-label="二维码占位符">
               <div class="qr-placeholder">
                 <van-icon name="qr" :size="64" />
                 <p>显示二维码供对方扫描</p>
               </div>
             </div>
-            <van-button block plain @click="switchToEmoji">改用表情符号验证</van-button>
+            <van-button
+              block
+              plain
+              @click="switchToEmoji"
+              aria-label="切换到表情符号验证方式">改用表情符号验证
+            </van-button>
           </div>
 
           <!-- Trust Level -->
           <div class="trust-section">
-            <div class="trust-card" :class="`trust-${currentTrustLevel}`">
-              <van-icon :name="getVantIconName(getTrustIconName(currentTrustLevel))" :size="24" />
+            <div
+              class="trust-card"
+              :class="`trust-${currentTrustLevel}`"
+              role="status"
+              :aria-label="`设备信任状态: ${getTrustLabel(currentTrustLevel)}, ${getTrustDescription(currentTrustLevel)}`">
+              <van-icon :name="getVantIconName(getTrustIconName(currentTrustLevel))" :size="24" :aria-label="getTrustLabel(currentTrustLevel)" />
               <div class="trust-info">
                 <span class="trust-label">{{ getTrustLabel(currentTrustLevel) }}</span>
                 <span class="trust-desc">{{ getTrustDescription(currentTrustLevel) }}</span>
@@ -93,38 +121,56 @@
           </div>
 
           <!-- Verification Methods -->
-          <div v-if="currentStep === 0 && !verifying" class="methods-section">
+          <div v-if="currentStep === 0 && !verifying" class="methods-section" role="region" aria-label="验证方式选择">
             <div class="section-title">选择验证方式</div>
-            <div class="method-list">
-              <div class="method-item" @click="startEmojiVerification">
-                <van-icon name="smile-o" :size="24" color="var(--hula-success)" />
+            <div class="method-list" role="radiogroup" aria-label="验证方法">
+              <div
+                class="method-item"
+                role="button"
+                tabindex="0"
+                @click="startEmojiVerification"
+                @keydown.enter="startEmojiVerification"
+                aria-label="使用表情符号验证，对比7个表情符号和数字">
+                <van-icon name="smile-o" :size="24" color="var(--hula-success)" aria-hidden="true" />
                 <div class="method-info">
                   <span class="method-name">表情符号验证</span>
                   <span class="method-desc">对比7个表情符号和数字</span>
                 </div>
-                <van-icon name="arrow" :size="18" />
+                <van-icon name="arrow" :size="18" aria-hidden="true" />
               </div>
-              <div class="method-item" @click="startQRVerification">
-                <van-icon name="qr" :size="24" color="var(--hula-success)" />
+              <div
+                class="method-item"
+                role="button"
+                tabindex="0"
+                @click="startQRVerification"
+                @keydown.enter="startQRVerification"
+                aria-label="使用二维码验证，扫描二维码快速验证">
+                <van-icon name="qr" :size="24" color="var(--hula-success)" aria-hidden="true" />
                 <div class="method-info">
                   <span class="method-name">二维码验证</span>
                   <span class="method-desc">扫描二维码快速验证</span>
                 </div>
-                <van-icon name="arrow" :size="18" />
+                <van-icon name="arrow" :size="18" aria-hidden="true" />
               </div>
             </div>
           </div>
 
           <!-- Waiting State -->
-          <div v-if="verifying" class="waiting-section">
-            <van-loading size="24px" />
+          <div v-if="verifying" class="waiting-section" role="status" aria-live="polite" aria-atomic="true">
+            <van-loading size="24px" aria-label="正在验证中" />
             <p>正在验证...</p>
           </div>
         </div>
 
         <!-- Actions Footer -->
-        <div class="dialog-footer">
-          <van-button v-if="currentStep === 1" size="large" block @click="handleReject" :disabled="verifying">
+        <div class="dialog-footer" role="group" aria-label="操作按钮">
+          <van-button
+            v-if="currentStep === 1"
+            size="large"
+            block
+            @click="handleReject"
+            :disabled="verifying"
+            aria-label="拒绝此设备的验证请求">
             拒绝
           </van-button>
           <van-button
@@ -133,10 +179,17 @@
             size="large"
             block
             @click="handleAccept"
-            :loading="verifying">
+            :loading="verifying"
+            :aria-label="verifying ? '正在验证中' : '确认表情符号匹配，验证设备'">
             确认匹配
           </van-button>
-          <van-button v-if="currentStep === 0" type="primary" size="large" block @click="handleClose">
+          <van-button
+            v-if="currentStep === 0"
+            type="primary"
+            size="large"
+            block
+            @click="handleClose"
+            aria-label="稍后再验证，关闭对话框">
             稍后验证
           </van-button>
         </div>
@@ -148,16 +201,25 @@
       v-model:show="showSuccess"
       :close-on-click-overlay="true"
       position="center"
-      :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }">
+      :style="{ width: '90%', maxWidth: '320px', borderRadius: '12px' }"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="success-title">
       <div class="success-dialog">
         <div class="success-header">
-          <van-icon name="success" :size="48" color="var(--hula-success)" />
+          <van-icon name="success" :size="48" color="var(--hula-success)" aria-hidden="true" />
         </div>
         <div class="success-content">
-          <h3>验证成功!</h3>
+          <h3 id="success-title">验证成功!</h3>
           <p>{{ successMessage }}</p>
         </div>
-        <van-button type="primary" size="large" block @click="showSuccess = false">完成</van-button>
+        <van-button
+          type="primary"
+          size="large"
+          block
+          @click="showSuccess = false"
+          aria-label="关闭成功提示">完成
+        </van-button>
       </div>
     </van-popup>
   </div>
@@ -232,6 +294,10 @@ const successMessage = ref('')
 
 // Emoji list for SAS (Short Authentication String)
 const emojiList = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵']
+
+// Accessibility IDs
+const dialogTitleId = `device-verification-title-${Math.random().toString(36).substring(2, 9)}`
+const dialogDescId = `device-verification-desc-${Math.random().toString(36).substring(2, 9)}`
 
 // Computed
 const showContent = computed(() => showDialog.value || props.show)
@@ -515,7 +581,7 @@ defineExpose({
 
 <style scoped lang="scss">
 .mobile-device-verification {
-  // Container
+  // Container for mobile device verification dialog
 }
 
 .verification-dialog {
@@ -723,7 +789,7 @@ defineExpose({
 }
 
 .steps-section {
-  // Custom steps implementation already added above
+  // Steps section styles are handled by inline classes and Vant components
 }
 
 .emoji-section {

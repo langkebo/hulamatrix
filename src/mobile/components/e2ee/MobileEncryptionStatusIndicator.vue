@@ -1,47 +1,71 @@
 <!-- Mobile Encryption Status Indicator - Shows E2EE encryption status for mobile -->
 <template>
-  <div class="mobile-encryption-status" :class="statusClass">
+  <div
+    class="mobile-encryption-status"
+    :class="statusClass"
+    role="status"
+    :aria-label="`加密状态: ${statusTitle}, ${statusDesc}`"
+    :aria-live="isEncrypted ? 'polite' : 'assertive'">
     <!-- Compact Mode (Default) -->
-    <div v-if="compact" class="status-compact" @click="showDetail = true">
+    <div
+      v-if="compact"
+      class="status-compact"
+      role="button"
+      tabindex="0"
+      @click="showDetail = true"
+      @keydown.enter="showDetail = true"
+      :aria-label="`查看加密详情: ${statusTitle}`">
       <van-icon
         :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
         :size="iconSize"
-        :color="iconColor" />
+        :color="iconColor"
+        :aria-label="statusTitle" />
       <span v-if="showLabel" class="status-label">{{ statusText }}</span>
     </div>
 
     <!-- Full Mode -->
     <div v-else class="status-full">
-      <div class="status-header" @click="showDetail = true">
-        <van-icon :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')" :size="20" :color="iconColor" />
+      <div
+        class="status-header"
+        role="button"
+        tabindex="0"
+        @click="showDetail = true"
+        @keydown.enter="showDetail = true"
+        :aria-label="`查看加密详情: ${statusTitle}`">
+        <van-icon
+          :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
+          :size="20"
+          :color="iconColor"
+          :aria-label="statusTitle" />
         <div class="status-info">
           <span class="status-title">{{ statusTitle }}</span>
           <span class="status-desc">{{ statusDesc }}</span>
         </div>
-        <van-icon name="arrow" :size="16" :color="iconColor" />
+        <van-icon name="arrow" :size="16" :color="iconColor" aria-hidden="true" />
       </div>
 
       <!-- Trust Level Badge -->
-      <div v-if="isEncrypted && trustLevel" class="trust-badge" :class="trustClass">
+      <div v-if="isEncrypted && trustLevel" class="trust-badge" :class="trustClass" role="status" :aria-label="`信任级别: ${trustLevelText}`">
         <van-icon
           :name="
             getVantIconName(
               trustIcon === 'ShieldCheck' ? 'ShieldCheck' : trustIcon === 'Shield' ? 'Shield' : 'AlertTriangle'
             )
           "
-          :size="14" />
+          :size="14"
+          :aria-label="trustLevelText" />
         <span>{{ trustLevelText }}</span>
       </div>
 
       <!-- Verified Devices Count -->
-      <div v-if="isEncrypted && verifiedCount > 0" class="verified-count">
-        <van-icon name="success" :size="14" color="var(--hula-success)" />
+      <div v-if="isEncrypted && verifiedCount > 0" class="verified-count" role="status" aria-live="polite">
+        <van-icon name="success" :size="14" color="var(--hula-success)" aria-label="已验证" />
         <span>{{ verifiedCount }}/{{ totalDevices }} 个设备已验证</span>
       </div>
 
       <!-- Warning for Unverified Devices -->
-      <div v-if="isEncrypted && unverifiedCount > 0" class="warning-badge">
-        <van-icon name="warning-o" :size="14" color="var(--hula-warning)" />
+      <div v-if="isEncrypted && unverifiedCount > 0" class="warning-badge" role="alert" aria-live="assertive">
+        <van-icon name="warning-o" :size="14" color="var(--hula-warning)" aria-label="警告" />
         <span>{{ unverifiedCount }} 个设备未验证</span>
       </div>
     </div>
@@ -52,20 +76,30 @@
       position="center"
       :style="{ width: '90%', maxWidth: '400px', borderRadius: '12px' }"
       :close-on-click-overlay="true"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="modalTitleId"
       @update:show="showDetail = $event">
       <div class="detail-modal">
         <!-- Header -->
         <div class="detail-modal-header">
-          <span class="header-title">{{ isEncrypted ? '端到端加密详情' : '房间未加密' }}</span>
-          <van-icon name="cross" :size="18" @click="showDetail = false" />
+          <span :id="modalTitleId" class="header-title">{{ isEncrypted ? '端到端加密详情' : '房间未加密' }}</span>
+          <van-icon
+            name="cross"
+            :size="18"
+            @click="showDetail = false"
+            role="button"
+            tabindex="0"
+            aria-label="关闭对话框"
+            @keydown.enter="showDetail = false" />
         </div>
 
         <!-- Scrollable Content -->
         <div class="detail-modal-content">
           <!-- Encryption Status -->
-          <div class="detail-section">
-            <div class="detail-item">
-              <div class="item-icon" :class="statusClass">
+          <div class="detail-section" role="region" aria-label="加密状态">
+            <div class="detail-item" role="status" :aria-label="`加密状态: ${statusTitle}, ${statusDesc}`">
+              <div class="item-icon" :class="statusClass" aria-hidden="true">
                 <van-icon
                   :name="getVantIconName(statusIcon === 'Lock' ? 'Lock' : 'LockOpen')"
                   :size="32"
@@ -79,14 +113,14 @@
           </div>
 
           <!-- Encryption Info -->
-          <div v-if="isEncrypted" class="detail-section">
+          <div v-if="isEncrypted" class="detail-section" role="region" aria-label="加密信息">
             <div class="section-title">加密信息</div>
-            <div class="info-list">
-              <div class="info-item">
+            <div class="info-list" role="list">
+              <div class="info-item" role="listitem">
                 <span class="info-label">算法</span>
                 <span class="info-value">{{ algorithm || 'm.megolm.v1.aes-sha2' }}</span>
               </div>
-              <div v-if="trustLevel" class="info-item">
+              <div v-if="trustLevel" class="info-item" role="listitem">
                 <span class="info-label">信任级别</span>
                 <span class="info-value" :class="trustClass">{{ trustLevelText }}</span>
               </div>
@@ -94,14 +128,19 @@
           </div>
 
           <!-- Device List -->
-          <div v-if="isEncrypted && devices.length > 0" class="detail-section">
+          <div v-if="isEncrypted && devices.length > 0" class="detail-section" role="region" aria-label="设备列表">
             <div class="section-title">设备列表</div>
-            <div class="device-list">
-              <div v-for="device in devices" :key="device.deviceId" class="device-item">
+            <div class="device-list" role="list" :aria-label="`${devices.length} 个设备`">
+              <div
+                v-for="device in devices"
+                :key="device.deviceId"
+                class="device-item"
+                role="listitem"
+                :aria-label="`设备 ${device.displayName || '未知设备'}, ${formatDeviceId(device.deviceId)}, ${device.verified ? '已验证' : '未验证'}`">
                 <div class="device-info">
-                  <van-image :width="32" :height="32" round class="device-avatar">
+                  <van-image :width="32" :height="32" round class="device-avatar" :alt="device.displayName || '未知设备'">
                     <template #error>
-                      <div class="avatar-fallback">
+                      <div class="avatar-fallback" aria-hidden="true">
                         {{ device.displayName?.[0] || '?' }}
                       </div>
                     </template>
@@ -111,7 +150,7 @@
                     <div class="device-id">{{ formatDeviceId(device.deviceId) }}</div>
                   </div>
                 </div>
-                <div class="device-status" :class="device.verified ? 'verified' : 'unverified'">
+                <div class="device-status" :class="device.verified ? 'verified' : 'unverified'" role="status" :aria-label="device.verified ? '已验证' : '未验证'">
                   <van-icon :name="getVantIconName(device.verified ? 'ShieldCheck' : 'AlertTriangle')" :size="16" />
                   <span>{{ device.verified ? '已验证' : '未验证' }}</span>
                 </div>
@@ -121,20 +160,39 @@
 
           <!-- Warning for Unencrypted Room -->
           <div v-if="!isEncrypted" class="unencrypted-warning">
-            <div class="alert-warning">
-              <van-icon name="warning-o" :size="18" />
+            <div class="alert-warning" role="alert" aria-live="assertive">
+              <van-icon name="warning-o" :size="18" aria-label="警告" />
               <span>此房间未启用端到端加密。消息可能会被服务器管理员查看。</span>
             </div>
           </div>
         </div>
 
         <!-- Actions Footer -->
-        <div class="detail-modal-footer">
+        <div class="detail-modal-footer" role="group" aria-label="操作按钮">
           <div v-if="isEncrypted" class="action-buttons">
-            <van-button type="primary" size="small" @click="handleVerifyDevices" icon="shield-o">验证设备</van-button>
-            <van-button type="default" size="small" @click="handleResetSession" icon="replay">重置会话</van-button>
+            <van-button
+              type="primary"
+              size="small"
+              @click="handleVerifyDevices"
+              icon="shield-o"
+              aria-label="验证设备">验证设备
+            </van-button>
+            <van-button
+              type="default"
+              size="small"
+              @click="handleResetSession"
+              icon="replay"
+              aria-label="重置加密会话">重置会话
+            </van-button>
           </div>
-          <van-button v-else type="primary" size="small" block @click="handleEnableEncryption" icon="lock">
+          <van-button
+            v-else
+            type="primary"
+            size="small"
+            block
+            @click="handleEnableEncryption"
+            icon="lock"
+            aria-label="为房间启用端到端加密">
             启用加密
           </van-button>
         </div>
@@ -198,6 +256,9 @@ const isEncrypted = ref(false)
 const algorithm = ref<string>('')
 const trustLevel = ref<'verified' | 'trusted' | 'warning' | 'blacklisted'>()
 const devices = ref<DeviceInfo[]>([])
+
+// Accessibility IDs
+const modalTitleId = `encryption-status-title-${Math.random().toString(36).substring(2, 9)}`
 
 // Computed
 const statusIcon = computed(() => {

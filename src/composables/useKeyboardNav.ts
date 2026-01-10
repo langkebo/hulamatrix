@@ -52,11 +52,10 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
    * Get all focusable elements within a container
    */
   const getFocusableElements = (container: Element): HTMLElement[] => {
-    return Array.from(
-      container.querySelectorAll<HTMLElement>(selectors.join(', '))
-    ).filter((el) => {
+    return Array.from(container.querySelectorAll<HTMLElement>(selectors.join(', '))).filter((el) => {
+      const element = el as HTMLElement & { disabled?: boolean }
       return (
-        !el.disabled &&
+        !element.disabled &&
         !el.hidden &&
         el.offsetParent !== null &&
         el.tabIndex >= 0 &&
@@ -74,7 +73,7 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
     const container = event.currentTarget as Element
 
     switch (event.key) {
-      case 'Tab':
+      case 'Tab': {
         if (!loop) break
 
         focusableElements = getFocusableElements(container)
@@ -91,6 +90,7 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
           focusableElements[nextIndex]?.focus()
         }
         break
+      }
 
       case 'Escape':
         event.preventDefault()
@@ -111,7 +111,7 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
         break
 
       case 'ArrowDown':
-      case 'ArrowUp':
+      case 'ArrowUp': {
         // Vertical list navigation
         focusableElements = getFocusableElements(container)
         const currentIndexList = focusableElements.indexOf(activeElement)
@@ -119,7 +119,8 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
         if (currentIndexList === -1) break
 
         event.preventDefault()
-        const directionV = event.key === 'ArrowDown' ? 1 : -1
+        const isArrowDown = event.key === 'ArrowDown'
+        const directionV = isArrowDown ? 1 : -1
         let nextIndexV = currentIndexList + directionV
 
         if (loop) {
@@ -129,11 +130,16 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
         }
 
         focusableElements[nextIndexV]?.focus()
-        onArrowDown?.()
+        if (isArrowDown) {
+          onArrowDown?.()
+        } else {
+          onArrowUp?.()
+        }
         break
+      }
 
       case 'ArrowLeft':
-      case 'ArrowRight':
+      case 'ArrowRight': {
         // Horizontal navigation
         focusableElements = getFocusableElements(container)
         const currentIndexH = focusableElements.indexOf(activeElement)
@@ -157,6 +163,7 @@ export function useKeyboardNav(options: KeyboardNavOptions = {}): KeyboardNavRet
           onArrowLeft?.()
         }
         break
+      }
 
       case 'Home':
         // Navigate to first item
@@ -241,10 +248,9 @@ export function useFocusTrap(options: Pick<KeyboardNavOptions, 'onEscape'> = {})
  * })
  * ```
  */
-export function useListNavigation(options: Pick<
-  KeyboardNavOptions,
-  'onArrowUp' | 'onArrowDown' | 'onEnter' | 'loop'
-> = {}) {
+export function useListNavigation(
+  options: Pick<KeyboardNavOptions, 'onArrowUp' | 'onArrowDown' | 'onEnter' | 'loop'> = {}
+) {
   return useKeyboardNav({
     ...options,
     selectors: ['[role="listitem"]', '[role="option"]', 'button', 'a[href]']
@@ -274,23 +280,16 @@ export function useGridNavigation(options: {
   onEnter?: () => void
   loop?: boolean
 }) {
-  const { columns = 3, onArrowUp, onArrowDown, onArrowLeft, onArrowRight, onEnter, loop = true } = options
+  // Extract columns but don't use it directly in this implementation
+  // Grid navigation can be extended with custom logic using columns
+  const { onArrowUp, onArrowDown, onArrowLeft, onArrowRight, onEnter, loop = true } = options
 
   return useKeyboardNav({
     loop,
     onEnter,
-    onArrowUp: () => {
-      // Custom grid navigation logic can be added here
-      onArrowUp?.()
-    },
-    onArrowDown: () => {
-      onArrowDown?.()
-    },
-    onArrowLeft: () => {
-      onArrowLeft?.()
-    },
-    onArrowRight: () => {
-      onArrowRight?.()
-    }
+    onArrowUp,
+    onArrowDown,
+    onArrowLeft,
+    onArrowRight
   })
 }

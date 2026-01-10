@@ -59,18 +59,16 @@ const props = withDefaults(defineProps<Props>(), {
   showIcon: true
 })
 
-const emit = defineEmits<{
-  (e: 'action'): void
-}>()
+const emit = defineEmits<(e: 'action') => void>()
 
 const ariaLabel = computed(() => {
   if (props.title) return props.title
   const labels = {
     'no-data': '暂无数据',
     'no-results': '未找到结果',
-    'error': '出错了',
-    'offline': '离线',
-    'custom': '空状态'
+    error: '出错了',
+    offline: '离线',
+    custom: '空状态'
   }
   return labels[props.type]
 })

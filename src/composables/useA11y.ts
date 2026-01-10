@@ -1,5 +1,4 @@
 import { computed, type ComputedRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 export interface A11yOptions {
   label?: string
@@ -13,7 +12,7 @@ export interface A11yAttrs {
   'aria-label'?: string
   'aria-describedby'?: string
   'aria-live'?: string
-  'role'?: string
+  role?: string
   'aria-atomic'?: boolean
 }
 
@@ -39,8 +38,6 @@ export interface A11yReturn {
  * ```
  */
 export function useA11y(options: A11yOptions = {}): A11yReturn {
-  const { t } = useI18n()
-
   const ariaLabel = computed(() => options.label || '')
   const ariaDescription = computed(() => options.description || '')
   const ariaLive = computed(() => options.live || 'off')
@@ -52,7 +49,7 @@ export function useA11y(options: A11yOptions = {}): A11yReturn {
     'aria-label': ariaLabel.value || undefined,
     'aria-describedby': ariaDescription.value || undefined,
     'aria-live': ariaLive.value === 'off' ? undefined : ariaLive.value,
-    'role': ariaRole.value || undefined,
+    role: ariaRole.value || undefined,
     'aria-atomic': ariaAtomic.value || undefined
   }))
 
