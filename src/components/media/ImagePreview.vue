@@ -386,7 +386,7 @@ onUnmounted(() => {
 
 .fit-mode-select {
   width: 120px;
-  margin-left: 12px;
+  margin-left: var(--hula-spacing-sm);
 }
 
 .image-preview-container {
@@ -405,7 +405,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
   background: var(--n-card-color);
   border-bottom: 1px solid var(--n-border-color);
   position: sticky;
@@ -427,7 +427,7 @@ onUnmounted(() => {
 .preview-image {
   max-width: 100%;
   max-height: 100%;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
   cursor: move;
   user-select: none;
   -webkit-user-drag: none;
@@ -445,7 +445,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   background: rgba(var(--hula-black-rgb), 0.6);
-  padding: 8px 16px;
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
   border-radius: 20px;
   backdrop-filter: blur(10px);
 }
@@ -473,9 +473,9 @@ onUnmounted(() => {
   transform: translateX(-50%);
   background: rgba(var(--hula-black-rgb), 0.6);
   color: white;
-  padding: 4px 12px;
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
   border-radius: 12px;
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
 }
 
 /* 滚动条样式 */

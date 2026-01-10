@@ -207,24 +207,24 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 20px;
-  font-size: 14px;
+  gap: var(--hula-spacing-sm);
+  padding: var(--hula-spacing-sm) var(--hula-spacing-lg);
+  font-size: var(--hula-text-sm);
   font-weight: 500;
   color: var(--color-primary, #1890ff);
   background: transparent;
-  border: 1px solid var(--color-primary, #1890ff);
-  border-radius: 6px;
+  border: var(--hula-border-thin) solid var(--color-primary, #1890ff);
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s var(--ease-out-cubic, ease-out);
+  transition: opacity 0.2s var(--ease-out-cubic, ease-out);
 
   &:hover {
     background: var(--color-primary, #1890ff);
-    color: #fff;
+    color: var(--hula-white);
   }
 
   &:active {
-    transform: scale(0.98);
+    opacity: 0.8;
   }
 
   &:focus-visible {

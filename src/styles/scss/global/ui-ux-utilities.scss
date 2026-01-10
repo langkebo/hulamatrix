@@ -1,0 +1,245 @@
+/**
+ * UI/UX 工具类
+ *
+ * 提供常用的交互反馈和样式修复工具类
+ * 基于 UI/UX 审计报告 (docs/UI_UX_AUDIT_DETAILED.md)
+ */
+
+/* ==================== 交互反馈工具类 ==================== */
+
+/* 可点击元素默认添加 cursor-pointer */
+.clickable,
+[role="button"],
+[onclick] {
+  cursor: pointer;
+}
+
+/* Vue @click 指令需要通过 JS 添加 cursor-pointer，参考 src/composables/useAutoCursor.ts */
+
+/* 禁用状态的 cursor */
+.disabled,
+[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ==================== 标准间距工具类 ==================== */
+
+/* 使用标准间距变量的工具类 */
+.u-m-xs { margin: var(--hula-spacing-xs); }
+.u-m-sm { margin: var(--hula-spacing-sm); }
+.u-m-md { margin: var(--hula-spacing-md); }
+.u-m-lg { margin: var(--hula-spacing-lg); }
+.u-m-xl { margin: var(--hula-spacing-xl); }
+
+.u-p-xs { padding: var(--hula-spacing-xs); }
+.u-p-sm { padding: var(--hula-spacing-sm); }
+.u-p-md { padding: var(--hula-spacing-md); }
+.u-p-lg { padding: var(--hula-spacing-lg); }
+.u-p-xl { padding: var(--hula-spacing-xl); }
+
+.u-gap-xs { gap: var(--hula-spacing-xs); }
+.u-gap-sm { gap: var(--hula-spacing-sm); }
+.u-gap-md { gap: var(--hula-spacing-md); }
+.u-gap-lg { gap: var(--hula-spacing-lg); }
+.u-gap-xl { gap: var(--hula-spacing-xl); }
+
+/* ==================== 标准圆角工具类 ==================== */
+
+.u-radius-sm { border-radius: var(--hula-radius-sm); }
+.u-radius-md { border-radius: var(--hula-radius-md); }
+.u-radius-lg { border-radius: var(--hula-radius-lg); }
+.u-radius-xl { border-radius: var(--hula-radius-xl); }
+.u-radius-round { border-radius: var(--hula-radius-round); }
+
+/* ==================== 标准字体大小工具类 ==================== */
+
+.u-text-xs { font-size: var(--hula-text-xs); }
+.u-text-sm { font-size: var(--hula-text-sm); }
+.u-text-base { font-size: var(--hula-text-base); }
+.u-text-lg { font-size: var(--hula-text-lg); }
+.u-text-xl { font-size: var(--hula-text-xl); }
+.u-text-2xl { font-size: var(--hula-text-2xl); }
+.u-text-3xl { font-size: var(--hula-text-3xl); }
+
+/* ==================== 动画优化工具类 ==================== */
+
+/* 快速过渡 (150ms) */
+.u-transition-fast {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 基础过渡 (200ms) - 推荐用于大多数交互 */
+.u-transition-base {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 仅颜色过渡 */
+.u-transition-color {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 仅透明度过渡 (推荐用于 hover) */
+.u-transition-opacity {
+  transition: opacity 0.2s ease;
+}
+
+/* ==================== 无障碍工具类 ==================== */
+
+/* 跳过导航链接（键盘导航） */
+.u-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--hula-brand-primary);
+  color: white;
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
+  text-decoration: none;
+  z-index: 9999;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+/* 屏幕阅读器专用内容 */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 焦点可见性增强 */
+.u-focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--hula-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* 触摸目标最小尺寸 (44x44px - WCAG 标准) */
+.u-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================== 响应式工具类 ==================== */
+
+/* 移动端隐藏 */
+@media (max-width: 767px) {
+  .u-hide-mobile {
+    display: none !important;
+  }
+}
+
+/* 桌面端隐藏 */
+@media (min-width: 768px) {
+  .u-hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ==================== 交互状态工具类 ==================== */
+
+/* Hover 状态 - 使用 opacity 而非 scale */
+.u-hover-opacity {
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+/* Active 状态 - 使用 opacity */
+.u-active-opacity {
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+/* Focus 状态 */
+.u-focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--hula-brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* 禁用状态 */
+.u-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ==================== 边框工具类 ==================== */
+
+.u-border {
+  border: var(--hula-border-thin) solid var(--hula-border);
+}
+
+.u-border-thin {
+  border: var(--hula-border-thin) solid var(--hula-border);
+}
+
+.u-border-base {
+  border: var(--hula-border-base) solid var(--hula-border);
+}
+
+/* ==================== 阴影工具类 ==================== */
+
+.u-shadow-sm { box-shadow: var(--hula-shadow-sm); }
+.u-shadow-md { box-shadow: var(--hula-shadow-md); }
+.u-shadow-lg { box-shadow: var(--hula-shadow-lg); }
+.u-shadow-xl { box-shadow: var(--hula-shadow-xl); }
+
+/* ==================== 过渡动画工具类 ==================== */
+
+/* 淡入淡出 */
+.u-fade-enter-active,
+.u-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.u-fade-enter-from,
+.u-fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动淡入 */
+.u-slide-fade-enter-active {
+  transition: all 0.2s ease-out;
+}
+
+.u-slide-fade-leave-active {
+  transition: all 0.15s ease-in;
+}
+
+.u-slide-fade-enter-from {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.u-slide-fade-leave-to {
+  transform: translateY(10px);
+  opacity: 0;
+}
+
+/* ==================== 减少动画偏好支持 ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

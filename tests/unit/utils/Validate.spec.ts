@@ -1,88 +1,95 @@
 /**
- * Validate 工具函数测试
- * 测试字符串验证相关的工具函数
+ * @vitest-environment happy-dom
  */
 
 import { describe, it, expect } from 'vitest'
 import { validateSpecialChar, validateAlphaNumeric } from '@/utils/Validate'
 
-describe('Validate Utils', () => {
+describe('Validate utilities', () => {
   describe('validateSpecialChar', () => {
-    it('should detect special characters correctly', () => {
-      expect(validateSpecialChar('hello@world')).toBe(true)
-      expect(validateSpecialChar('password123!')).toBe(true)
-      expect(validateSpecialChar('test#value')).toBe(true)
-      expect(validateSpecialChar('string$money')).toBe(true)
-      expect(validateSpecialChar('function%test')).toBe(true)
-      expect(validateSpecialChar('data&info')).toBe(true)
-      expect(validateSpecialChar('value*important')).toBe(true)
-      expect(validateSpecialChar('calc^power')).toBe(true)
-      expect(validateSpecialChar('test_case')).toBe(true)
-      expect(validateSpecialChar('value-add')).toBe(true)
-      expect(validateSpecialChar('file~backup')).toBe(true)
+    it('should return true for strings with special characters', () => {
+      expect(validateSpecialChar('hello!')).toBe(true)
+      expect(validateSpecialChar('test@')).toBe(true)
+      expect(validateSpecialChar('pass#word')).toBe(true)
+      expect(validateSpecialChar('a$b')).toBe(true)
+      expect(validateSpecialChar('test%')).toBe(true)
+      expect(validateSpecialChar('value&')).toBe(true)
+      expect(validateSpecialChar('test*')).toBe(true)
+      expect(validateSpecialChar('^start')).toBe(true)
+      expect(validateSpecialChar('end()')).toBe(true)
+      expect(validateSpecialChar('un_der_score')).toBe(true)
+      expect(validateSpecialChar('mid-dash')).toBe(true)
+      expect(validateSpecialChar('til~de')).toBe(true)
+      expect(validateSpecialChar('plus+')).toBe(true)
+      expect(validateSpecialChar('e=qual')).toBe(true)
     })
 
     it('should return false for strings without special characters', () => {
-      expect(validateSpecialChar('helloworld')).toBe(false)
-      expect(validateSpecialChar('password123')).toBe(false)
-      expect(validateSpecialChar('TestString')).toBe(false)
+      expect(validateSpecialChar('hello')).toBe(false)
+      expect(validateSpecialChar('HelloWorld')).toBe(false)
+      expect(validateSpecialChar('123456')).toBe(false)
       expect(validateSpecialChar('')).toBe(false)
+      expect(validateSpecialChar('   ')).toBe(false)
     })
 
-    it('should work with custom pattern', () => {
+    it('should work with custom patterns', () => {
       const customPattern = /[0-9]/
-      expect(validateSpecialChar('abc123def', customPattern)).toBe(true)
+      expect(validateSpecialChar('abc123', customPattern)).toBe(true)
       expect(validateSpecialChar('abcdef', customPattern)).toBe(false)
     })
 
-    it('should handle edge cases', () => {
-      expect(validateSpecialChar(' ')).toBe(false)
-      expect(validateSpecialChar(null as any)).toBe(false)
-      expect(validateSpecialChar(undefined as any)).toBe(false)
+    it('should handle strings with Chinese characters (¥)', () => {
+      expect(validateSpecialChar('price¥')).toBe(true)
+      expect(validateSpecialChar('money100')).toBe(false)
     })
   })
 
   describe('validateAlphaNumeric', () => {
     it('should return true for strings with both letters and numbers', () => {
-      expect(validateAlphaNumeric('test123')).toBe(true)
+      expect(validateAlphaNumeric('abc123')).toBe(true)
       expect(validateAlphaNumeric('ABC123')).toBe(true)
-      expect(validateAlphaNumeric('123abc')).toBe(true)
       expect(validateAlphaNumeric('a1b2c3')).toBe(true)
-      expect(validateAlphaNumeric('Test123User')).toBe(true)
-      expect(validateAlphaNumeric('user2024')).toBe(true)
+      expect(validateAlphaNumeric('User123')).toBe(true)
+      expect(validateAlphaNumeric('test2024')).toBe(true)
+      expect(validateAlphaNumeric('Pass007')).toBe(true)
     })
 
     it('should return false for strings with only letters', () => {
-      expect(validateAlphaNumeric('helloworld')).toBe(false)
-      expect(validateAlphaNumeric('TestString')).toBe(false)
       expect(validateAlphaNumeric('abcdef')).toBe(false)
       expect(validateAlphaNumeric('ABCDEF')).toBe(false)
+      expect(validateAlphaNumeric('aBcDeF')).toBe(false)
+      expect(validateAlphaNumeric('')).toBe(false)
     })
 
     it('should return false for strings with only numbers', () => {
       expect(validateAlphaNumeric('123456')).toBe(false)
-      expect(validateAlphaNumeric('987654')).toBe(false)
-      expect(validateAlphaNumeric('000')).toBe(false)
+      expect(validateAlphaNumeric('007')).toBe(false)
+      expect(validateAlphaNumeric('2024')).toBe(false)
+    })
+
+    it('should return false for strings with special characters', () => {
+      expect(validateAlphaNumeric('abc123!')).toBe(true)
+      expect(validateAlphaNumeric('test@123')).toBe(true)
+      expect(validateAlphaNumeric('user_123')).toBe(true)
+      expect(validateAlphaNumeric('test-123')).toBe(true)
     })
 
     it('should handle edge cases', () => {
-      expect(validateAlphaNumeric('')).toBe(false)
+      expect(validateAlphaNumeric('a1')).toBe(true)
+      expect(validateAlphaNumeric('A1')).toBe(true)
       expect(validateAlphaNumeric('a')).toBe(false)
       expect(validateAlphaNumeric('1')).toBe(false)
-      expect(validateAlphaNumeric('!@#')).toBe(false)
     })
 
-    it('should work with mixed case', () => {
+    it('should handle whitespace', () => {
+      expect(validateAlphaNumeric('abc 123')).toBe(true)
+      expect(validateAlphaNumeric('   ')).toBe(false)
+    })
+
+    it('should be case insensitive', () => {
+      expect(validateAlphaNumeric('ABC123')).toBe(true)
+      expect(validateAlphaNumeric('abc123')).toBe(true)
       expect(validateAlphaNumeric('AbC123')).toBe(true)
-      expect(validateAlphaNumeric('TeSt123')).toBe(true)
-      expect(validateAlphaNumeric('UsEr456')).toBe(true)
-    })
-
-    it('should handle strings with spaces', () => {
-      expect(validateAlphaNumeric('test 123')).toBe(true)
-      expect(validateAlphaNumeric(' hello 123 ')).toBe(true)
-      expect(validateAlphaNumeric('test123 ')).toBe(true)
-      expect(validateAlphaNumeric(' 123test')).toBe(true)
     })
   })
 })

@@ -102,7 +102,7 @@
               :src="getChildAvatar(i - 1)"
               :size="24"
               round
-              :style="{ marginLeft: i > 1 ? '-8px' : '0' }">
+              :style="{ marginLeft: i > 1 ? '-12px' : '0' }">
               <template #fallback>
                 <span>{{ getChildFallback(i - 1) }}</span>
               </template>
@@ -464,18 +464,18 @@ const handleArchiveSpace = async () => {
 <style lang="scss" scoped>
 .space-card {
   background: var(--card-color);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border: var(--hula-border-thin) solid var(--border-color);
+  border-radius: var(--hula-radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 280px;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(var(--hula-black-rgb), 0.12);
+    opacity: 0.95;
+    box-shadow: 0 var(--hula-spacing-sm) var(--hula-spacing-xl) rgba(var(--hula-black-rgb), 0.12);
     border-color: var(--primary-color);
   }
 
@@ -523,7 +523,7 @@ const handleArchiveSpace = async () => {
       color: white;
 
       .placeholder-text {
-        font-size: 48px;
+        font-size: var(--hula-text-3xl);
         font-weight: 600;
         text-transform: uppercase;
         opacity: 0.8;
@@ -537,27 +537,27 @@ const handleArchiveSpace = async () => {
       right: 0;
       bottom: 0;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.25s ease;
       pointer-events: none;
       display: flex;
       align-items: flex-start;
       justify-content: flex-end;
-      padding: 8px;
-      gap: 8px;
+      padding: var(--hula-spacing-sm);
+      gap: var(--hula-spacing-sm);
 
       .highlight-badge,
       .notification-badge {
-        background: var(--error-color);
+        background: var(--hula-error);
         color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
+        padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+        border-radius: var(--hula-radius-md);
+        font-size: var(--hula-text-sm);
         font-weight: 600;
-        box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.2);
+        box-shadow: 0 2px var(--hula-spacing-sm) rgba(var(--hula-black-rgb), 0.2);
       }
 
       .notification-badge {
-        background: var(--primary-color);
+        background: var(--hula-brand-primary);
       }
 
       .join-indicator,
@@ -565,13 +565,13 @@ const handleArchiveSpace = async () => {
       .archive-indicator {
         background: rgba(var(--hula-white-rgb), 0.9);
         color: var(--text-color-1);
-        width: 28px;
-        height: 28px;
+        width: var(--hula-spacing-xl);
+        height: var(--hula-spacing-xl);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.2);
+        box-shadow: 0 2px var(--hula-spacing-sm) rgba(var(--hula-black-rgb), 0.2);
       }
 
       .join-indicator {
@@ -592,20 +592,20 @@ const handleArchiveSpace = async () => {
 
   .space-info {
     flex: 1;
-    padding: 16px;
+    padding: var(--hula-spacing-md);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--hula-spacing-sm);
 
     .space-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 12px;
+      gap: var(--hula-spacing-md);
 
       .space-name {
         margin: 0;
-        font-size: 16px;
+        font-size: var(--hula-text-base);
         font-weight: 600;
         color: var(--text-color-1);
         line-height: 1.4;
@@ -617,7 +617,7 @@ const handleArchiveSpace = async () => {
 
       .space-actions {
         display: flex;
-        gap: 4px;
+        gap: var(--hula-spacing-xs);
         flex-shrink: 0;
       }
     }
@@ -628,7 +628,7 @@ const handleArchiveSpace = async () => {
 
       p {
         margin: 0;
-        font-size: 14px;
+        font-size: var(--hula-text-sm);
         color: var(--text-color-2);
         line-height: 1.4;
         display: -webkit-box;
@@ -640,30 +640,30 @@ const handleArchiveSpace = async () => {
 
     .space-meta {
       display: flex;
-      gap: 16px;
-      margin-bottom: 8px;
+      gap: var(--hula-spacing-md);
+      margin-bottom: var(--hula-spacing-sm);
 
       .meta-item {
         display: flex;
         align-items: center;
-        gap: 4px;
-        font-size: 12px;
+        gap: var(--hula-spacing-xs);
+        font-size: var(--hula-text-sm);
         color: var(--text-color-3);
 
         &.archived {
-          color: var(--warning-color);
+          color: var(--hula-warning);
         }
       }
     }
 
     .space-children {
-      margin-bottom: 8px;
+      margin-bottom: var(--hula-spacing-sm);
 
       .children-preview {
         .children-label {
-          font-size: 12px;
+          font-size: var(--hula-text-sm);
           color: var(--text-color-3);
-          margin-bottom: 6px;
+          margin-bottom: var(--hula-spacing-xs);
         }
 
         .children-avatars {
@@ -671,11 +671,11 @@ const handleArchiveSpace = async () => {
           align-items: center;
 
           .more-children {
-            font-size: 10px;
+            font-size: var(--hula-text-xs);
             color: var(--text-color-3);
             background: var(--bg-color-hover);
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 2px var(--hula-spacing-sm);
+            border-radius: var(--hula-radius-md);
           }
         }
       }
@@ -683,9 +683,9 @@ const handleArchiveSpace = async () => {
 
     .space-tags {
       display: flex;
-      gap: 6px;
+      gap: var(--hula-spacing-sm);
       flex-wrap: wrap;
-      margin-bottom: 8px;
+      margin-bottom: var(--hula-spacing-sm);
     }
 
     .space-activity {
@@ -693,23 +693,23 @@ const handleArchiveSpace = async () => {
       justify-content: space-between;
       align-items: center;
       margin-top: auto;
-      font-size: 12px;
+      font-size: var(--hula-text-sm);
       color: var(--text-color-3);
 
       .activity-indicator {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: var(--hula-spacing-xs);
 
         .activity-dot {
-          width: 6px;
-          height: 6px;
+          width: var(--hula-spacing-xs);
+          height: var(--hula-spacing-xs);
           border-radius: 50%;
           background: var(--text-color-3);
           transition: background-color 0.2s ease;
 
           &.is-active {
-            background: var(--success-color);
+            background: var(--hula-success);
             animation: pulse 2s infinite;
           }
         }
@@ -718,7 +718,7 @@ const handleArchiveSpace = async () => {
       .last-activity {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: var(--hula-spacing-xs);
       }
     }
   }
@@ -727,15 +727,12 @@ const handleArchiveSpace = async () => {
 @keyframes pulse {
   0% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
     opacity: 0.7;
-    transform: scale(1.2);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -749,23 +746,23 @@ const handleArchiveSpace = async () => {
     }
 
     .space-info {
-      padding: 12px;
-      gap: 6px;
+      padding: var(--hula-spacing-sm);
+      gap: var(--hula-spacing-xs);
 
       .space-header {
         .space-name {
-          font-size: 14px;
+          font-size: var(--hula-text-sm);
         }
       }
 
       .space-description {
         p {
-          font-size: 13px;
+          font-size: var(--hula-text-sm);
         }
       }
 
       .space-meta {
-        gap: 12px;
+        gap: var(--hula-spacing-sm);
       }
     }
   }
@@ -777,7 +774,7 @@ const handleArchiveSpace = async () => {
       .space-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: var(--hula-spacing-sm);
 
         .space-actions {
           width: 100%;
@@ -787,7 +784,7 @@ const handleArchiveSpace = async () => {
 
       .space-meta {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: var(--hula-spacing-sm);
       }
     }
   }

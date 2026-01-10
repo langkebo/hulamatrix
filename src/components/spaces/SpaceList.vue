@@ -144,8 +144,8 @@ const emit = defineEmits<{
 
 // Use Space List shared logic with local search only
 const { searchQuery, currentSort, activeQuickFilter, displaySpaces, handleSearch, toggleQuickFilter } = useSpaceList({
-  userSpaces: toRef(props, 'spaces'),
-  searchResults: ref([]),
+  userSpaces: computed(() => props.spaces),
+  searchResults: computed(() => []),
   searchSpaces: async () => [],
   clearSearchResults: () => {}
 })

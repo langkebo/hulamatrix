@@ -751,7 +751,7 @@ onBeforeUnmount(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .fade-enter-from,
@@ -764,7 +764,7 @@ onBeforeUnmount(() => {
 .emoji-grid-mobile {
   display: grid !important;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: var(--hula-spacing-xs);
   justify-items: center;
   width: 100%;
 }

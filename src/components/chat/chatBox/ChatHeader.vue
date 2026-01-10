@@ -1160,11 +1160,11 @@ onUnmounted(() => {
 
 .private-chat-icon {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 
   &:hover {
     color: var(--hula-brand-primary);
-    transform: scale(1.1);
+    opacity: 0.9;
   }
 }
 

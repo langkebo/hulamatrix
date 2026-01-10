@@ -713,13 +713,13 @@ watch(
       display: flex;
       align-items: flex-end;
       gap: 2px;
-      height: 40px;
+      height: var(--hula-spacing-xl);
 
       .audio-bar {
-        width: 4px;
+        width: calc(var(--hula-spacing-xs) * 1);
         background: var(--border-color);
-        border-radius: 2px;
-        transition: all 0.1s ease;
+        border-radius: calc(var(--hula-spacing-xs) * 0.5);
+        transition: background 0.1s ease, height 0.1s ease;
 
         &.active {
           background: var(--primary-color);
@@ -730,11 +730,11 @@ watch(
     .toggle-group {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: var(--hula-spacing-md);
+      margin-bottom: var(--hula-spacing-sm);
 
       .toggle-label {
-        font-size: 14px;
+        font-size: var(--hula-text-sm);
         color: var(--text-color-2);
       }
     }

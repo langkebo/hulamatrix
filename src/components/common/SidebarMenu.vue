@@ -259,24 +259,23 @@ const toggleSubmenu = (key: string) => {
   &__link {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--hula-spacing-md);
     width: 100%;
-    padding: 10px 16px;
+    padding: var(--hula-spacing-sm) var(--hula-spacing-md);
     color: var(--sidebar-text-color);
     text-decoration: none;
     border: none;
     background: transparent;
-    border-radius: 8px;
-    transition: all var(--transition-fast);
+    border-radius: var(--hula-radius-sm);
+    transition: background var(--transition-fast), color var(--transition-fast);
     cursor: pointer;
     position: relative;
-    font-size: 14px;
+    font-size: var(--hula-text-sm);
     text-align: left;
 
     &:hover {
       background: var(--sidebar-hover-bg);
       color: var(--sidebar-text-color-hover);
-      transform: translateX(2px);
     }
 
     &:focus {

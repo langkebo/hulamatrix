@@ -74,11 +74,11 @@ const getNavigationLabel = (item: NavigationItem) => {
 .navigation-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  margin-bottom: 4px;
-  border-radius: 6px;
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
+  margin-bottom: var(--hula-spacing-xs);
+  border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   color: var(--text-color);
   user-select: none;
 

@@ -213,7 +213,7 @@ onMounted(async () => {
 
   .avatar-hover {
     opacity: 0;
-    transition: opacity 0.4s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     top: 0;

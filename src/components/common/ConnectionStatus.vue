@@ -108,26 +108,26 @@ const handleClick = () => {
 <style lang="scss" scoped>
 .connection-status {
   position: fixed;
-  right: 12px;
-  bottom: 12px;
+  right: var(--hula-spacing-sm);
+  bottom: var(--hula-spacing-sm);
   z-index: 9999;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 10px;
+  gap: var(--hula-spacing-sm);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+  border-radius: var(--hula-radius-lg);
   background: rgba(var(--hula-black-rgb), 0.75);
   backdrop-filter: blur(8px);
   color: var(--hula-white);
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   line-height: 1;
   user-select: none;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, background 0.2s ease;
 
   &__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
+    width: var(--hula-spacing-sm);
+    height: var(--hula-spacing-sm);
+    border-radius: var(--hula-radius-round);
     background: var(--hula-gray-400);
     animation: pulse 2s ease-in-out infinite;
 
@@ -162,21 +162,21 @@ const handleClick = () => {
 
     &:hover {
       background: rgba(var(--hula-black-rgb), 0.85);
-      transform: scale(1.02);
+      opacity: 0.95;
     }
 
     &:active {
-      transform: scale(0.98);
+      opacity: 0.9;
     }
   }
 
   // 迷你模式：只显示圆点
   &:has(.connection-status__text:empty) {
-    padding: 6px;
+    padding: var(--hula-spacing-xs);
 
     .connection-status__dot {
-      width: 10px;
-      height: 10px;
+      width: var(--hula-spacing-sm);
+      height: var(--hula-spacing-sm);
     }
   }
 }
@@ -207,14 +207,14 @@ const handleClick = () => {
 // 移动端适配
 @media (max-width: 768px) {
   .connection-status {
-    right: 8px;
-    bottom: 8px;
-    padding: 4px 8px;
-    font-size: 11px;
+    right: var(--hula-spacing-xs);
+    bottom: var(--hula-spacing-xs);
+    padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+    font-size: var(--hula-text-xs);
 
     &__dot {
-      width: 6px;
-      height: 6px;
+      width: calc(var(--hula-spacing-xs) * 1.5);
+      height: calc(var(--hula-spacing-xs) * 1.5);
     }
   }
 }

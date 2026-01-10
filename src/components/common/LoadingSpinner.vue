@@ -66,7 +66,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   variant: 'circular',
   size: 'medium',
-  color: 'var(--color-primary, #1890ff)',
+  color: 'var(--hula-brand-primary)',
   ariaLabel: '加载中'
 })
 </script>
@@ -77,7 +77,7 @@ const props = withDefaults(defineProps<Props>(), {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--hula-spacing-md);
 
   &.full-page {
     position: fixed;
@@ -86,7 +86,7 @@ const props = withDefaults(defineProps<Props>(), {
     right: 0;
     bottom: 0;
     z-index: 9999;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(var(--hula-white-rgb), 0.9);
     backdrop-filter: blur(4px);
   }
 }
@@ -132,15 +132,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 .spinner-dots {
   display: flex;
-  gap: 6px;
+  gap: var(--hula-spacing-sm);
   align-items: center;
 
   .size-small & {
-    gap: 4px;
+    gap: var(--hula-spacing-xs);
   }
 
   .size-large & {
-    gap: 8px;
+    gap: var(--hula-spacing-md);
   }
 }
 
@@ -193,8 +193,8 @@ const props = withDefaults(defineProps<Props>(), {
 .spinner-bar {
   width: 120px;
   height: 4px;
-  background: var(--bg-color-3, #f0f0f0);
-  border-radius: 2px;
+  background: var(--n-border-color);
+  border-radius: var(--hula-radius-xs);
   overflow: hidden;
 
   .size-small & {
@@ -204,13 +204,13 @@ const props = withDefaults(defineProps<Props>(), {
 
   .size-large & {
     width: 160px;
-    height: 6px;
+    height: var(--hula-spacing-sm);
   }
 }
 
 .spinner-bar-progress {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--hula-radius-xs);
   animation: spinner-progress 1.5s ease-in-out infinite;
 }
 
@@ -303,35 +303,35 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .spinner-text {
-  font-size: 14px;
-  color: var(--text-color-2, #666);
-  margin-top: 8px;
+  font-size: var(--hula-text-sm);
+  color: var(--text-color-2);
+  margin-top: var(--hula-spacing-sm);
 
   .size-small & {
-    font-size: 12px;
+    font-size: var(--hula-text-xs);
   }
 
   .size-large & {
-    font-size: 16px;
+    font-size: var(--hula-text-base);
   }
 }
 
 .loading-spinner.full-page {
   flex-direction: row;
-  gap: 16px;
+  gap: var(--hula-spacing-md);
 
   .spinner-text {
     margin-top: 0;
-    font-size: 16px;
+    font-size: var(--hula-text-base);
     font-weight: 500;
-    color: var(--text-color-1, #333);
+    color: var(--text-color-1);
   }
 
   @media (prefers-color-scheme: dark) {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(var(--hula-black-rgb), 0.8);
 
     .spinner-text {
-      color: var(--text-color-1, #e0e0e0);
+      color: var(--text-color-1);
     }
   }
 }

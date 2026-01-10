@@ -185,7 +185,7 @@
               @click="handleMoreClick"
               :class="mobilePanelState === MobilePanelStateEnum.MORE ? 'rotate-45' : 'rotate-0'"
               class="w-25px h-25px mt-2px outline-none iconpark-icon transition-transform duration-300 ease">
-              <use href="var(--hula-gray-300)-one"></use>
+              <use href="#one"></use>
             </svg>
           </div>
         </div>

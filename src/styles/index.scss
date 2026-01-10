@@ -36,6 +36,7 @@
 @use './scss/global/dark-mode-enhancements';
 @use './scss/global/performance-optimizations';
 @use './scss/global/accessibility'; // 无障碍优化
+@use './scss/global/ui-ux-utilities'; // UI/UX 工具类
 
 // 引入组件样式
 @use './scss/components/message-bubble';

@@ -178,15 +178,81 @@ label {
 
 /* ==================== 动画控制 ==================== */
 
-/* 尊重用户偏好（减少动画） */
+/* 尊重用户偏好（减少动画） - 严格模式 */
 @media (prefers-reduced-motion: reduce) {
+  /* 禁用所有装饰性动画 */
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* 保留必要的交互反馈过渡（快速、微妙） */
+  button,
+  a,
+  [role='button'],
+  [onclick],
+  input,
+  textarea,
+  select {
+    transition-duration: 0.1s !important;
+  }
+
+  /* 模态框和下拉菜单使用快速过渡 */
+  .modal-container,
+  .dropdown-menu,
+  [role='menu'] {
+    transition-duration: 0.15s !important;
+  }
+
+  /* 其他元素的过渡大幅减少 */
+  * {
+    transition-duration: 0.1s !important;
+  }
+}
+
+/* 减少动画偏好（平衡模式） - 用于不那么严格的情况 */
+@media (prefers-reduced-motion: reduce) and (prefers-contrast: no-preference) {
+  /* 仅禁用明显的动画效果，保留快速状态切换 */
+  .fade-in,
+  .slide-in,
+  .zoom-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* 保留悬停和焦点反馈 */
+  button:hover,
+  a:hover,
+  [role='button']:hover {
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [role='button']:focus-visible {
+    opacity: 0.9;
+    transition: opacity 0.15s ease;
+  }
+}
+
+/* 为非偏好减少动画的用户定义标准动画 */
+@media (prefers-reduced-motion: no-preference) {
+  /* 定义标准动画曲线 */
+  .animation-standard {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animation-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animation-bounce {
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 

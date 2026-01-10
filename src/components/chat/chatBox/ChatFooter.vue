@@ -764,21 +764,21 @@ onUnmounted(() => {
 }
 
 .resize-indicator {
-  width: 40px;
-  height: 3px;
+  width: var(--hula-spacing-xl);
+  height: calc(var(--hula-spacing-xs) * 0.75);
   background: var(--hula-brand-primary);
-  border-radius: 2px;
+  border-radius: calc(var(--hula-spacing-xs) * 0.5);
   opacity: 0.3;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, background 0.2s ease;
   position: relative;
 
   &::before {
     content: '';
     position: absolute;
-    top: -2px;
+    top: calc(var(--hula-spacing-xs) * -0.5);
     left: 50%;
     transform: translateX(-50%);
-    width: 20px;
+    width: var(--hula-spacing-lg);
     height: 1px;
     background: var(--icon-color, var(--hula-gray-700));
     border-radius: 1px;
@@ -788,10 +788,10 @@ onUnmounted(() => {
   &::after {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: calc(var(--hula-spacing-xs) * -0.5);
     left: 50%;
     transform: translateX(-50%);
-    width: 20px;
+    width: var(--hula-spacing-lg);
     height: 1px;
     background: var(--icon-color, var(--hula-gray-700));
     border-radius: 1px;
@@ -838,7 +838,7 @@ onUnmounted(() => {
 /* 使用 transform 实现高性能动画 - 从下往上滑出 */
 .panel-slide-enter-active,
 .panel-slide-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: bottom;
 }
 

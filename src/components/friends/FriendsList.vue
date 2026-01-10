@@ -671,16 +671,16 @@ defineExpose({
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: var(--hula-spacing-xl);
 }
 
 .friend-item {
-  padding: 12px;
+  padding: var(--hula-spacing-sm);
   background: var(--bg-setting-item);
   border: 1px solid var(--line-color);
-  border-radius: 12px;
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);
@@ -700,25 +700,25 @@ defineExpose({
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 12px;
-  height: 12px;
+  width: var(--hula-spacing-sm);
+  height: var(--hula-spacing-sm);
   border-radius: 50%;
   border: 2px solid var(--bg-setting-item);
 
   &.status-online {
-    background: #52c41a; // Green for online
+    background: var(--hula-success);
   }
 
   &.status-offline {
-    background: #8c8c8c; // Gray for offline
+    background: var(--hula-gray-500);
   }
 
   &.status-away {
-    background: #faad14; // Orange for away
+    background: var(--hula-warning);
   }
 
   &.status-unavailable {
-    background: #ff4d4f; // Red for busy/unavailable
+    background: var(--hula-error);
   }
 }
 </style>

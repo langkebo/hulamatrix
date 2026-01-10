@@ -102,7 +102,7 @@ export default defineConfig({
 
     // 增强的覆盖率配置
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'json', 'html', 'lcov'],
       include: ['src/**/*.{vue,js,jsx,ts,tsx}'],
       exclude: [
@@ -113,7 +113,18 @@ export default defineConfig({
         'src/**/types/**', // 类型定义文件
         'src/**/mock/**', // mock文件
         'src/**/__tests__/**', // 测试工具文件
-        'tests/**' // 测试目录
+        'tests/**', // 测试目录
+        // Exclude files with UnoCSS atomic classes that cause parse errors
+        'src/mobile/components/e2ee/MobileKeyBackupBottomSheet.vue',
+        'src/mobile/components/message/MobileMessageForwardDialog.vue',
+        'src/mobile/components/spaces/MobileSpaceList.vue',
+        'src/views/moreWindow/settings/Foot.vue',
+        'src/components/common/IconButton.vue',
+        'src/components/common/MessageBubbleWrapper.vue',
+        'src/components/e2ee/DeviceVerificationPrompt.vue',
+        'src/components/polls/PollCreator.vue',
+        'src/mobile/components/auth/MobileUIAFlow.vue',
+        'src/mobile/components/e2ee/MobileDeviceVerificationSheet.vue'
       ],
       thresholds: {
         global: {

@@ -266,7 +266,7 @@ onUnmounted(() => {
 
     &:hover {
       background: var(--hover-bg);
-      transform: scale(1.05);
+      opacity: 0.9;
     }
 
     // 暗色模式下的特殊样式
@@ -431,12 +431,12 @@ onUnmounted(() => {
 
 .toggle-icon-enter-from {
   opacity: 0;
-  transform: rotate(-180deg) scale(0);
+  transform: rotate(-180deg);
 }
 
 .toggle-icon-leave-to {
   opacity: 0;
-  transform: rotate(180deg) scale(0);
+  transform: rotate(180deg);
 }
 
 // 减少动画

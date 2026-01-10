@@ -394,7 +394,7 @@ const {
   searchResults,
   searchSpaces: async (q, o) => {
     await searchSpaces(q, o)
-    return searchResults.value
+    return searchResults.value as MatrixSpace[]
   },
   clearSearchResults
 })

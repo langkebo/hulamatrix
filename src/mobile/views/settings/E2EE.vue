@@ -1,16 +1,21 @@
 <template>
-  <div class="mobile-e2ee-settings">
+  <div class="mobile-e2ee-settings" role="main" aria-label="E2EE 设置页面">
     <!-- Navigation Header -->
-    <van-nav-bar :title="t('setting.e2ee.title')" left-arrow @click-left="handleBack" />
+    <van-nav-bar :title="t('setting.e2ee.title')" left-arrow @click-left="handleBack" role="navigation" aria-label="导航栏" />
 
     <!-- Status Overview -->
-    <div class="status-card">
+    <div class="status-card" role="region" aria-label="E2EE 状态总览">
       <van-circle
         :rate="e2eeStatus.rate"
         :speed="100"
         :color="e2eeStatus.color"
         layer-color="var(--hula-gray-200)"
-        :text="e2eeStatus.text" />
+        :text="e2eeStatus.text"
+        role="progressbar"
+        :aria-valuenow="e2eeStatus.rate"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-label="`E2EE 状态: ${e2eeStatus.title}`" />
       <div class="status-info">
         <div class="status-title">{{ e2eeStatus.title }}</div>
         <div class="status-desc">{{ e2eeStatus.description }}</div>
@@ -18,10 +23,13 @@
     </div>
 
     <!-- Cross-Signing Section -->
-    <van-cell-group :title="t('setting.e2ee.cross_signing.title')" inset>
-      <van-cell :title="t('setting.e2ee.cross_signing.status')">
+    <van-cell-group :title="t('setting.e2ee.cross_signing.title')" inset role="region" :aria-label="t('setting.e2ee.cross_signing.title')">
+      <van-cell :title="t('setting.e2ee.cross_signing.status')" role="listitem">
         <template #icon>
-          <van-icon name="shield" :color="crossSigningReady ? 'var(--hula-success)' : 'var(--hula-warning)'" />
+          <van-icon
+            name="shield"
+            :color="crossSigningReady ? 'var(--hula-success)' : 'var(--hula-warning)'"
+            :aria-label="crossSigningReady ? '交叉签名已就绪' : '交叉签名未就绪'" />
         </template>
         <template #right-icon>
           <van-tag :type="crossSigningReady ? 'success' : 'warning'">
@@ -30,9 +38,9 @@
         </template>
       </van-cell>
 
-      <van-cell :title="t('setting.e2ee.cross_signing.master_key')">
+      <van-cell :title="t('setting.e2ee.cross_signing.master_key')" role="listitem">
         <template #icon>
-          <van-icon name="key" />
+          <van-icon name="key" :aria-label="hasMasterKey ? '主密钥已设置' : '主密钥未设置'" />
         </template>
         <template #right-icon>
           <van-tag :type="hasMasterKey ? 'success' : 'default'">
@@ -41,9 +49,9 @@
         </template>
       </van-cell>
 
-      <van-cell :title="t('setting.e2ee.cross_signing.user_signing_key')">
+      <van-cell :title="t('setting.e2ee.cross_signing.user_signing_key')" role="listitem">
         <template #icon>
-          <van-icon name="user" />
+          <van-icon name="user" :aria-label="hasUserSigningKey ? '用户签名密钥已设置' : '用户签名密钥未设置'" />
         </template>
         <template #right-icon>
           <van-tag :type="hasUserSigningKey ? 'success' : 'default'">
@@ -52,9 +60,9 @@
         </template>
       </van-cell>
 
-      <van-cell :title="t('setting.e2ee.cross_signing.self_signing_key')">
+      <van-cell :title="t('setting.e2ee.cross_signing.self_signing_key')" role="listitem">
         <template #icon>
-          <van-icon name="phone" />
+          <van-icon name="phone" :aria-label="hasSelfSigningKey ? '自身签名密钥已设置' : '自身签名密钥未设置'" />
         </template>
         <template #right-icon>
           <van-tag :type="hasSelfSigningKey ? 'success' : 'default'">
@@ -65,10 +73,19 @@
     </van-cell-group>
 
     <!-- Key Backup Section -->
-    <van-cell-group :title="t('setting.e2ee.key_backup.title')" inset>
-      <van-cell :title="t('setting.e2ee.key_backup.storage')" is-link @click="handleManageBackup">
+    <van-cell-group :title="t('setting.e2ee.key_backup.title')" inset role="region" :aria-label="t('setting.e2ee.key_backup.title')">
+      <van-cell
+        :title="t('setting.e2ee.key_backup.storage')"
+        is-link
+        @click="handleManageBackup"
+        role="button"
+        :aria-label="`${t('setting.e2ee.key_backup.storage')}, ${secretStorageReady ? '存储已就绪' : '存储未就绪'}, 点击管理密钥备份`"
+        tabindex="0">
         <template #icon>
-          <van-icon name="shield-o" :color="secretStorageReady ? 'var(--hula-success)' : 'var(--hula-warning)'" />
+          <van-icon
+            name="shield-o"
+            :color="secretStorageReady ? 'var(--hula-success)' : 'var(--hula-warning)'"
+            :aria-label="secretStorageReady ? '密钥存储已就绪' : '密钥存储未就绪'" />
         </template>
         <template #right-icon>
           <van-tag :type="secretStorageReady ? 'success' : 'warning'">
@@ -83,15 +100,21 @@
     </van-cell-group>
 
     <!-- Devices Section -->
-    <van-cell-group :title="t('setting.e2ee.devices.title')" inset>
+    <van-cell-group :title="t('setting.e2ee.devices.title')" inset role="region" :aria-label="t('setting.e2ee.devices.title')">
       <van-cell
         v-for="device in userDevices"
         :key="device.deviceId"
         :title="device.displayName || t('setting.e2ee.devices.unknown_device')"
-        is-link
-        @click="handleDeviceClick(device)">
+        :is-link="!device.verified"
+        @click="handleDeviceClick(device)"
+        role="listitem"
+        :aria-label="`设备 ${device.displayName || device.deviceId}, ${device.verified ? '已验证' : '未验证'}, ${formatLastSeen(device.lastSeenTs)}`"
+        tabindex="0">
         <template #icon>
-          <div class="device-avatar" :class="{ verified: device.verified }">
+          <div
+            class="device-avatar"
+            :class="{ verified: device.verified }"
+            :aria-label="device.verified ? '设备已验证' : '设备未验证'">
             {{ (device.displayName || device.deviceId).charAt(0) }}
           </div>
         </template>
@@ -99,34 +122,43 @@
           <van-tag :type="device.verified ? 'success' : 'warning'" size="small">
             {{ device.verified ? t('setting.e2ee.devices.verified') : t('setting.e2ee.devices.unverified') }}
           </van-tag>
-          <span v-if="device.lastSeenTs" class="last-seen">
+          <span v-if="device.lastSeenTs" class="last-seen" aria-label="最后活跃时间">
             {{ formatLastSeen(device.lastSeenTs) }}
           </span>
         </template>
       </van-cell>
 
-      <van-cell v-if="userDevices.length === 0">
+      <van-cell v-if="userDevices.length === 0" role="status">
         <van-empty :description="t('setting.e2ee.devices.no_devices')" />
       </van-cell>
     </van-cell-group>
 
     <!-- Security Settings -->
-    <van-cell-group :title="t('setting.e2ee.security.title')" inset>
-      <van-cell :title="t('setting.e2ee.security.auto_verify')">
+    <van-cell-group :title="t('setting.e2ee.security.title')" inset role="region" :aria-label="t('setting.e2ee.security.title')">
+      <van-cell :title="t('setting.e2ee.security.auto_verify')" role="listitem">
         <template #right-icon>
-          <van-switch v-model="settings.autoVerifyDevices" size="20" />
+          <van-switch
+            v-model="settings.autoVerifyDevices"
+            size="20"
+            :aria-label="`${t('setting.e2ee.security.auto_verify')}, ${settings.autoVerifyDevices ? '已启用' : '已禁用'}`" />
         </template>
       </van-cell>
 
-      <van-cell :title="t('setting.e2ee.security.block_unverified')">
+      <van-cell :title="t('setting.e2ee.security.block_unverified')" role="listitem">
         <template #right-icon>
-          <van-switch v-model="settings.blockUnverifiedDevices" size="20" />
+          <van-switch
+            v-model="settings.blockUnverifiedDevices"
+            size="20"
+            :aria-label="`${t('setting.e2ee.security.block_unverified')}, ${settings.blockUnverifiedDevices ? '已启用' : '已禁用'}`" />
         </template>
       </van-cell>
 
-      <van-cell :title="t('setting.e2ee.security.show_indicator')">
+      <van-cell :title="t('setting.e2ee.security.show_indicator')" role="listitem">
         <template #right-icon>
-          <van-switch v-model="settings.showEncryptionIndicator" size="20" />
+          <van-switch
+            v-model="settings.showEncryptionIndicator"
+            size="20"
+            :aria-label="`${t('setting.e2ee.security.show_indicator')}, ${settings.showEncryptionIndicator ? '已启用' : '已禁用'}`" />
         </template>
       </van-cell>
     </van-cell-group>

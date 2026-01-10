@@ -23,7 +23,7 @@
             <span class="w-12px h-12px rounded-15px flex items-center">
               <img
                 :src="friendUserState.url ? friendUserState.url : currentState?.url"
-                alt=""
+                :alt="`${friendUserState.title || currentState.title} 状态图标`"
                 class="rounded-50% size-14px" />
             </span>
             <span class="text-bold-style" style="font-size: 12px; color: var(--hula-gray-700)">

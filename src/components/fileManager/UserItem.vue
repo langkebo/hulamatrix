@@ -141,10 +141,10 @@ const handleAvatarError = (event: Event) => {
 .user-item {
   display: flex;
   align-items: center;
-  padding: 10px 8px;
-  border-radius: 12px;
+  padding: var(--hula-spacing-sm) var(--hula-spacing-xs);
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
   user-select: none;
 
   &:hover:not(&--selected) {
@@ -159,7 +159,7 @@ const handleAvatarError = (event: Event) => {
 
 .user-avatar {
   position: relative;
-  margin-right: 12px;
+  margin-right: var(--hula-spacing-md);
   flex-shrink: 0;
 }
 

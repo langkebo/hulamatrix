@@ -16,7 +16,7 @@
       class="avatar-with-border rounded-50% select-none cursor-pointer"
       :src="AvatarUtils.getAvatarUrl(item.avatar ?? '')"
       @dblclick="openImageViewer"
-      alt="" />
+      :alt="`${item.name} 的头像`" />
 
     <span class="text-(20px [--text-color])">{{ item.name }}</span>
 
@@ -78,7 +78,7 @@
           class="avatar-with-border rounded-50% select-none cursor-pointer"
           :src="AvatarUtils.getAvatarUrl(groupDetail.avatar ?? '')"
           @dblclick="openImageViewer"
-          alt="" />
+          :alt="`${groupDetail.groupName || groupDetail.name || 'Group'} 的头像`" />
 
         <n-flex vertical :size="16">
           <n-flex align="center" :size="12">

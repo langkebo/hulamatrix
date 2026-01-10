@@ -42,7 +42,7 @@
               class="w-150px h-140px"
               :src="imgTheme === 'dark' ? '/logoL.png' : '/logoD.png'"
               srcset="/logoD.png 1x, /logoD.png 2x"
-              alt="" />
+              alt="HuLa logo" />
           </picture>
         </div>
       </div>

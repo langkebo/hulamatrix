@@ -132,12 +132,12 @@ const itemClasses = computed(() => ({
 
 <style scoped lang="scss">
 .chat-list-item {
-  padding: 4px 6px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+  border-radius: var(--hula-radius-md);
+  transition: background-color 0.2s ease;
 
   &.is-mobile {
-    padding: 12px 16px;
+    padding: var(--hula-spacing-md) var(--hula-spacing-lg);
     min-height: 75px;
   }
 
@@ -146,10 +146,10 @@ const itemClasses = computed(() => ({
   }
 
   .item-flex {
-    height: 52px;
+    height: var(--hula-spacing-md);
 
     .is-desktop & {
-      height: 64px;
+      height: var(--hula-spacing-xl);
     }
   }
 }
@@ -171,12 +171,12 @@ const itemClasses = computed(() => ({
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--hula-spacing-xs);
   min-width: 0;
 }
 
 .chat-list-item-name-text {
-  font-size: 14px;
+  font-size: var(--hula-text-sm);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -184,19 +184,19 @@ const itemClasses = computed(() => ({
   color: var(--text-color);
 
   .is-mobile & {
-    font-size: 16px;
+    font-size: var(--hula-text-base);
     font-weight: bold;
   }
 }
 
 .chat-list-item-time {
-  font-size: 10px;
-  color: var(--text-color-secondary, var(--hula-brand-primary));
+  font-size: var(--hula-text-xs);
+  color: var(--text-color-secondary);
   white-space: nowrap;
-  margin-left: 4px;
+  margin-left: var(--hula-spacing-xs);
 
   .is-mobile & {
-    font-size: 12px;
+    font-size: var(--hula-text-sm);
   }
 }
 
@@ -206,22 +206,22 @@ const itemClasses = computed(() => ({
 
 .chat-list-item-message {
   flex: 1;
-  font-size: 12px;
-  color: var(--text-color-secondary, var(--hula-gray-700));
+  font-size: var(--hula-text-sm);
+  color: var(--text-color-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
   .is-mobile & {
-    font-size: 13px;
+    font-size: var(--hula-text-base);
   }
 
   &.text-bot {
-    color: var(--text-color-secondary, var(--hula-brand-primary));
+    color: var(--text-color-secondary);
   }
 
   &.shield {
-    color: var(--shield-color, var(--hula-brand-primary));
+    color: var(--shield-color);
   }
 }
 </style>

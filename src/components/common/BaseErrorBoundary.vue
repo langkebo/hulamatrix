@@ -264,14 +264,14 @@ export default {
 .error-button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  font-size: 14px;
+  gap: var(--hula-spacing-sm);
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
+  font-size: var(--hula-text-sm);
   font-weight: 500;
-  border: 1px solid var(--border-color, #d9d9d9);
-  border-radius: 6px;
+  border: var(--hula-border-thin) solid var(--border-color, #d9d9d9);
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s var(--ease-out-cubic, ease-out);
+  transition: opacity 0.2s var(--ease-out-cubic, ease-out);
   background: var(--bg-color-1, #fff);
 
   svg {
@@ -284,7 +284,7 @@ export default {
   }
 
   &:active {
-    transform: scale(0.98);
+    opacity: 0.8;
   }
 }
 
@@ -294,7 +294,7 @@ export default {
 
   &:hover {
     background: var(--color-primary, #1890ff);
-    color: #fff;
+    color: var(--hula-white);
   }
 }
 

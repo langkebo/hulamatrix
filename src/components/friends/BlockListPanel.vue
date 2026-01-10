@@ -254,12 +254,12 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: var(--hula-spacing-sm);
+  margin-bottom: var(--hula-spacing-xs);
   background: var(--bg-setting-item);
   border: 1px solid var(--line-color);
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: var(--hula-radius-sm);
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);
@@ -273,7 +273,7 @@ defineExpose({
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: var(--hula-text-sm);
   font-weight: 600;
   color: var(--text-color-1);
   white-space: nowrap;
@@ -282,7 +282,7 @@ defineExpose({
 }
 
 .block-time {
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   color: var(--text-color-3);
 }
 

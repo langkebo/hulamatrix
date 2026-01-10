@@ -16,7 +16,7 @@
           @mouseenter="handleItemMouseEnter(index)">
           <slot name="item" :item="item" :index="index">
             <!-- 默认渲染内容 -->
-            <div class="p-[8px_10px] rounded-lg">{{ item }}</div>
+            <div class="default-item">{{ item }}</div>
           </slot>
         </div>
       </template>
@@ -255,9 +255,14 @@ defineExpose({
   position: absolute;
   left: 0;
   width: 100%;
-  background: var(--float-block-hover-color, rgba(var(--hula-black-rgb), 0.1));
+  background: var(--float-block-hover-color, rgba(var(--hula-black-rgb), 0.06));
   pointer-events: none;
-  transition: top 0.2s ease-in-out;
+  transition: top 0.2s ease-in-out, opacity 0.2s ease;
   z-index: 0;
+}
+
+.default-item {
+  padding: var(--hula-spacing-sm) var(--hula-spacing-md);
+  border-radius: var(--hula-radius-md);
 }
 </style>

@@ -14,6 +14,7 @@ import { setupI18n } from '@/services/i18n'
 import { AppException } from '@/common/exception'
 import vResize from '@/directives/v-resize'
 import vSlide from '@/directives/v-slide'
+import vCursorPointer from '@/directives/cursorPointer'
 import router from '@/router'
 import { pinia } from '@/stores'
 import { initializePlatform } from '@/utils/PlatformConstants'
@@ -423,7 +424,14 @@ Perf.mark('app-start')
 const app = createApp(App)
 
 provideMatrixClientManager(app)
-app.use(router).use(pinia).use(setupI18n).directive('resize', vResize).directive('slide', vSlide).mount('#app')
+app
+  .use(router)
+  .use(pinia)
+  .use(setupI18n)
+  .directive('resize', vResize)
+  .directive('slide', vSlide)
+  .directive('cursor-pointer', vCursorPointer)
+  .mount('#app')
 Perf.measure('app-mounted', 'app-start')
 
 // 预加载关键资源（头像、表情、文件图标）

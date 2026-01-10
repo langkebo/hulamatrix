@@ -132,11 +132,12 @@ const hasIntersected = ref(false)
 // Intersection Observer for sentinel detection
 const { isActive: isIntersecting } = useIntersectionObserver(
   sentinelRef,
-  ({ isIntersecting }) => {
-    if (isIntersecting && !hasIntersected.value) {
+  (entries) => {
+    const entry = entries[0]
+    if (entry?.isIntersecting && !hasIntersected.value) {
       hasIntersected.value = true
       triggerLoadMore()
-    } else if (!isIntersecting) {
+    } else if (!entry?.isIntersecting) {
       hasIntersected.value = false
     }
   },
@@ -164,7 +165,7 @@ const isAtBottom = computed(() => {
 watch(
   () => isAtBottom.value,
   (atBottom) => {
-    if (atBottom && hasMore.value && !loading.value && !disabled.value) {
+    if (atBottom && props.hasMore && !props.loading && !props.disabled) {
       triggerLoadMoreDebounced()
     }
   }

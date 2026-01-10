@@ -513,14 +513,14 @@ const dialog = useDialog()
     .method-options {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: var(--hula-spacing-md);
 
       :deep(.n-radio) {
         width: 100%;
-        padding: 16px;
+        padding: var(--hula-spacing-md);
         border: 1px solid var(--border-color);
-        border-radius: 8px;
-        transition: all 0.2s ease;
+        border-radius: var(--hula-radius-sm);
+        transition: border-color 0.2s ease, background 0.2s ease;
 
         &:hover {
           border-color: var(--primary-color);

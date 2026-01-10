@@ -281,10 +281,10 @@ onUnmounted(() => {
 .voice-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  border-radius: 18px;
+  gap: var(--hula-spacing-md);
+  border-radius: var(--hula-radius-xl);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
   &.loading {
     cursor: wait;
     opacity: 0.7;
@@ -316,13 +316,13 @@ onUnmounted(() => {
   align-items: center;
   cursor: pointer;
   // 扩展触摸区域（移动端优化）
-  padding: 4px 0;
-  margin: -4px 0;
+  padding: var(--hula-spacing-xs) 0;
+  margin: calc(var(--hula-spacing-xs) * -1) 0;
 
   .waveform-canvas {
     width: 100%;
     height: 100%;
-    border-radius: 4px;
+    border-radius: var(--hula-radius-xs);
     user-select: none;
     -webkit-user-select: none;
   }
@@ -334,7 +334,7 @@ onUnmounted(() => {
     height: 100%;
     border-radius: 1px;
     opacity: 0;
-    transition: all 0.1s ease;
+    transition: opacity 0.1s ease, width 0.1s ease;
     pointer-events: none;
     z-index: 1;
 
@@ -351,11 +351,11 @@ onUnmounted(() => {
 
   .time-preview {
     position: absolute;
-    top: -28px;
+    top: calc(var(--hula-spacing-xl) * -1.75);
     transform: translateX(-50%);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+    border-radius: var(--hula-radius-xs);
+    font-size: var(--hula-text-xs);
     white-space: nowrap;
     pointer-events: none;
     z-index: 2;
@@ -365,7 +365,7 @@ onUnmounted(() => {
 }
 
 .voice-second {
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   white-space: nowrap;
 }
 

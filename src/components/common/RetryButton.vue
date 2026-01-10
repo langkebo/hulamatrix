@@ -38,11 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, watch, type PropType } from 'vue'
+import { ref, computed, h, watch, type PropType, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NButton, NBadge, NIcon, type ButtonProps, type ButtonType } from 'naive-ui'
-import { RefreshOutline as RefreshIcon } from '@vicons/ionicons5'
-import { useTimeoutFn } from '@vueuse/core'
+import { NButton, NBadge, NIcon, type ButtonProps } from 'naive-ui'
+import { Icon } from '@iconify/vue'
+
+type ButtonType = 'default' | 'tertiary' | 'primary' | 'success' | 'warning' | 'error'
 
 interface RetryOptions {
   maxRetries?: number
@@ -92,9 +93,13 @@ const { t } = useI18n()
 const isLoading = ref(false)
 const retryCount = ref(0)
 const lastError = ref<Error | null>(null)
-const { start: startDelay } = useTimeoutFn(() => {
-  executeAction()
-}, props.retryDelay)
+const delayTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+
+const startDelay = (delay: number) => {
+  delayTimer.value = setTimeout(() => {
+    executeAction()
+  }, delay)
+}
 
 // Computed
 const buttonType = computed<ButtonType>(() => {
@@ -106,7 +111,7 @@ const canRetry = computed(() => retryCount.value < props.maxRetries)
 
 const renderIcon = () => {
   if (lastError.value && !isLoading.value) {
-    return h(NIcon, null, { default: () => h(RefreshIcon) })
+    return h(Icon, { icon: 'mdi:refresh' })
   }
   return null
 }
@@ -173,8 +178,19 @@ watch(
   () => {
     retryCount.value = 0
     lastError.value = null
+    if (delayTimer.value) {
+      clearTimeout(delayTimer.value)
+      delayTimer.value = null
+    }
   }
 )
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (delayTimer.value) {
+    clearTimeout(delayTimer.value)
+  }
+})
 
 // Expose methods
 defineExpose({

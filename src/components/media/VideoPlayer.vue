@@ -451,7 +451,7 @@ watch(
   background: linear-gradient(to top, rgba(var(--hula-black-rgb), 0.8), transparent);
   padding: 20px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -547,7 +547,7 @@ watch(
 }
 
 .play-button-overlay:hover .n-button {
-  transform: scale(1.1);
+  opacity: 0.8;
 }
 
 .volume-slider {

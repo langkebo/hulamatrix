@@ -93,7 +93,7 @@
     <template #footer>
       <n-space justify="space-between">
         <n-text depth="3" class="category-hint">
-          <n-icon :component="InformationCircleOutline" />
+          <Icon icon="mdi:information-outline" />
           {{ t('friends.category.manage_hint') }}
         </n-text>
         <n-space>
@@ -125,10 +125,9 @@ import {
   NText,
   NIcon,
   useDialog,
-  useMessage,
-  type Category
+  useMessage
 } from 'naive-ui'
-import { InformationCircleOutline } from '@vicons/ionicons5'
+import { Icon } from '@iconify/vue'
 import { useFriendsSDKStore } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 import type { CategoryItem } from '@/stores/friendsSDK'
@@ -263,11 +262,14 @@ const handleClose = () => {
 }
 
 // 监听对话框关闭
-watch(() => props.visible, (newVal) => {
-  if (!newVal) {
-    editingCategoryId.value = null
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (!newVal) {
+      editingCategoryId.value = null
+    }
   }
-})
+)
 </script>
 
 <style scoped lang="scss">
@@ -291,12 +293,12 @@ watch(() => props.visible, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: var(--hula-spacing-sm);
+  margin-bottom: var(--hula-spacing-xs);
   background: var(--bg-setting-item);
   border: 1px solid var(--line-color);
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: var(--hula-radius-sm);
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     background: var(--hover-color);
@@ -312,14 +314,14 @@ watch(() => props.visible, (newVal) => {
 .category-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--hula-spacing-md);
   flex: 1;
   min-width: 0;
 }
 
 .category-color-dot {
-  width: 12px;
-  height: 12px;
+  width: var(--hula-spacing-sm);
+  height: var(--hula-spacing-sm);
   border-radius: 50%;
   flex-shrink: 0;
   border: 2px solid var(--bg-color);
@@ -328,13 +330,13 @@ watch(() => props.visible, (newVal) => {
 .category-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--hula-spacing-xs);
   min-width: 0;
   flex: 1;
 }
 
 .category-name {
-  font-size: 14px;
+  font-size: var(--hula-text-sm);
   font-weight: 600;
   color: var(--text-color-1);
   white-space: nowrap;
@@ -343,7 +345,7 @@ watch(() => props.visible, (newVal) => {
 }
 
 .category-count {
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   color: var(--text-color-3);
 }
 
@@ -354,7 +356,7 @@ watch(() => props.visible, (newVal) => {
 .category-hint {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: var(--hula-spacing-xs);
+  font-size: var(--hula-text-xs);
 }
 </style>

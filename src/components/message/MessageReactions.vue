@@ -212,19 +212,19 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 6px;
+  padding: calc(var(--hula-spacing-xs) * 0.5) calc(var(--hula-spacing-xs) * 1.5);
   background: rgba(var(--hula-black-rgb), 0.05);
   border: 1px solid rgba(var(--hula-black-rgb), 0.1);
-  border-radius: 12px;
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: var(--hula-text-xs);
   user-select: none;
 }
 
 .reaction-item:hover {
   background: rgba(var(--hula-black-rgb), 0.08);
-  transform: translateY(-1px);
+  opacity: 0.95;
 }
 
 .reaction-item.user-reacted {
@@ -233,34 +233,34 @@ defineExpose({
 }
 
 .reaction-compact {
-  padding: 4px;
-  min-width: 24px;
+  padding: var(--hula-spacing-xs);
+  min-width: var(--hula-spacing-lg);
   justify-content: center;
 }
 
 .reaction-emoji {
-  font-size: 14px;
+  font-size: var(--hula-text-sm);
   line-height: 1;
 }
 
 .reaction-count {
-  font-size: 11px;
+  font-size: var(--hula-text-xs);
   color: var(--hula-gray-700);
-  min-width: 12px;
+  min-width: var(--hula-spacing-md);
   text-align: center;
 }
 
 .add-reaction-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: var(--hula-spacing-xs);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
   background: rgba(var(--hula-black-rgb), 0.03);
   border: 1px dashed rgba(var(--hula-black-rgb), 0.2);
-  border-radius: 12px;
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: var(--hula-text-xs);
   color: var(--hula-gray-700);
 }
 
@@ -298,17 +298,17 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
   border: 1px solid rgba(var(--hula-black-rgb), 0.1);
-  border-radius: 8px;
+  border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .reaction-emoji-item:hover {
   background: rgba(var(--hula-black-rgb), 0.05);
-  transform: scale(1.1);
+  opacity: 0.9;
 }
 
 .reaction-emoji-item.has-reaction {
@@ -317,16 +317,16 @@ defineExpose({
 }
 
 .emoji {
-  font-size: 20px;
+  font-size: var(--hula-text-lg);
   line-height: 1;
 }
 
 .user-indicator {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: calc(var(--hula-spacing-xs) * -0.5);
+  right: calc(var(--hula-spacing-xs) * -0.5);
   background: var(--hula-brand-primary);
-  color: white;
+  color: var(--hula-white);
   border-radius: 50%;
   width: 16px;
   height: 16px;

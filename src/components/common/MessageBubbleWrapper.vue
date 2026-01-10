@@ -520,10 +520,10 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 
 .reply-bubble {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-1px);
+    opacity: 0.9;
     box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   }
 }
@@ -531,12 +531,12 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 .emoji-reply-bubble {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: var(--hula-spacing-xs);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
   background: rgba(var(--hula-black-rgb), 0.05);
-  border-radius: 12px;
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 
   &:hover {
     background: rgba(var(--hula-black-rgb), 0.1);
@@ -551,11 +551,9 @@ const cancelReplyEmoji = (_message: MessageItem, _emojiValue: string) => {
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

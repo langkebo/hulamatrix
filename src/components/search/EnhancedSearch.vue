@@ -871,12 +871,12 @@ defineExpose({
 .result-item {
   display: flex;
   align-items: flex-start;
-  padding: 12px;
-  background: white;
+  padding: var(--hula-spacing-sm);
+  background: var(--hula-white);
   border: 1px solid var(--hula-gray-200, var(--hula-brand-primary));
-  border-radius: 8px;
+  border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .result-item:hover {
@@ -885,16 +885,16 @@ defineExpose({
 }
 
 .result-avatar {
-  margin-right: 12px;
+  margin-right: var(--hula-spacing-md);
   flex-shrink: 0;
 }
 
 .default-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
   border-radius: 50%;
   background: var(--hula-brand-primary);
-  color: white;
+  color: var(--hula-white);
   display: flex;
   align-items: center;
   justify-content: center;

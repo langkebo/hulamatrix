@@ -290,10 +290,10 @@ defineExpose({
 .encryption-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  gap: var(--hula-spacing-xs);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
+  border-radius: var(--hula-radius-sm);
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 
   &.encrypted {
     background-color: rgba(var(--hula-success-rgb), 0.1);
@@ -323,8 +323,8 @@ defineExpose({
   }
 
   &.compact {
-    padding: 2px 6px;
-    gap: 2px;
+    padding: calc(var(--hula-spacing-xs) * 0.5) var(--hula-spacing-xs);
+    gap: calc(var(--hula-spacing-xs) * 0.5);
 
     .encryption-label {
       display: none;
@@ -339,7 +339,7 @@ defineExpose({
 }
 
 .encryption-label {
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   font-weight: 500;
 
   .unencrypted-warning {
@@ -348,7 +348,7 @@ defineExpose({
 }
 
 .info-icon {
-  margin-left: 4px;
+  margin-left: var(--hula-spacing-xs);
   cursor: help;
   color: var(--hula-gray-400);
 
@@ -359,14 +359,14 @@ defineExpose({
 
 .encryption-details {
   min-width: 200px;
-  padding: 8px;
+  padding: var(--hula-spacing-sm);
 
   .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
-    font-size: 12px;
+    margin-bottom: calc(var(--hula-spacing-xs) * 1.5);
+    font-size: var(--hula-text-xs);
 
     &:last-child {
       margin-bottom: 0;
@@ -380,12 +380,12 @@ defineExpose({
 
   .detail-label {
     color: var(--hula-gray-400);
-    margin-right: 8px;
+    margin-right: var(--hula-spacing-xs);
   }
 
   .key-id {
     font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-size: var(--hula-text-xs);
   }
 
   .encrypted {
@@ -404,14 +404,14 @@ defineExpose({
   }
 
   .strength-score {
-    margin-left: 8px;
+    margin-left: var(--hula-spacing-xs);
     font-weight: 500;
   }
 }
 
 .warning-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: calc(var(--hula-spacing-xs) * -1);
+  right: calc(var(--hula-spacing-xs) * -1);
 }
 </style>

@@ -240,40 +240,40 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px;
+  gap: var(--hula-spacing-xs);
+  padding: var(--hula-spacing-lg);
   border: 2px solid var(--hula-border, var(--hula-gray-200, var(--hula-brand-primary)));
-  border-radius: 12px;
+  border-radius: var(--hula-radius-md);
   background: var(--hula-bg-component, var(--hula-brand-primary));
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   .theme-icon {
-    font-size: 32px;
+    font-size: var(--hula-text-2xl);
     color: var(--hula-text-secondary, var(--hula-gray-600, var(--hula-brand-primary)));
     transition: color 0.3s ease;
   }
 
   .theme-name {
-    font-size: 16px;
+    font-size: var(--hula-text-base);
     font-weight: 500;
     color: var(--hula-text-primary, var(--hula-gray-800, var(--hula-brand-primary)));
   }
 
   .theme-description {
-    font-size: 12px;
+    font-size: var(--hula-text-xs);
     color: var(--hula-text-tertiary, var(--hula-gray-500, var(--hula-brand-primary)));
   }
 
   &:hover {
     border-color: var(--hula-brand-primary, var(--hula-brand-primary));
     background: var(--hula-brand-subtle, rgba(var(--hula-success-rgb), 0.05));
-    transform: translateY(-2px);
+    opacity: 0.95;
     box-shadow: var(--hula-shadow-md, 0 4px 6px rgba(var(--hula-black-rgb), 0.1));
   }
 
   &:active {
-    transform: translateY(0);
+    opacity: 0.9;
   }
 
   &.active {
@@ -315,12 +315,12 @@ defineExpose({
 .color-swatch {
   width: 48px;
   height: 48px;
-  border-radius: 8px;
+  border-radius: var(--hula-radius-sm);
   box-shadow: var(--hula-shadow-sm, 0 1px 2px rgba(var(--hula-black-rgb), 0.05));
-  transition: transform 0.3s ease;
+  transition: opacity 0.3s ease;
 
   &:hover {
-    transform: scale(1.1);
+    opacity: 0.9;
   }
 
   &.brand-primary {

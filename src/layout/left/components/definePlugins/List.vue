@@ -110,12 +110,12 @@
             <div class="action-item">
               <div class="menu-list">
                 <div v-if="!plugin.isAdd" @click="handleAdd(plugin)" class="menu-item">
-                  <svg class="color-var(--hula-brand-primary)"><use href="var(--hula-gray-300)"></use></svg>
-                  <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.pin') }}</p>
+                  <svg class="color-brand"><use href="#add"></use></svg>
+                  <p class="text-brand">{{ t('home.plugins.actions.pin') }}</p>
                 </div>
                 <div v-else @click="handleDelete(plugin)" class="menu-item">
-                  <svg class="color-var(--hula-brand-primary)"><use href="#reduce"></use></svg>
-                  <p class="text-var(--hula-brand-primary)">{{ t('home.plugins.actions.unpin') }}</p>
+                  <svg class="color-brand"><use href="#reduce"></use></svg>
+                  <p class="text-brand">{{ t('home.plugins.actions.unpin') }}</p>
                 </div>
                 <div @click="handleUnload(plugin)" class="menu-item">
                   <svg><use href="#delete"></use></svg>

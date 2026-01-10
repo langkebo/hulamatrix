@@ -152,6 +152,20 @@
   --hula-spacing-xl: 32px;
   --hula-spacing-xxl: 48px;
 
+  /* ==================== 字体大小 ==================== */
+  --hula-text-xs: 12px;
+  --hula-text-sm: 14px;
+  --hula-text-base: 16px;
+  --hula-text-lg: 18px;
+  --hula-text-xl: 20px;
+  --hula-text-2xl: 24px;
+  --hula-text-3xl: 30px;
+
+  /* ==================== 边框宽度 ==================== */
+  --hula-border-thin: 1px;
+  --hula-border-base: 2px;
+  --hula-border-thick: 3px;
+
   /* ==================== 动画 ==================== */
   --hula-transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --hula-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);

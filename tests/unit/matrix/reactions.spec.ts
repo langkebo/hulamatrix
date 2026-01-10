@@ -13,8 +13,8 @@ import {
   getReactionCategories
 } from '@/integrations/matrix/reactions'
 
-// Mock matrix client service
-vi.mock('@/integrations/matrix/client', () => {
+// Mock matrix client service - mock the actual import path used by the implementation
+vi.mock('@/matrix/core/client', () => {
   const client = {
     getUserId: vi.fn(() => '@test:user.example.com'),
     sendEvent: vi.fn(),
@@ -31,7 +31,7 @@ const client = {
   redactEvent: vi.fn()
 }
 beforeEach(async () => {
-  const { matrixClientService } = await import('@/integrations/matrix/client')
+  const { matrixClientService } = await import('@/matrix/core/client')
   const serviceLike = matrixClientService as unknown as { getClient: () => Record<string, unknown> | null }
   serviceLike.getClient = vi.fn(() => client) as () => Record<string, unknown> | null
 })
@@ -47,7 +47,7 @@ describe('Matrix Reactions', () => {
 
   describe('addMessageReaction', () => {
     it('should successfully add a reaction', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -82,7 +82,7 @@ describe('Matrix Reactions', () => {
     })
 
     it('should handle client not initialized', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const serviceLike = matrixClientService as unknown as { getClient: () => Record<string, unknown> | null }
       serviceLike.getClient = vi.fn(() => null) as () => Record<string, unknown> | null
 
@@ -94,7 +94,7 @@ describe('Matrix Reactions', () => {
 
   describe('removeMessageReaction', () => {
     it('should successfully remove a reaction', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -128,7 +128,7 @@ describe('Matrix Reactions', () => {
     })
 
     it('should return false if reaction not found', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -146,7 +146,7 @@ describe('Matrix Reactions', () => {
 
   describe('toggleMessageReaction', () => {
     it('should add reaction if not present', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -166,7 +166,7 @@ describe('Matrix Reactions', () => {
     })
 
     it('should remove reaction if present', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -203,7 +203,7 @@ describe('Matrix Reactions', () => {
 
   describe('hasUserReaction', () => {
     it('should return true if user has reacted', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -232,7 +232,7 @@ describe('Matrix Reactions', () => {
     })
 
     it('should return false if user has not reacted', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -250,7 +250,7 @@ describe('Matrix Reactions', () => {
 
   describe('getMessageReactions', () => {
     it('should return correct reaction summary', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {
@@ -317,7 +317,7 @@ describe('Matrix Reactions', () => {
     })
 
     it('should return empty summary for no reactions', async () => {
-      const { matrixClientService } = await import('@/integrations/matrix/client')
+      const { matrixClientService } = await import('@/matrix/core/client')
       const mockClient = matrixClientService.getClient()
 
       if (!mockClient) {

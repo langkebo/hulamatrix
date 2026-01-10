@@ -563,17 +563,17 @@ watch(
 }
 
 .control-btn {
-  width: 56px !important;
-  height: 56px !important;
+  width: var(--hula-spacing-xl) !important;
+  height: var(--hula-spacing-xl) !important;
   backdrop-filter: blur(10px);
   background: rgba(var(--hula-white-rgb), 0.1);
   border: 1px solid rgba(var(--hula-white-rgb), 0.2);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .control-btn:hover {
   background: rgba(var(--hula-white-rgb), 0.2);
-  transform: scale(1.05);
+  opacity: 0.95;
 }
 
 .control-btn.muted {
@@ -587,13 +587,13 @@ watch(
 }
 
 .control-label {
-  font-size: 12px;
+  font-size: var(--hula-text-xs);
   color: rgba(var(--hula-white-rgb), 0.7);
 }
 
 .call-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--hula-spacing-md);
 }
 
 .accept-btn {

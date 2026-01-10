@@ -58,28 +58,28 @@ function handleClick() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--hula-spacing-xs);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .icon-container {
-  width: 24px;
-  height: 24px;
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tab-icon {
-  width: 24px;
-  height: 24px;
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
   color: var(--mobile-text-tertiary);
   transition: color 0.2s ease;
 }
 
 .tab-label {
-  font-size: 10px;
+  font-size: var(--hula-text-xs);
   color: var(--mobile-text-tertiary);
   font-weight: var(--font-medium);
   transition: color 0.2s ease;
@@ -97,17 +97,17 @@ function handleClick() {
 /* 徽章 */
 .tab-badge {
   position: absolute;
-  top: 4px;
+  top: var(--hula-spacing-xs);
   right: 25%;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
+  min-width: var(--hula-spacing-md);
+  height: var(--hula-spacing-md);
+  padding: 0 var(--hula-spacing-xs);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--mobile-error);
   color: white;
-  font-size: 9px;
+  font-size: var(--hula-text-xs);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-full);
 }

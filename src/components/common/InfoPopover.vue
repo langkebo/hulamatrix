@@ -70,7 +70,7 @@
                   "
                   class="p-4px rounded-full size-18px"
                   :class="isCurrentUserUid ? 'cursor-pointer' : 'cursor-default'"
-                  alt="" />
+                  :alt="`${currentStateTitle} 状态图标`" />
               </div>
             </template>
             <span>{{ currentStateTitle }}</span>

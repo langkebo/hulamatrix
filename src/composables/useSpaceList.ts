@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, type ComputedRef, type DeepReadonly } from 'vue'
 import { type Space } from '@/hooks/useMatrixSpaces'
 import {
   searchSpaces as enhancedSearch,
@@ -17,8 +17,8 @@ export interface SpaceFilters {
 export type SortOption = 'name' | 'members' | 'activity'
 
 export interface UseSpaceListOptions {
-  userSpaces: Ref<Space[]>
-  searchResults: Ref<Space[]>
+  userSpaces: ComputedRef<DeepReadonly<Space[]>>
+  searchResults: ComputedRef<DeepReadonly<Space[]>>
   searchSpaces: (query: string, options?: Record<string, unknown>) => Promise<Space[]>
   clearSearchResults: () => void
 }
@@ -82,14 +82,14 @@ export function useSpaceList(options: UseSpaceListOptions) {
       switch (activeQuickFilter.value) {
         case 'unread':
           spaces = spaces.filter(
-            (s) => (s.notifications?.highlightCount ?? 0) + (s.notifications?.notificationCount ?? 0) > 0
+            (s: Space) => (s.notifications?.highlightCount ?? 0) + (s.notifications?.notificationCount ?? 0) > 0
           )
           break
         case 'encrypted':
-          spaces = spaces.filter((s) => s.encrypted === true)
+          spaces = spaces.filter((s: Space) => s.encrypted === true)
           break
         case 'public':
-          spaces = spaces.filter((s) => s.isPublic ?? false)
+          spaces = spaces.filter((s: Space) => s.isPublic ?? false)
           break
       }
     }
@@ -97,21 +97,21 @@ export function useSpaceList(options: UseSpaceListOptions) {
     // 3. 应用高级筛选
     if (!filters.value.visibility.includes('all')) {
       if (filters.value.visibility.includes('public')) {
-        spaces = spaces.filter((s) => s.isPublic ?? false)
+        spaces = spaces.filter((s: Space) => s.isPublic ?? false)
       } else if (filters.value.visibility.includes('private')) {
-        spaces = spaces.filter((s) => !(s.isPublic ?? false))
+        spaces = spaces.filter((s: Space) => !(s.isPublic ?? false))
       }
     }
 
     if (!filters.value.encrypted.includes('all')) {
       if (filters.value.encrypted.includes('encrypted')) {
-        spaces = spaces.filter((s) => s.encrypted)
+        spaces = spaces.filter((s: Space) => s.encrypted)
       } else if (filters.value.encrypted.includes('unencrypted')) {
-        spaces = spaces.filter((s) => !s.encrypted)
+        spaces = spaces.filter((s: Space) => !s.encrypted)
       }
     }
 
-    spaces = spaces.filter((s) => {
+    spaces = spaces.filter((s: Space) => {
       const count = s.memberCount ?? 0
       return count >= filters.value.memberCount[0] && count <= filters.value.memberCount[1]
     })

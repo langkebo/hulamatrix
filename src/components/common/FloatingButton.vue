@@ -154,8 +154,7 @@ const getActionStyle = (index: number): StyleValue => {
   return {
     ...positionMap[props.position],
     opacity: 0,
-    transform: 'scale(0.3)',
-    animation: `fab-action-in 0.3s ease ${index * 0.05}s forwards`
+    animation: `fab-action-in 0.25s ease ${index * 0.05}s forwards`
   }
 }
 
@@ -312,16 +311,16 @@ const createRipple = (event: Event) => {
   border: none;
   box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 
   &:hover {
-    transform: scale(1.1);
+    opacity: 0.9;
     box-shadow: 0 6px 20px rgba(var(--hula-black-rgb), 0.2);
   }
 
   &:active {
-    transform: scale(0.95);
+    opacity: 0.8;
   }
 
   &:focus {
@@ -333,7 +332,7 @@ const createRipple = (event: Event) => {
   svg {
     width: 1em;
     height: 1em;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
   }
 }
 
@@ -348,11 +347,11 @@ const createRipple = (event: Event) => {
   background: var(--hula-white, var(--hula-brand-primary));
   box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 
   &:hover {
-    transform: scale(1.1);
+    opacity: 0.9;
     box-shadow: 0 4px 12px rgba(var(--hula-black-rgb), 0.15);
   }
 
@@ -422,44 +421,42 @@ const createRipple = (event: Event) => {
 @keyframes fab-action-in {
   from {
     opacity: 0;
-    transform: scale(0.3);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
 // 过渡动画
 .fab-transition-enter-active,
 .fab-transition-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .fab-transition-enter-from {
   opacity: 0;
-  transform: scale(0.3);
 }
 
 .fab-transition-leave-to {
   opacity: 0;
-  transform: scale(0.3);
 }
 
 .fab-transition-move {
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
 .fab-icon-transition-enter-active,
 .fab-icon-transition-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
 .fab-icon-transition-enter-from {
-  transform: scale(0) rotate(-180deg);
+  transform: rotate(-180deg);
+  opacity: 0;
 }
 
 .fab-icon-transition-leave-to {
-  transform: scale(0) rotate(180deg);
+  transform: rotate(180deg);
+  opacity: 0;
 }
 </style>

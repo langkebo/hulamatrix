@@ -281,19 +281,19 @@ const handleEnd = async () => {
 .matrix-call-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  margin: 0 -16px 16px -16px;
+  gap: var(--hula-spacing-md);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-md);
+  margin: 0 calc(var(--hula-spacing-md) * -1) var(--hula-spacing-md) calc(var(--hula-spacing-md) * -1);
   background: var(--n-hover-color);
   border: 1px solid var(--n-border-color);
-  border-radius: 8px;
+  border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .matrix-call-bar:hover {
   background: var(--n-color-pressed);
-  transform: translateY(-1px);
+  opacity: 0.95;
   box-shadow: 0 2px 8px rgba(var(--hula-black-rgb), 0.1);
 }
 
@@ -307,8 +307,8 @@ const handleEnd = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
   background: var(--n-color);
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(var(--hula-black-rgb), 0.1);

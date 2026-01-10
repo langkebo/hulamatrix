@@ -122,7 +122,7 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   color: var(--text-color-3);
-  transition: all 0.2s var(--ease-out-cubic);
+  transition: color 0.2s var(--ease-out-cubic);
 }
 
 .message-status-indicator.status-clickable {

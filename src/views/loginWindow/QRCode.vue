@@ -13,7 +13,7 @@
           src="/hula.png"
           srcset="/hula.png 1x, /hula.png 2x"
           class="w-120px md:w-140px h-auto drop-shadow-xl"
-          alt="" />
+          alt="HuLa logo" />
       </picture>
     </n-flex>
 

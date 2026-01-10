@@ -115,16 +115,16 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md, 8px);
+  width: var(--hula-spacing-xl);
+  height: var(--hula-spacing-xl);
+  border-radius: var(--hula-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .reaction-item:hover {
   background: var(--pc-bg-hover, rgba(var(--hula-black-rgb), 0.05));
-  transform: scale(1.1);
+  opacity: 0.9;
 }
 
 .reaction-item.active {
@@ -132,16 +132,16 @@ defineExpose({
 }
 
 .reaction-item img {
-  width: 24px;
-  height: 24px;
+  width: var(--hula-spacing-lg);
+  height: var(--hula-spacing-lg);
   object-fit: contain;
 }
 
 .reaction-count {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 16px;
+  top: calc(var(--hula-spacing-xs) * -1);
+  right: calc(var(--hula-spacing-xs) * -1);
+  min-width: var(--hula-spacing-md);
   height: 16px;
   padding: 0 4px;
   display: flex;

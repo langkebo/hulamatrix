@@ -86,26 +86,26 @@ function formatLastActive(timestamp: number): string {
   .presence-dot {
     border-radius: 50%;
     background: currentColor;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
 
     &.status-online {
-      background: #52c41a; // Green for online
-      box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+      background: var(--hula-success);
+      box-shadow: 0 0 0 2px rgba(var(--hula-success-rgb), 0.2);
     }
 
     &.status-offline {
-      background: #8c8c8c; // Gray for offline
+      background: var(--n-text-color-disabled);
     }
 
     &.status-unavailable {
-      background: #ff4d4f; // Red for busy/unavailable
-      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+      background: var(--hula-danger);
+      box-shadow: 0 0 0 2px rgba(var(--hula-danger-rgb), 0.2);
     }
   }
 
   &.presence-small .presence-dot {
-    width: 8px;
-    height: 8px;
+    width: var(--hula-spacing-sm);
+    height: var(--hula-spacing-sm);
   }
 
   &.presence-medium .presence-dot {
@@ -114,18 +114,18 @@ function formatLastActive(timestamp: number): string {
   }
 
   &.presence-large .presence-dot {
-    width: 12px;
-    height: 12px;
+    width: var(--hula-spacing-md);
+    height: var(--hula-spacing-md);
   }
 
   .presence-tooltip {
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + var(--hula-spacing-sm));
     left: 50%;
     transform: translateX(-50%);
-    padding: 4px 8px;
+    padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
     background: var(--popover-color);
-    border-radius: 4px;
+    border-radius: var(--hula-radius-sm);
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -138,7 +138,7 @@ function formatLastActive(timestamp: number): string {
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      border: 4px solid transparent;
+      border: var(--hula-spacing-xs) solid transparent;
       border-top-color: var(--popover-color);
     }
   }
@@ -148,7 +148,7 @@ function formatLastActive(timestamp: number): string {
   }
 
   .last-active-text {
-    font-size: 11px;
+    font-size: var(--hula-text-xs);
   }
 }
 </style>

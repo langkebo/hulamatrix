@@ -56,7 +56,7 @@
   <n-card v-else-if="fallback === 'card'" class="error-boundary-card" size="small">
     <template #header>
       <div class="error-card-header">
-        <n-icon :component="AlertCircleIcon" :size="20" color="var(--color-error)" />
+        <Icon icon="mdi:alert-circle" :size="20" color="var(--color-error)" />
         <span>{{ $t('error.boundary.error_occurred') }}</span>
       </div>
     </template>
@@ -85,10 +85,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onErrorCaptured, type ErrorInfo, type ErrorCapturedHook } from 'vue'
+import { ref, computed, onErrorCaptured } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NCard, NSpace, NIcon, type CardProps } from 'naive-ui'
-import { AlertCircle as AlertCircleIcon } from '@vicons/ionicons5'
+import { Icon } from '@iconify/vue'
 import { logger } from '@/utils/logger'
 
 interface Props {

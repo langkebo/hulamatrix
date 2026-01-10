@@ -1,5 +1,4 @@
 import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useSettingStore } from '@/stores/setting'
 
 export interface AppearanceSettingsOptions {

@@ -714,13 +714,13 @@ canvas {
 
 .resize-handle {
   position: absolute;
-  background: white;
+  background: var(--hula-white);
   border: 1px solid var(--hula-gray-300);
-  width: 8px;
-  height: 8px;
+  width: var(--hula-spacing-xs);
+  height: var(--hula-spacing-xs);
   border-radius: 50%;
   z-index: 4;
-  transition: all 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .resize-handle.disabled {
@@ -731,53 +731,53 @@ canvas {
 
 /* 四个角的控制点 */
 .resize-nw {
-  top: -4px;
-  left: -4px;
+  top: calc(var(--hula-spacing-xs) * -1);
+  left: calc(var(--hula-spacing-xs) * -1);
   cursor: nw-resize;
 }
 
 .resize-ne {
-  top: -4px;
-  right: -4px;
+  top: calc(var(--hula-spacing-xs) * -1);
+  right: calc(var(--hula-spacing-xs) * -1);
   cursor: ne-resize;
 }
 
 .resize-sw {
-  bottom: -4px;
-  left: -4px;
+  bottom: calc(var(--hula-spacing-xs) * -1);
+  left: calc(var(--hula-spacing-xs) * -1);
   cursor: sw-resize;
 }
 
 .resize-se {
-  bottom: -4px;
-  right: -4px;
+  bottom: calc(var(--hula-spacing-xs) * -1);
+  right: calc(var(--hula-spacing-xs) * -1);
   cursor: se-resize;
 }
 
 /* 四条边中间的控制点 */
 .resize-n {
-  top: -6px;
+  top: calc(var(--hula-spacing-xs) * -1.5);
   left: 50%;
   transform: translateX(-50%);
   cursor: n-resize;
 }
 
 .resize-e {
-  right: -6px;
+  right: calc(var(--hula-spacing-xs) * -1.5);
   top: 50%;
   transform: translateY(-50%);
   cursor: e-resize;
 }
 
 .resize-s {
-  bottom: -6px;
+  bottom: calc(var(--hula-spacing-xs) * -1.5);
   left: 50%;
   transform: translateX(-50%);
   cursor: s-resize;
 }
 
 .resize-w {
-  left: -6px;
+  left: calc(var(--hula-spacing-xs) * -1.5);
   top: 50%;
   transform: translateY(-50%);
   cursor: w-resize;
@@ -786,19 +786,19 @@ canvas {
 .button-group {
   position: absolute;
   background: rgba(var(--hula-black-rgb), 0.8);
-  color: white;
-  padding: 5px 8px;
-  border-radius: 12px;
+  color: var(--hula-white);
+  padding: calc(var(--hula-spacing-xs) * 1.25) var(--hula-spacing-xs);
+  border-radius: var(--hula-radius-md);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: calc(var(--hula-spacing-xs) * 1.25);
   z-index: 999;
   white-space: nowrap;
   overflow: visible;
 
   span {
     cursor: pointer;
-    min-width: 30px;
+    min-width: var(--hula-spacing-xl);
     height: 30px;
     padding: 0 8px;
     display: inline-flex;

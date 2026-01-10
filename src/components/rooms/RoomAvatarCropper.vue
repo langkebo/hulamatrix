@@ -546,11 +546,11 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: var(--hula-spacing-xl) var(--hula-spacing-lg);
   border: 2px dashed var(--n-border-color);
-  border-radius: 8px;
+  border-radius: var(--hula-radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .upload-area:hover {
@@ -560,23 +560,23 @@ watch(
 
 .upload-text {
   text-align: center;
-  margin-top: 16px;
+  margin-top: var(--hula-spacing-md);
 }
 
 .shape-selector {
-  margin-bottom: 16px;
+  margin-bottom: var(--hula-spacing-md);
 }
 
 .crop-preview-wrapper {
   display: flex;
   justify-content: center;
-  padding: 20px 0;
+  padding: var(--hula-spacing-lg) 0;
   background: var(--n-color-modal);
-  border-radius: 8px;
+  border-radius: var(--hula-radius-md);
 }
 
 .zoom-control {
-  padding: 12px;
+  padding: var(--hula-spacing-sm);
   background: var(--n-color-modal);
   border-radius: 6px;
 }

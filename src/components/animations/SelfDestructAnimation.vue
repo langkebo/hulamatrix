@@ -93,7 +93,7 @@ const onEnter = (el: Element, done: () => void) => {
       element.style.filter = 'brightness(2) blur(5px)'
       element.style.transform = 'scale(1.1)'
       // Add red tint for burning effect
-      element.style.color = '#ff4444'
+      element.style.color = 'var(--hula-danger)'
       break
 
     case 'shred':
@@ -154,11 +154,11 @@ export default {
 // Dissolve Animation
 // ============================================
 .self-destruct-dissolve-enter-active {
-  transition: all 0.5s ease-in;
+  transition: all 0.2s ease-in;
 }
 
 .self-destruct-dissolve-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.2s ease-out;
 }
 
 .self-destruct-dissolve-enter-from {
@@ -177,11 +177,11 @@ export default {
 // Burn Animation
 // ============================================
 .self-destruct-burn-enter-active {
-  transition: all 0.8s ease-in;
+  transition: all 0.25s ease-in;
 }
 
 .self-destruct-burn-leave-active {
-  transition: all 0.4s ease-out;
+  transition: all 0.25s ease-out;
 }
 
 .self-destruct-burn-enter-from {
@@ -195,18 +195,18 @@ export default {
   opacity: 0;
   filter: brightness(2) blur(5px);
   transform: scale(1.1);
-  color: #ff4444;
+  color: var(--hula-danger);
 }
 
 // ============================================
 // Shred Animation
 // ============================================
 .self-destruct-shred-enter-active {
-  transition: clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: clip-path 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .self-destruct-shred-leave-active {
-  transition: clip-path 0.3s ease-out;
+  transition: clip-path 0.25s ease-out;
 }
 
 .self-destruct-shred-enter-from {
@@ -221,11 +221,11 @@ export default {
 // Quantum Animation
 // ============================================
 .self-destruct-quantum-enter-active {
-  transition: all 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .self-destruct-quantum-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.25s ease-out;
 }
 
 .self-destruct-quantum-enter-from {
@@ -271,7 +271,7 @@ export default {
 
 // Add glow effect for quantum animation
 .self-destruct-quantum-leave-active {
-  box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+  box-shadow: 0 0 20px rgba(var(--hula-brand-rgb), 0.6);
 }
 
 // Add particle effect hint for dissolve
@@ -281,6 +281,6 @@ export default {
 
 // Add ember effect for burn
 .self-destruct-burn-leave-active {
-  box-shadow: 0 0 30px rgba(255, 68, 68, 0.4), inset 0 0 20px rgba(255, 100, 0, 0.2);
+  box-shadow: 0 0 30px rgba(var(--hula-danger-rgb), 0.4), inset 0 0 20px rgba(var(--hula-warning-rgb), 0.2);
 }
 </style>

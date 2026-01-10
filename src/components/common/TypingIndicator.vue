@@ -122,19 +122,19 @@ watch(
 .typing-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--hula-spacing-sm);
+  padding: var(--hula-spacing-xs) var(--hula-spacing-sm);
   background: var(--bg-color-secondary);
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--hula-radius-md);
+  font-size: var(--hula-text-xs);
 
   .typing-dots {
     display: flex;
-    gap: 3px;
+    gap: calc(var(--hula-spacing-xs) * 0.75);
 
     .dot {
-      width: 6px;
-      height: 6px;
+      width: calc(var(--hula-spacing-xs) * 1.5);
+      height: calc(var(--hula-spacing-xs) * 1.5);
       border-radius: 50%;
       background: var(--primary-color);
       animation: typing-bounce 1.4s infinite ease-in-out;
@@ -169,12 +169,11 @@ watch(
 
 .typing-enter-active,
 .typing-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .typing-enter-from,
 .typing-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
 }
 </style>

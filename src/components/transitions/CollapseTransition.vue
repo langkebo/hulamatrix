@@ -37,54 +37,65 @@ const props = withDefaults(defineProps<Props>(), {
 // Store original height for restoration
 const originalHeight = ref<string | null>(null)
 
-const onEnter = (el: HTMLElement) => {
+const onEnter = (el: Element, done: () => void) => {
+  const htmlEl = el as HTMLElement
+
   // Store original height if set
-  if (el.style.height) {
-    originalHeight.value = el.style.height
+  if (htmlEl.style.height) {
+    originalHeight.value = htmlEl.style.height
   }
 
   // Force reflow
-  el.offsetHeight
+  htmlEl.offsetHeight
 
   // Set initial state
-  el.style.height = '0'
-  el.style.overflow = 'hidden'
-  el.style.transition = `height ${props.duration}ms ${props.easing}`
+  htmlEl.style.height = '0'
+  htmlEl.style.overflow = 'hidden'
+  htmlEl.style.transition = `height ${props.duration}ms ${props.easing}`
 
   // Start animation
   requestAnimationFrame(() => {
-    el.style.height = el.scrollHeight + 'px'
+    htmlEl.style.height = htmlEl.scrollHeight + 'px'
   })
+
+  // Call done when animation completes
+  setTimeout(done, props.duration)
 }
 
-const onAfterEnter = (el: HTMLElement) => {
+const onAfterEnter = (el: Element) => {
+  const htmlEl = el as HTMLElement
   // Clean up
-  el.style.height = originalHeight.value || 'auto'
-  el.style.overflow = ''
-  el.style.transition = ''
+  htmlEl.style.height = originalHeight.value || 'auto'
+  htmlEl.style.overflow = ''
+  htmlEl.style.transition = ''
   originalHeight.value = null
 }
 
-const onLeave = (el: HTMLElement) => {
+const onLeave = (el: Element, done: () => void) => {
+  const htmlEl = el as HTMLElement
   // Set up for collapse
-  el.style.height = el.scrollHeight + 'px'
-  el.style.overflow = 'hidden'
-  el.style.transition = `height ${props.duration}ms ${props.easing}`
+  htmlEl.style.height = htmlEl.scrollHeight + 'px'
+  htmlEl.style.overflow = 'hidden'
+  htmlEl.style.transition = `height ${props.duration}ms ${props.easing}`
 
   // Force reflow
-  el.offsetHeight
+  htmlEl.offsetHeight
 
   // Start collapse
   requestAnimationFrame(() => {
-    el.style.height = '0'
+    htmlEl.style.height = '0'
   })
+
+  // Call done when animation completes
+  setTimeout(done, props.duration)
 }
 
-const onAfterLeave = (el: HTMLElement) => {
+const onAfterLeave = (el: Element) => {
+  const htmlEl = el as HTMLElement
   // Clean up
-  el.style.height = ''
-  el.style.overflow = ''
-  el.style.transition = ''
+  htmlEl.style.height = ''
+  htmlEl.style.overflow = ''
+  htmlEl.style.transition = ''
 }
 </script>
 

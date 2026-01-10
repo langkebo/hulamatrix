@@ -20,7 +20,7 @@
     role="alert"
     aria-live="polite">
     <template #icon>
-      <n-icon :component="ShieldWarningIcon" :size="22" />
+      <Icon icon="mdi:shield-alert" :size="22" />
     </template>
 
     <div class="prompt-content">
@@ -38,7 +38,7 @@
             role="listitem">
             <div class="device-info">
               <div class="device-name">
-                <n-icon :component="PhoneIcon" :size="16" />
+                <Icon icon="mdi:phone" :size="16" />
                 <span>{{ device.display_name || device.device_id }}</span>
               </div>
               <n-tag size="small" type="warning">
@@ -84,7 +84,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NAlert, NButton, NIcon, NTag, type AlertProps } from 'naive-ui'
-import { ShieldWarning as ShieldWarningIcon, Phone as PhoneIcon } from '@vicons/ionicons5'
+import { Icon } from '@iconify/vue'
 import CollapseTransition from '@/components/transitions/CollapseTransition.vue'
 
 export interface DeviceInfo {
@@ -204,12 +204,12 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--hula-spacing-md);
+  padding: var(--hula-spacing-sm);
   background: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  transition: all 0.2s var(--ease-out-cubic);
+  border-radius: var(--hula-radius-sm);
+  transition: background 0.2s var(--ease-out-cubic), border-color 0.2s var(--ease-out-cubic);
 
   &:hover {
     border-color: var(--border-active-color);
@@ -220,7 +220,7 @@ defineExpose({
 .device-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(var(--hula-spacing-xs) * 1.5);
   flex: 1;
   min-width: 0;
 }
@@ -228,8 +228,8 @@ defineExpose({
 .device-name {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: calc(var(--hula-spacing-xs) * 1.5);
+  font-size: var(--hula-text-sm);
   font-weight: 500;
   color: var(--text-color-1);
 
@@ -243,12 +243,12 @@ defineExpose({
 .show-more {
   display: flex;
   justify-content: center;
-  padding-top: 4px;
+  padding-top: var(--hula-spacing-xs);
 }
 
 .prompt-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--hula-spacing-xs);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -256,7 +256,7 @@ defineExpose({
 // Collapse transition styles
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: all 0.3s var(--ease-out-cubic);
+  transition: height 0.3s var(--ease-out-cubic), opacity 0.3s var(--ease-out-cubic);
   overflow: hidden;
 }
 

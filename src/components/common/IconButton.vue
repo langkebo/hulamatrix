@@ -80,21 +80,21 @@ const handleClick = (event: Event) => {
     :deep(.h-button)::after {
       content: attr(data-badge);
       position: absolute;
-      top: -4px;
-      right: -4px;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 4px;
-      background: var(--danger-color);
-      color: var(--hula-brand-primary);
-      font-size: 10px;
+      top: calc(var(--hula-spacing-xs) * -0.5);
+      right: calc(var(--hula-spacing-xs) * -0.5);
+      min-width: var(--hula-spacing-md);
+      height: var(--hula-spacing-md);
+      padding: 0 var(--hula-spacing-xs);
+      background: var(--hula-danger);
+      color: var(--hula-white);
+      font-size: var(--hula-text-xs);
       font-weight: 500;
-      line-height: 16px;
+      line-height: var(--hula-spacing-md);
       text-align: center;
-      border-radius: 8px;
+      border-radius: var(--hula-radius-md);
       z-index: 1;
       transform: scale(1);
-      animation: badge-bounce 0.3s ease;
+      animation: badge-bounce 0.25s ease;
     }
   }
 

@@ -214,15 +214,15 @@ useMitt.on(WsResponseMessageType.RoomClosed, handleCallEnd)
 }
 
 .rtc-action-button {
-  @apply size-44px flex-center rounded-full transition-transform duration-150 ease-out active:scale-95;
+  @apply size-44px flex-center rounded-full transition-opacity duration-150 ease-out active:opacity-75;
 
   svg {
     @apply pointer-events-none;
   }
 
   &.reject {
-    background: rgba(213, 48, 79, 0.68);
-    box-shadow: 0 12px 26px rgba(213, 48, 79, 0.3);
+    background: rgba(var(--hula-danger-rgb), 0.68);
+    box-shadow: 0 12px 26px rgba(var(--hula-danger-rgb), 0.3);
   }
 
   &.accept {
