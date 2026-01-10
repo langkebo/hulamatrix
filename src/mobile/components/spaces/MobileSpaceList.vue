@@ -316,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, type DeepReadonly, type ComputedRef } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton,
@@ -340,7 +340,7 @@ import {
   useDialog
 } from 'naive-ui'
 import { Plus, Search, Filter, Users, Hash, Lock, DotsVertical, X, Clock, ArrowsSort } from '@vicons/tabler'
-import { useMatrixSpaces, type Space as MatrixSpace } from '@/hooks/useMatrixSpaces'
+import { useMatrixSpaces, type Space as MatrixSpace, type Space } from '@/hooks/useMatrixSpaces'
 import { useSpaceList, type SortOption } from '@/composables/useSpaceList'
 import { useUserStore } from '@/stores/user'
 import MobileCreateSpaceDialog from './MobileCreateSpaceDialog.vue'
@@ -390,8 +390,8 @@ const {
   formatUnreadCount,
   formatLastActivity
 } = useSpaceList({
-  userSpaces,
-  searchResults,
+  userSpaces: userSpaces as ComputedRef<DeepReadonly<Space[]>>,
+  searchResults: searchResults as ComputedRef<DeepReadonly<Space[]>>,
   searchSpaces: async (q, o) => {
     await searchSpaces(q, o)
     return searchResults.value as MatrixSpace[]

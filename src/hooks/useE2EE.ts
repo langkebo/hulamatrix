@@ -8,9 +8,9 @@ import type { MatrixClient } from 'matrix-js-sdk'
 import { logger } from '@/utils/logger'
 
 // Extended MatrixClient interface with device methods
-interface MatrixClientWithDevices extends MatrixClient {
+interface MatrixClientWithDevices extends Omit<MatrixClient, 'getUserId'> {
+  getUserId(): string | null
   getDeviceId?(): string
-  getUserId?(): string
 }
 
 // Crypto API interfaces

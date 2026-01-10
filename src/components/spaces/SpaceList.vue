@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRef } from 'vue'
+import { ref, computed, toRef, type DeepReadonly } from 'vue'
 import {
   NSpace,
   NInput,
@@ -134,8 +134,8 @@ const emit = defineEmits<{
 
 // Use Space List shared logic with local search only
 const { searchQuery, currentSort, activeQuickFilter, displaySpaces, handleSearch, toggleQuickFilter } = useSpaceList({
-  userSpaces: computed(() => props.spaces),
-  searchResults: computed(() => []),
+  userSpaces: computed(() => props.spaces) as ComputedRef<DeepReadonly<Space[]>>,
+  searchResults: computed(() => []) as ComputedRef<DeepReadonly<Space[]>>,
   searchSpaces: async () => [],
   clearSearchResults: () => {}
 })
