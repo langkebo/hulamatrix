@@ -91,10 +91,8 @@
 
     <!-- 好友列表 -->
     <n-flex class="friends-container" vertical :size="8">
-      <!-- 加载状态 -->
-      <div v-if="friendsStore.loading" class="loading-container">
-        <n-spin size="medium" />
-      </div>
+      <!-- 加载状态 - 使用骨架屏 -->
+      <FriendsSkeleton v-if="friendsStore.loading" />
 
       <!-- 空状态 -->
       <n-empty
@@ -207,6 +205,55 @@
         </n-space>
       </template>
     </n-modal>
+
+    <!-- 创建分类对话框 -->
+    <n-modal
+      v-model:show="showCategoryDialog"
+      preset="card"
+      :style="{ width: '400px' }"
+      :aria-label="'创建好友分组'"
+      role="dialog"
+      @after-leave="resetCategoryForm">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <svg class="size-20px"><use href="#folder-plus"></use></svg>
+          <span>{{ t('friends.category.create_title') }}</span>
+        </div>
+      </template>
+
+      <n-spin v-if="categoryLoading" :size="24" style="min-height: 100px" />
+
+      <n-form v-else ref="categoryFormRef" :model="categoryForm" :rules="categoryRules" label-placement="top">
+        <n-form-item path="name" :label="t('friends.category.name_label')">
+          <n-input
+            v-model:value="categoryForm.name"
+            :placeholder="t('friends.category.name_placeholder')"
+            maxlength="50"
+            show-count
+            :disabled="categorySubmitting"
+            @keyup.enter="handleCreateCategory" />
+        </n-form-item>
+
+        <n-form-item :label="t('friends.category.color_label')">
+          <n-color-picker
+            v-model:value="categoryForm.color"
+            :modes="['hex']"
+            :actions="['confirm']"
+            :disabled="categorySubmitting" />
+        </n-form-item>
+      </n-form>
+
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showCategoryDialog = false" :disabled="categorySubmitting">
+            {{ t('common.cancel') }}
+          </n-button>
+          <n-button type="primary" @click="handleCreateCategory" :loading="categorySubmitting">
+            {{ t('friends.category.create_button') }}
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </n-flex>
 </template>
 
@@ -234,11 +281,13 @@ import {
   NForm,
   NFormItem,
   NSelect,
+  NColorPicker,
   NSpin,
   NEmpty,
   NDropdown,
   NVirtualList,
   NStatistic,
+  NIcon,
   useDialog,
   useMessage,
   type FormRules,
@@ -249,6 +298,7 @@ import type { FriendItem, CategoryItem, PendingItem } from '@/stores/friendsSDK'
 import { logger } from '@/utils/logger'
 import { checkAppReady, withAppCheck, handleAppError, AppErrorType } from '@/utils/appErrorHandler'
 import { appInitMonitor, AppInitPhase } from '@/utils/performanceMonitor'
+import FriendsSkeleton from '@/components/common/FriendsSkeleton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -265,6 +315,9 @@ const selectedCategoryId = ref<string | null>(null)
 // 对话框状态
 const showAddFriendDialog = ref(false)
 const isSendingRequest = ref(false)
+const showCategoryDialog = ref(false)
+const categoryLoading = ref(false)
+const categorySubmitting = ref(false)
 
 // 表单
 const addFriendFormRef = ref<FormInst>()
@@ -274,9 +327,24 @@ const addFriendForm = ref({
   categoryId: null as string | null
 })
 
+// 分类表单
+const categoryFormRef = ref<FormInst>()
+const categoryForm = ref({
+  name: '',
+  color: '#18A058' // 默认绿色
+})
+
 // 表单验证规则
 const addFriendRules: FormRules = {
   userId: [{ required: true, message: t('friends.dialogs.user_id_required'), trigger: 'blur' }]
+}
+
+// 分类表单验证规则
+const categoryRules: FormRules = {
+  name: [
+    { required: true, message: t('friends.category.name_required'), trigger: 'blur' },
+    { min: 1, max: 50, message: t('friends.category.name_length'), trigger: 'blur' }
+  ]
 }
 
 // 计算属性
@@ -327,12 +395,37 @@ const handleSelectCategory = (categoryId: string | null) => {
 
 const handleCategoryAction = async (key: string) => {
   if (key === 'create') {
-    dialog.warning({
-      title: '创建分类',
-      content: '分类创建功能待实现',
-      positiveText: t('common.confirm')
-    })
+    showCategoryDialog.value = true
   }
+}
+
+const handleCreateCategory = async () => {
+  try {
+    await categoryFormRef.value?.validate()
+    categorySubmitting.value = true
+
+    await friendsStore.createCategory(categoryForm.value.name)
+    message.success(t('friends.category.create_success'))
+    showCategoryDialog.value = false
+    resetCategoryForm()
+  } catch (error) {
+    if (error && typeof error === 'object' && 'message' in error) {
+      // Form validation error
+      return
+    }
+    message.error(t('friends.category.create_failed'))
+    logger.error('Failed to create category:', error)
+  } finally {
+    categorySubmitting.value = false
+  }
+}
+
+const resetCategoryForm = () => {
+  categoryForm.value = {
+    name: '',
+    color: '#18A058'
+  }
+  categoryFormRef.value?.restoreValidation()
 }
 
 const handleFriendClick = (friend: FriendItem) => {
@@ -346,6 +439,48 @@ const handleFriendAction = async (key: string, friend: FriendItem) => {
       if (friend.user_id) {
         router.push({ path: '/private-chat', query: { userId: friend.user_id } })
       }
+      break
+    case 'block':
+      if (!friend.user_id) {
+        message.error('无效的好友ID')
+        return
+      }
+      dialog.warning({
+        title: t('friends.block.confirm_title'),
+        content: t('friends.block.confirm_content', { name: friend.display_name || friend.user_id || '' }),
+        positiveText: t('common.confirm'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            await friendsStore.blockUser(friend.user_id!)
+            message.success(t('friends.block.success'))
+          } catch (error) {
+            message.error(t('friends.block.failed'))
+            logger.error('Failed to block user:', error)
+          }
+        }
+      })
+      break
+    case 'unblock':
+      if (!friend.user_id) {
+        message.error('无效的好友ID')
+        return
+      }
+      dialog.success({
+        title: t('friends.unblock.confirm_title'),
+        content: t('friends.unblock.confirm_content', { name: friend.display_name || friend.user_id || '' }),
+        positiveText: t('common.confirm'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            await friendsStore.unblockUser(friend.user_id!)
+            message.success(t('friends.unblock.success'))
+          } catch (error) {
+            message.error(t('friends.unblock.failed'))
+            logger.error('Failed to unblock user:', error)
+          }
+        }
+      })
       break
     case 'remove':
       if (!friend.user_id) {
@@ -370,10 +505,15 @@ const handleFriendAction = async (key: string, friend: FriendItem) => {
   }
 }
 
-const getFriendActions = (_friend: FriendItem) => {
+const getFriendActions = (friend: FriendItem) => {
+  const isBlocked = friendsStore.blockedUsers.some((u) => u.user_id === friend.user_id)
+
   return [
     { label: t('friends.actions.chat'), key: 'chat' },
     { type: 'divider', key: 'd1' },
+    isBlocked
+      ? { label: t('friends.actions.unblock'), key: 'unblock' }
+      : { label: t('friends.actions.block'), key: 'block' },
     { label: t('friends.actions.remove'), key: 'remove' }
   ]
 }
@@ -566,19 +706,19 @@ defineExpose({
   border: 2px solid var(--bg-setting-item);
 
   &.status-online {
-    background: var(--hula-brand-primary);
+    background: #52c41a; // Green for online
   }
 
   &.status-offline {
-    background: var(--hula-brand-primary);
+    background: #8c8c8c; // Gray for offline
   }
 
   &.status-away {
-    background: var(--hula-brand-primary);
+    background: #faad14; // Orange for away
   }
 
   &.status-unavailable {
-    background: var(--hula-brand-primary);
+    background: #ff4d4f; // Red for busy/unavailable
   }
 }
 </style>

@@ -1,6 +1,10 @@
 <template>
-  <div class="presence-status" :class="presenceClass">
-    <div v-if="showTooltip" class="presence-tooltip">
+  <div
+    class="presence-status"
+    :class="presenceClass"
+    :role="showTooltip ? 'img' : 'presentation'"
+    :aria-label="showTooltip ? statusText : undefined">
+    <div v-if="showTooltip" class="presence-tooltip" role="tooltip" :aria-hidden="true">
       <n-text>{{ statusText }}</n-text>
       <n-text v-if="lastActive" depth="3" class="last-active-text">
         {{ formatLastActive(lastActive) }}
@@ -85,17 +89,17 @@ function formatLastActive(timestamp: number): string {
     transition: all 0.2s ease;
 
     &.status-online {
-      background: var(--hula-brand-primary);
-      box-shadow: 0 0 0 2px rgba(var(--hula-success-rgb), 0.2);
+      background: #52c41a; // Green for online
+      box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
     }
 
     &.status-offline {
-      background: var(--hula-brand-primary);
+      background: #8c8c8c; // Gray for offline
     }
 
     &.status-unavailable {
-      background: var(--hula-brand-primary);
-      box-shadow: 0 0 0 2px rgba(var(--hula-warning-rgb), 0.2);
+      background: #ff4d4f; // Red for busy/unavailable
+      box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
     }
   }
 
