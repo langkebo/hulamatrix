@@ -57,3 +57,6 @@
 
 // 引入响应式工具类
 @use './utilities/responsive';
+
+// 引入移动端安全区域适配（P1优化）
+@use './safe-area';

@@ -14,6 +14,8 @@
  * @see useRoomSearch - Room search functionality
  * @see useCallControls - WebRTC call controls
  * @see useNotificationSettings - Notification settings management
+ * @see useA11y - Accessibility (ARIA) attributes
+ * @see useKeyboardNav - Keyboard navigation support
  * @see useMatrixClient - Matrix client access (already exists, unused)
  */
 
@@ -24,8 +26,29 @@ export { useUserMenu } from './useUserMenu'
 export { useRoomSearch } from './useRoomSearch'
 export { useCallControls } from './useCallControls'
 export { useNotificationSettings } from './useNotificationSettings'
+export { useAppearanceSettings } from './useAppearanceSettings'
+export { usePrivacySettings } from './usePrivacySettings'
 export { useMatrixClient } from './useMatrixClient'
 export { usePlatform, useReactivePlatform } from './usePlatform'
+
+// Accessibility composables
+export {
+  useA11y,
+  useButtonA11y,
+  useStatusA11y,
+  useDialogA11y,
+  useListA11y,
+  useListItemA11y,
+  useTimerA11y,
+  useAlertA11y
+} from './useA11y'
+
+export {
+  useKeyboardNav,
+  useFocusTrap,
+  useListNavigation,
+  useGridNavigation
+} from './useKeyboardNav'
 
 // Export types
 export type {
@@ -67,6 +90,18 @@ export type {
   NotificationSettingsOptions,
   NotificationSettingsResult
 } from './useNotificationSettings'
+
+// Accessibility types
+export type {
+  A11yOptions,
+  A11yAttrs,
+  A11yReturn
+} from './useA11y'
+
+export type {
+  KeyboardNavOptions,
+  KeyboardNavReturn
+} from './useKeyboardNav'
 
 // Export utilities
 export {

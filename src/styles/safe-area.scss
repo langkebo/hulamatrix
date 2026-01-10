@@ -1,0 +1,261 @@
+/**
+ * Mobile Safe Area Adaptation
+ *
+ * iOS and Android safe area insets for notched devices
+ * Supports iPhone X+ with notch, Android with gesture navigation
+ *
+ * Usage:
+ * - Apply .mobile-safe-area to container elements
+ * - Use CSS variables for custom spacing
+ */
+
+// ============================================
+// CSS Custom Properties (Safe Area Insets)
+// ============================================
+
+:root {
+  // iOS safe area insets (env() for real values, fallback 0px)
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+  // Common spacing values
+  --safe-area-padding-vertical: calc(var(--safe-area-inset-top) + var(--safe-area-inset-bottom));
+  --safe-area-padding-horizontal: calc(var(--safe-area-inset-left) + var(--safe-area-inset-right));
+
+  // Component-specific safe areas
+  --header-safe-top: calc(var(--header-height, 56px) + var(--safe-area-inset-top));
+  --tab-bar-safe-bottom: calc(var(--tab-bar-height, 56px) + var(--safe-area-inset-bottom));
+  --modal-safe-bottom: calc(var(--modal-padding, 16px) + var(--safe-area-inset-bottom));
+}
+
+// ============================================
+// Base Safe Area Container
+// ============================================
+
+.mobile-safe-area {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+// ============================================
+// Fixed Position Elements
+// ============================================
+
+// Fixed header (needs extra top space for notch)
+.mobile-header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: var(--safe-area-inset-top);
+  height: var(--header-safe-top);
+  z-index: 100;
+
+  // Ensure content below is not hidden
+  & ~ * {
+    margin-top: var(--header-safe-top);
+  }
+}
+
+// Fixed footer/tab bar (needs extra bottom space for home indicator)
+.mobile-footer-fixed,
+.mobile-tab-bar-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+  height: var(--tab-bar-safe-bottom);
+  z-index: 100;
+
+  // Ensure content above is not hidden
+  & ~ * {
+    margin-bottom: var(--tab-bar-safe-bottom);
+  }
+}
+
+// ============================================
+// Modal/Dialog Safe Areas
+// ============================================
+
+.mobile-modal {
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--modal-safe-bottom)
+    var(--safe-area-inset-left);
+  max-height: calc(100vh - var(--safe-area-padding-vertical));
+  overflow-y: auto;
+}
+
+.mobile-modal-fullscreen {
+  height: 100vh;
+  height: 100dvh; // Dynamic viewport height for mobile browsers
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom)
+    var(--safe-area-inset-left);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ============================================
+// Touch Target Optimization
+// ============================================
+
+// Minimum touch target size: 44x44pt (iOS) / 48x48dp (Android)
+.touchable {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  // Expand tap area without visual changes
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -8px; // Extend tap area by 8px on all sides
+    pointer-events: auto;
+  }
+}
+
+// Inline buttons with proper touch target
+.touchable-inline {
+  @extend .touchable;
+  padding: 12px 16px;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+// Icon-only buttons need larger tap area
+.touchable-icon {
+  @extend .touchable;
+  width: 44px;
+  height: 44px;
+  padding: 10px; // Center icon within 44x44 area
+}
+
+// ============================================
+// Platform-Specific Adjustments
+// ============================================
+
+// iOS-specific adjustments
+@supports (-webkit-touch-callout: none) {
+  /* CSS for iOS Safari */
+  .mobile-safe-area {
+    // Additional padding for iOS browsers
+    padding-top: max(var(--safe-area-inset-top), 20px); // Min 20px for iOS URL bar
+  }
+
+  // Prevent bounce scroll on iOS
+  .mobile-no-bounce {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+}
+
+// Android-specific adjustments
+@media (pointer: coarse) and (hover: none) {
+  /* CSS for Android touch devices */
+  .touchable {
+    // Slightly larger touch targets for Android
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .touchable-inline {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 14px 18px;
+  }
+
+  .touchable-icon {
+    width: 48px;
+    height: 48px;
+    padding: 12px;
+  }
+}
+
+// ============================================
+// Utility Classes
+// ============================================
+
+// Apply safe area padding to specific sides only
+.safe-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-horizontal {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-vertical {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+// Safe area with margin instead of padding
+.safe-margin-top {
+  margin-top: var(--safe-area-inset-top);
+}
+
+.safe-margin-bottom {
+  margin-bottom: var(--safe-area-inset-bottom);
+}
+
+// ============================================
+// Dynamic Viewport Height Support
+// ============================================
+
+// Use dvh (dynamic viewport height) when available, fallback to vh
+:root {
+  --vh: 1vh;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --vh: 1dvh;
+  }
+}
+
+.full-viewport-height {
+  height: calc(100 * var(--vh));
+}
+
+// ============================================
+// Mobile Browser Address Bar Handling
+// ============================================
+
+// Prevent content jump when mobile browser address bar appears/disappears
+.mobile-stable-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.mobile-scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
