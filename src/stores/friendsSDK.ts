@@ -23,7 +23,7 @@ import { getEnhancedMatrixClient } from '@/integrations/matrix/client.js'
 import { logger } from '@/utils/logger'
 
 // Re-export types for components
-export type { CategoryWithColor, FriendWithProfile, FriendRequestWithProfile }
+export type { CategoryWithColor, FriendWithProfile, FriendRequestWithProfile, BlockedUser, SearchResultUser }
 
 /**
  * @deprecated 旧 API 类型别名
