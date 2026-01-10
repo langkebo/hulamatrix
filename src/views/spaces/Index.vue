@@ -36,34 +36,15 @@
 
       <n-alert v-if="error" type="warning" :show-icon="true" class="mt-12px">{{ error }}</n-alert>
 
-      <n-spin :show="isLoading">
-        <n-grid cols="1 s:2 m:3 l:4" x-gap="16" y-gap="16" class="mt-16px">
-          <n-grid-item v-for="space in userSpaces" :key="space.id">
-            <n-card size="small" hoverable>
-              <n-flex align="center" :size="10">
-                <n-avatar round :size="36" :src="space.avatar || ''" :fallback-src="fallbackAvatar" />
-                <div class="flex-1 truncate">
-                  <div class="text-14px truncate">{{ space.name }}</div>
-                  <div class="text-12px text-var(--hula-brand-primary) truncate">{{ space.topic || '' }}</div>
-                </div>
-                <n-badge :value="getUnread(space.id).highlight + getUnread(space.id).notification" :max="99" />
-              </n-flex>
-              <n-divider class="my-8px" />
-              <n-space>
-                <n-button size="small" @click="view(space.id)">查看</n-button>
-                <n-button size="small" @click="openCreateRoom(space.id)">在空间内创建房间</n-button>
-                <n-button size="small" tertiary @click="invite(space.id)">邀请成员</n-button>
-                <n-popconfirm @positive-click="handleLeaveSpace(space.id)">
-                  <template #trigger>
-                    <n-button size="small" type="error" tertiary>退出</n-button>
-                  </template>
-                  确认退出该空间？
-                </n-popconfirm>
-              </n-space>
-            </n-card>
-          </n-grid-item>
-        </n-grid>
-      </n-spin>
+      <SpaceList
+        class="mt-16px"
+        :spaces="userSpaces"
+        :loading="isLoading"
+        @view="(s) => view(s.id)"
+        @create-room="(s) => openCreateRoom(s.id)"
+        @invite="(s) => invite(s.id)"
+        @leave="(s) => handleLeaveSpace(s.id)"
+      />
 
       <n-card size="small" class="mt-16px" hoverable>
         <template #header>房间搜索结果</template>
@@ -114,6 +95,7 @@ import { useRouter } from 'vue-router'
 import { useMatrixSpaces } from '@/hooks/useMatrixSpaces'
 import { matrixClientService } from '@/integrations/matrix/client'
 import TreeSidebar from '@/components/spaces/TreeSidebar.vue'
+import SpaceList from '@/components/spaces/SpaceList.vue'
 
 // Type definitions for search results and room data
 interface SearchResultItem {
@@ -144,12 +126,8 @@ const {
   initializeSpaces,
   refreshSpaces,
   createSpace,
-  createRoomInSpace,
-  getSpaceUnreadCount
+  createRoomInSpace
 } = useMatrixSpaces()
-
-const fallbackAvatar = computed(() => '/logoD.png')
-const getUnread = (id: string) => getSpaceUnreadCount(id)
 
 const showCreate = ref(false)
 const createForm = ref({ name: '', topic: '', isPublic: false })

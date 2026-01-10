@@ -29,7 +29,7 @@
         placeholder="搜索工作区..."
         clearable
         @input="handleSearch"
-        @focus="loadSearchSuggestions"
+        @focus="loadSuggestions"
         @select="selectSuggestion"
         :loading="isSearching"
         size="large">
@@ -41,14 +41,14 @@
             v-if="searchHistory.length > 0"
             trigger="click"
             :options="[{ label: '清除搜索历史', key: 'clear' }]"
-            @select="clearSearchHistoryLocal">
+            @select="clearHistory">
             <n-button text type="primary">
               <template #icon>
                 <n-icon><Clock /></n-icon>
               </template>
             </n-button>
           </n-dropdown>
-          <n-button v-if="hasActiveFilters" text type="primary" @click="clearFilters">清除筛选</n-button>
+          <n-button v-if="hasActiveFilters" text type="primary" @click="handleResetFilters">清除筛选</n-button>
         </template>
       </n-auto-complete>
 
@@ -139,7 +139,7 @@
                   <n-dropdown trigger="click" :options="sortOptions" @select="handleSortSelect">
                     <n-button size="small" quaternary>
                       <template #icon>
-                        <n-icon><Sort /></n-icon>
+                        <n-icon><ArrowsSort /></n-icon>
                       </template>
                       {{ currentSortLabel }}
                     </n-button>
@@ -162,8 +162,8 @@
                           :size="52"
                           round
                           :fallback="space.name?.charAt(0)?.toUpperCase() || ''" />
-                        <div v-if="space.unreadCount > 0" class="unread-badge">
-                          {{ formatUnreadCount(space.unreadCount) }}
+                        <div v-if="(space.notifications?.notificationCount ?? 0) > 0" class="unread-badge">
+                          {{ formatUnreadCount((space.notifications?.notificationCount ?? 0)) }}
                         </div>
                         <div v-if="space.encrypted" class="encrypted-badge">
                           <n-icon size="12"><Lock /></n-icon>
@@ -301,7 +301,7 @@
         <template #footer>
           <n-space vertical style="width: 100%">
             <n-button type="primary" @click="applyFilters" block>应用筛选</n-button>
-            <n-button @click="resetFilters" block>重置</n-button>
+            <n-button @click="handleResetFilters" block>重置</n-button>
           </n-space>
         </template>
       </n-card>
@@ -316,13 +316,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton,
   NIcon,
   NBadge,
-  NInput,
   NAutoComplete,
   NSpin,
   NResult,
@@ -340,44 +339,23 @@ import {
   useMessage,
   useDialog
 } from 'naive-ui'
-import { Plus, Search, Filter, Users, Hash, Lock, DotsVertical, X, Clock } from '@vicons/tabler'
-import { msg, dlg } from '@/utils/SafeUI'
+import { Plus, Search, Filter, Users, Hash, Lock, DotsVertical, X, Clock, ArrowsSort } from '@vicons/tabler'
 import { useMatrixSpaces, type Space as MatrixSpace } from '@/hooks/useMatrixSpaces'
+import { useSpaceList, type SortOption } from '@/composables/useSpaceList'
 import { useUserStore } from '@/stores/user'
 import MobileCreateSpaceDialog from './MobileCreateSpaceDialog.vue'
 import MobileSpaceDrawer from './MobileSpaceDrawer.vue'
 import PullRefresh from '@/components/common/PullRefresh.vue'
 import { DynamicScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
-import { logger } from '@/utils/logger'
-import {
-  searchSpaces as enhancedSearch,
-  getSearchSuggestions,
-  loadSearchHistory,
-  clearSearchHistory as clearHistoryService
-} from '@/services/spaceSearchService'
-
-// Types
-interface SpaceNotifications {
-  highlightCount: number
-  notificationCount: number
-  [key: string]: unknown
-}
-
-interface Filters {
-  visibility: ('all' | 'public' | 'private')[]
-  encrypted: ('all' | 'encrypted' | 'unencrypted')[]
-  memberCount: number[]
-}
 
 // 使用 Matrix Spaces hook
 const {
   isLoading,
-  error,
   userSpaces,
   totalUnreadCount,
   searchResults,
-  isSearching,
+  isSearching: isMatrixSearching,
   joinSpace,
   leaveSpace,
   refreshSpaces,
@@ -391,29 +369,44 @@ const userStore = useUserStore()
 const message = useMessage()
 const dialog = useDialog()
 
+// 使用 Space List 共享逻辑
+const {
+  searchQuery,
+  currentSort,
+  filters,
+  activeQuickFilter,
+  searchSuggestions,
+  searchHistory,
+  isSearching,
+  hasActiveFilters,
+  currentSortLabel,
+  displaySpaces,
+  handleSearch,
+  loadSuggestions,
+  clearHistory,
+  removeHistoryItem,
+  resetFilters,
+  toggleQuickFilter,
+  formatUnreadCount,
+  formatLastActivity
+} = useSpaceList({
+  userSpaces,
+  searchResults: searchResults as any,
+  searchSpaces: async (q, o) => {
+    await searchSpaces(q, o)
+    return searchResults.value as MatrixSpace[]
+  },
+  clearSearchResults
+})
+
 // 本地状态
-const searchQuery = ref('')
 const showCreateDialog = ref(false)
 const showSpaceDrawer = ref(false)
 const showFilterDrawer = ref(false)
 const selectedSpace = ref<MatrixSpace | null>(null)
 const isRefreshing = ref(false)
 const scrollbarRef = ref()
-const searchSuggestions = ref<string[]>([])
 const showSuggestions = ref(false)
-const searchHistory = ref<string[]>([])
-// Local ref for enhanced search results (separate from hook's readonly searchResults)
-const enhancedSearchResults = ref<MatrixSpace[]>([])
-
-// 筛选状态
-const filters = ref<Filters>({
-  visibility: ['all'],
-  encrypted: ['all'],
-  memberCount: [0, 1000]
-})
-
-const activeQuickFilter = ref<string | null>(null)
-const currentSort = ref<'name' | 'members' | 'activity'>('activity')
 
 // 快速筛选选项
 const quickFilters = [
@@ -430,191 +423,11 @@ const sortOptions = [
   { label: '名称', key: 'name' }
 ]
 
-// 计算属性
-const displaySpaces = computed(() => {
-  // Use enhanced search results if available, otherwise fall back to hook's search results or user spaces
-  let spaces = searchQuery.value
-    ? enhancedSearchResults.value.length > 0
-      ? enhancedSearchResults.value
-      : searchResults.value
-    : userSpaces.value
-
-  // 应用快速筛选
-  if (activeQuickFilter.value && activeQuickFilter.value !== 'all') {
-    switch (activeQuickFilter.value) {
-      case 'unread':
-        spaces = spaces.filter(
-          (s) => (s.notifications?.highlightCount ?? 0) + (s.notifications?.notificationCount ?? 0) > 0
-        )
-        break
-      case 'encrypted':
-        spaces = spaces.filter((s) => (s as { encrypted?: boolean }).encrypted === true)
-        break
-      case 'public':
-        spaces = spaces.filter((s) => s.isPublic ?? false)
-        break
-    }
-  }
-
-  // 应用完整筛选
-  if (hasActiveFilters.value) {
-    if (!filters.value.visibility.includes('all')) {
-      if (filters.value.visibility.includes('public')) {
-        spaces = spaces.filter((s) => s.isPublic ?? false)
-      } else if (filters.value.visibility.includes('private')) {
-        spaces = spaces.filter((s) => !(s.isPublic ?? false))
-      }
-    }
-
-    if (!filters.value.encrypted.includes('all')) {
-      if (filters.value.encrypted.includes('encrypted')) {
-        spaces = spaces.filter((s) => s.encrypted)
-      } else if (filters.value.encrypted.includes('unencrypted')) {
-        spaces = spaces.filter((s) => !s.encrypted)
-      }
-    }
-
-    spaces = spaces.filter((s) => {
-      const count = s.memberCount ?? 0
-      return count >= filters.value.memberCount[0] && count <= filters.value.memberCount[1]
-    })
-  }
-
-  // 应用排序
-  spaces = [...spaces].sort((a, b) => {
-    switch (currentSort.value) {
-      case 'name':
-        return (a.name || '').localeCompare(b.name || '')
-      case 'members':
-        return (b.memberCount || 0) - (a.memberCount || 0)
-      default:
-        return (b.lastActivity || 0) - (a.lastActivity || 0)
-    }
-  })
-
-  return spaces
-})
-
-const hasActiveFilters = computed(() => {
-  return activeQuickFilter.value !== null && activeQuickFilter.value !== 'all'
-})
-
-const currentSortLabel = computed(() => {
-  return sortOptions.find((s) => s.key === currentSort.value)?.label || '最近活动'
-})
-
 // 方法
-const formatUnreadCount = (count: number): string => {
-  if (count >= 100) return '99+'
-  return String(count)
-}
-
-const formatLastActivity = (timestamp: number): string => {
-  const now = Date.now()
-  const diff = now - timestamp
-
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
-  return '更早之前'
-}
-
-const handleSearch = async (query: string) => {
-  if (query.trim()) {
-    // 使用增强搜索服务
-    try {
-      const results = await enhancedSearch(query, {
-        limit: 50,
-        fuzzy: true,
-        filters: hasActiveFilters.value
-          ? {
-              visibility: filters.value.visibility.includes('all')
-                ? ('all' as const)
-                : filters.value.visibility.includes('public')
-                  ? 'public'
-                  : 'private',
-              encrypted: filters.value.encrypted.includes('all')
-                ? ('all' as const)
-                : filters.value.encrypted.includes('encrypted')
-                  ? 'encrypted'
-                  : 'unencrypted',
-              memberCount:
-                filters.value.memberCount[0] > 0 || filters.value.memberCount[1] < 1000
-                  ? ([filters.value.memberCount[0], filters.value.memberCount[1]] as [number, number])
-                  : null,
-              joined: 'all'
-            }
-          : undefined
-      })
-      // 将搜索结果转换为 Space 类型并存储到本地 ref
-      enhancedSearchResults.value = results.map((r) => ({
-        id: r.roomId,
-        roomId: r.roomId,
-        name: r.name,
-        topic: r.topic,
-        avatar: r.avatar,
-        memberCount: r.memberCount ?? 0,
-        isPublic: r.joinRule === 'public',
-        notifications: undefined,
-        joined: false,
-        joinRule: r.joinRule === 'public' ? 'public' : 'knock'
-      })) as MatrixSpace[]
-      showSuggestions.value = false
-    } catch (error) {
-      logger.error('[MobileSpaceList] Enhanced search failed:', error)
-      // 降级到基本搜索
-      enhancedSearchResults.value = []
-      await searchSpaces(query, { limit: 50 })
-    }
-  } else {
-    enhancedSearchResults.value = []
-    clearSearchResults()
-    showSuggestions.value = true
-    // 显示搜索历史和建议
-    searchSuggestions.value = searchHistory.value.slice(0, 5)
-  }
-}
-
-const loadSearchSuggestions = async () => {
-  if (!searchQuery.value.trim()) {
-    // 显示搜索历史
-    searchHistory.value = loadSearchHistory()
-    searchSuggestions.value = searchHistory.value.slice(0, 5)
-    showSuggestions.value = true
-  } else {
-    // 获取搜索建议
-    try {
-      const suggestions = await getSearchSuggestions(searchQuery.value)
-      searchSuggestions.value = suggestions.map((s) => s.text).slice(0, 5)
-      showSuggestions.value = searchSuggestions.value.length > 0
-    } catch (error) {
-      logger.error('[MobileSpaceList] Failed to load suggestions:', error)
-      showSuggestions.value = false
-    }
-  }
-}
-
 const selectSuggestion = (suggestion: string) => {
   searchQuery.value = suggestion
   showSuggestions.value = false
   handleSearch(suggestion)
-}
-
-const clearSearchHistoryLocal = () => {
-  clearHistoryService()
-  searchHistory.value = []
-  searchSuggestions.value = []
-}
-
-const removeHistoryItem = (item: string) => {
-  searchHistory.value = searchHistory.value.filter((h) => h !== item)
-  // 更新本地存储
-  try {
-    localStorage.setItem('space-search-history', JSON.stringify(searchHistory.value))
-  } catch {
-    // Ignore errors
-  }
 }
 
 const handleRefresh = async () => {
@@ -631,54 +444,28 @@ const handleRefresh = async () => {
 }
 
 const handleScroll = (e: Event) => {
-  const target = e.target as HTMLElement
-  const { scrollTop, scrollHeight, clientHeight } = target
-
-  // Infinite scroll is disabled until backend pagination is implemented
+  // const target = e.target as HTMLElement
+  // const { scrollTop, scrollHeight, clientHeight } = target
   // if (scrollHeight - scrollTop - clientHeight < 100 && hasMore.value && !isLoadingMore.value) {
   //   loadMore()
   // }
 }
 
-const loadMore = async () => {
-  // TODO: Implement pagination when backend supports it
-  // For now, all spaces are loaded at once
-  logger.info('[MobileSpaceList] Load more called - not implemented yet')
-}
-
-const toggleQuickFilter = (key: string) => {
-  if (activeQuickFilter.value === key) {
-    activeQuickFilter.value = null
-  } else {
-    activeQuickFilter.value = key
-  }
-}
-
 const handleSortSelect = (key: string) => {
-  // Type guard to ensure key is a valid sort option
   const validSorts = ['name', 'members', 'activity'] as const
   if (validSorts.includes(key as (typeof validSorts)[number])) {
-    currentSort.value = key as 'name' | 'members' | 'activity'
+    currentSort.value = key as SortOption
   }
 }
 
-const clearFilters = () => {
-  activeQuickFilter.value = null
-  filters.value = {
-    visibility: ['all'],
-    encrypted: ['all'],
-    memberCount: [0, 1000]
-  }
+const handleResetFilters = () => {
+  resetFilters()
+  message.success('筛选已重置')
 }
 
 const applyFilters = () => {
   showFilterDrawer.value = false
   message.success('筛选已应用')
-}
-
-const resetFilters = () => {
-  clearFilters()
-  message.success('筛选已重置')
 }
 
 const handleSpaceClick = (space: MatrixSpace) => {
@@ -770,8 +557,6 @@ const handleActionSelect = async (key: string, space: MatrixSpace) => {
       break
 
     case 'settings':
-      // Navigate to Space Settings using a dialog (mobile-friendly)
-      // For mobile, we use a drawer dialog for space settings
       selectedSpace.value = space
       showSpaceDrawer.value = true
       break
@@ -787,8 +572,6 @@ const handleSpaceCreated = (space: unknown) => {
 
 // 生命周期
 onMounted(async () => {
-  // 加载搜索历史
-  searchHistory.value = loadSearchHistory()
   await initializeSpaces()
 })
 </script>
