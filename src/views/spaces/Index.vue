@@ -119,15 +119,8 @@ interface RoomData {
 }
 
 const router = useRouter()
-const {
-  isLoading,
-  error,
-  userSpaces,
-  initializeSpaces,
-  refreshSpaces,
-  createSpace,
-  createRoomInSpace
-} = useMatrixSpaces()
+const { isLoading, error, userSpaces, initializeSpaces, refreshSpaces, createSpace, createRoomInSpace } =
+  useMatrixSpaces()
 
 const showCreate = ref(false)
 const createForm = ref({ name: '', topic: '', isPublic: false })

@@ -11,7 +11,7 @@ interface CallParticipant {
   hasCamera?: boolean
   isHost?: boolean
   isSpeaking?: boolean
-  stream?: any
+  stream?: MediaStream | null
 }
 
 interface UseCallParticipantsOptions {

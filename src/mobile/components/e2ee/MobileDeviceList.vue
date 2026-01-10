@@ -373,7 +373,7 @@ const deviceActions = computed(() => {
 // Methods
 const refreshDevices = fetchDevices
 
-const getDeviceAvatar = (device: DeviceItem) => {
+const getDeviceAvatar = (_device: DeviceItem) => {
   // Placeholder for device avatar logic
   return ''
 }
@@ -445,7 +445,7 @@ const handleDeviceAction = async (key: string) => {
     case 'delete':
       await dialog.confirm({
         title: '删除设备',
-        content: '确定要删除此设备吗？此操作不可撤销。',
+        content: '确定要删除此设备吗？此操作不可撤销。'
       })
       await handleDeleteDevice(device.deviceId)
       break
@@ -458,7 +458,7 @@ const confirmRename = async () => {
     msg.warning('请输入设备名称')
     return
   }
-  
+
   const success = await renameDeviceApi(currentDevice.value.deviceId, renameValue.value)
   if (success) {
     msg.success('重命名成功')

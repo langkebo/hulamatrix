@@ -108,9 +108,23 @@
 <script setup lang="ts">
 import { ref, computed, toRef } from 'vue'
 import {
-  NSpace, NInput, NIcon, NSelect, NPopselect, NButton,
-  NSpin, NGrid, NGridItem, NCard, NFlex, NAvatar,
-  NBadge, NDivider, NEmpty, NDropdown, type DropdownOption
+  NSpace,
+  NInput,
+  NIcon,
+  NSelect,
+  NPopselect,
+  NButton,
+  NSpin,
+  NGrid,
+  NGridItem,
+  NCard,
+  NFlex,
+  NAvatar,
+  NBadge,
+  NDivider,
+  NEmpty,
+  NDropdown,
+  type DropdownOption
 } from 'naive-ui'
 import { Search, Filter, Users, Lock, World, Dots } from '@vicons/tabler'
 import { useSpaceList } from '@/composables/useSpaceList'
@@ -129,14 +143,7 @@ const emit = defineEmits<{
 }>()
 
 // Use Space List shared logic with local search only
-const {
-  searchQuery,
-  currentSort,
-  activeQuickFilter,
-  displaySpaces,
-  handleSearch,
-  toggleQuickFilter
-} = useSpaceList({
+const { searchQuery, currentSort, activeQuickFilter, displaySpaces, handleSearch, toggleQuickFilter } = useSpaceList({
   userSpaces: toRef(props, 'spaces'),
   searchResults: ref([]),
   searchSpaces: async () => [],
@@ -154,10 +161,7 @@ const localDisplaySpaces = computed(() => {
   let spaces = displaySpaces.value
   if (localSearchQuery.value) {
     const q = localSearchQuery.value.toLowerCase()
-    spaces = spaces.filter(s => 
-      s.name.toLowerCase().includes(q) || 
-      (s.topic && s.topic.toLowerCase().includes(q))
-    )
+    spaces = spaces.filter((s) => s.name.toLowerCase().includes(q) || (s.topic && s.topic.toLowerCase().includes(q)))
   }
   return spaces
 })
@@ -179,7 +183,7 @@ const filterOptions = [
 ]
 
 const activeFilterLabel = computed(() => {
-  const found = filterOptions.find(o => o.value === activeQuickFilter.value)
+  const found = filterOptions.find((o) => o.value === activeQuickFilter.value)
   return found ? found.label : '筛选'
 })
 
@@ -207,7 +211,7 @@ const getUnread = (space: Space) => {
 }
 
 // Actions
-const getActionOptions = (space: Space): DropdownOption[] => {
+const getActionOptions = (_space: Space): DropdownOption[] => {
   return [
     { label: '创建房间', key: 'create-room' },
     { label: '邀请成员', key: 'invite' },

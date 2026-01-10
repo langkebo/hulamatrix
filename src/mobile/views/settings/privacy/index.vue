@@ -79,28 +79,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NInput, NSelect, NButton, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import SettingsLayout from '#/views/settings/SettingsLayout.vue'
 import Icon from '#/components/icons/Icon.vue'
-import { blockUser, unblockUser, blockRoom, unblockRoom, reportUser, reportRoom } from '@/integrations/synapse/privacy'
 import { logger } from '@/utils/logger'
+import { usePrivacySettings } from '@/composables'
 
 const { t } = useI18n()
 const message = useMessage()
 const router = useRouter()
 
-const submitting = ref(false)
-const form = ref({
-  targetType: 'user',
-  targetId: '',
-  action: 'block',
-  reason: ''
-})
+const { actionForm: form, actionLoading: submitting, executeAction, resetActionForm } = usePrivacySettings()
 
-const targetTypeOptions = [
+const targetTypeOptions: { label: string; value: 'user' | 'room' }[] = [
   { label: t('setting.privacy.target_type_user'), value: 'user' },
   { label: t('setting.privacy.target_type_room'), value: 'room' }
 ]
@@ -112,42 +105,31 @@ const actionOptions = [
 ]
 
 const submit = async () => {
-  const ttype = form.value.targetType
-  const action = form.value.action
-  const id = form.value.targetId.trim()
-
-  if (!id) {
-    message.error(t('setting.privacy.error_empty_id'))
-    return
-  }
-
-  submitting.value = true
   try {
-    if (ttype === 'user' && action === 'block') await blockUser(id)
-    else if (ttype === 'user' && action === 'unblock') await unblockUser(id)
-    else if (ttype === 'user' && action === 'report') await reportUser(id, form.value.reason || '')
-    else if (ttype === 'room' && action === 'block') await blockRoom(id)
-    else if (ttype === 'room' && action === 'unblock') await unblockRoom(id)
-    else if (ttype === 'room' && action === 'report') await reportRoom(id, form.value.reason || '')
-
+    await executeAction()
     message.success(t('setting.privacy.success'))
+    // Reset fields but keep type/action? Composable resetActionForm resets everything to default.
+    // The original code reset targetId and reason only.
+    // Let's manually clear them if we want to preserve type/action, or just use resetActionForm if we want full reset.
+    // Original: form.value.targetId = ''; form.value.reason = '';
+    // Let's stick to original behavior by manually clearing, or just accept full reset.
+    // Composable's resetActionForm resets everything.
+    // Let's just manually clear for now to match original UX exactly,
+    // BUT actionForm is a ref from composable.
     form.value.targetId = ''
     form.value.reason = ''
-  } catch (error) {
-    logger.error('Privacy action failed:', error)
-    message.error(t('setting.privacy.error_failed'))
-  } finally {
-    submitting.value = false
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'Target ID is required') {
+      message.error(t('setting.privacy.error_empty_id'))
+    } else {
+      logger.error('Privacy action failed:', error)
+      message.error(t('setting.privacy.error_failed'))
+    }
   }
 }
 
 const reset = () => {
-  form.value = {
-    targetType: 'user',
-    targetId: '',
-    action: 'block',
-    reason: ''
-  }
+  resetActionForm()
 }
 
 const goToManage = () => {

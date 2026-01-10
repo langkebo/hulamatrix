@@ -75,40 +75,23 @@ import { useI18n } from 'vue-i18n'
 import { NButton, useMessage } from 'naive-ui'
 import SettingsLayout from '#/views/settings/SettingsLayout.vue'
 import Icon from '#/components/icons/Icon.vue'
-import {
-  listBlockedUsers,
-  listBlockedRooms,
-  listReports,
-  unblockUser,
-  unblockRoom
-} from '@/integrations/synapse/privacy'
 import { logger } from '@/utils/logger'
-
-interface BlockedUser {
-  mxid: string
-  [key: string]: unknown
-}
-
-interface BlockedRoom {
-  roomId: string
-  [key: string]: unknown
-}
-
-interface Report {
-  target: string
-  reason: string
-  time: string
-  [key: string]: unknown
-}
+import { usePrivacySettings } from '@/composables'
 
 const { t } = useI18n()
 const message = useMessage()
 
-const loading = ref(false)
+const {
+  blockedUsers,
+  blockedRooms,
+  reports,
+  manageLoading: loading,
+  fetchPrivacyData,
+  handleUnblockUser: composableUnblockUser,
+  handleUnblockRoom: composableUnblockRoom
+} = usePrivacySettings()
+
 const activeTab = ref('blockedUsers')
-const blockedUsers = ref<BlockedUser[]>([])
-const blockedRooms = ref<BlockedRoom[]>([])
-const reports = ref<Report[]>([])
 
 const tabs = [
   { key: 'blockedUsers', label: t('setting.privacy.tab_blocked_users') },
@@ -139,25 +122,9 @@ const formatTime = (time: string) => {
   }
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const [users, rooms, reportsData] = await Promise.all([listBlockedUsers(), listBlockedRooms(), listReports()])
-    blockedUsers.value = users
-    blockedRooms.value = rooms
-    reports.value = reportsData
-  } catch (error) {
-    logger.error('Failed to load privacy data:', error)
-    message.error(t('setting.privacy.error_load_failed'))
-  } finally {
-    loading.value = false
-  }
-}
-
 const handleUnblockUser = async (mxid: string) => {
   try {
-    await unblockUser(mxid)
-    await fetchData()
+    await composableUnblockUser(mxid)
     message.success(t('setting.privacy.unblock_success'))
   } catch (error) {
     logger.error('Failed to unblock user:', error)
@@ -167,8 +134,7 @@ const handleUnblockUser = async (mxid: string) => {
 
 const handleUnblockRoom = async (roomId: string) => {
   try {
-    await unblockRoom(roomId)
-    await fetchData()
+    await composableUnblockRoom(roomId)
     message.success(t('setting.privacy.unblock_success'))
   } catch (error) {
     logger.error('Failed to unblock room:', error)
@@ -176,7 +142,12 @@ const handleUnblockRoom = async (roomId: string) => {
   }
 }
 
-onMounted(fetchData)
+onMounted(() => {
+  fetchPrivacyData().catch((error) => {
+    logger.error('Failed to load privacy data:', error)
+    message.error(t('setting.privacy.error_load_failed'))
+  })
+})
 </script>
 
 <style lang="scss" scoped>

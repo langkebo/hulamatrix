@@ -136,13 +136,13 @@ export class MessageStateManager {
   async getPageMsg(pageSize: number, roomId: string, cursor: string, _async?: boolean): Promise<void> {
     try {
       const resp = await sdkPageMessagesWithCursor(roomId, pageSize, cursor, true)
-      const messages = ((resp as any)?.messages || []) as MessageType[]
+      const messages = (resp.data || []) as unknown as MessageType[]
 
       // 更新消息选项
       this.messageOptions[roomId] = {
-        isLast: !(resp as any)?.hasMore || false,
+        isLast: !resp.hasMore,
         isLoading: false,
-        cursor: (resp as any)?.nextCursor || ''
+        cursor: resp.nextCursor || ''
       }
 
       // 添加消息到 map

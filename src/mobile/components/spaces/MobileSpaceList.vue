@@ -391,10 +391,10 @@ const {
   formatLastActivity
 } = useSpaceList({
   userSpaces,
-  searchResults: searchResults as any,
+  searchResults,
   searchSpaces: async (q, o) => {
     await searchSpaces(q, o)
-    return searchResults.value as MatrixSpace[]
+    return searchResults.value
   },
   clearSearchResults
 })
@@ -443,7 +443,7 @@ const handleRefresh = async () => {
   }
 }
 
-const handleScroll = (e: Event) => {
+const handleScroll = (_e: Event) => {
   // const target = e.target as HTMLElement
   // const { scrollTop, scrollHeight, clientHeight } = target
   // if (scrollHeight - scrollTop - clientHeight < 100 && hasMore.value && !isLoadingMore.value) {

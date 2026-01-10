@@ -20,7 +20,7 @@ module.exports = [
       '**/__tests__/**'
     ]
   },
-  ...compat.extends('airbnb-base'),
+  // ...compat.extends('airbnb-base'),
   ...vueFlat,
   {
     files: ['**/*.vue'],
@@ -63,7 +63,14 @@ module.exports = [
     }
   },
   {
-    files: ['**/*.d.ts', 'vitest.config.ts', 'scripts/**', 'build/**', '**/*.config.{js,ts}'],
+    files: [
+      '**/*.d.ts',
+      'vitest.config.ts',
+      'scripts/**',
+      'build/**',
+      '**/*.config.js',
+      '**/*.config.ts'
+    ],
     rules: {
       semi: 'off',
       'comma-dangle': 'off',

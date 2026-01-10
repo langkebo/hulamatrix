@@ -600,6 +600,8 @@ export interface MessageBodyExtensions {
   duration?: number
   /** URL */
   url?: string
+  /** 本地文件预览URL */
+  fileUrl?: string
   /** 缩略图URL */
   thumbnailUrl?: string
   /** 回复信息 */
@@ -664,6 +666,8 @@ export type MsgType = {
   }
   /** Matrix compatibility properties - optional */
   isReply?: boolean
+  /** 上传进度 */
+  progress?: number
 }
 
 export type ReplyType = {

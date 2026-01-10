@@ -176,10 +176,10 @@ import { NFlex, NSwitch, NButton, NSelect, NSlider, NCard, NCollapse, NCollapseI
 import { useSettingStore } from '@/stores/setting'
 import { useTopicsList } from '../settings/model'
 import { matrixClientService } from '@/integrations/matrix/client'
+import { useAppearanceSettings } from '@/composables'
 
 const { t } = useI18n()
 const settingStore = useSettingStore()
-const { themes } = settingStore
 
 // 一致性检查
 const checking = ref(false)
@@ -265,43 +265,43 @@ const checkAllConsistency = async () => {
   }
 }
 
+// 使用 Composable
+const {
+  activeTheme,
+  fontScale,
+  layoutMode,
+  compactLayout,
+  imageSizeLimit,
+  toggleTheme,
+  setFontScale,
+  setLayoutMode,
+  setCompactLayout,
+  setImageSizeLimit
+} = useAppearanceSettings({
+  onThemeChange: () => setTimeout(checkAllConsistency, 1000),
+  onFontScaleChange: () => setTimeout(checkAllConsistency, 1000),
+  onLayoutChange: () => setTimeout(checkAllConsistency, 1000),
+  onCompactChange: () => setTimeout(checkAllConsistency, 1000),
+  onImageSizeChange: () => setTimeout(checkAllConsistency, 1000)
+})
+
 onMounted(() => {
   checkAllConsistency()
 })
 
 // 主题
-const activeTheme = ref(themes.pattern)
 const themeList = useTopicsList()
 
 const handleThemeChange = (code: string) => {
-  if (code === activeTheme.value) return
-  activeTheme.value = code
-  settingStore.toggleTheme(code)
-  setTimeout(checkAllConsistency, 1000)
+  toggleTheme(code)
 }
 
 // 字体缩放
-const fontScale = computed({
-  get: () => settingStore.page.fontScale,
-  set: (val: number) => {
-    settingStore.setFontScale(val)
-    document.documentElement.style.fontSize = `${val}%`
-    setTimeout(checkAllConsistency, 1000)
-  }
-})
-
 const handleFontScaleChange = (value: number) => {
-  fontScale.value = value
+  setFontScale(value)
 }
 
 // 布局模式
-const layoutMode = computed({
-  get: () => settingStore.chat.layoutMode,
-  set: (val: string) => {
-    settingStore.setLayoutMode(val)
-    setTimeout(checkAllConsistency, 1000)
-  }
-})
 const layoutOptions = [
   { label: '默认', value: 'default' },
   { label: '标准三栏', value: 'standard' },
@@ -310,20 +310,12 @@ const layoutOptions = [
 ]
 
 const handleLayoutChange = (value: string) => {
-  layoutMode.value = value
+  setLayoutMode(value)
 }
 
 // 紧凑布局
-const compactLayout = computed({
-  get: () => settingStore.chat.compactLayout,
-  set: (val: boolean) => {
-    settingStore.setCompactLayout(val)
-    setTimeout(checkAllConsistency, 1000)
-  }
-})
-
 const handleCompactToggle = (value: boolean) => {
-  compactLayout.value = value
+  setCompactLayout(value)
 }
 
 // 显示选项 (暂时未接入 Store，保留本地 Ref)
@@ -334,13 +326,6 @@ const autoplayGifs = ref(true)
 const autoplayVideos = ref(false)
 
 // 图片设置
-const imageSizeLimit = computed({
-  get: () => settingStore.chat.imageSizeLimit,
-  set: (val: string) => {
-    settingStore.setImageSizeLimit(val)
-    setTimeout(checkAllConsistency, 1000)
-  }
-})
 const imageSizeOptions = [
   { label: '自动', value: 'auto' },
   { label: '小', value: 'small' },
@@ -350,7 +335,7 @@ const imageSizeOptions = [
 ]
 
 const handleImageSizeChange = (value: string) => {
-  imageSizeLimit.value = value
+  setImageSizeLimit(value)
 }
 </script>
 

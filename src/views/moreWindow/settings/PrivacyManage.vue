@@ -14,21 +14,39 @@
   </n-space>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, h } from 'vue'
 import { useMessage } from 'naive-ui'
+import { usePrivacySettings } from '@/composables'
+import type { BlockedUser, BlockedRoom } from '@/composables/usePrivacySettings'
+
 const msg = useMessage()
 const tab = ref('blockedUsers')
-const blockedUsers = ref<Array<{ mxid: string }>>([])
-const blockedRooms = ref<Array<{ roomId: string }>>([])
-const reports = ref<Array<{ target: string; reason: string; time: string }>>([])
-interface BlockedUser {
-  mxid: string
-  [key: string]: unknown
+
+const {
+  blockedUsers,
+  blockedRooms,
+  reports,
+  fetchPrivacyData,
+  handleUnblockUser: composableUnblockUser,
+  handleUnblockRoom: composableUnblockRoom
+} = usePrivacySettings()
+
+const unblockUser = async (mxid: string) => {
+  try {
+    await composableUnblockUser(mxid)
+    msg.success('已取消屏蔽')
+  } catch {
+    msg.error('操作失败')
+  }
 }
 
-interface BlockedRoom {
-  roomId: string
-  [key: string]: unknown
+const unblockRoom = async (roomId: string) => {
+  try {
+    await composableUnblockRoom(roomId)
+    msg.success('已取消屏蔽')
+  } catch {
+    msg.error('操作失败')
+  }
 }
 
 const userCols = [
@@ -52,36 +70,10 @@ const reportCols = [
   { title: '原因', key: 'reason' },
   { title: '时间', key: 'time' }
 ]
-import { h } from 'vue'
-const fetchData = async () => {
-  try {
-    const { listBlockedUsers, listBlockedRooms, listReports } = await import('@/integrations/synapse/privacy')
-    blockedUsers.value = await listBlockedUsers()
-    blockedRooms.value = await listBlockedRooms()
-    reports.value = await listReports()
-  } catch {
+
+onMounted(() => {
+  fetchPrivacyData().catch(() => {
     msg.error('加载失败')
-  }
-}
-const unblockUser = async (mxid: string) => {
-  try {
-    const { unblockUser } = await import('@/integrations/synapse/privacy')
-    await unblockUser(mxid)
-    await fetchData()
-    msg.success('已取消屏蔽')
-  } catch {
-    msg.error('操作失败')
-  }
-}
-const unblockRoom = async (roomId: string) => {
-  try {
-    const { unblockRoom } = await import('@/integrations/synapse/privacy')
-    await unblockRoom(roomId)
-    await fetchData()
-    msg.success('已取消屏蔽')
-  } catch {
-    msg.error('操作失败')
-  }
-}
-onMounted(fetchData)
+  })
+})
 </script>

@@ -159,20 +159,8 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 // Composable
-const {
-  step,
-  loading,
-  confirming,
-  error,
-  sasData,
-  qrData,
-  reset,
-  startSas,
-  startQr,
-  confirmSas,
-  confirmQr,
-  cancel
-} = useDeviceVerification()
+const { step, loading, confirming, error, sasData, qrData, reset, startSas, startQr, confirmSas, confirmQr, cancel } =
+  useDeviceVerification()
 
 // Computed
 const showVerifyDialog = computed(() => props.show)
@@ -203,19 +191,22 @@ watch(step, (newStep) => {
 })
 
 // Watch for dialog close to reset state
-watch(() => props.show, (newVal) => {
-  if (!newVal) {
-    // When dialog closes, ensure we reset if we are not in success state?
-    // Or just reset on open?
-    // Ideally we reset when closing.
-    if (step.value !== 'success') {
-       // If we are in the middle of verification, we should probably cancel?
-       // But handleClose calls cancel/reset.
+watch(
+  () => props.show,
+  (newVal) => {
+    if (!newVal) {
+      // When dialog closes, ensure we reset if we are not in success state?
+      // Or just reset on open?
+      // Ideally we reset when closing.
+      if (step.value !== 'success') {
+        // If we are in the middle of verification, we should probably cancel?
+        // But handleClose calls cancel/reset.
+      }
+    } else {
+      reset()
     }
-  } else {
-    reset()
   }
-})
+)
 
 // Methods
 const handleClose = () => {

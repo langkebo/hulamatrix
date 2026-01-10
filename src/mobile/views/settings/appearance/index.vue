@@ -93,38 +93,30 @@ import { ref, computed, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NSwitch, NButton, NSelect, NSlider, useMessage } from 'naive-ui'
 import SettingsLayout from '#/views/settings/SettingsLayout.vue'
-import { useSettingStore } from '@/stores/setting'
 import { useTopicsList } from '@/views/moreWindow/settings/model.tsx'
 import Icon from '#/components/icons/Icon.vue'
+import { useAppearanceSettings } from '@/composables'
 
 const { t } = useI18n()
 const message = useMessage()
-const settingStore = useSettingStore()
-const { themes } = settingStore
+
+// Use shared composable
+const { activeTheme, fontScale, imageSizeLimit, toggleTheme, setFontScale, setImageSizeLimit } = useAppearanceSettings({
+  onThemeChange: () => message.success(t('setting.appearance.theme_changed')),
+  onFontScaleChange: (val) => message.success(t('setting.appearance.font_scale_changed', { scale: val })),
+  onImageSizeChange: () => message.success(t('setting.appearance.image_size_changed'))
+})
 
 // Theme
-const activeTheme = ref(themes.pattern)
 const themeList = useTopicsList()
 
 const handleThemeChange = (code: string) => {
-  if (code === activeTheme.value) return
-  activeTheme.value = code
-  settingStore.toggleTheme(code)
-  message.success(t('setting.appearance.theme_changed'))
+  toggleTheme(code)
 }
 
 // Font Scale
-const fontScale = computed({
-  get: () => settingStore.page.fontScale,
-  set: (val: number) => {
-    settingStore.setFontScale(val)
-    document.documentElement.style.fontSize = `${val}%`
-  }
-})
-
 const handleFontScaleChange = (value: number) => {
-  fontScale.value = value
-  message.success(t('setting.appearance.font_scale_changed', { scale: value }))
+  setFontScale(value)
 }
 
 // Display Options
@@ -133,12 +125,6 @@ const autoplayVideos = ref(false)
 const showUrlPreviews = ref(true)
 
 // Image Settings
-const imageSizeLimit = computed({
-  get: () => settingStore.chat.imageSizeLimit,
-  set: (val: string) => {
-    settingStore.setImageSizeLimit(val)
-  }
-})
 const imageSizeOptions = [
   { label: t('setting.appearance.image_auto'), value: 'auto' },
   { label: t('setting.appearance.image_small'), value: 'small' },
@@ -147,13 +133,12 @@ const imageSizeOptions = [
 ]
 
 const handleImageSizeChange = (value: string) => {
-  imageSizeLimit.value = value
-  message.success(t('setting.appearance.image_size_changed'))
+  setImageSizeLimit(value)
 }
 
-onMounted(() => {
-  activeTheme.value = themes.pattern
-})
+// onMounted is handled inside useAppearanceSettings for theme and font scale initialization,
+// but we might want to ensure the theme is correct if there's specific mobile logic?
+// The composable sets activeTheme on mount, which is fine.
 </script>
 
 <style lang="scss" scoped>

@@ -48,8 +48,8 @@ export function useE2EEDevices() {
         verified: e2eeStore.isDeviceVerified(d.device_id),
         blocked: e2eeStore.isDeviceBlocked(d.device_id)
       }))
-    } catch (e: any) {
-      error.value = e.message || '获取设备列表失败'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : '获取设备列表失败'
       console.error('Failed to fetch devices:', e)
     } finally {
       loading.value = false

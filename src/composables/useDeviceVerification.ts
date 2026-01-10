@@ -24,7 +24,7 @@ export function useDeviceVerification() {
   const loading = ref(false)
   const confirming = ref(false)
   const error = ref<string | null>(null)
-  
+
   const sasData = ref<SasData | null>(null)
   const qrData = ref<QrData | null>(null)
 
@@ -53,8 +53,8 @@ export function useDeviceVerification() {
         cancel: result.cancel
       }
       step.value = 'sas'
-    } catch (e: any) {
-      error.value = e.message || 'SAS 验证启动失败'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'SAS 验证启动失败'
     } finally {
       loading.value = false
     }
@@ -75,8 +75,8 @@ export function useDeviceVerification() {
         cancel: result.cancel
       }
       step.value = 'qr'
-    } catch (e: any) {
-      error.value = e.message || '二维码生成失败'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : '二维码生成失败'
     } finally {
       loading.value = false
     }
@@ -90,8 +90,8 @@ export function useDeviceVerification() {
       // Update store state
       e2eeStore.updateDevice(deviceId, { verified: true })
       step.value = 'success'
-    } catch (e: any) {
-      error.value = e.message || '验证失败'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : '验证失败'
     } finally {
       confirming.value = false
     }
@@ -105,8 +105,8 @@ export function useDeviceVerification() {
       // Update store state
       e2eeStore.updateDevice(deviceId, { verified: true })
       step.value = 'success'
-    } catch (e: any) {
-      error.value = e.message || '验证失败'
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : '验证失败'
     } finally {
       confirming.value = false
     }
@@ -117,7 +117,7 @@ export function useDeviceVerification() {
     try {
       if (sasData.value?.cancel) await sasData.value.cancel()
       if (qrData.value?.cancel) await qrData.value.cancel()
-    } catch (e) {
+    } catch (_e) {
       // ignore cancel errors
     } finally {
       confirming.value = false

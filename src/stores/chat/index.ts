@@ -727,7 +727,7 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
     }
 
     if (progress !== undefined) {
-      ;(msg.message as any).progress = progress
+      msg.message.progress = progress
     }
 
     if (status !== undefined) {
@@ -758,7 +758,7 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
     if (roomId) {
       const msg = messageState.messageMap[roomId]?.[msgId]
       if (msg) {
-        ;(msg.message as any).progress = progress
+        msg.message.progress = progress
       }
     }
   }
@@ -768,7 +768,7 @@ export const useChatStore = defineStore(StoresEnum.CHAT, () => {
     if (roomId) {
       const msg = messageState.messageMap[roomId]?.[msgId]
       if (msg && msg.message.body) {
-        ;(msg.message.body as any).fileUrl = fileUrl
+        msg.message.body.fileUrl = fileUrl
       }
     }
   }

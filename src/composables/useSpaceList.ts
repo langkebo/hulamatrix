@@ -1,5 +1,5 @@
 import { ref, computed, type Ref } from 'vue'
-import { useMatrixSpaces, type Space } from '@/hooks/useMatrixSpaces'
+import { type Space } from '@/hooks/useMatrixSpaces'
 import {
   searchSpaces as enhancedSearch,
   getSearchSuggestions,
@@ -35,7 +35,7 @@ export function useSpaceList(options: UseSpaceListOptions) {
     memberCount: [0, 1000]
   })
   const activeQuickFilter = ref<string | null>(null)
-  
+
   // 搜索相关状态
   const enhancedSearchResults = ref<Space[]>([])
   const searchSuggestions = ref<string[]>([])
@@ -45,20 +45,26 @@ export function useSpaceList(options: UseSpaceListOptions) {
 
   // 计算属性：是否有激活的筛选
   const hasActiveFilters = computed(() => {
-    return (activeQuickFilter.value !== null && activeQuickFilter.value !== 'all') ||
+    return (
+      (activeQuickFilter.value !== null && activeQuickFilter.value !== 'all') ||
       !filters.value.visibility.includes('all') ||
       !filters.value.encrypted.includes('all') ||
       filters.value.memberCount[0] > 0 ||
       filters.value.memberCount[1] < 1000
+    )
   })
 
   // 计算属性：当前排序标签
   const currentSortLabel = computed(() => {
     switch (currentSort.value) {
-      case 'name': return '名称'
-      case 'members': return '成员数量'
-      case 'activity': return '最近活动'
-      default: return '最近活动'
+      case 'name':
+        return '名称'
+      case 'members':
+        return '成员数量'
+      case 'activity':
+        return '最近活动'
+      default:
+        return '最近活动'
     }
   })
 
@@ -66,7 +72,9 @@ export function useSpaceList(options: UseSpaceListOptions) {
   const displaySpaces = computed(() => {
     // 1. 确定基础列表
     let spaces = searchQuery.value
-      ? (enhancedSearchResults.value.length > 0 ? enhancedSearchResults.value : searchResults.value)
+      ? enhancedSearchResults.value.length > 0
+        ? enhancedSearchResults.value
+        : searchResults.value
       : userSpaces.value
 
     // 2. 应用快速筛选
@@ -124,7 +132,7 @@ export function useSpaceList(options: UseSpaceListOptions) {
   // 方法：处理搜索
   const handleSearch = async (query: string) => {
     searchQuery.value = query
-    
+
     if (query.trim()) {
       isSearching.value = true
       try {
@@ -152,7 +160,7 @@ export function useSpaceList(options: UseSpaceListOptions) {
               }
             : undefined
         })
-        
+
         // 转换结果
         enhancedSearchResults.value = results.map((r) => ({
           id: r.roomId,
@@ -166,7 +174,7 @@ export function useSpaceList(options: UseSpaceListOptions) {
           joined: false,
           joinRule: r.joinRule === 'public' ? 'public' : 'knock'
         })) as Space[]
-        
+
         showSuggestions.value = false
       } catch (error) {
         logger.error('[useSpaceList] Enhanced search failed:', error)
@@ -232,7 +240,7 @@ export function useSpaceList(options: UseSpaceListOptions) {
   }
 
   // 方法：初始化历史
-  const initSearchHistory = () => {
+  const _initSearchHistory = () => {
     searchHistory.value = loadSearchHistory()
   }
 
@@ -271,11 +279,11 @@ export function useSpaceList(options: UseSpaceListOptions) {
     showSuggestions,
     searchHistory,
     isSearching,
-    
+
     hasActiveFilters,
     currentSortLabel,
     displaySpaces,
-    
+
     handleSearch,
     loadSuggestions,
     clearHistory,

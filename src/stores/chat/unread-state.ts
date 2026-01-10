@@ -5,6 +5,7 @@
 
 import { reactive, computed } from 'vue'
 import type { SessionItem } from '@/services/types'
+import { useSessionUnreadStore } from '@/stores/sessionUnread'
 import {
   applyPersistedUnreadCounts,
   persistUnreadCount as persistUnreadCountSvc,
@@ -27,9 +28,13 @@ export class UnreadStateManager {
   private userStore: { userInfo?: { uid?: string } }
 
   /** Session unread store reference */
-  private sessionUnreadStore: unknown
+  private sessionUnreadStore: ReturnType<typeof useSessionUnreadStore>
 
-  constructor(getCurrentRoomId: () => string, userStore: { userInfo?: { uid?: string } }, sessionUnreadStore: unknown) {
+  constructor(
+    getCurrentRoomId: () => string,
+    userStore: { userInfo?: { uid?: string } },
+    sessionUnreadStore: ReturnType<typeof useSessionUnreadStore>
+  ) {
     this.getCurrentRoomId = getCurrentRoomId
     this.userStore = userStore
     this.sessionUnreadStore = sessionUnreadStore
@@ -61,7 +66,7 @@ export class UnreadStateManager {
    */
   syncPersistedUnreadCounts(targetSessions: SessionItem[] = []): void {
     if (!targetSessions.length) return
-    applyPersistedUnreadCounts(this.sessionUnreadStore as any, this.userStore.userInfo?.uid, targetSessions)
+    applyPersistedUnreadCounts(this.sessionUnreadStore, this.userStore.userInfo?.uid, targetSessions)
   }
 
   /**
@@ -69,7 +74,7 @@ export class UnreadStateManager {
    */
   persistUnreadCount(roomId: string, count: number): void {
     if (!roomId) return
-    persistUnreadCountSvc(this.sessionUnreadStore as any, this.userStore.userInfo?.uid, roomId, count)
+    persistUnreadCountSvc(this.sessionUnreadStore, this.userStore.userInfo?.uid, roomId, count)
   }
 
   /**
@@ -77,7 +82,7 @@ export class UnreadStateManager {
    */
   removeUnreadCountCache(roomId: string): void {
     if (!roomId) return
-    removeUnreadCountCacheSvc(this.sessionUnreadStore as any, this.userStore.userInfo?.uid, roomId)
+    removeUnreadCountCacheSvc(this.sessionUnreadStore, this.userStore.userInfo?.uid, roomId)
   }
 
   /**

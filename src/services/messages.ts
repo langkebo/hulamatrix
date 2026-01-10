@@ -57,7 +57,7 @@ interface MessageContent {
 }
 
 /** Mapped message result */
-interface MappedMessageResult {
+export interface MappedMessageResult {
   fromUser: {
     uid: string
     username: string
@@ -173,7 +173,7 @@ export async function sdkPageMessagesWithCursor(
   limit: number = MESSAGES_CONFIG.DEFAULT_PAGE_SIZE,
   cursor: string = '',
   backwards: boolean = true
-): Promise<{ data: unknown[]; nextCursor: string; hasMore: boolean }> {
+): Promise<{ data: MappedMessageResult[]; nextCursor: string; hasMore: boolean }> {
   const client = matrixClientService.getClient()
   if (!client) throw new Error('Matrix client 未初始化')
 
@@ -256,7 +256,9 @@ export async function sdkPageMessagesWithCursor(
     return list
   })()
 
-  const mapped = selected.map((e: unknown) => mapMatrixEventToMessage(e, roomId)).filter(Boolean)
+  const mapped = selected
+    .map((e: unknown) => mapMatrixEventToMessage(e, roomId))
+    .filter((m): m is MappedMessageResult => m !== null)
   const nextCursor = mapped.length > 0 ? String(mapped[backwards ? 0 : mapped.length - 1]?.message?.id || '') : ''
   const hasMore = (typeof events.length === 'number' ? events.length : 0) > selected.length
 
