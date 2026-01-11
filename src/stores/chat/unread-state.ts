@@ -54,9 +54,9 @@ export class UnreadStateManager {
         }
         return this.newMsgCount[roomId]
       },
-      set: (val) => {
+      set: (val: NewMsgCountState) => {
         const roomId = this.getCurrentRoomId()
-        this.newMsgCount[roomId] = val as NewMsgCountState
+        this.newMsgCount[roomId] = val
       }
     })
   }

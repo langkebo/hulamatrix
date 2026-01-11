@@ -10,7 +10,7 @@
       <n-flex justify="center" class="w-full pt-35px" data-tauri-drag-region>
         <n-avatar
           class="welcome size-80px rounded-50% border-(2px solid var(--hula-white)) dark:border-(2px solid var(--hula-brand-primary))"
-          :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
+          :color="themes.content === ThemeEnum.DARK ? '#4CAF50' : '#ffffff'"
           :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
           :src="AvatarUtils.getAvatarUrl(info.avatar)" />
       </n-flex>
@@ -153,7 +153,7 @@
     <!-- 自动登录样式 -->
     <n-flex v-else-if="uiState === 'auto'" vertical :size="29" data-tauri-drag-region>
       <n-flex justify="center" class="mt-15px">
-        <img src="/hula.png" class="w-140px h-60px" alt="HuLa 品牌标志" />
+        <img src="/hula.png" class="w-140px object-contain" alt="HuLa 品牌标志" />
       </n-flex>
       <n-flex :size="30" vertical>
         <!-- 头像 -->
@@ -161,7 +161,7 @@
           <n-avatar
             round
             :size="110"
-            :color="themes.content === ThemeEnum.DARK ? 'var(--hula-brand-primary)' : 'var(--hula-white)'"
+            :color="themes.content === ThemeEnum.DARK ? '#4CAF50' : '#ffffff'"
             :fallback-src="themes.content === ThemeEnum.DARK ? '/logoL.png' : '/logoD.png'"
             :src="AvatarUtils.getAvatarUrl(userStore.userInfo?.avatar ?? '')" />
         </n-flex>
@@ -178,9 +178,15 @@
           :loading="loading"
           :disabled="loginDisabled"
           tertiary
-          class="gradient-button w-200px mt-12px mb-40px login-button-auto"
+          class="gradient-button w-200px mt-12px mb-12px login-button-auto"
           @click="normalLogin('PC', true, true)">
           <span>{{ loginText }}</span>
+        </n-button>
+      </n-flex>
+
+      <n-flex justify="center">
+        <n-button text class="text-white/80 hover:text-white mb-30px" @click="uiState = 'manual'">
+          {{ t('login.button.switch_account') }}
         </n-button>
       </n-flex>
     </n-flex>
@@ -237,6 +243,7 @@
   </n-config-provider>
 </template>
 <script setup lang="ts">
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useNetwork } from '@vueuse/core'
@@ -246,7 +253,7 @@ import { useCheckUpdate } from '@/hooks/useCheckUpdate'
 import { type DriverStepConfig, useDriver } from '@/hooks/useDriver'
 import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow.ts'
-import router from '@/router'
+import { useRouter } from 'vue-router'
 import type { UserInfoType } from '@/services/types.ts'
 import { WsResponseMessageType } from '@/services/wsType'
 import { useGlobalStore } from '@/stores/global'
@@ -267,6 +274,7 @@ import { logger } from '@/utils/logger'
 import ActionBar from '@/components/windows/ActionBar.vue'
 
 const { t } = useI18n()
+const router = useRouter()
 
 const settingStore = useSettingStore()
 const { themes } = storeToRefs(settingStore)
@@ -397,7 +405,7 @@ const driverConfig = computed(() => ({
 
 const { startTour, reinitialize } = useDriver(driverSteps.value, driverConfig.value)
 
-watch([driverSteps, driverConfig], ([steps, config]) => {
+watch([driverSteps, driverConfig], ([steps, config]: [any, any]) => {
   reinitialize(steps, config)
 })
 
@@ -464,7 +472,7 @@ watch(
 
     // 在登录历史中查找匹配的账号
     const matchedAccount = loginHistories.find(
-      (history) => history.account === newAccount || history.email === newAccount
+      (history: UserInfoType) => history.account === newAccount || history.email === newAccount
     )
     if (matchedAccount) {
       info.value.avatar = matchedAccount.avatar

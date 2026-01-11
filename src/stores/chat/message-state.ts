@@ -57,7 +57,7 @@ export class MessageStateManager {
         }
         return this.messageOptions[roomId]
       },
-      set: (val) => {
+      set: (val: MessageOptions) => {
         const roomId = this.getCurrentRoomId()
         this.messageOptions[roomId] = val
       }
@@ -77,7 +77,7 @@ export class MessageStateManager {
         }
         return this.replyMapping[roomId]
       },
-      set: (val) => {
+      set: (val: Record<string, string[]>) => {
         const roomId = this.getCurrentRoomId()
         this.replyMapping[roomId] = val
       }
