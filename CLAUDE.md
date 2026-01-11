@@ -66,6 +66,11 @@ pnpm run coverage    # Test coverage report
 # Quality gates
 pnpm run quality:gate      # Run quality gate checks
 pnpm run analyze:type      # Scan typecheck issues
+
+# UI/UX checks (via ui-ux-pro-max)
+pnpm run uiux:check        # Check UI/UX issues
+pnpm run uiux:fix          # Fix UI/UX issues
+pnpm run uiux:audit        # Full UI/UX audit
 ```
 
 ### Building
@@ -109,15 +114,22 @@ pnpm run addition-commit
 src/
 ├── components/              # Vue components
 │   ├── common/             # Shared reusable components
-│   ├── rightBox/           # Chat/communication components
-│   ├── layout/             # Layout components (left/center/right)
-│   └── mobile/             # Mobile-specific components
+│   ├── matrix/             # Matrix-specific components (rooms, spaces, etc.)
+│   ├── rtc/                # WebRTC/call components
+│   ├── chat/               # Chat interface components
+│   ├── mobile/             # Mobile-specific components
+│   └── [feature]/          # Feature-specific components
 ├── stores/                  # Pinia state management
-│   └── core/               # Core store implementations (migration target)
+│   ├── core/               # Core store implementations (migration target)
+│   └── [feature]/          # Feature stores (chat, user, settings, etc.)
 ├── hooks/                   # Vue 3 composables (use* prefix)
 ├── services/                # API service layer
-│   └── matrix*             # Matrix integration services
+│   ├── matrix*.ts          # Matrix integration services
+│   ├── e2eeService.ts      # End-to-end encryption
+│   ├── mediaService.ts     # Media upload/download
+│   └── tauriCommand.ts     # Tauri command wrappers
 ├── utils/                   # Utility functions
+├── matrix/                  # Matrix SDK integration layer
 ├── mobile/                  # Mobile-specific views and layout
 │   ├── components/         # Mobile-specific components
 │   ├── layout/             # Mobile layout components
@@ -132,17 +144,25 @@ src/
 src-tauri/
 ├── src/
 │   ├── command/            # Tauri command handlers (exposed to frontend)
-│   │   └── *.rs            # Individual command modules
-│   ├── entity/             # Database entities (Sea-ORM)
-│   ├── repository/         # Database repository pattern
-│   ├── websocket/          # Custom WebSocket client implementation
+│   │   ├── app_state_command.rs
+│   │   ├── error_log_command.rs
+│   │   ├── media/
+│   │   └── setting_command.rs
+│   ├── common/             # Shared utilities
+│   ├── common_cmd/         # Desktop-specific commands
 │   ├── desktops/           # Desktop-specific code (tray, windows, etc.)
 │   ├── mobiles/            # Mobile-specific code (splash, keyboard, etc.)
+│   ├── pojo/               # Plain old Java objects (data transfer)
+│   ├── vo/                 # View objects (API responses)
 │   ├── configuration/      # YAML-based configuration loader
 │   ├── migration/          # Database migrations
 │   ├── state.rs            # Global application state
 │   ├── lib.rs              # Main entry point, invoke handlers
 │   └── error.rs            # Error types
+├── capabilities/            # Tauri permission configs
+│   ├── default.json        # Default permissions
+│   ├── desktop.json        # Desktop-specific permissions
+│   └── mobile.json         # Mobile-specific permissions
 └── configuration/
     ├── base.yaml           # Base configuration template
     ├── local.yaml          # Local development (auto-created, gitignored)
@@ -158,12 +178,15 @@ The app uses a type-safe command pattern:
 4. Commands return structured responses (Result<T, CommonError>)
 
 Key commands (see `src-tauri/src/lib.rs:get_invoke_handlers()`):
-- `ws_*` - WebSocket connection management
-- `page_msg`, `send_msg`, `save_msg` - Message operations
-- `page_room`, `get_room_members` - Room operations
-- `list_contacts_command`, `hide_contact_command` - Contact operations
-- `download_media`, `clear_media_cache` - Media operations
-- Platform-specific commands (desktop/mobile gated with `#[cfg]`)
+- `save_error_log`, `clear_error_log`, `read_error_log` - Error logging
+- `get_settings`, `update_settings` - Settings management
+- `download_media`, `delete_cached_media`, `clear_media_cache`, `get_media_cache_stats`, `preload_media` - Media operations
+- Desktop-only: `default_window_icon`, `screenshot`, `audio`, `set_height`, `get_video_thumbnail`, `set_badge_count`
+- macOS-only: `hide_title_bar_buttons`, `show_title_bar_buttons`, `set_window_level_above_menubar`, `set_window_movable`
+- Windows-only: `get_windows_scale_info`
+- Mobile-only: `set_complete`, `hide_splash_screen`
+- iOS-only: `set_webview_keyboard_adjustment`
+- `is_app_state_ready` - App state check
 
 ### State Management
 
@@ -203,15 +226,21 @@ Create `.env` from `.env.example`. Key switches:
 # Matrix integration
 VITE_MATRIX_ENABLED=on                    # Main toggle
 VITE_MATRIX_ROOMS_ENABLED=on              # Room/message module
-VITE_MATRIX_MEDIA_ENABLED=off             # Media upload (gray-scale)
-VITE_MATRIX_E2EE_ENABLED=off              # End-to-end encryption (gray-scale)
-VITE_MATRIX_RTC_ENABLED=off               # WebRTC/calling (gray-scale)
-VITE_MATRIX_ADMIN_ENABLED=off             # Admin API (gray-scale)
+VITE_MATRIX_MEDIA_ENABLED=on              # Media upload (enabled)
+VITE_MATRIX_E2EE_ENABLED=on               # End-to-end encryption (enabled)
+VITE_MATRIX_RTC_ENABLED=on                # WebRTC/calling (enabled)
+VITE_MATRIX_ADMIN_ENABLED=on              # Admin API (enabled)
 
-# Backend
-VITE_VITE_MATRIX_BASE_URL=https://matrix.cjystx.top
-VITE_MATRIX_DEV_SYNC=false                # Dev sync at startup
+# Matrix server (uses .well-known discovery)
+VITE_MATRIX_SERVER_NAME=cjystx.top        # Server domain for discovery
+
+# Phase 1 migration settings
+VITE_DISABLE_WEBSOCKET=true               # Disable custom WebSocket, use Matrix
+VITE_MIGRATE_MESSAGING=true               # Migrate to Matrix SDK messaging
+VITE_REQUIRE_MATRIX_LOGIN=false           # Allow legacy-only login during migration
 ```
+
+**Important**: Do not set `VITE_MATRIX_BASE_URL`. The app uses `.well-known` service discovery with `VITE_MATRIX_SERVER_NAME` to automatically find the homeserver URL.
 
 ### YAML Configuration
 
@@ -228,6 +257,8 @@ Configure: backend URL, database path, ICE servers, API keys (Youdao, Tencent Ma
 - **Host detection**: Auto-detects local IP for mobile development
 - **Proxy**: Matrix API proxied via `/_matrix` and `/_synapse` paths
 - **Build**: Terser minification in production, esbuild in dev
+- **Code splitting**: Matrix SDK, Tauri, Vue, UI libraries split into separate chunks
+- **Mobile alias**: Custom plugin resolves `#/` imports to `src/mobile/`
 
 ## Development Guidelines
 
@@ -260,12 +291,14 @@ Custom Rust WebSocket client (`src-tauri/src/websocket/`):
 
 ### Testing
 
-- **Unit tests**: Vitest with `@vitest/coverage-v8`
+- **Unit tests**: Vitest with `@vitest/coverage-v8` and `istanbul` provider
 - **Component tests**: Vue Test Utils + Happy DOM
 - **E2E**: Playwright (configured, tests to be written)
 - **Test location**: Co-locate in `__tests__/` directories next to source
 - **Test configuration**: `vitest.config.ts` with happy-dom environment
 - **Coverage thresholds**: 70% for branches, functions, lines, statements
+- **Test settings**: `maxConcurrency: 1`, `isolate: false` to reduce mock overhead
+- **Run single test**: `pnpm run test:run -- path/to/test.spec.ts`
 
 ### Code Style
 
@@ -280,8 +313,36 @@ Custom Rust WebSocket client (`src-tauri/src/websocket/`):
 
 - **Package manager**: Must use `pnpm` (enforced by preinstall hook)
 - **Config changes**: Restart dev server after modifying `.env` or YAML files
-- **Dual protocol**: App supports both custom WebSocket and Matrix federation simultaneously
+- **Matrix-first**: App now prioritizes Matrix SDK over custom WebSocket (Phase 1 migration)
 - **Shared codebase**: Mobile and desktop share Vue code with adaptive UI via platform detection
 - **Type safety**: All Tauri commands must be type-safe with proper error handling
 - **Node version**: Requires Node.js ^20.19.0 or >=22.12.0, pnpm >=10.x
 - **Platform-specific code**: Use `#[cfg(desktop)]`, `#[cfg(mobile)]` in Rust and platform detection in TypeScript
+- **Service discovery**: Matrix homeserver URL is auto-discovered via `.well-known/matrix/client` - do not hardcode
+- **Local Matrix SDK**: The app uses a local copy of matrix-js-sdk at `../matrix-js-sdk-39.1.3` (sibling directory)
+
+## Key File Locations
+
+| Purpose | File Location |
+|---------|---------------|
+| Tauri commands | `src-tauri/src/command/*.rs` |
+| Tauri invoke handler registration | `src-tauri/src/lib.rs:get_invoke_handlers()` |
+| Matrix client service | `src/services/matrixClientService.ts` |
+| E2EE service | `src/services/e2eeService.ts` |
+| Room management | `src/services/roomService.ts`, `src/services/rooms.ts` |
+| Message handling | `src/services/messageService.ts`, `src/services/messages.ts` |
+| Tauri command wrappers | `src/services/tauriCommand.ts` |
+| Core Pinia stores | `src/stores/core/` |
+| Mobile components | `src/mobile/components/` |
+| Platform capabilities | `src-tauri/capabilities/{default,desktop,mobile}.json` |
+
+## UI/UX Development
+
+This project includes the `ui-ux-pro-max` skill for UI/UX design intelligence. When working on UI components, layouts, or visual design, use the skill to access:
+- 50 UI styles (glassmorphism, minimalism, dark mode, etc.)
+- 21 color palettes by product type
+- 50 font pairings with Google Fonts
+- 20 chart types and library recommendations
+- Stack-specific best practices for Vue, React, Next.js, etc.
+
+Invoke via `/uiux:check` and `/uiux:fix` commands, or use the Skill tool directly for design guidance.
