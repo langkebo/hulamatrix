@@ -10,7 +10,7 @@
       <LockScreen v-else />
       <!-- 连接状态指示器（使用优化后的组件） -->
       <ConnectionStatus
-        :ws-state="wsConnectionState"
+        :ws-state="effectiveConnectionState"
         :matrix-state="matrixStore.syncState"
         :is-syncing="chatStore.syncLoading || matrixStore.isSyncing"
         mode="mini" />
@@ -87,6 +87,7 @@ const appWindow = typeof window !== 'undefined' && '__TAURI__' in window ? Webvi
 const { createRtcCallWindow, sendWindowPayload } = useWindow()
 const globalStore = useGlobalStore()
 const router = useRouter()
+const isLoginRoute = computed(() => router.currentRoute.value.path === '/login')
 const { addListener } = useTauriListener()
 // 只在桌面端初始化窗口管理功能
 const { createWebviewWindow } = isDesktop() ? useWindow() : { createWebviewWindow: () => {} }
@@ -496,6 +497,30 @@ let reconnectSyncPromise: Promise<void> | null = null
 let lastReconnectSyncAt = 0
 const RECONNECT_SYNC_COOLDOWN_MS = 3000
 
+/**
+ * 计算有效的连接状态
+ * Matrix SDK 已替代 WebSocket，主要基于 Matrix syncState 判断连接状态
+ */
+const effectiveConnectionState = computed(() => {
+  // 如果 Matrix store 有有效的连接状态，优先使用
+  const matrixSyncState = matrixStore.syncState
+  if (matrixSyncState === 'PREPARED' || matrixSyncState === 'SYNCING') {
+    return 'CONNECTED'
+  }
+  if (matrixSyncState === 'ERROR') {
+    return 'ERROR'
+  }
+  if (matrixSyncState === 'STOPPED') {
+    return 'DISCONNECTED'
+  }
+  // 回退到 WebSocket 状态（如果仍有值）
+  if (wsConnectionState.value) {
+    return wsConnectionState.value
+  }
+  // 默认显示为连接中（初始化状态）
+  return 'CONNECTING'
+})
+
 // WebSocket 事件类型定义
 interface WebSocketEventPayload {
   type: 'connectionStateChanged'
@@ -722,7 +747,7 @@ onUnmounted(async () => {
 /** 控制阴影 */
 watch(
   () => page.value.shadow,
-  (val) => {
+  (val: boolean) => {
     // 移动端始终禁用阴影
     if (isMobile()) {
       document.documentElement.style.setProperty('--shadow-enabled', '1')
@@ -736,7 +761,7 @@ watch(
 /** 控制高斯模糊 */
 watch(
   () => page.value.blur,
-  (val) => {
+  (val: boolean) => {
     document.documentElement.setAttribute('data-blur', val ? '1' : '0')
   },
   { immediate: true }
@@ -745,7 +770,7 @@ watch(
 /** 控制字体样式 */
 watch(
   () => page.value.fonts,
-  (val) => {
+  (val: string) => {
     document.documentElement.style.setProperty('--font-family', val)
   },
   { immediate: true }
@@ -756,7 +781,7 @@ watch(
  */
 watch(
   () => page.value.lang,
-  (lang) => {
+  (lang: string) => {
     lang = lang === 'AUTO' ? navigator.language : lang
     loadLanguage(lang)
   }
@@ -765,11 +790,13 @@ watch(
 /** 控制变化主题 */
 watch(
   () => themes.value.versatile,
-  async (val, oldVal) => {
+  async (val: string, oldVal: string | undefined) => {
     await import(`@/styles/scss/theme/${val}.scss`)
     // 然后给最顶层的div设置val的类样式
     const app = document.querySelector('#app')?.classList as DOMTokenList
-    app.remove(oldVal as string)
+    if (oldVal) {
+      app.remove(oldVal)
+    }
     await nextTick(() => {
       app.add(val)
     })

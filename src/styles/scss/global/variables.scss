@@ -29,12 +29,12 @@
   --left-bg-color: var(--hula-brand-primary);
 
   /* 左侧导航栏图标颜色 */
-  --left-icon-color: var(--hula-gray-700);
+  --left-icon-color: var(--hula-white);  /* White icons on green background for better contrast */
   --left-win-icon-color: var(--hula-brand-primary);
-  --left-active-bg-color: rgba(var(--hula-brand-rgb), 0.1);
-  --left-active-icon-color: var(--hula-brand-primary);
-  --left-bg-hover: rgba(var(--hula-black-rgb), 0.05);
-  --left-active-hover: var(--hula-brand-primary);
+  --left-active-bg-color: rgba(var(--hula-white-rgb), 0.2);  /* White highlight for active state */
+  --left-active-icon-color: var(--hula-white);
+  --left-bg-hover: rgba(var(--hula-white-rgb), 0.15);  /* Light hover effect */
+  --left-active-hover: var(--hula-white);
 
   /* ==========================================================================
       文字色系统
@@ -48,9 +48,9 @@
   /* ==========================================================================
       边框色系统
      ========================================================================== */
-  --border-color: var(--hula-brand-primary);
-  --border-light: var(--hula-brand-primary);
-  --border-hover: var(--hula-brand-primary);
+  --border-color: var(--hula-gray-300); /* 使用浅灰色作为默认边框，确保在绿色背景上可见 */
+  --border-light: var(--hula-gray-200);
+  --border-hover: var(--hula-gray-400);
 
   /* ==========================================================================
       间距系统
@@ -132,10 +132,10 @@
 
   /* 输入框系统 */
   --input-bg: var(--hula-white);
-  --input-bg-disabled: var(--hula-brand-primary);
-  --input-border: var(--border-color);
-  --input-border-hover: var(--primary-color);
-  --input-border-focus: var(--primary-color);
+  --input-bg-disabled: var(--hula-gray-100);
+  --input-border: var(--hula-gray-300); /* 输入框边框使用灰色，确保可见 */
+  --input-border-hover: var(--hula-gray-400); /* 悬停时使用更深的灰色 */
+  --input-border-focus: var(--hula-brand-primary); /* 聚焦时才使用品牌色 */
   --input-padding-x: var(--spacing-md);
   --input-padding-y: var(--spacing-sm);
   --input-height: 36px;
@@ -216,12 +216,12 @@ html[data-theme='dark'] {
   --left-bg-color: var(--hula-brand-primary);
 
   /* 左侧导航栏图标颜色 - 暗色主题 */
-  --left-icon-color: var(--hula-gray-300);
+  --left-icon-color: var(--hula-white);  /* White icons on green background for better contrast */
   --left-win-icon-color: var(--hula-brand-primary);
-  --left-active-bg-color: rgba(79, 209, 199, 0.2);
-  --left-active-icon-color: var(--hula-brand-primary);
-  --left-bg-hover: rgba(var(--hula-white-rgb), 0.1);
-  --left-active-hover: var(--hula-brand-primary);
+  --left-active-bg-color: rgba(var(--hula-white-rgb), 0.2);  /* White highlight for active state */
+  --left-active-icon-color: var(--hula-white);
+  --left-bg-hover: rgba(var(--hula-white-rgb), 0.15);  /* Light hover effect */
+  --left-active-hover: var(--hula-white);
 
   /* 文字色系统 */
   --text-primary: var(--hula-white);

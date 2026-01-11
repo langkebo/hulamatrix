@@ -2,9 +2,11 @@
  * 错误日志工具
  *
  * 功能：
- * - 捕获所有控制台错误、警告和信息
- * - 通过 Tauri 发送到后端保存
+ * - 仅捕获控制台错误和警告（不捕获 info 和 log）
+ * - 通过 Tauri 发送到后端保存到 docs/error_log.md
+ * - 每次启动时清空之前的日志
  * - 在开发环境打印到控制台
+ * - 时间戳使用北京时间 (UTC+8)
  */
 
 import { invoke } from '@tauri-apps/api/core'
@@ -13,7 +15,7 @@ import { isTauri } from '@/composables/usePlatformAdapters'
 
 interface LogEntry {
   timestamp: string
-  level: 'error' | 'warn' | 'info' | 'log'
+  level: 'error' | 'warn'
   message: string
   stack?: string
   url?: string
@@ -21,13 +23,44 @@ interface LogEntry {
   column?: number
 }
 
+/**
+ * 获取北京时间字符串 (UTC+8)
+ * 返回格式: YYYY-MM-DDTHH:mm:ss.sss (无时区后缀)
+ */
+function getBeijingTimeString(): string {
+  const now = new Date()
+  // UTC 时间 + 8 小时 = 北京时间
+  const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+  // 返回 ISO 格式字符串，去掉末尾的 'Z' (因为这不是 UTC 时间)
+  return beijingTime.toISOString().replace('Z', '')
+}
+
 class ErrorLogger {
   private logs: LogEntry[] = []
   private maxLogs = 1000 // 最多保存 1000 条日志
   private flushInterval = 5000 // 每 5 秒自动保存一次
   private flushTimer?: ReturnType<typeof setInterval>
+  private initialized = false
 
   constructor() {
+    // 延迟初始化，等待 Tauri 环境就绪
+    this.initialize()
+  }
+
+  private async initialize() {
+    if (this.initialized) return
+    this.initialized = true
+
+    // 清空之前的错误日志
+    if (isTauri) {
+      try {
+        await invoke('clear_error_log')
+        logger.info('✅ 已清空 docs/error_log.md')
+      } catch (err) {
+        logger.warn('无法清空错误日志文件:', err)
+      }
+    }
+
     this.setupConsoleOverrides()
     this.setupGlobalErrorHandlers()
     this.startAutoFlush()
@@ -65,14 +98,12 @@ class ErrorLogger {
   }
 
   /**
-   * 覆盖原生 console 方法以捕获所有日志
+   * 覆盖原生 console 方法以仅捕获错误和警告
    */
   private setupConsoleOverrides() {
     const originalConsole = {
       error: console.error,
-      warn: console.warn,
-      info: console.info,
-      log: console.log
+      warn: console.warn
     }
 
     // 覆盖 console.error
@@ -96,38 +127,6 @@ class ErrorLogger {
       this.addLog(logEntry)
       originalConsole.warn(...args)
     }
-
-    // 覆盖 console.info
-    console.info = (...args: unknown[]) => {
-      if (this.isDevNoise(args)) {
-        originalConsole.info(...args)
-        return
-      }
-      const logEntry = this.createLogEntry('info', args)
-      this.addLog(logEntry)
-      originalConsole.info(...args)
-    }
-
-    // 覆盖 console.log（可选，如果需要捕获所有日志）
-    console.log = (...args: unknown[]) => {
-      // 只记录包含特定关键词的日志
-      const message = args.join(' ')
-      if (
-        message.includes('ERROR') ||
-        message.includes('Error') ||
-        message.includes('error') ||
-        message.includes('WARN') ||
-        message.includes('Warning')
-      ) {
-        if (this.isDevNoise(args)) {
-          originalConsole.log(...args)
-          return
-        }
-        const logEntry = this.createLogEntry('log', args)
-        this.addLog(logEntry)
-      }
-      originalConsole.log(...args)
-    }
   }
 
   /**
@@ -144,7 +143,7 @@ class ErrorLogger {
         return
       }
       const logEntry: LogEntry = {
-        timestamp: new Date().toISOString(),
+        timestamp: getBeijingTimeString(),
         level: 'error',
         message: event.message || String(event.error),
         stack: event.error?.stack,
@@ -166,7 +165,7 @@ class ErrorLogger {
         return
       }
       const logEntry: LogEntry = {
-        timestamp: new Date().toISOString(),
+        timestamp: getBeijingTimeString(),
         level: 'error',
         message: `Unhandled Promise Rejection: ${reasonStr}`,
         stack: event.reason instanceof Error ? event.reason.stack : undefined
@@ -195,7 +194,7 @@ class ErrorLogger {
         return
       }
       const logEntry: LogEntry = {
-        timestamp: new Date().toISOString(),
+        timestamp: getBeijingTimeString(),
         level: 'error',
         message: `Vue Error: ${vueEvent.message}`,
         stack: vueEvent.stack,
@@ -206,11 +205,11 @@ class ErrorLogger {
   }
 
   /**
-   * 创建日志条目
+   * 创建日志条目（仅支持 error 和 warn）
    */
-  private createLogEntry(level: LogEntry['level'], args: unknown[]): LogEntry {
+  private createLogEntry(level: 'error' | 'warn', args: unknown[]): LogEntry {
     return {
-      timestamp: new Date().toISOString(),
+      timestamp: getBeijingTimeString(),
       level,
       message: args
         .map((arg) => {
@@ -299,7 +298,7 @@ class ErrorLogger {
    */
   public logError(message: string, error?: Error | unknown) {
     const logEntry: LogEntry = {
-      timestamp: new Date().toISOString(),
+      timestamp: getBeijingTimeString(),
       level: 'error',
       message,
       stack: error instanceof Error ? error.stack : String(error)
@@ -312,20 +311,8 @@ class ErrorLogger {
    */
   public logWarn(message: string) {
     const logEntry: LogEntry = {
-      timestamp: new Date().toISOString(),
+      timestamp: getBeijingTimeString(),
       level: 'warn',
-      message
-    }
-    this.addLog(logEntry)
-  }
-
-  /**
-   * 手动记录信息
-   */
-  public logInfo(message: string) {
-    const logEntry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      level: 'info',
       message
     }
     this.addLog(logEntry)

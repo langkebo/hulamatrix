@@ -55,12 +55,15 @@ export const useGroupStore = defineStore(
         const client = matrixClientService.getClient() as ExtendedMatrixClient | null
         if (client) {
           roomAdapter = createGroupToRoomAdapter(client)
+          logger.info('[GroupStore] GroupToRoomAdapter initialized successfully')
+        } else {
+          logger.warn('[GroupStore] Matrix client not available, adapter not initialized')
         }
       }
       return roomAdapter
     }
 
-    // 获取适配器
+    // 获取适配器（返回 null 而不是抛出错误）
     const getAdapter = () => {
       if (!roomAdapter) {
         return initAdapter()
@@ -85,7 +88,8 @@ export const useGroupStore = defineStore(
     const setGroupAnnouncement = async (roomId: string, announcement: string): Promise<void> => {
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn(`[GroupStore] GroupToRoomAdapter not available, skipping set announcement for ${roomId}`)
+        return
       }
       try {
         await adapter.setGroupAnnouncement(roomId, announcement)
@@ -98,7 +102,8 @@ export const useGroupStore = defineStore(
     const getGroupAnnouncement = async (roomId: string): Promise<string> => {
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn(`[GroupStore] GroupToRoomAdapter not available, returning empty announcement for ${roomId}`)
+        return ''
       }
       try {
         return await adapter.getGroupAnnouncement(roomId)
@@ -273,7 +278,8 @@ export const useGroupStore = defineStore(
     const setGroupDetails = async () => {
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn('[GroupStore] GroupToRoomAdapter not available, skipping setGroupDetails')
+        return // 优雅降级，不抛出错误导致级联失败
       }
 
       // 使用房间适配器获取群列表
@@ -331,7 +337,8 @@ export const useGroupStore = defineStore(
 
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn(`[GroupStore] GroupToRoomAdapter not available, skipping add group detail for ${roomId}`)
+        return
       }
 
       try {
@@ -915,7 +922,8 @@ export const useGroupStore = defineStore(
 
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn('[GroupStore] GroupToRoomAdapter not available, cannot add admin')
+        throw new Error('Matrix client is not ready. Please try again after the application has fully loaded.')
       }
 
       // 仅使用 Matrix 模式
@@ -948,7 +956,8 @@ export const useGroupStore = defineStore(
 
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn('[GroupStore] GroupToRoomAdapter not available, cannot revoke admin')
+        throw new Error('Matrix client is not ready. Please try again after the application has fully loaded.')
       }
 
       // 仅使用 Matrix 模式
@@ -984,7 +993,8 @@ export const useGroupStore = defineStore(
 
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn('[GroupStore] GroupToRoomAdapter not available, cannot remove group members')
+        throw new Error('Matrix client is not ready. Please try again after the application has fully loaded.')
       }
 
       // 仅使用 Matrix 模式
@@ -1011,7 +1021,8 @@ export const useGroupStore = defineStore(
 
       const adapter = getAdapter()
       if (!adapter) {
-        throw new Error('GroupToRoomAdapter not initialized')
+        logger.warn('[GroupStore] GroupToRoomAdapter not available, cannot exit group')
+        throw new Error('Matrix client is not ready. Please try again after the application has fully loaded.')
       }
 
       // 仅使用 Matrix 模式
