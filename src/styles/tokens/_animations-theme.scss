@@ -1,0 +1,585 @@
+/* ==========================================================================
+   Theme-Aware Animations - 主题感知动画
+   Animations that adapt to light/dark mode
+   ========================================================================== */
+
+@use './variables.scss' as *;
+
+/* ==================== Fade Animations ==================== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== Slide Animations ==================== */
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* ==================== Scale Animations ==================== */
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes scale-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ==================== Spin Animations ==================== */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* ==================== Bounce Animations ==================== */
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==================== Shake Animations ==================== */
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-10px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(10px);
+  }
+}
+
+/* ==================== Pulse Animations ==================== */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(var(--hula-brand-rgb), 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(var(--hula-brand-rgb), 0.8);
+  }
+}
+
+/* Dark mode glow adjustment */
+[data-theme='dark'] {
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(var(--hula-brand-rgb), 0.6);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(var(--hula-brand-rgb), 1);
+    }
+  }
+}
+
+/* ==================== Ripple Animations ==================== */
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ==================== Shimmer Animations ==================== */
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Light mode shimmer */
+@keyframes shimmer-light {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Dark mode shimmer - adjusted gradient */
+@keyframes shimmer-dark {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* ==================== Theme Transition ==================== */
+
+/* Smooth theme transition for all properties */
+.theme-transitioning,
+.theme-transitioning * {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    fill,
+    stroke,
+    opacity,
+    box-shadow,
+    transform,
+    filter,
+    backdrop-filter !important;
+  transition-duration: 0.3s !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ==================== Message Animations ==================== */
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes message-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+/* ==================== Notification Animations ==================== */
+
+@keyframes notification-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes notification-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ==================== Modal Animations ==================== */
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dark mode backdrop is darker */
+[data-theme='dark'] {
+  @keyframes modal-backdrop-in {
+    from {
+      opacity: 0;
+      background-color: rgba(0, 0, 0, 0);
+    }
+    to {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+  }
+}
+
+/* ==================== Loading Animations ==================== */
+
+@keyframes loading-dots {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loading-circle {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================== Typing Indicator ==================== */
+
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ==================== Hover Animations ==================== */
+
+@keyframes hover-lift {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes hover-glow {
+  0% {
+    box-shadow: 0 0 0 rgba(var(--hula-brand-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(var(--hula-brand-rgb), 0.3);
+  }
+}
+
+/* Dark mode hover glow is more visible */
+[data-theme='dark'] {
+  @keyframes hover-glow {
+    0% {
+      box-shadow: 0 0 0 rgba(var(--hula-brand-rgb), 0);
+    }
+    100% {
+      box-shadow: 0 4px 16px rgba(var(--hula-brand-rgb), 0.4);
+    }
+  }
+}
+
+/* ==================== Progress Animations ==================== */
+
+@keyframes progress-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 0;
+  }
+}
+
+/* Light mode progress stripes */
+html:not([data-theme='dark']) {
+  @keyframes progress-stripes {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 40px 0;
+    }
+  }
+}
+
+/* Dark mode progress stripes - adjusted */
+[data-theme='dark'] {
+  @keyframes progress-stripes {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 40px 0;
+    }
+  }
+}
+
+/* ==================== Reduced Motion ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all animations for users who prefer reduced motion */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Keep essential transitions but make them very fast */
+  .theme-transitioning,
+  .theme-transitioning * {
+    transition-duration: 0.1s !important;
+  }
+}
+
+/* ==================== Utility Classes ==================== */
+
+/* Fade animations */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.3s ease-out;
+}
+
+/* Slide animations */
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out;
+}
+
+/* Scale animations */
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Spin animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Bounce animation */
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Shimmer animation */
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--hula-brand-rgb), 0.2),
+    transparent
+  );
+  background-size: 1000px 100%;
+}
+
+/* Dark mode shimmer adjustment */
+[data-theme='dark'] {
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+  }
+}
+
+/* Hover lift */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    animation: hover-lift 0.2s ease forwards;
+  }
+}
+
+/* Hover glow */
+.hover-glow {
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    animation: hover-glow 0.2s ease forwards;
+  }
+}
+
+/* Pulse glow */
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

@@ -1,40 +1,117 @@
 /* ==========================================================================
-   Typography Tokens - 字体系统
+   Typography Tokens - Enhanced Font System
+   Enhanced based on UI/UX optimization plan for consistent typography
    ========================================================================== */
 
-$sizes: (
-  xs: 12px,
-  sm: 14px,
-  md: 16px,
-  lg: 18px,
-  xl: 20px,
-  2xl: 24px,
-  3xl: 30px,
+/* Font Families - Support for Chinese, Japanese, Korean, and Western scripts */
+$font-families: (
+  base: "'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', sans-serif",
+  mono: "'Fira Code', 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace",
+  display: "'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', sans-serif",
 );
 
+/* Font Sizes - Extended scale for better visual hierarchy */
+$sizes: (
+  xs: 0.75rem,      // 12px - captions, labels
+  sm: 0.875rem,     // 14px - body small, secondary text
+  base: 1rem,       // 16px - default body text
+  lg: 1.125rem,     // 18px - emphasized body, subheadings
+  xl: 1.25rem,      // 20px - small headings
+  '2xl': 1.5rem,    // 24px - section headings
+  '3xl': 1.875rem,  // 30px - page headings
+  '4xl': 2.25rem,   // 36px - large headings
+  '5xl': 3rem,      // 48px - hero headings
+);
+
+/* Font Weights - Industry standard weight scale */
 $weights: (
+  light: 300,
   normal: 400,
   medium: 500,
   semibold: 600,
   bold: 700,
+  extrabold: 800,
 );
 
+/* Line Heights - Optimized for readability */
 $line-heights: (
-  tight: 1.2,
-  normal: 1.5,
-  loose: 1.8,
+  tight: 1.25,      // headings, compact UI
+  snug: 1.375,      // subheadings
+  normal: 1.5,      // body text, paragraphs
+  relaxed: 1.625,   // long-form content
+  loose: 1.75,      // very readable text
+);
+
+/* Letter Spacing - For improved legibility */
+$letter-spacings: (
+  tighter: -0.05em, // large headings
+  tight: -0.025em,  // headings
+  normal: 0,        // body text
+  wide: 0.025em,    // uppercase text
+  wider: 0.05em,    // display text
+  widest: 0.1em,    // special emphasis
+);
+
+/* Text Sizes - Pixel values for reference */
+$text-sizes: (
+  '10': 0.625rem,   // 10px
+  '11': 0.6875rem,  // 11px
+  '12': 0.75rem,    // 12px
+  '13': 0.8125rem,  // 13px
+  '14': 0.875rem,   // 14px
+  '15': 0.9375rem,  // 15px
+  '16': 1rem,       // 16px
+  '18': 1.125rem,   // 18px
+  '20': 1.25rem,    // 20px
+  '24': 1.5rem,     // 24px
+  '30': 1.875rem,   // 30px
+  '36': 2.25rem,    // 36px
+);
+
+/* Responsive font size multipliers */
+$responsive-scales: (
+  sm: 0.875,    // small screens
+  md: 1,        // medium screens (default)
+  lg: 1.125,    // large screens
+  xl: 1.25,     // extra large screens
 );
 
 @mixin export {
-  @each $name, $value in $sizes {
-    --font-#{$name}: #{$value};
+  /* Font families */
+  @each $name, $value in $font-families {
+    --font-family-#{$name}: #{$value};
   }
 
+  /* Font sizes (rem values) */
+  @each $name, $value in $sizes {
+    --text-#{$name}: #{$value};
+    --font-size-#{$name}: #{$value};
+  }
+
+  /* Font weights */
   @each $name, $value in $weights {
     --font-weight-#{$name}: #{$value};
   }
 
+  /* Line heights */
   @each $name, $value in $line-heights {
     --leading-#{$name}: #{$value};
+    --line-height-#{$name}: #{$value};
+  }
+
+  /* Letter spacing */
+  @each $name, $value in $letter-spacings {
+    --tracking-#{$name}: #{$value};
+    --letter-spacing-#{$name}: #{$value};
+  }
+
+  /* Text sizes (for backward compatibility) */
+  @each $name, $value in $text-sizes {
+    --text-#{$name}px: #{$value};
+  }
+
+  /* Responsive scale multipliers */
+  @each $name, $value in $responsive-scales {
+    --text-scale-#{$name}: #{$value};
   }
 }

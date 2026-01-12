@@ -1,18 +1,107 @@
 /* ==========================================================================
-   Spacing Tokens - 间距系统 (4px基准)
+   Spacing Tokens - Enhanced Spacing System (4px base unit)
+   Follows mathematical spacing scale for consistent rhythm
    ========================================================================== */
 
+/* Base spacing scale (4px unit system) */
 $spacings: (
-  xs: 4px,
-  sm: 8px,
-  md: 16px,
-  lg: 24px,
-  xl: 32px,
-  xxl: 48px,
+  0: 0,
+  0.5: 0.125rem,  // 2px - hairline
+  1: 0.25rem,     // 4px - tight spacing
+  1.5: 0.375rem,  // 6px - compact spacing
+  2: 0.5rem,      // 8px - small spacing
+  2.5: 0.625rem,  // 10px - small-medium
+  3: 0.75rem,     // 12px - medium spacing
+  3.5: 0.875rem,  // 14px - medium-plus
+  4: 1rem,        // 16px - standard spacing
+  5: 1.25rem,     // 20px - relaxed spacing
+  6: 1.5rem,      // 24px - large spacing
+  7: 1.75rem,     // 28px - larger spacing
+  8: 2rem,        // 32px - extra large
+  9: 2.25rem,     // 36px - extra large plus
+  10: 2.5rem,     // 40px - huge spacing
+  11: 2.75rem,    // 44px - huge plus
+  12: 3rem,       // 48px - massive
+  14: 3.5rem,     // 56px - massive plus
+  16: 4rem,       // 64px - giant
+  20: 5rem,       // 80px - ultra
+  24: 6rem,       // 96px - ultra plus
+  32: 8rem,       // 128px - extreme
+  40: 10rem,      // 160px - extreme plus
+  48: 12rem,      // 192px - massive extreme
+  56: 14rem,      // 224px - super extreme
+  64: 16rem,      // 256px - ultra extreme
+);
+
+/* Legacy semantic spacing names (for backward compatibility) */
+$semantic-spacings: (
+  xs: 4px,      // 1 unit
+  sm: 8px,      // 2 units
+  md: 16px,     // 4 units
+  lg: 24px,     // 6 units
+  xl: 32px,     // 8 units
+  xxl: 48px,    // 12 units
+  xxxl: 64px,   // 16 units
+);
+
+/* Component-specific spacing */
+$component-spacings: (
+  // Form elements
+  form-gap: 1rem,           // 16px
+  form-group-gap: 1.5rem,   // 24px
+  input-padding-x: 0.75rem, // 12px
+  input-padding-y: 0.5rem,  // 8px
+
+  // Cards
+  card-padding: 1rem,       // 16px
+  card-gap: 0.75rem,        // 12px
+
+  // Lists
+  list-gap: 0.5rem,         // 8px
+  list-item-padding: 0.75rem, // 12px
+
+  // Buttons
+  button-gap: 0.5rem,       // 8px
+  button-padding-x: 1rem,   // 16px
+  button-padding-y: 0.5rem, // 8px
+
+  // Navigation
+  nav-gap: 0.25rem,         // 4px
+  nav-item-padding: 0.5rem, // 8px
+
+  // Layout containers
+  container-padding: 1rem,  // 16px
+  section-gap: 2rem,        // 32px
+  content-gap: 1.5rem,      // 24px
+
+  // Modals
+  modal-padding: 1.5rem,    // 24px
+  modal-gap: 1rem,          // 16px
+
+  // Headers
+  header-height: 3.5rem,    // 56px
+  header-padding: 1rem,     // 16px
+
+  // Sidebars
+  sidebar-width: 16rem,     // 256px
+  sidebar-padding: 1rem,    // 16px
 );
 
 @mixin export {
+  /* Numeric spacing scale */
   @each $name, $value in $spacings {
     --space-#{$name}: #{$value};
+    --spacing-#{$name}: #{$value};
+    --gap-#{$name}: #{$value};
+  }
+
+  /* Legacy semantic spacing */
+  @each $name, $value in $semantic-spacings {
+    --space-#{$name}: #{$value};
+  }
+
+  /* Component-specific spacing */
+  @each $name, $value in $component-spacings {
+    --#{$name}: #{$value};
   }
 }

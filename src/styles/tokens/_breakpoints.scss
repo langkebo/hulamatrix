@@ -1,42 +1,314 @@
 @use 'sass:map';
+@use 'sass:math';
 
 /* ==========================================================================
-   Breakpoint Tokens - 断点系统
+   Enhanced Breakpoint Tokens - Responsive Design System
+   Mobile-first approach with common device widths
    ========================================================================== */
 
+/**
+ * Breakpoint Definitions (in pixels)
+ * - xs: 0px - 479px (small phones, portrait)
+ * - sm: 480px - 639px (large phones, landscape)
+ * - md: 640px - 767px (tablets, portrait)
+ * - lg: 768px - 1023px (tablets, landscape / small laptops)
+ * - xl: 1024px - 1279px (desktops)
+ * - 2xl: 1280px+ (large screens)
+ */
 $breakpoints: (
+  xs: 0px,
+  sm: 480px,
+  md: 640px,
+  lg: 768px,
+  xl: 1024px,
+  '2xl': 1280px,
+);
+
+/**
+ * Additional device-specific breakpoints
+ */
+$device-breakpoints: (
+  'xs-phone': 320px,
+  'sm-phone': 375px,
+  'md-phone': 414px,
+  'lg-phone': 480px,
+  'sm-tablet': 640px,
+  'md-tablet': 768px,
+  'lg-tablet': 834px,
+  'sm-laptop': 1024px,
+  'md-laptop': 1280px,
+  'lg-laptop': 1440px,
+  'xl-desktop': 1536px,
+  'ultra-wide': 1920px,
+);
+
+/**
+ * Container max widths (for responsive layouts)
+ */
+$container-max-widths: (
   sm: 640px,
   md: 768px,
   lg: 1024px,
   xl: 1280px,
-  xxl: 1536px,
+  '2xl': 1536px,
 );
 
+/**
+ * Touch target minimum sizes (WCAG 2.5.5)
+ */
+$touch-target-min: 44px;
+$touch-target-comfortable: 48px;
+
+/**
+ * Export breakpoints as CSS variables
+ */
 @mixin export {
   @each $name, $value in $breakpoints {
     --breakpoint-#{$name}: #{$value};
   }
+
+  @each $name, $value in $device-breakpoints {
+    --device-#{$name}: #{$value};
+  }
+
+  @each $name, $value in $container-max-widths {
+    --container-#{$name}: #{$value};
+  }
+
+  --touch-target-min: #{$touch-target-min};
+  --touch-target-comfortable: #{$touch-target-comfortable};
 }
 
-// 媒体查询混入
+/* ==========================================================================
+   Media Query Mixins
+   ========================================================================== */
+
+/**
+ * Min-width media query (mobile-first)
+ * @param {string} $name - Breakpoint name
+ * @example
+ *   @include up('md') { ... }
+ */
 @mixin up($name) {
   $value: map.get($breakpoints, $name);
-  @media (min-width: $value) {
+  @if $value != 0px {
+    @media (min-width: $value) {
+      @content;
+    }
+  } @else {
     @content;
   }
 }
 
+/**
+ * Max-width media query (desktop-first)
+ * @param {string} $name - Breakpoint name
+ * @example
+ *   @include down('md') { ... }
+ */
 @mixin down($name) {
   $value: map.get($breakpoints, $name);
-  @media (max-width: ($value - 1px)) {
+  @if $value != 0px {
+    @media (max-width: ($value - 1px)) {
+      @content;
+    }
+  } @else {
     @content;
   }
 }
 
+/**
+ * Between two breakpoints
+ * @param {string} $lower - Lower breakpoint name
+ * @param {string} $upper - Upper breakpoint name
+ * @example
+ *   @include between('sm', 'lg') { ... }
+ */
 @mixin between($lower, $upper) {
   $lower-value: map.get($breakpoints, $lower);
   $upper-value: map.get($breakpoints, $upper);
   @media (min-width: $lower-value) and (max-width: ($upper-value - 1px)) {
+    @content;
+  }
+}
+
+/**
+ * Only at a specific breakpoint
+ * @param {string} $name - Breakpoint name
+ * @example
+ *   @include only('md') { ... }
+ */
+@mixin only($name) {
+  $breakpoint-list: map.keys($breakpoints);
+  $index: index($breakpoint-list, $name);
+
+  @if $index != null {
+    $min-value: map.get($breakpoints, $name);
+    $max-value: if($index < length($breakpoint-list), map.get($breakpoints, nth($breakpoint-list, $index + 1)), null);
+
+    @if $min-value == 0px {
+      @if $max-value != null {
+        @media (max-width: ($max-value - 1px)) {
+          @content;
+        }
+      } @else {
+        @content;
+      }
+    } @else if $max-value != null {
+      @media (min-width: $min-value) and (max-width: ($max-value - 1px)) {
+        @content;
+      }
+    } @else {
+      @media (min-width: $min-value) {
+        @content;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   Responsive Container Mixins
+   ========================================================================== */
+
+/**
+ * Create a responsive container
+ * @param {string} $max-width - Maximum breakpoint (default: xl)
+ * @param {string} $padding - Padding size
+ * @example
+ *   @include container('lg') { ... }
+ */
+@mixin container($max-width: 'xl', $padding: 'md') {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: map.get($container-max-widths, $max-width);
+
+  @if $padding != 'none' {
+    $padding-values: (
+      none: 0,
+      sm: 12px,
+      md: 16px,
+      lg: 24px,
+      xl: 32px,
+      '2xl': 48px,
+    );
+    padding-left: map.get($padding-values, $padding);
+    padding-right: map.get($padding-values, $padding);
+  }
+
+  // Add safe area inset support for mobile
+  @include down('sm') {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* ==========================================================================
+   Utility Mixins
+   ========================================================================== */
+
+/**
+ * Hide element at specific breakpoint
+ * @param {string} $name - Breakpoint name
+ */
+@mixin hide-at($name) {
+  @include only($name) {
+    display: none !important;
+  }
+}
+
+/**
+ * Show element only at specific breakpoint
+ * @param {string} $name - Breakpoint name
+ */
+@mixin show-only-at($name) {
+  display: none !important;
+
+  @include only($name) {
+    display: block !important;
+  }
+}
+
+/**
+ * Responsive typography
+ * @param {number} $min - Minimum font size (px)
+ * @param {number} $max - Maximum font size (px)
+ * @param {number} $min-vw - Minimum viewport width (px)
+ * @param {number} $max-vw - Maximum viewport width (px)
+ * @example
+ *   @include fluid-type(16px, 24px, 480px, 1280px) { ... }
+ */
+@mixin fluid-type($min, $max, $min-vw: 480px, $max-vw: 1280px) {
+  $slope: math.div($max - $min, $max-vw - $min-vw);
+  $intercept: $min - ($slope * $min-vw);
+  $min-unit: if(unit($min) == '', $min * 1px, $min);
+  $max-unit: if(unit($max) == '', $max * 1px, $max);
+
+  font-size: clamp($min-unit, $intercept + $slope * 100vw, $max-unit);
+}
+
+/**
+ * Responsive spacing with clamp
+ * @param {number} $min - Minimum spacing (px)
+ * @param {number} $max - Maximum spacing (px)
+ * @example
+ *   @include fluid-spacing(16px, 32px) { ... }
+ */
+@mixin fluid-spacing($min, $max) {
+  $slope: math.div($max - $min, 1280px - 480px);
+  $intercept: $min - ($slope * 480px);
+  $min-unit: if(unit($min) == '', $min * 1px, $min);
+  $max-unit: if(unit($max) == '', $max * 1px, $max);
+
+  padding: clamp($min-unit, $intercept + $slope * 100vw, $max-unit);
+}
+
+/**
+ * Touch target size (WCAG 2.5.5 compliant)
+ * @param {number} $size - Target size (default: 44px)
+ */
+@mixin touch-target($size: $touch-target-min) {
+  min-width: $size;
+  min-height: $size;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@mixin print-only {
+  display: none;
+
+  @media print {
+    display: block !important;
+  }
+}
+
+@mixin screen-only {
+  @media print {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Support
+   ========================================================================== */
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/* ==========================================================================
+   High Contrast Mode Support
+   ========================================================================== */
+
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
     @content;
   }
 }
