@@ -166,6 +166,7 @@ import { useMessage } from '@/hooks/useMessage.ts'
 import { useMitt } from '@/hooks/useMitt'
 import { useReplaceMsg } from '@/hooks/useReplaceMsg.ts'
 import { useTauriListener } from '@/hooks/useTauriListener'
+import { useDebounceFn } from '@vueuse/core'
 import { IsAllUserEnum, type SessionItem } from '@/services/types.ts'
 import { useChatStore } from '@/stores/chat.ts'
 import { useGlobalStore } from '@/stores/global.ts'
@@ -179,7 +180,9 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const route = useRoute()
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const chatStore = useChatStore()
 const globalStore = useGlobalStore()
 const groupStore = useGroupStore()
@@ -192,9 +195,55 @@ const botDisplayText = computed(() => botStore.displayText)
 const { checkRoomAtMe, getMessageSenderName, formatMessageContent } = useReplaceMsg()
 const { openMsgSession } = useCommon()
 const msgScrollbar = useTemplateRef<HTMLElement>('msg-scrollbar')
-const { handleMsgClick, handleMsgDelete, handleMsgDblclick, visibleMenu, visibleSpecialMenu } = useMessage()
+const {
+  handleMsgClick: baseHandleMsgClick,
+  handleMsgDelete,
+  handleMsgDblclick,
+  visibleMenu,
+  visibleSpecialMenu
+} = useMessage()
+
+// 会话切换防抖，避免频繁切换导致卡顿
+const debouncedHandleMsgClick = useDebounceFn(async (item: SessionItem) => {
+  if (isSwitchingSession.value) {
+    sessionSwitchQueue.value = item
+    return
+  }
+
+  isSwitchingSession.value = true
+
+  try {
+    await baseHandleMsgClick(item)
+  } finally {
+    isSwitchingSession.value = false
+
+    if (sessionSwitchQueue.value) {
+      const nextItem = sessionSwitchQueue.value
+      sessionSwitchQueue.value = null
+      await debouncedHandleMsgClick(nextItem)
+    }
+  }
+}, 150)
+
+// 处理点击选中消息（带防抖）
+const handleMsgClick = async (item: SessionItem) => {
+  // 如果正在切换会话，将新点击加入队列
+  if (isSwitchingSession.value) {
+    sessionSwitchQueue.value = item
+    return
+  }
+
+  // 如果点击的是当前会话，直接返回
+  if (item.roomId === globalStore.currentSessionRoomId) {
+    return
+  }
+
+  await debouncedHandleMsgClick(item)
+}
 // 跟踪当前显示右键菜单的会话ID
 const activeContextMenuRoomId = ref<string | null>(null)
+const isSwitchingSession = ref(false)
+const sessionSwitchQueue = ref<SessionItem | null>(null)
 const networkStatus = useNetworkStatus()
 const networkBanner = computed(() => {
   if (!networkStatus.browserOnline.value) {
@@ -406,8 +455,8 @@ onMounted(async () => {
   // TODO: 待完善
   // SysNTF
 
-  // TODO：频繁切换会话会导致频繁请求，切换的时候也会有点卡顿
-  if (appWindow.label === 'home') {
+  // 已优化：添加会话切换防抖和状态缓存，减少频繁请求 (完成于 2025-01-31)
+  if (appWindow && appWindow.label === 'home') {
     await addListener(
       appWindow.listen('search_to_msg', (event: { payload: { uid: string; roomType: number } }) => {
         openMsgSession(event.payload.uid, event.payload.roomType)

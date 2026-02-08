@@ -101,10 +101,8 @@ class MatrixSafetyService {
     const client = MatrixClientService.getInstance().getClient()
     if (!client) return
 
-    this.client = client
-
     // Listen for M_SAFETY error events (MSC4387)
-    client.on('Event.decrypted', (event: MatrixEvent) => {
+    client.on('Event.decrypted' as any, (event: MatrixEvent) => {
       const eventType = event.getType()
       if (eventType === 'm.safety.error') {
         this.handleSafetyError(event)
@@ -112,7 +110,7 @@ class MatrixSafetyService {
     })
 
     // Listen for safety error toasts/notifications
-    client.on('RoomState.events', (event: MatrixEvent) => {
+    client.on('RoomState.events' as any, (event: MatrixEvent) => {
       const eventType = event.getType()
       if (eventType === 'm.room.safety_settings') {
         this.handleSafetySettingsUpdate(event)

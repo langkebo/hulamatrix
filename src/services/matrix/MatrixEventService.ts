@@ -552,8 +552,11 @@ class MatrixEventService {
     const currentState = room.currentState
 
     try {
-      const events = currentState.getStateEvents(eventType as any, stateKey)
-      return events && events.length > 0 ? events[0] : null
+      const events = currentState.getStateEvents(eventType as any, stateKey) as any
+      if (events && Array.isArray(events) && events.length > 0) {
+        return events[0]
+      }
+      return null
     } catch (_error) {
       // Event type might not be registered
       return null

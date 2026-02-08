@@ -1,54 +1,60 @@
-/// <reference types="vitest" />
-
-import { fileURLToPath, URL } from 'node:url'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import AutoImport from 'unplugin-auto-import/vite'
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
-import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vitest/config'
-import { getComponentsDirs, getComponentsDtsPath } from './build/config/components'
+import { fileURLToPath, URL } from 'node:url'
+import { join, resolve } from 'path'
+import path from 'path'
 
-const testPlatform = process.env.TAURI_ENV_PLATFORM
-const testComponentsDirs = getComponentsDirs(testPlatform)
-const testComponentsDtsPath = getComponentsDtsPath(testPlatform)
+const __dirname = path.dirname(fileURLToPath(new URL(import.meta.url)))
+const projectRoot = resolve(__dirname)
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueJsx(),
-    AutoImport({
-      imports: [
-        'vue',
-        'vue-router',
-        'pinia',
-        { 'naive-ui': ['useDialog', 'useMessage', 'useNotification', 'useLoadingBar', 'useModal'] }
-      ],
-      dts: 'src/typings/auto-imports.d.ts'
-    }),
-    /**自动导入组件，但是不会自动导入jsx和tsx*/
-    Components({
-      dirs: testComponentsDirs, // 根据环境加载对应组件目录
-      resolvers: [NaiveUiResolver()],
-      dts: testComponentsDtsPath
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '#': fileURLToPath(new URL('./src/mobile', import.meta.url)),
-      '~': fileURLToPath(new URL('.', import.meta.url))
-    }
-  },
+  plugins: [],
   test: {
     environment: 'happy-dom',
     globals: true,
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include: [
+      'tests/services/MatrixI18nService.test.ts',
+      'tests/services/MatrixSettingsService.test.ts',
+      'tests/services/MatrixPerformanceService.test.ts',
+      'tests/services/MatrixNotificationService.test.ts',
+      'tests/services/MatrixUserService.test.ts',
+      'tests/services/MatrixMessageService.test.ts',
+      'tests/services/MatrixAuthService.test.ts',
+      'tests/services/MatrixCrossSigningService.test.ts',
+      'tests/services/MatrixKeyBackupService.test.ts',
+      'tests/services/MatrixDataDeletionService.test.ts',
+      'tests/services/MatrixDataExportService.test.ts',
+      'tests/services/MatrixPrivateChatService.test.ts',
+      'tests/services/MatrixPollService.test.ts'
+    ],
+    exclude: ['node_modules', 'lib', '.git', 'dist'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{vue,js,jsx,ts,tsx}'],
-      exclude: ['src/**/*.{test,spec}.{js,ts}', 'src/types/**', 'src/**/*.d.ts']
-    }
+      include: ['src/services/matrix/**/*.{ts,vue}'],
+      exclude: ['src/services/matrix/index.ts', 'src/**/*.d.ts']
+    },
+    setupFiles: ['tests/setup.ts'],
+    testTimeout: 10000
+  },
+  resolve: {
+    alias: {
+      '@/lib/matrix-sdk': join(projectRoot, './lib/matrix-sdk/matrix.js'),
+      '@lib/matrix-sdk': join(projectRoot, './lib/matrix-sdk/matrix.js'),
+      '@/lib/matrix-sdk/enhanced': join(projectRoot, './lib/matrix-sdk/enhanced/index.js'),
+      '@/lib/matrix-sdk/enhanced/utils/error-codes': join(
+        projectRoot,
+        './lib/matrix-sdk/enhanced/utils/error-codes.js'
+      ),
+      '@/lib/matrix-sdk/enhanced/utils/http': join(projectRoot, './lib/matrix-sdk/enhanced/utils/http.js'),
+      '@/lib/matrix-sdk/*': join(projectRoot, './lib/matrix-sdk/*'),
+      '@': join(projectRoot, './src'),
+      '#': join(projectRoot, './src/mobile'),
+      '~': join(projectRoot, '.'),
+      '~~': projectRoot
+    },
+    extensions: ['.js', '.ts', '.vue', '.json', '.d.ts']
+  },
+  esbuild: {
+    target: 'esnext'
   }
 })

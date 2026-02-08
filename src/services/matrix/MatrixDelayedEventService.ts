@@ -89,10 +89,8 @@ class MatrixDelayedEventService {
     const client = MatrixClientService.getInstance().getClient()
     if (!client) return
 
-    this.client = client
-
     // Listen for delayed event updates
-    client.on('Event.decrypted', (event: MatrixEvent) => {
+    client.on('Event.decrypted' as any, (event: MatrixEvent) => {
       const content = event.getContent()
       if (content?.type === 'm.delayed_event.status') {
         this.handleDelayedEventStatus(event)

@@ -72,7 +72,7 @@ export interface CallNotificationContent {
   createdTs: number
 }
 
-interface MatrixRTCConfig {
+export interface MatrixRTCConfig {
   enabled: boolean
   maxConcurrentCalls: number
   defaultCallLifetime: number
@@ -112,14 +112,14 @@ class MatrixRTCService {
     if (!client) return
 
     // Listen for m.rtc.member events (MSC4354)
-    client.on('RoomState.events', (event: any) => {
+    client.on('RoomState.events' as any, (event: any) => {
       if (event.getType() === 'm.rtc.member') {
         this.handleRTCMemberEvent(event)
       }
     })
 
     // Listen for m.call.ring notification events
-    client.on('Event.decrypted', (event: any) => {
+    client.on('Event.decrypted' as any, (event: any) => {
       if (event.getType() === 'm.call.ring') {
         this.handleCallRing(event)
       }
@@ -474,5 +474,3 @@ class MatrixRTCService {
 
 export const matrixRTCService = MatrixRTCService.getInstance()
 export default MatrixRTCService
-export type { RTCTransportInfo, RTCMemberEventContent, RTCFocusInfo, CallNotificationContent, MatrixRTCConfig }
-export type { CallIntent }

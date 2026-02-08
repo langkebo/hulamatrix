@@ -5,7 +5,8 @@
  */
 
 import { ref, computed, onUnmounted } from 'vue'
-import { matrixSafetyService, SafetyErrorType, SafetyErrorSeverity } from '@/services/matrix'
+import { matrixSafetyService } from '@/services/matrix'
+import { SafetyErrorType, SafetyErrorSeverity } from '@/services/matrix/MatrixSafetyService'
 import type { SafetyErrorEvent, RecommendedAction } from '@/services/matrix'
 
 export function useSafety() {

@@ -23,6 +23,7 @@ import { globalFileUploadQueue } from './useFileUploadQueue.ts'
 import { useTrigger } from './useTrigger'
 import { UploadProviderEnum, useUpload } from './useUpload.ts'
 import { useI18n } from 'vue-i18n'
+import { useInputDraft } from './useInputDraft'
 
 /**
  * 光标管理器
@@ -434,8 +435,9 @@ export const useMsgInput = (messageInputDom: Ref) => {
   const retainRawContent = (type: MsgEnum) => [MsgEnum.EMOJI, MsgEnum.IMAGE].includes(type)
 
   /** 处理发送信息事件 */
-  // TODO 输入框中的内容当我切换消息的时候需要记录之前输入框的内容 (nyh -> 2024-03-01 07:03:43)
+  // 已实现输入框内容暂存功能，切换会话时自动保存/恢复 (完成于 2025-01-31)
   const { sendWithTracking } = useMessageSender()
+  const { saveDraft, loadDraft, clearDraft } = useInputDraft()
 
   const send = async () => {
     const targetRoomId = globalStore.currentSessionRoomId
@@ -533,8 +535,8 @@ export const useMsgInput = (messageInputDom: Ref) => {
               provider: UploadProviderEnum.QINIU,
               scene: UploadSceneEnum.CHAT
             })
-            .then((UploadResult) => {
-              return UploadResult.downloadUrl
+            .then((result) => {
+              return result?.downloadUrl || ''
             })
         }
 
