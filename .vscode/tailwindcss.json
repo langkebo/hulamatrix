@@ -1,0 +1,289 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@tailwind",
+      "description": "Use the @tailwind directive to insert Tailwind's base, components, utilities and screens styles into your CSS.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#tailwind"
+        }
+      ]
+    },
+    {
+      "name": "@apply",
+      "description": "Use the @apply directive to inline any existing utility classes into your own custom CSS.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#apply"
+        }
+      ]
+    },
+    {
+      "name": "@layer",
+      "description": "Use the @layer directive to declare a layer and optionally specify the priority order.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#layer"
+        }
+      ]
+    },
+    {
+      "name": "@responsive",
+      "description": "Generate responsive variants of your own classes by wrapping their definitions in the @responsive directive.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#responsive"
+        }
+      ]
+    },
+    {
+      "name": "@screen",
+      "description": "The @screen directive allows you to create media queries that reference your breakpoints by name instead of duplicating their values.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#screen"
+        }
+      ]
+    },
+    {
+      "name": "@variants",
+      "description": "Generate hover, focus, active and other variants of your own utilities by wrapping their definitions in the @variants directive.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#variants"
+        }
+      ]
+    },
+    {
+      "name": "@config",
+      "description": "Use the @config directive to specify a different configuration file.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#config"
+        }
+      ]
+    },
+    {
+      "name": "@theme",
+      "description": "Use the @theme directive to define a theme directly in your CSS.",
+      "references": [
+        {
+          "name": "Tailwind Documentation",
+          "url": "https://tailwindcss.com/docs/functions-and-directives#theme"
+        }
+      ]
+    }
+  ],
+  "cssProperties": [
+    "container",
+    "screen",
+    "shadow",
+    "ring",
+    "blur",
+    "brightness",
+    "contrast",
+    "grayscale",
+    "hue-rotate",
+    "invert",
+    "saturate",
+    "sepia",
+    "drop-shadow",
+    "backdrop-blur",
+    "backdrop-brightness",
+    "backdrop-contrast",
+    "backdrop-grayscale",
+    "backdrop-hue-rotate",
+    "backdrop-invert",
+    "backdrop-opacity",
+    "backdrop-saturate",
+    "backdrop-sepia",
+    "animate",
+    "columns",
+    "break-after",
+    "break-before",
+    "break-inside",
+    "auto-cols",
+    "auto-rows",
+    "grid-flow",
+    "grid-rows",
+    "transitions",
+    "translate",
+    "scale",
+    "rotate",
+    "skew",
+    "transform-origin",
+    "space",
+    "divide",
+    "fill",
+    "stroke",
+    "stroke-width",
+    "object",
+    "overflow",
+    "overscroll",
+    "top",
+    "right",
+    "bottom",
+    "left",
+    "inset",
+    "z-index",
+    "order",
+    "grid-column",
+    "grid-row",
+    "flex",
+    "flex-grow",
+    "flex-shrink",
+    "basis",
+    "border",
+    "border-width",
+    "border-style",
+    "border-color",
+    "border-opacity",
+    "border-radius",
+    "border-bottom",
+    "border-left",
+    "border-right",
+    "border-top",
+    "outline",
+    "ring-width",
+    "ring-color",
+    "ring-opacity",
+    "ring-offset",
+    "opacity",
+    "mix-blend",
+    "bg",
+    "bg-opacity",
+    "bg-gradient",
+    "from",
+    "via",
+    "to",
+    "gradient-to-t",
+    "gradient-to-tr",
+    "gradient-to-r",
+    "gradient-to-br",
+    "gradient-to-b",
+    "gradient-to-bl",
+    "gradient-to-l",
+    "gradient-to-tl",
+    "decoration",
+    "decoration-offset",
+    "underline-offset",
+    "line-clamp",
+    "align",
+    "align-baseline",
+    "align-items",
+    "align-content",
+    "align-self",
+    "float",
+    "clear",
+    "margin",
+    "margin-top",
+    "margin-right",
+    "margin-bottom",
+    "margin-left",
+    "margin-block",
+    "margin-inline",
+    "padding",
+    "padding-top",
+    "padding-right",
+    "padding-bottom",
+    "padding-left",
+    "padding-block",
+    "padding-inline",
+    "width",
+    "min-width",
+    "max-width",
+    "height",
+    "min-height",
+    "max-height",
+    "position",
+    "visibility",
+    "white-space",
+    "word-break",
+    "hyphens",
+    "text",
+    "text-opacity",
+    "font",
+    "font-size",
+    "font-weight",
+    "font-family",
+    "letter-spacing",
+    "line-height",
+    "list-style",
+    "placeholder",
+    "caret",
+    "accent",
+    "cursor",
+    "pointer-events",
+    "resize",
+    "snap",
+    "scroll",
+    "scroll-m",
+    "scroll-p",
+    "print",
+    "content",
+    "will-change",
+    "isolation",
+    "aspect-ratio",
+    "whitespace",
+    "word-spacing"
+  ],
+  "pseudoClasses": [
+    "hover",
+    "focus",
+    "active",
+    "visited",
+    "target",
+    "first",
+    "last",
+    "only",
+    "odd",
+    "even",
+    "first-of-type",
+    "last-of-type",
+    "only-of-type",
+    "empty",
+    "blank",
+    "disabled",
+    "read-only",
+    "checked",
+    "indeterminate",
+    "default",
+    "required",
+    "valid",
+    "invalid",
+    "in-range",
+    "out-of-range",
+    "placeholder-shown",
+    "autofill",
+    "focus-within",
+    "focus-visible",
+    "peer",
+    "group",
+    "peer-checked",
+    "peer-hover",
+    "peer-focus",
+    "peer-focus-visible",
+    "peer-disabled",
+    "peer-invalid",
+    "before",
+    "after",
+    "first-letter",
+    "first-line",
+    "selection",
+    "file",
+    "marker",
+    "backdrop",
+    "context-menu",
+    "counter-reset",
+    "counter-increment",
+    "list-item"
+  ]
+}

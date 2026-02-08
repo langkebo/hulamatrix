@@ -1,0 +1,22 @@
+{
+  "title": "消息搜索",
+  "query": "搜索查询",
+  "enter_query": "请输入搜索关键词",
+  "filters": "筛选条件",
+  "all_rooms": "所有房间",
+  "all_senders": "所有发送者",
+  "all_time": "所有时间",
+  "search": "搜索",
+  "searching": "搜索中...",
+  "no_results": "未找到匹配的消息",
+  "load_more": "加载更多",
+  "load_more_failed": "加载更多失败",
+  "search_failed": "搜索失败",
+  "today": "今天",
+  "this_week": "本周",
+  "this_month": "本月",
+  "just_now": "刚刚",
+  "minutes_ago": "{minutes} 分钟前",
+  "hours_ago": "{hours} 小时前",
+  "days_ago": "{days} 天前"
+}

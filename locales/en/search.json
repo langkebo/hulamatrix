@@ -1,0 +1,22 @@
+{
+  "title": "Message Search",
+  "query": "Search Query",
+  "enter_query": "Enter search keywords",
+  "filters": "Filters",
+  "all_rooms": "All Rooms",
+  "all_senders": "All Senders",
+  "all_time": "All Time",
+  "search": "Search",
+  "searching": "Searching...",
+  "no_results": "No matching messages found",
+  "load_more": "Load More",
+  "load_more_failed": "Failed to load more",
+  "search_failed": "Search failed",
+  "today": "Today",
+  "this_week": "This Week",
+  "this_month": "This Month",
+  "just_now": "Just now",
+  "minutes_ago": "{minutes} minutes ago",
+  "hours_ago": "{hours} hours ago",
+  "days_ago": "{days} days ago"
+}

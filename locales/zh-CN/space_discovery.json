@@ -1,0 +1,35 @@
+{
+  "title": "空间发现",
+  "search": "搜索",
+  "search_placeholder": "搜索空间名称或主题",
+  "search_button": "搜索",
+  "filters": "筛选",
+  "all_categories": "所有分类",
+  "all_languages": "所有语言",
+  "category": {
+    "general": "通用",
+    "technology": "技术",
+    "gaming": "游戏",
+    "art": "艺术",
+    "music": "音乐",
+    "sports": "运动"
+  },
+  "sort": {
+    "popular": "热门",
+    "newest": "最新",
+    "members": "成员数"
+  },
+  "no_spaces": "未找到空间",
+  "no_topic": "暂无主题",
+  "members": "成员",
+  "rooms": "房间",
+  "joined": "已加入",
+  "join": "加入",
+  "view": "查看",
+  "load_more": "加载更多",
+  "search_failed": "搜索失败",
+  "load_more_failed": "加载更多失败",
+  "join_success": "成功加入空间",
+  "join_failed": "加入空间失败",
+  "viewing_space": "正在查看空间：{name}"
+}

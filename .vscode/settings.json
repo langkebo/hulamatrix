@@ -1,0 +1,12 @@
+{
+  "stylelint.validate": ["css", "scss", "vue"],
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
+  "css.validate": false,
+  "scss.validate": false,
+  "vue.lint.css": false,
+  "vue.lint.scss": false,
+  "vue.lint.sass": false,
+  "vue.lint.less": false
+}
