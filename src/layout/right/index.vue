@@ -5,7 +5,7 @@
       :style="{ background: shouldShowChat ? 'var(--right-theme-bg-color)' : '' }"
       data-tauri-drag-region
       class="flex-1 flex flex-col min-h-0">
-      <ActionBar :current-label="appWindow.label" />
+      <ActionBar :current-label="appWindow?.label" />
 
       <!-- 需要判断当前路由是否是信息详情界面 -->
       <div class="flex-1 min-h-0 flex flex-col">
@@ -35,7 +35,9 @@ import type { DetailsContent } from '@/services/types'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useGlobalStore } from '@/stores/global'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const settingStore = useSettingStore()
 const { themes } = storeToRefs(settingStore)
 const globalStore = useGlobalStore()

@@ -262,7 +262,7 @@ const startPolling = () => {
 /** 处理二维码显示和刷新 */
 const handleQRCodeLogin = async () => {
   try {
-    qrCodeResp.value = await generateQRCode()
+    qrCodeResp.value = await generateQRCode({})
     qrCodeValue.value = JSON.stringify({ type: 'login', qrId: qrCodeResp.value.qrId })
     loadTextKey.value = 'scan_hint'
     loading.value = false

@@ -26,7 +26,9 @@
     "more": "更多",
     "opened": "已打开",
     "start_group_chat": "发起群聊",
-    "add_friend_or_group": "加好友/群"
+    "add_friend_or_group": "加好友/群",
+    "spaces": "空间列表",
+    "spaces_short_title": "空间"
   },
   "plugins": {
     "dynamic": "动态列表",
@@ -481,5 +483,75 @@
   "file_drop": {
     "title": "松开鼠标即可发送文件",
     "desc": "支持拖拽多张图片或文件，当前会话将收到这些文件"
+  },
+  "spaces": {
+    "title": "我的空间",
+    "empty": "暂无空间",
+    "create_first": "创建第一个空间",
+    "create": "创建空间",
+    "create_success": "空间创建成功",
+    "create_failed": "空间创建失败",
+    "name_label": "空间名称",
+    "name_placeholder": "请输入空间名称",
+    "topic_label": "空间描述",
+    "topic_placeholder": "请输入空间描述（可选）",
+    "visibility_label": "可见性",
+    "visibility_public": "公开空间",
+    "visibility_private": "私密空间",
+    "member_count": "{count} 位成员",
+    "room_count": "{count} 个房间",
+    "menu": {
+      "view_details": "查看详情",
+      "add_rooms": "添加房间",
+      "edit_settings": "编辑设置",
+      "leave_space": "退出空间"
+    },
+    "leave_confirm_title": "退出空间",
+    "leave_confirm_content": "确定要退出空间「{name}」吗？",
+    "leave_success": "已退出空间",
+    "detail": {
+      "title": "空间详情",
+      "members": "成员管理",
+      "rooms": "房间管理",
+      "settings": "空间设置",
+      "member_count": "{count} 位成员",
+      "room_count": "{count} 个房间"
+    },
+    "rooms": {
+      "title": "房间列表",
+      "empty": "暂无房间",
+      "add_room": "添加房间",
+      "remove_room": "从空间移除",
+      "remove_confirm": "确定要将该房间从空间移除吗？"
+    },
+    "members": {
+      "title": "成员列表",
+      "empty": "暂无成员",
+      "owner": "所有者",
+      "admin": "管理员",
+      "member": "成员",
+      "invite": "邀请成员",
+      "remove": "移除成员",
+      "remove_confirm": "确定要移除该成员吗？"
+    },
+    "settings": {
+      "title": "空间设置",
+      "name_label": "空间名称",
+      "topic_label": "空间描述",
+      "avatar_label": "空间头像"
+    }
+  },
+  "common": {
+    "confirm": "确定",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "loading": "加载中...",
+    "error": "出错了",
+    "success": "操作成功",
+    "search": "搜索",
+    "no_results": "暂无结果"
   }
 }

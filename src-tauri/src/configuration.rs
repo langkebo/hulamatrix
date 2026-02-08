@@ -10,7 +10,6 @@ use tracing::info;
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub struct Settings {
     pub database: DatabaseSettings,
-    pub backend: BackendSettings,
     pub youdao: Option<Youdao>,
     pub tencent: Option<Tencent>,
     pub minio: Option<MinioSettings>,
@@ -21,13 +20,6 @@ pub struct Settings {
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub struct DatabaseSettings {
     pub sqlite_file: String,
-}
-
-// 后端服务配置设置
-#[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
-pub struct BackendSettings {
-    pub base_url: String,
-    pub ws_url: String,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]

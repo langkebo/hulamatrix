@@ -198,7 +198,6 @@
 <script setup lang="ts">
 import MobileLayout from '#/components/MobileLayout.vue'
 import HeaderBar from '#/components/chat-room/HeaderBar.vue'
-import { type } from '@tauri-apps/plugin-os'
 import { OnlineEnum, RoleEnum } from '@/enums'
 import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
@@ -227,8 +226,9 @@ const scrollHeight = ref(0)
 const scrollArea = ref<HTMLElement>()
 
 // 判断是否为移动端视图
+import { isMobile as checkIsMobile } from '@/utils/PlatformConstants'
 const isMobileView = computed(() => {
-  return type() === 'ios' || type() === 'android'
+  return checkIsMobile()
 })
 
 // 获取非管理员的普通成员列表

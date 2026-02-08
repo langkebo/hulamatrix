@@ -25,7 +25,9 @@ export const useTauriListener = () => {
   const listeners: Promise<UnlistenFn>[] = []
   const listenerIds: string[] = []
   const instance = getCurrentInstance()
-  const windowLabel = WebviewWindow.getCurrent().label
+  const isTauriContext = () =>
+    Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+  const windowLabel = isTauriContext() ? WebviewWindow.getCurrent()?.label : 'browser'
   let isComponentMounted = true
 
   /**
@@ -139,9 +141,13 @@ export const useTauriListener = () => {
 
   // 监听窗口关闭事件来自动清理监听器
   const setupWindowCloseListener = async () => {
+    if (!isTauriContext()) return
+
     try {
       const appWindow = WebviewWindow.getCurrent()
-      const currentWindowLabel = appWindow.label
+      const currentWindowLabel = appWindow?.label
+
+      if (!currentWindowLabel) return
 
       // 检查是否已经为该窗口设置过监听器
       if (windowCloseListenerSetup.has(currentWindowLabel)) {
@@ -151,7 +157,7 @@ export const useTauriListener = () => {
       // 监听窗口关闭请求事件
       if (currentWindowLabel !== 'home') {
         info(`[useTauriListener]当前窗口标签设置关闭监听: ${currentWindowLabel}`)
-        const closeUnlisten = await appWindow.onCloseRequested(async () => {
+        const closeUnlisten = await appWindow!.onCloseRequested(async () => {
           info(`[useTauriListener]监听[${currentWindowLabel}]窗口关闭事件-清理所有监听器`)
           // 清理该窗口的所有监听器
           await cleanupAllListenersForWindow(currentWindowLabel)

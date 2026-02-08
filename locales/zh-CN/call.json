@@ -1,0 +1,22 @@
+{
+  "title": "通话",
+  "state": {
+    "idle": "空闲",
+    "ringing": "呼叫中",
+    "connected": "已连接",
+    "ended": "已结束"
+  },
+  "waiting_for_remote": "等待对方接听...",
+  "type_message": "输入消息",
+  "send": "发送",
+  "screen_share_failed": "屏幕共享失败",
+  "toggle_mic": "切换麦克风",
+  "toggle_camera": "切换摄像头",
+  "toggle_screen_share": "屏幕共享",
+  "toggle_chat": "切换聊天",
+  "end_call": "结束通话",
+  "minimize": "最小化",
+  "maximize": "最大化",
+  "fullscreen": "全屏",
+  "exit_fullscreen": "退出全屏"
+}

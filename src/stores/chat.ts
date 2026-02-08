@@ -9,7 +9,6 @@ import { ErrorType } from '@/common/exception'
 import { MittEnum, MessageStatusEnum, MsgEnum, RoomTypeEnum, StoresEnum, TauriCommand } from '@/enums'
 import type { MarkItemType, MessageType, RevokedMsgType, SessionItem } from '@/services/types'
 import { useGlobalStore } from '@/stores/global.ts'
-import { useFeedStore } from '@/stores/feed.ts'
 import { useGroupStore } from '@/stores/group.ts'
 import { useUserStore } from '@/stores/user.ts'
 import { getSessionDetail, markMsgRead } from '@/utils/ImRequestUtils'
@@ -18,6 +17,9 @@ import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useSessionUnreadStore } from '@/stores/sessionUnread'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
 import { useMitt } from '@/hooks/useMitt'
+
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
 
 type RecalledMessage = {
   messageId: string
@@ -62,7 +64,6 @@ export const useChatStore = defineStore(
     const route = useRoute()
     const userStore = useUserStore()
     const globalStore = useGlobalStore()
-    const feedStore = useFeedStore()
     const groupStore = useGroupStore()
     const sessionUnreadStore = useSessionUnreadStore()
 
@@ -350,6 +351,7 @@ export const useChatStore = defineStore(
      * 该方法会清空旧房间的消息数据，重新加载新房间的消息，并处理相关的状态重置。
      */
     const changeRoom = async () => {
+      if (!isTauriContext()) return
       const currentWindowLabel = WebviewWindow.getCurrent()
       if (currentWindowLabel.label !== 'home' && currentWindowLabel.label !== 'mobile-home') {
         return
@@ -561,7 +563,7 @@ export const useChatStore = defineStore(
         if (!data) {
           // 拉取失败也要恢复未读角标的展示，避免 unreadReady 卡在 false
           globalStore.unreadReady = true
-          unreadCountManager.refreshBadge(globalStore.unReadMark, feedStore.unreadCount)
+          unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
           return
         }
 
@@ -601,13 +603,13 @@ export const useChatStore = defineStore(
           }
         }
         globalStore.unreadReady = true
-        unreadCountManager.refreshBadge(globalStore.unReadMark, feedStore.unreadCount)
+        unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
       } catch (e) {
         console.error('获取会话列表失败11:', e)
         sessionOptions.isLoading = false
         // 出错时也恢复未读展示，避免角标长时间隐藏
         globalStore.unreadReady = true
-        unreadCountManager.refreshBadge(globalStore.unReadMark, feedStore.unreadCount)
+        unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
       } finally {
         sessionOptions.isLoading = false
       }
@@ -1257,12 +1259,12 @@ export const useChatStore = defineStore(
     // 更新未读消息计数
     const updateTotalUnreadCount = () => {
       // 使用统一的计数管理器（包含朋友圈未读数）
-      unreadCountManager.calculateTotal(sessionList.value, globalStore.unReadMark, feedStore.unreadCount)
+      unreadCountManager.calculateTotal(sessionList.value, globalStore.unReadMark, 0)
     }
 
     // 设置计数管理器的更新回调
     unreadCountManager.setUpdateCallback(() => {
-      unreadCountManager.calculateTotal(sessionList.value, globalStore.unReadMark, feedStore.unreadCount)
+      unreadCountManager.calculateTotal(sessionList.value, globalStore.unReadMark, 0)
     })
 
     // 使用防抖机制的更新函数

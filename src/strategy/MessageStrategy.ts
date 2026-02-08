@@ -12,7 +12,6 @@ import { getImageDimensions } from '@/utils/ImageUtils'
 import { isMobile } from '@/utils/PlatformConstants'
 import { generateVideoThumbnail } from '@/utils/VideoThumbnail'
 import { useGroupStore } from '../stores/group'
-import { removeTempFile } from '@/utils/TempFileManager'
 
 interface MessageStrategy {
   getMsg: (msgInputValue: string, replyValue: any, fileList?: File[]) => any
@@ -72,13 +71,13 @@ abstract class AbstractMessageStrategy implements MessageStrategy {
   uploadFile(
     path: string,
     options?: { provider?: UploadProviderEnum }
-  ): Promise<{ uploadUrl: string; downloadUrl: string }> {
+  ): Promise<{ uploadUrl: string; downloadUrl: string; config?: any }> {
     console.log('Base uploadFile method called with:', path, options)
     throw new AppException('该消息类型不支持文件上传')
   }
 
-  doUpload(path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
-    console.log('Base doUpload method called with:', path, uploadUrl, options)
+  doUpload(path: string, _uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
+    console.log('Base doUpload method called with:', path, _uploadUrl, options)
     throw new AppException('该消息类型不支持文件上传')
   }
 }
@@ -397,8 +396,11 @@ class ImageMessageStrategyImpl extends AbstractMessageStrategy {
         scene: UploadSceneEnum.CHAT
       }
 
-      const result = await this.uploadHook.getUploadAndDownloadUrl(path, uploadOptions)
-      return result
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { uploadUrl: result.downloadUrl || '', downloadUrl: result.downloadUrl || '', config: uploadOptions }
     } catch (error) {
       console.error('获取上传链接失败:', error)
       throw new AppException('获取上传链接失败，请重试')
@@ -412,18 +414,23 @@ class ImageMessageStrategyImpl extends AbstractMessageStrategy {
    * @param options 上传选项
    * @returns 上传结果
    */
-  async doUpload(path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
+  async doUpload(path: string, _uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
     // 如果是URL，跳过上传
     if (this.isImageUrl(path)) {
       return
     }
 
     try {
-      // enableDeduplication启用文件去重
-      const result = await this.uploadHook.doUpload(path, uploadUrl, { ...options, enableDeduplication: true })
-      // 如果是七牛云上传，返回qiniuUrl
+      const uploadOptions: UploadOptions = {
+        provider: options?.provider || UploadProviderEnum.QINIU,
+        scene: UploadSceneEnum.CHAT
+      }
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
       if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+        return { qiniuUrl: result.downloadUrl || '' }
       }
     } catch (error) {
       console.error('文件上传失败:', error)
@@ -689,8 +696,11 @@ class FileMessageStrategyImpl extends AbstractMessageStrategy {
         scene: UploadSceneEnum.CHAT
       }
 
-      const result = await this.uploadHook.getUploadAndDownloadUrl(path, uploadOptions)
-      return result
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { uploadUrl: result.downloadUrl || '', downloadUrl: result.downloadUrl || '', config: uploadOptions }
     } catch (error) {
       console.error('获取文件上传链接失败:', error)
       throw new AppException('获取文件上传链接失败，请重试')
@@ -700,18 +710,24 @@ class FileMessageStrategyImpl extends AbstractMessageStrategy {
   /**
    * 执行实际的文件上传
    * @param path 文件路径
-   * @param uploadUrl 上传URL
+   * @param _uploadUrl 上传URL
    * @param options 上传选项
    * @returns 上传结果
    */
-  async doUpload(path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
+  async doUpload(path: string, _uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
     try {
-      // enableDeduplication启用文件去重
-      const result = await this.uploadHook.doUpload(path, uploadUrl, { ...options, enableDeduplication: true })
+      const uploadOptions: UploadOptions = {
+        provider: options?.provider || UploadProviderEnum.QINIU,
+        scene: UploadSceneEnum.CHAT
+      }
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
 
       // 如果是七牛云上传，返回qiniuUrl
       if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+        return { qiniuUrl: result.downloadUrl || '' }
       }
     } catch (error) {
       console.error('文件上传失败:', error)
@@ -979,18 +995,17 @@ class VideoMessageStrategyImpl extends AbstractMessageStrategy {
     options?: { provider?: UploadProviderEnum }
   ): Promise<{ uploadUrl: string; downloadUrl: string; config?: any }> {
     try {
-      // 创建临时文件路径用于上传
-      const tempPath = `temp-thumbnail-${Date.now()}-${thumbnailFile.name}`
-
       const uploadOptions: UploadOptions = {
         provider: options?.provider || UploadProviderEnum.QINIU,
         scene: UploadSceneEnum.CHAT,
-        enableDeduplication: true // 启用去重，使用哈希值计算
+        enableDeduplication: true
       }
 
-      // 使用现有的getUploadAndDownloadUrl方法
-      const result = await this.uploadHook.getUploadAndDownloadUrl(tempPath, uploadOptions)
-      return result
+      const result = await this.uploadHook.uploadFile(thumbnailFile, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { uploadUrl: result.downloadUrl || '', downloadUrl: result.downloadUrl || '', config: uploadOptions }
     } catch (error) {
       console.error('获取缩略图上传链接失败:', error)
       throw new AppException('获取缩略图上传链接失败，请重试')
@@ -1000,33 +1015,27 @@ class VideoMessageStrategyImpl extends AbstractMessageStrategy {
   /**
    * 执行缩略图上传
    * @param thumbnailFile 缩略图文件
-   * @param uploadUrl 上传URL
+   * @param _uploadUrl 上传URL
    * @param options 上传选项
    * @returns 上传结果
    */
   async doUploadThumbnail(
     thumbnailFile: File,
-    uploadUrl: string,
+    _uploadUrl: string,
     options?: any
   ): Promise<{ qiniuUrl?: string } | void> {
     try {
-      // 将File对象写入临时文件，然后使用现有的doUpload方法
-      const tempPath = `temp-thumbnail-${Date.now()}-${thumbnailFile.name}`
-
-      // 写入临时文件
-      const baseDir = isMobile() ? BaseDirectory.AppData : BaseDirectory.AppCache
-      await writeFile(tempPath, thumbnailFile.stream(), { baseDir })
-
-      // enableDeduplication启用文件去重，使用哈希值计算
-      const result = await this.uploadHook.doUpload(tempPath, uploadUrl, { ...options, enableDeduplication: true })
-
-      // 清理临时文件
-      await removeTempFile(tempPath, { baseDir })
-
-      // 如果是七牛云上传，返回qiniuUrl
-      if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+      const uploadOptions: UploadOptions = {
+        provider: options?.provider || UploadProviderEnum.QINIU,
+        scene: UploadSceneEnum.CHAT,
+        enableDeduplication: true
       }
+
+      const result = await this.uploadHook.uploadFile(thumbnailFile, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { qiniuUrl: result.downloadUrl || '' }
     } catch (error) {
       console.error('缩略图上传失败:', error)
       if (error instanceof AppException) {
@@ -1075,25 +1084,34 @@ class VideoMessageStrategyImpl extends AbstractMessageStrategy {
     }
 
     try {
-      const result = await this.uploadHook.getUploadAndDownloadUrl(path, {
+      const uploadOptions: UploadOptions = {
         provider: options?.provider || UploadProviderEnum.QINIU,
         scene: UploadSceneEnum.CHAT
-      })
-      return result
+      }
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { uploadUrl: result.downloadUrl || '', downloadUrl: result.downloadUrl || '', config: uploadOptions }
     } catch (_error) {
       throw new AppException('获取视频上传链接失败')
     }
   }
-  async doUpload(path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
+  async doUpload(path: string, _uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
     if (isVideoUrl(path)) {
       throw new AppException('检查是否是有效的视频URL')
     }
-
     try {
-      // enableDeduplication启用文件去重
-      const result = await this.uploadHook.doUpload(path, uploadUrl, { ...options, enableDeduplication: true })
+      const uploadOptions: UploadOptions = {
+        provider: options?.provider || UploadProviderEnum.QINIU,
+        scene: UploadSceneEnum.CHAT
+      }
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
       if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+        return { qiniuUrl: result.downloadUrl || '' }
       }
     } catch (error) {
       console.error('文件上传失败:', error)
@@ -1133,8 +1151,11 @@ class UnsupportedMessageStrategyImpl extends AbstractMessageStrategy {
 }
 
 class VoiceMessageStrategyImpl extends AbstractMessageStrategy {
+  uploadHook: ReturnType<typeof useUpload>
+
   constructor() {
     super(MsgEnum.VOICE)
+    this.uploadHook = useUpload()
   }
 
   getMsg(): any {
@@ -1182,31 +1203,36 @@ class VoiceMessageStrategyImpl extends AbstractMessageStrategy {
     path: string,
     options?: { provider?: UploadProviderEnum }
   ): Promise<{ uploadUrl: string; downloadUrl: string; config?: any }> {
-    const uploadHook = useUpload()
-
     try {
       const uploadOptions: UploadOptions = {
         provider: options?.provider || UploadProviderEnum.QINIU,
         scene: UploadSceneEnum.CHAT
       }
 
-      const result = await uploadHook.getUploadAndDownloadUrl(path, uploadOptions)
-      return result
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
+      return { uploadUrl: result.downloadUrl || '', downloadUrl: result.downloadUrl || '', config: uploadOptions }
     } catch (_error) {
       throw new AppException('获取语音上传链接失败，请重试')
     }
   }
 
-  async doUpload(path: string, uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
-    const uploadHook = useUpload()
-
+  async doUpload(path: string, _uploadUrl: string, options?: any): Promise<{ qiniuUrl?: string } | void> {
     try {
-      // enableDeduplication启用文件去重
-      const result = await uploadHook.doUpload(path, uploadUrl, { ...options, enableDeduplication: true })
+      const uploadOptions: UploadOptions = {
+        provider: options?.provider || UploadProviderEnum.QINIU,
+        scene: UploadSceneEnum.CHAT
+      }
+      const result = await this.uploadHook.uploadFile(path, uploadOptions)
+      if (!result) {
+        throw new AppException('上传结果为空')
+      }
 
       // 如果是七牛云上传，返回qiniuUrl
       if (options?.provider === UploadProviderEnum.QINIU) {
-        return { qiniuUrl: result as string }
+        return { qiniuUrl: result.downloadUrl || '' }
       }
     } catch (_error) {
       throw new AppException('语音文件上传失败，请重试')

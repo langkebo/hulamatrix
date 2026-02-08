@@ -27,6 +27,16 @@ export const useMenuTopStore = defineStore(
         dot: false,
         progress: 0,
         miniShow: false
+      },
+      {
+        url: 'spaces',
+        icon: 'spaces',
+        iconAction: 'spaces-action',
+        state: PluginEnum.BUILTIN,
+        isAdd: true,
+        dot: false,
+        progress: 0,
+        miniShow: false
       }
     ]
 
@@ -40,6 +50,11 @@ export const useMenuTopStore = defineStore(
         ...baseMenuTop[1],
         title: t('home.action.contact'),
         shortTitle: t('home.action.contact_short_title')
+      },
+      {
+        ...baseMenuTop[2],
+        title: t('home.action.spaces'),
+        shortTitle: t('home.action.spaces_short_title')
       }
     ])
 

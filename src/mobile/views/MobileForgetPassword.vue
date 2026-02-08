@@ -274,7 +274,7 @@ const getCaptchaImage = async () => {
     lastCaptchaTime.value = Date.now()
     captchaInCooldown.value = true
 
-    const result = await getCaptcha()
+    const result = await getCaptcha({})
     captchaImage.value = result.img
     formData.value.uuid = result.uuid
 

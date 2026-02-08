@@ -73,7 +73,7 @@
       v-if="!isMobileDevice"
       ref="actionBarRef"
       class="relative z-10"
-      :top-win-label="WebviewWindow.getCurrent().label"
+      :top-win-label="windowLabel"
       :shrink="false" />
 
     <!-- 主要内容区域 -->
@@ -381,6 +381,10 @@ const isReceiver = route.query.isIncoming === 'true'
 const shouldAutoAccept = isReceiver && route.query.autoAccept === '1'
 const isMobileDevice = isMobile()
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const windowLabel = computed(() => (isTauriContext() ? WebviewWindow.getCurrent().label : 'browser'))
+
 if ((!roomId || !remoteUserId) && isMobileDevice) {
   router.replace('/mobile/message')
 }
@@ -437,7 +441,14 @@ const hangUp = (status: CallResponseStatus = CallResponseStatus.DROPPED) => {
       router.back()
     }
   }
-  handleCallResponse(status)
+  const statusMap: Record<CallResponseStatus, number> = {
+    [CallResponseStatus.INVITED]: -1,
+    [CallResponseStatus.ACCEPT]: 1,
+    [CallResponseStatus.REJECTED]: 0,
+    [CallResponseStatus.DROPPED]: 2,
+    [CallResponseStatus.BUSY]: 3
+  }
+  handleCallResponse(statusMap[status])
 }
 
 const avatarSrc = computed(() => AvatarUtils.getAvatarUrl(remoteUserInfo.avatar as string))
@@ -641,24 +652,26 @@ const acceptCall = async () => {
 
   // 调整窗口大小为正常通话大小
   try {
-    const currentWindow = WebviewWindow.getCurrent()
-    const isVideo = callType === CallTypeEnum.VIDEO
-    await currentWindow.setSize(createSize(isVideo ? 850 : 500, isVideo ? 580 : 650))
-    await currentWindow.center()
+    if (isTauriContext()) {
+      const currentWindow = WebviewWindow.getCurrent()
+      const isVideo = callType === CallTypeEnum.VIDEO
+      await currentWindow.setSize(createSize(isVideo ? 850 : 500, isVideo ? 580 : 650))
+      await currentWindow.center()
 
-    // 取消窗口置顶
-    await currentWindow.setAlwaysOnTop(false)
+      // 取消窗口置顶
+      await currentWindow.setAlwaysOnTop(false)
 
-    // 恢复标题栏按钮显示
-    if (isMac()) {
-      await invokeSilently('show_title_bar_buttons', { windowLabel: currentWindow.label })
-    }
+      // 恢复标题栏按钮显示
+      if (isMac()) {
+        await invokeSilently('show_title_bar_buttons', { windowLabel: currentWindow.label })
+      }
 
-    // 确保窗口获得焦点
-    try {
-      await currentWindow.setFocus()
-    } catch (error) {
-      console.warn('Failed to set window focus after accepting call:', error)
+      // 确保窗口获得焦点
+      try {
+        await currentWindow.setFocus()
+      } catch (error) {
+        console.warn('Failed to set window focus after accepting call:', error)
+      }
     }
   } catch (error) {
     console.error('Failed to resize window after accepting call:', error)
@@ -710,7 +723,7 @@ onMounted(async () => {
     try {
       // 如果是通话状态，先发送挂断消息
       if (connectionStatus.value === RTCCallStatus.CALLING || connectionStatus.value === RTCCallStatus.ACCEPT) {
-        await sendRtcCall2VideoCallResponse(CallResponseStatus.DROPPED)
+        await sendRtcCall2VideoCallResponse(2)
         unlistenCloseRequested()
       }
     } catch (error) {

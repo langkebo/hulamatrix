@@ -57,7 +57,6 @@ import { useImageViewer } from '@/hooks/useImageViewer'
 import type { ImageBody, MsgType } from '@/services/types'
 import { isMobile } from '@/utils/PlatformConstants'
 import { useThumbnailCacheStore } from '@/stores/thumbnailCache'
-import { buildQiniuThumbnailUrl, getPreferredQiniuFormat } from '@/utils/QiniuImageUtils'
 
 const ImagePreview = isMobile() ? defineAsyncComponent(() => import('@/mobile/components/ImagePreview.vue')) : void 0
 
@@ -74,7 +73,6 @@ const MAX_WIDTH = isMobile()
 const MAX_HEIGHT = 240
 const MIN_WIDTH = 60
 const MIN_HEIGHT = 60
-const THUMB_QUALITY = 60
 // 错误状态控制
 const isError = ref(false)
 // 使用图片查看器hook
@@ -120,17 +118,7 @@ const handleOpenImageViewer = () => {
 const remoteThumbnailSrc = computed(() => {
   const originalUrl = props.body?.url
   if (!originalUrl) return ''
-  const deviceRatio = typeof window !== 'undefined' ? Math.max(window.devicePixelRatio || 1, 1) : 1
-  const thumbnailWidth = Math.ceil(MAX_WIDTH * Math.min(deviceRatio, 2))
-  const format = getPreferredQiniuFormat()
-
-  return (
-    buildQiniuThumbnailUrl(originalUrl, {
-      width: thumbnailWidth,
-      quality: THUMB_QUALITY,
-      format
-    }) ?? originalUrl
-  )
+  return originalUrl
 })
 
 const downloadKey = computed(() => remoteThumbnailSrc.value || props.body?.url || '')

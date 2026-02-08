@@ -5,10 +5,23 @@ import { initConfig } from '@/utils/ImRequestUtils'
 import { CallTypeEnum, RTCCallStatus } from '@/enums'
 import rustWebSocketClient from '@/services/webSocketRust'
 import { useUserStore } from '@/stores/user'
-import { WsRequestMsgType, WsResponseMessageType } from '../services/wsType'
-import { isMobile } from '../utils/PlatformConstants'
+import { WsRequestMsgType, WsResponseMessageType } from '@/services/wsType'
+import { isMobile } from '@/utils/PlatformConstants'
 import { useMitt } from './useMitt'
 import { useTauriListener } from './useTauriListener'
+
+/**
+ * @deprecated
+ * 此 Hook 已废弃，请使用 MatrixCallService 替代。
+ * MatrixCallService 集成了 matrix-js-sdk 的 WebRTC 实现，提供更好的兼容性和维护性。
+ *
+ * 使用方式：
+ * ```typescript
+ * import MatrixCallService from '@/services/matrix/MatrixCallService'
+ * const callService = MatrixCallService.getInstance()
+ * await callService.createCall(roomId, 'voice')
+ * ```
+ */
 
 interface RtcMsgVO {
   roomId: string
@@ -202,13 +215,10 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
    */
   const sendCall = async () => {
     try {
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.VIDEO_CALL_REQUEST,
-        data: {
-          roomId: roomId,
-          targetUid: remoteUserId,
-          isVideo: callType === CallTypeEnum.VIDEO
-        }
+      await rustWebSocketClient.sendMessage(WsRequestMsgType.VIDEO_CALL_REQUEST, {
+        roomId: roomId,
+        targetUid: remoteUserId,
+        isVideo: callType === CallTypeEnum.VIDEO
       })
     } catch (error) {
       console.error('发送通话请求失败:', error)
@@ -267,13 +277,10 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
   const sendRtcCall2VideoCallResponse = async (status: number) => {
     try {
       info(`发送 ws 请求，通知双方通话状态 ${status}`)
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.VIDEO_CALL_RESPONSE,
-        data: {
-          callerUid: remoteUserId,
-          roomId: roomId,
-          accepted: status
-        }
+      await rustWebSocketClient.sendMessage(WsRequestMsgType.VIDEO_CALL_RESPONSE, {
+        callerUid: remoteUserId,
+        roomId: roomId,
+        accepted: status
       })
     } catch (error) {
       console.error('发送通话响应失败:', error)
@@ -559,10 +566,7 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
       }
 
       info('ws发送 offer')
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.WEBRTC_SIGNAL,
-        data: signalData
-      })
+      await rustWebSocketClient.sendMessage(WsRequestMsgType.WEBRTC_SIGNAL, signalData)
     } catch (error) {
       console.error('Failed to send SDP offer:', error)
     }
@@ -626,10 +630,7 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
         mediaType: callType === CallTypeEnum.VIDEO ? 'VideoSignal' : 'AudioSignal'
       }
 
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.WEBRTC_SIGNAL,
-        data: signalData
-      })
+      await rustWebSocketClient.sendMessage(WsRequestMsgType.WEBRTC_SIGNAL, signalData)
     } catch (error) {
       console.error('Failed to send ICE candidate:', error)
     }
@@ -698,10 +699,7 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
       }
 
       console.log('发送SDP answer', signalData)
-      await rustWebSocketClient.sendMessage({
-        type: WsRequestMsgType.WEBRTC_SIGNAL,
-        data: signalData
-      })
+      await rustWebSocketClient.sendMessage(WsRequestMsgType.WEBRTC_SIGNAL, signalData)
 
       console.log('SDP answer sent via WebSocket:', answer)
     } catch (error) {

@@ -215,6 +215,10 @@ export type UserItem = {
   linkedGitcode?: boolean
   /** 已绑定的 OAuth 提供商 */
   oauthProviders?: ('gitee' | 'github' | 'gitcode')[]
+  /** 用户ID（别名） */
+  userId?: string
+  /** 状态消息 */
+  statusMessage?: string
 }
 
 export type GroupStatisticType = {
@@ -287,6 +291,10 @@ export type UserInfoType = {
   linkedGitcode?: boolean
   /** 已绑定的 OAuth 提供商 */
   oauthProviders?: ('gitee' | 'github' | 'gitcode')[]
+  /** 用户ID（Matrix 用户标识） */
+  userId?: string
+  /** 状态消息 */
+  statusMessage?: string
 }
 
 export type BadgeType = {

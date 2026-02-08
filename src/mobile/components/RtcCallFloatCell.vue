@@ -150,13 +150,10 @@ const handleReject = async () => {
   if (!call) return
 
   try {
-    await rustWebSocketClient.sendMessage({
-      type: WsRequestMsgType.VIDEO_CALL_RESPONSE,
-      data: {
-        callerUid: call.callerUid,
-        roomId: call.roomId,
-        accepted: CallResponseStatus.REJECTED
-      }
+    await rustWebSocketClient.sendMessage(WsRequestMsgType.VIDEO_CALL_RESPONSE, {
+      callerUid: call.callerUid,
+      roomId: call.roomId,
+      accepted: CallResponseStatus.REJECTED
     })
   } catch (error) {
     console.error('发送拒绝响应失败:', error)
@@ -190,9 +187,9 @@ useMitt.on(MittEnum.MOBILE_RTC_CALL_REQUEST, handleCallRequest)
 useMitt.on(WsResponseMessageType.CANCEL, handleCallEnd)
 useMitt.on(WsResponseMessageType.DROPPED, handleCallEnd)
 useMitt.on(WsResponseMessageType.TIMEOUT, handleCallEnd)
-useMitt.on(WsResponseMessageType.CallRejected, handleCallEnd)
-useMitt.on(WsResponseMessageType.CallAccepted, handleCallEnd)
-useMitt.on(WsResponseMessageType.RoomClosed, handleCallEnd)
+useMitt.on(WsResponseMessageType.CALL_REJECTED, handleCallEnd)
+useMitt.on(WsResponseMessageType.CALL_ACCEPTED, handleCallEnd)
+useMitt.on(WsResponseMessageType.ROOM_CLOSED, handleCallEnd)
 </script>
 
 <style scoped lang="scss">

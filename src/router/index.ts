@@ -27,27 +27,25 @@ import MediaViewer from '#/views/chat-room/MediaViewer.vue'
 import NoticeDetail from '#/views/chat-room/notice/NoticeDetail.vue'
 import NoticeEdit from '#/views/chat-room/notice/NoticeEdit.vue'
 import NoticeList from '#/views/chat-room/notice/NoticeList.vue'
-import MobileCommunity from '#/views/community/index.vue'
-import DynamicDetailPage from '#/views/community/DynamicDetailPage.vue'
 import AddFriends from '#/views/friends/AddFriends.vue'
 import ConfirmAddFriend from '#/views/friends/ConfirmAddFriend.vue'
 import ConfirmAddGroup from '#/views/friends/ConfirmAddGroup.vue'
-import FriendInfo from '#/views/friends/FriendInfo.vue'
 import MobileFriendPage from '#/views/friends/index.vue'
 import StartGroupChat from '#/views/friends/StartGroupChat.vue'
 import MobileMessagePage from '#/views/message/index.vue'
 import EditBio from '#/views/my/EditBio.vue'
 import EditBirthday from '#/views/my/EditBirthday.vue'
 import EditProfile from '#/views/my/EditProfile.vue'
-import MobileMy from '#/views/my/index.vue'
 import MobileQRCode from '#/views/my/MobileQRCode.vue'
 import MobileSettings from '#/views/my/MobileSettings.vue'
 import MyMessages from '#/views/my/MyMessages.vue'
-import PublishCommunity from '#/views/my/PublishCommunity.vue'
 import Share from '#/views/my/Share.vue'
 import SimpleBio from '#/views/my/SimpleBio.vue'
-import AiAssistant from '#/views/my/AiAssistant.vue'
 import MyAlbum from '#/views/my/MyAlbum.vue'
+import MobileDevices from '#/views/my/MobileDevices.vue'
+import MobileNotifications from '#/views/my/MobileNotifications.vue'
+import MobilePrivacy from '#/views/my/MobilePrivacy.vue'
+import MobileSettingsCenter from '#/views/my/MobileSettingsCenter.vue'
 import { TauriCommand } from '@/enums'
 import ConfirmQRLogin from '#/views/ConfirmQRLogin.vue'
 import MyQRCode from '#/views/MyQRCode.vue'
@@ -60,7 +58,16 @@ import SyncData from '#/views/SyncData.vue'
 /**! 创建窗口后再跳转页面就会导致样式没有生效所以不能使用懒加载路由的方式，有些页面需要快速响应的就不需要懒加载 */
 const { BASE_URL } = import.meta.env
 
-const isMobile = type() === 'ios' || type() === 'android'
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
+const isMobile = (() => {
+  if (isTauriContext()) {
+    const osType = type()
+    return osType === 'ios' || osType === 'android'
+  }
+  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent)
+})()
 
 // 移动端路由配置 - 使用直接导入避免懒加载问题
 const getMobileRoutes = (): Array<RouteRecordRaw> => [
@@ -192,14 +199,9 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => [
         component: MobileFriendPage
       },
       {
-        path: '/mobile/community',
-        name: 'mobileCommunity',
-        component: MobileCommunity
-      },
-      {
         path: '/mobile/my',
         name: 'mobileMy',
-        component: MobileMy
+        redirect: '/mobile/mobileMy'
       }
     ]
   },
@@ -234,11 +236,6 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => [
         component: EditBirthday
       },
       {
-        path: 'publishCommunity',
-        name: 'mobilePublishCommunity',
-        component: PublishCommunity
-      },
-      {
         path: 'settings',
         name: 'MobileSettings',
         component: MobileSettings
@@ -259,14 +256,29 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => [
         component: SimpleBio
       },
       {
-        path: 'aiAssistant',
-        name: 'mobileAiAssistant',
-        component: AiAssistant
-      },
-      {
         path: 'myAlbum',
         name: 'mobileMyAlbum',
         component: MyAlbum
+      },
+      {
+        path: 'devices',
+        name: 'mobileDevices',
+        component: MobileDevices
+      },
+      {
+        path: 'notifications',
+        name: 'mobileNotifications',
+        component: MobileNotifications
+      },
+      {
+        path: 'privacy',
+        name: 'mobilePrivacy',
+        component: MobilePrivacy
+      },
+      {
+        path: 'settingsCenter',
+        name: 'mobileSettingsCenter',
+        component: MobileSettingsCenter
       }
     ]
   },
@@ -303,7 +315,7 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => [
       {
         path: 'friendInfo/:uid',
         name: 'mobileFriendInfo',
-        component: FriendInfo
+        redirect: '/mobile/mobileFriends/addFriends'
       }
     ]
   },
@@ -322,17 +334,15 @@ const getMobileRoutes = (): Array<RouteRecordRaw> => [
     path: '/mobile/rtcCall',
     name: 'rtcCall',
     component: () => import('../mobile/views/rtcCall/index.vue')
-  },
-  {
-    path: '/mobile/dynamic/:id',
-    name: 'mobileDynamicDetail',
-    component: DynamicDetailPage,
-    props: true
   }
 ]
 
 // 桌面端路由配置
 const getDesktopRoutes = (): Array<RouteRecordRaw> => [
+  {
+    path: '/',
+    redirect: '/home'
+  },
   {
     path: '/home',
     name: 'home',
@@ -356,38 +366,6 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
     ]
   },
   {
-    path: '/robot',
-    name: 'robot',
-    component: () => import('@/plugins/robot/index.vue'),
-    children: [
-      {
-        path: '/welcome',
-        name: 'welcome',
-        component: () => import('@/plugins/robot/views/Welcome.vue')
-      },
-      {
-        path: '/chat',
-        name: 'chat',
-        component: () => import('@/plugins/robot/views/Chat.vue')
-      },
-      {
-        path: '/chatSettings',
-        name: 'chatSettings',
-        component: () => import('@/plugins/robot/views/chatSettings/index.vue')
-      },
-      {
-        path: '/imageGeneration',
-        name: 'imageGeneration',
-        component: () => import('@/plugins/robot/views/ImageGeneration.vue')
-      },
-      {
-        path: '/videoGeneration',
-        name: 'videoGeneration',
-        component: () => import('@/plugins/robot/views/VideoGeneration.vue')
-      }
-    ]
-  },
-  {
     path: '/mail',
     name: 'mail',
     component: () => import('@/views/mailWindow/index.vue')
@@ -396,21 +374,6 @@ const getDesktopRoutes = (): Array<RouteRecordRaw> => [
     path: '/fileManager',
     name: 'fileManager',
     component: () => import('@/views/fileManagerWindow/index.vue')
-  },
-  {
-    path: '/dynamic',
-    name: 'dynamic',
-    component: () => import('@/plugins/dynamic/index.vue')
-  },
-  {
-    path: '/dynamic/:id',
-    name: 'dynamicDetailWithId',
-    component: () => import('@/plugins/dynamic/detail.vue')
-  },
-  {
-    path: '/dynamicDetail',
-    name: 'dynamicDetail',
-    component: () => import('@/plugins/dynamic/detail.vue')
   },
   {
     path: '/onlineStatus',
@@ -623,7 +586,7 @@ const router: any = createRouter({
 })
 
 // 在创建路由后，添加全局前置守卫
-// 为解决 “已声明‘to’，但从未读取其值” 的问题，将 to 参数改为下划线开头表示该参数不会被使用
+// 为解决 "已声明'to'，但从未读取其值" 的问题，将 to 参数改为下划线开头表示该参数不会被使用
 router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   // 桌面端直接放行
   if (!isMobile) {
@@ -643,8 +606,16 @@ router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormal
       return next()
     }
 
-    const tokens = await invoke<{ token: string | null; refreshToken: string | null }>(TauriCommand.GET_USER_TOKENS)
-    const isLoggedIn = !!(tokens.token && tokens.refreshToken)
+    let isLoggedIn = false
+    if (isTauriContext()) {
+      const tokens = await invoke<{ token: string | null; refreshToken: string | null }>(TauriCommand.GET_USER_TOKENS)
+      isLoggedIn = !!(tokens.token && tokens.refreshToken)
+    } else {
+      // 浏览器环境使用 localStorage
+      const token = localStorage.getItem('token')
+      const refreshToken = localStorage.getItem('refreshToken')
+      isLoggedIn = !!(token && refreshToken)
+    }
 
     // 未登录且不是登录页 → 跳转登录
     if (!isLoggedIn && !isLoginPage) {

@@ -1,10 +1,8 @@
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { MittEnum, ModalEnum, PluginEnum } from '@/enums'
 import { useLogin } from '@/hooks/useLogin.ts'
 import { useMitt } from '@/hooks/useMitt.ts'
 import { useWindow } from '@/hooks/useWindow.ts'
-import { useSettingStore } from '@/stores/setting'
 import * as ImRequestUtils from '@/utils/ImRequestUtils'
 
 /**
@@ -58,8 +56,6 @@ const useItemsBottom = () =>
 const useMoreList = () => {
   const { t } = useI18n()
   const { createWebviewWindow } = useWindow()
-  const settingStore = useSettingStore()
-  const { login } = storeToRefs(settingStore)
   const { logout, resetLoginState } = useLogin()
 
   return computed<OPT.L.MoreList[]>(() => [
@@ -100,7 +96,7 @@ const useMoreList = () => {
       icon: 'power',
       click: async () => {
         try {
-          await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
+          await ImRequestUtils.logout({})
           await resetLoginState()
           await logout()
         } catch (error) {

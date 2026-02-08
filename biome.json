@@ -11,6 +11,7 @@
       "!src/typings/*.d.ts",
       "!src-tauri/*",
       "!node_modules/*",
+      "!lib/matrix-sdk",
       "!tauri-plugin-hula/*",
       "!dist/*",
       "!src-tauri/gen/schemas",

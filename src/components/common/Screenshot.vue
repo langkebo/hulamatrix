@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div ref="canvasbox" class="canvasbox">
     <canvas ref="drawCanvas" class="draw-canvas"></canvas>
     <canvas ref="maskCanvas" class="mask-canvas"></canvas>
@@ -118,6 +118,9 @@ import { isMac } from '@/utils/PlatformConstants'
 import { ErrorType, invokeWithErrorHandler } from '@/utils/TauriInvokeHandler.ts'
 import { useI18n } from 'vue-i18n'
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 type ScreenConfig = {
   startX: number
   startY: number
@@ -132,7 +135,12 @@ type ScreenConfig = {
 
 // 获取当前窗口实例
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
+
+function getTauriWindow(): WebviewWindow | null {
+  return isTauriContext() ? WebviewWindow.getCurrent() : null
+}
+
 const canvasbox: Ref<HTMLDivElement | null> = ref(null)
 
 // 图像层
@@ -213,7 +221,10 @@ const mouseMoveThrottleDelay = 16 // 约60FPS，在菜单栏区域降低频率
 
 // 窗口状态恢复函数
 const restoreWindowState = async () => {
-  await appWindow.hide()
+  const win = getTauriWindow()
+  if (win) {
+    await win.hide()
+  }
 }
 
 /**
@@ -1373,26 +1384,33 @@ const cancelSelection = () => {
 
 // 截图处理函数
 const handleScreenshot = () => {
-  // 每次开始截图时重置所有状态
   resetDrawTools()
-  appWindow.show()
+  const win = getTauriWindow()
+  if (win) {
+    win.show()
+  }
   initCanvas()
   initMagnifier()
 }
 
 onMounted(async () => {
-  appWindow.listen('capture', () => {
-    resetDrawTools()
-    initCanvas()
-    initMagnifier()
-  })
+  const win = getTauriWindow()
+  if (win) {
+    win.show()
 
-  // 监听窗口隐藏时的重置事件
-  appWindow.listen('capture-reset', () => {
-    resetDrawTools()
-    resetScreenshot()
-    console.log('📷 Screenshot组件已重置')
-  })
+    win.listen('capture', () => {
+      resetDrawTools()
+      initCanvas()
+      initMagnifier()
+    })
+
+    // 监听窗口隐藏时的重置事件
+    win.listen('capture-reset', () => {
+      resetDrawTools()
+      resetScreenshot()
+      console.log('📷 Screenshot组件已重置')
+    })
+  }
 
   // 监听自定义截图事件
   window.addEventListener('trigger-screenshot', handleScreenshot)

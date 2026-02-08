@@ -3,7 +3,7 @@
   <div
     data-tauri-drag-region
     class="login-box overflow-y-hidden rounded-8px select-none absolute top-0 left-0 w-full h-full z-9999 transition-all duration-300 ease-in-out">
-    <ActionBar class="absolute top-0 right-0 z-99999" :current-label="appWindow.label" :shrink="false" />
+    <ActionBar class="absolute top-0 right-0 z-99999" :current-label="appWindowLabel" :shrink="false" />
 
     <Transition name="slide-fade" appear>
       <!--  壁纸界面  -->
@@ -123,7 +123,10 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { getWeekday } from '@/utils/ComputedTime'
 import { useI18n } from 'vue-i18n'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
+const appWindowLabel = computed(() => appWindow?.label ?? 'browser')
 const settingStore = useSettingStore()
 const userStore = useUserStore()
 const { lockScreen } = storeToRefs(settingStore)
@@ -204,6 +207,7 @@ const init = () => {
 
 /** 隐藏其他窗口 */
 const hideOtherWindows = async () => {
+  if (!isTauriContext()) return
   const allWindows = await WebviewWindow.getAll()
   const windowsToHide = allWindows.filter(
     (window) => !whitelistWindows.includes(window.label) && window.label !== 'lockScreen'
@@ -217,6 +221,7 @@ const hideOtherWindows = async () => {
 
 /** 显示之前隐藏的窗口 */
 const showHiddenWindows = async () => {
+  if (!isTauriContext()) return
   for (const windowLabel of hiddenWindows.value) {
     const window = await WebviewWindow.getByLabel(windowLabel)
     if (window) {

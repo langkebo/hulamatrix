@@ -36,6 +36,9 @@ import { useI18n } from 'vue-i18n'
 import { ThemeEnum } from '@/enums'
 import { useSettingStore } from '@/stores/setting.ts'
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 const { notificMax, messageMax } = defineProps<{
   notificMax?: number
   messageMax?: number
@@ -259,6 +262,7 @@ const registerNaiveTools = () => {
 
   // 检查当前路由是否需要禁用消息
   const shouldDisableMessage = () => {
+    if (!isTauriContext()) return false
     return noMessageWindows.includes(getCurrentWebviewWindow().label)
   }
 

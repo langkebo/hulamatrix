@@ -179,7 +179,7 @@ export const useGroupStore = defineStore(
     })
 
     const setGroupDetails = async () => {
-      const data = await ImRequestUtils.groupList()
+      const data = await ImRequestUtils.groupList({})
       groupDetails.value = data
     }
 

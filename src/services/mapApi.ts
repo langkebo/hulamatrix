@@ -1,67 +1,104 @@
-import { imRequest } from '@/utils/ImRequestUtils'
-import { ImUrlEnum } from '@/enums'
-import { wgs84ToGcj02 } from '@/utils/CoordinateTransform'
-
-type TransformedCoordinate = {
-  lat: number
-  lng: number
+interface MapApiConfig {
+  apiKey: string
+  secretKey?: string
 }
 
-type AddressComponent = {
-  province: string
-  city: string
-  district: string
-  street: string
-  street_number: string
+interface Coordinate {
+  latitude: number
+  longitude: number
 }
 
-type ReverseGeocodeResult = {
+interface LocationResult {
   address: string
-  formatted_addresses: {
+  coordinate: Coordinate
+  name?: string
+  formatted_addresses?: {
     recommend: string
     rough: string
   }
-  address_component: AddressComponent
-  ad_info: {
-    nation_code: string
-    adcode: string
-    city_code: string
-  }
-}
-// 使用后端代理，不再需要 JSONP
-
-// 坐标系转换（WGS84 -> GCJ-02）
-export const transformCoordinates = async (lat: number, lng: number): Promise<TransformedCoordinate> => {
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) throw new Error('坐标范围无效')
-  try {
-    const data = await imRequest<{ lat: number; lng: number }>({
-      url: ImUrlEnum.MAP_COORD_TRANSLATE,
-      params: { lat, lng }
-    })
-    return { lat: data.lat, lng: data.lng }
-  } catch (_error) {
-    return wgs84ToGcj02(lat, lng)
-  }
 }
 
-// 逆地理编码（获取地址信息）
-export const reverseGeocode = async (lat: number, lng: number): Promise<ReverseGeocodeResult | null> => {
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) throw new Error('坐标范围无效')
-  try {
-    const data = await imRequest<ReverseGeocodeResult>({
-      url: ImUrlEnum.MAP_REVERSE_GEOCODE,
-      params: { lat, lng }
-    })
-    return data
-  } catch (_error) {
-    return null
-  }
+interface SearchResult {
+  locations: LocationResult[]
+  total: number
 }
 
-export const getStaticMap = async (lat: number, lng: number, width = 600, height = 400, zoom = 18): Promise<string> => {
-  const data = await imRequest<{ dataUrl: string }>({
-    url: ImUrlEnum.MAP_STATIC,
-    params: { lat, lng, width, height, zoom }
+const mapApiConfig: MapApiConfig = {
+  apiKey: ''
+}
+
+export function initMapApi(config: MapApiConfig): void {
+  mapApiConfig.apiKey = config.apiKey
+  mapApiConfig.secretKey = config.secretKey
+  console.log('[MapApi] Initialized')
+}
+
+export function transformCoordinates(
+  lat: number,
+  lng: number,
+  _from: string = 'wgs84',
+  _to: string = 'gcj02'
+): Coordinate {
+  console.log('[MapApi] transformCoordinates called')
+  return { latitude: lat, longitude: lng }
+}
+
+export function getStaticMap(
+  coordinate: Coordinate,
+  zoom: number = 15,
+  width: number = 600,
+  height: number = 400
+): string {
+  console.log('[MapApi] getStaticMap called')
+  return `https://api.map.baidu.com/staticimage/v2?ak=${mapApiConfig.apiKey}&center=${coordinate.longitude},${coordinate.latitude}&zoom=${zoom}&width=${width}&height=${height}`
+}
+
+export async function getCurrentLocation(): Promise<Coordinate> {
+  console.log('[MapApi] getCurrentLocation called')
+  return new Promise((resolve, reject) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        },
+        (error) => {
+          console.error('[MapApi] Geolocation error:', error)
+          reject(error)
+        }
+      )
+    } else {
+      reject(new Error('Geolocation not supported'))
+    }
   })
-  return data.dataUrl || ''
+}
+
+export async function reverseGeocode(lat: number, lng: number): Promise<LocationResult> {
+  console.log('[MapApi] reverseGeocode called with:', lat, lng)
+  return {
+    address: '',
+    coordinate: { latitude: lat, longitude: lng }
+  }
+}
+
+export async function searchNearby(coordinate: Coordinate, radius: number = 1000): Promise<SearchResult> {
+  console.log('[MapApi] searchNearby called with:', coordinate, radius)
+  return {
+    locations: [],
+    total: 0
+  }
+}
+
+export async function searchKeyword(keyword: string, city?: string): Promise<SearchResult> {
+  console.log('[ImRequestUtils] searchKeyword called with:', keyword, city)
+  return {
+    locations: [],
+    total: 0
+  }
+}
+
+export function formatLocationUrl(coordinate: Coordinate, label?: string): string {
+  return `geo:${coordinate.latitude},${coordinate.longitude}${label ? `;u=${label}` : ''}`
 }

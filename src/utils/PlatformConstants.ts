@@ -10,13 +10,16 @@ export type PlatformType = 'desktop' | 'mobile'
  */
 export type OSType = 'windows' | 'macos' | 'linux' | 'android' | 'ios'
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 /**
  * 平台检测结果 - 应用启动时执行一次，全局共享
  */
 class PlatformDetector {
-  private static _osType: OSType
-  private static _platformType: PlatformType
-  private static _osVersion: string | undefined
+  private static _osType: OSType = 'windows'
+  private static _platformType: PlatformType = 'desktop'
+  private static _osVersion: string | undefined = undefined
   private static _isWindows10 = false
   private static _initialized = false
 
@@ -26,22 +29,55 @@ class PlatformDetector {
   static initialize(): void {
     if (PlatformDetector._initialized) return
 
-    try {
-      const detectedType = type()
-      PlatformDetector._osType = PlatformDetector.normalizeOSType(detectedType)
-      PlatformDetector._platformType = PlatformDetector.isDesktopOS(PlatformDetector._osType) ? 'desktop' : 'mobile'
-      PlatformDetector._osVersion = PlatformDetector.detectVersion()
-      PlatformDetector._isWindows10 =
-        PlatformDetector._osType === 'windows' && PlatformDetector.isWindows10Version(PlatformDetector._osVersion)
+    if (isTauriContext()) {
+      try {
+        const detectedType = type()
+        PlatformDetector._osType = PlatformDetector.normalizeOSType(detectedType)
+        PlatformDetector._platformType = PlatformDetector.isDesktopOS(PlatformDetector._osType) ? 'desktop' : 'mobile'
+        PlatformDetector._osVersion = PlatformDetector.detectVersion()
+        PlatformDetector._isWindows10 =
+          PlatformDetector._osType === 'windows' && PlatformDetector.isWindows10Version(PlatformDetector._osVersion)
 
-      if (import.meta.env.DEV) {
-        console.log(`Platform detected: ${PlatformDetector._osType} (${PlatformDetector._platformType})`)
+        if (import.meta.env.DEV) {
+          console.log(`Platform detected: ${PlatformDetector._osType} (${PlatformDetector._platformType})`)
+        }
+      } catch (error) {
+        console.warn('Failed to detect platform type in Tauri context:', error)
       }
-    } catch (error) {
-      console.warn('Failed to detect platform type, defaulting to desktop:', error)
+    } else {
+      PlatformDetector.detectBrowserPlatform()
     }
 
     PlatformDetector._initialized = true
+  }
+
+  private static detectBrowserPlatform(): void {
+    const userAgent = navigator.userAgent
+    PlatformDetector._osVersion = navigator.appVersion
+
+    if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+      PlatformDetector._platformType = 'mobile'
+      if (/android/i.test(userAgent)) {
+        PlatformDetector._osType = 'android'
+      } else if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+        PlatformDetector._osType = 'ios'
+      } else {
+        PlatformDetector._osType = 'linux'
+      }
+    } else {
+      PlatformDetector._platformType = 'desktop'
+      if (/Win/.test(userAgent)) {
+        PlatformDetector._osType = 'windows'
+      } else if (/Mac/.test(userAgent)) {
+        PlatformDetector._osType = 'macos'
+      } else if (/Linux/.test(userAgent)) {
+        PlatformDetector._osType = 'linux'
+      }
+    }
+
+    if (import.meta.env.DEV) {
+      console.log(`Browser platform detected: ${PlatformDetector._osType} (${PlatformDetector._platformType})`)
+    }
   }
 
   private static normalizeOSType(osType: string): OSType {
@@ -57,7 +93,7 @@ class PlatformDetector {
       case 'ios':
         return 'ios'
       default:
-        throw new Error(`Unsupported OS type: ${osType}`)
+        return 'windows'
     }
   }
 

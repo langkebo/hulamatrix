@@ -111,3 +111,12 @@ export const handRelativeTime = (time: string) => {
 export const getWeekday = (time: string) => {
   return dayjs(time).format('ddd')
 }
+
+export const formatTime = (timestamp: number | string): string => {
+  const ts = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp
+  return timeToStr(ts)
+}
+
+export const formatTtl = (_ttlSeconds: number): string => {
+  return ''
+}

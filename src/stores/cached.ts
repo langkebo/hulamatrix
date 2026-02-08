@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { StoresEnum, TauriCommand } from '@/enums'
 import type { CacheBadgeItem, CacheUserItem } from '@/services/types'
-import { getAnnouncementList, getBadgesBatch } from '@/utils/ImRequestUtils'
+import { getBadgeList } from '@/utils/ImRequestUtils'
 import { invokeSilently } from '@/utils/TauriInvokeHandler.ts'
 
 // 定义基础用户信息类型，只包含uid、头像和名称
@@ -15,7 +15,7 @@ export const useCachedStore = defineStore(StoresEnum.CACHED, () => {
   })
 
   const getAllBadgeList = async () => {
-    await getBadgesBatch([])
+    await getBadgeList()
       .then((data) => {
         badgeList.value = data
       })
@@ -26,16 +26,6 @@ export const useCachedStore = defineStore(StoresEnum.CACHED, () => {
   }
 
   const userAvatarUpdated = ref(false)
-
-  /**
-   * 获取群组公告
-   * @roomId 群组ID
-   * @reload 是否强制重新加载
-   * @returns 群组公告列表
-   */
-  const getGroupAnnouncementList = async (roomId: string, page: number, size: number) => {
-    return await getAnnouncementList(roomId, page, size)
-  }
 
   const updateMyRoomInfo = async (data: any) => {
     const result = await invokeSilently(TauriCommand.UPDATE_MY_ROOM_INFO, {
@@ -52,13 +42,18 @@ export const useCachedStore = defineStore(StoresEnum.CACHED, () => {
     return result !== null
   }
 
+  const getGroupAnnouncementList = async (roomId: string, pageNum: number, pageSize: number) => {
+    console.log('[CachedStore] getGroupAnnouncementList called:', { roomId, pageNum, pageSize })
+    return { records: [], total: '0' }
+  }
+
   return {
     badgeById,
     badgeList,
     userAvatarUpdated,
-    getGroupAnnouncementList,
     updateMyRoomInfo,
     syncRoomMembersToLocal,
-    getAllBadgeList
+    getAllBadgeList,
+    getGroupAnnouncementList
   }
 })

@@ -1,0 +1,22 @@
+{
+  "title": "Call",
+  "state": {
+    "idle": "Idle",
+    "ringing": "Ringing",
+    "connected": "Connected",
+    "ended": "Ended"
+  },
+  "waiting_for_remote": "Waiting for remote...",
+  "type_message": "Type message",
+  "send": "Send",
+  "screen_share_failed": "Screen share failed",
+  "toggle_mic": "Toggle Microphone",
+  "toggle_camera": "Toggle Camera",
+  "toggle_screen_share": "Screen Share",
+  "toggle_chat": "Toggle Chat",
+  "end_call": "End Call",
+  "minimize": "Minimize",
+  "maximize": "Maximize",
+  "fullscreen": "Fullscreen",
+  "exit_fullscreen": "Exit Fullscreen"
+}

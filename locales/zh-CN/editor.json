@@ -6,6 +6,25 @@
     "copy": "复制",
     "cut": "剪切"
   },
+  "format": {
+    "bold": "粗体",
+    "italic": "斜体",
+    "underline": "下划线",
+    "strikethrough": "删除线",
+    "bullet_list": "无序列表",
+    "numbered_list": "有序列表",
+    "align_left": "左对齐",
+    "align_center": "居中对齐",
+    "align_right": "右对齐",
+    "code_block": "代码块",
+    "horizontal_rule": "水平线",
+    "quote": "引用",
+    "link": "链接",
+    "enter_url": "请输入链接地址",
+    "image": "插入图片",
+    "emoji": "表情",
+    "mention": "提及"
+  },
   "send": "发送",
   "placeholder": "善言一句暖人心，恶语一句伤人心",
   "send_or_newline": "{send} 发送/{newline} 换行",
@@ -18,5 +37,19 @@
   "screenshot_hide_curr_window": "截图时隐藏当前窗口",
   "relation": {
     "not_friends": "你们当前已经不是好友关系"
+  },
+  "translation": {
+    "title": "翻译设置",
+    "auto_translate": "自动翻译",
+    "target_language": "目标语言",
+    "provider": "翻译服务",
+    "translating": "翻译中...",
+    "show_original": "显示原文",
+    "show_translation": "显示译文",
+    "translate_message": "翻译消息",
+    "translate": "翻译",
+    "select_text_warning": "请先选中要翻译的文本",
+    "success": "翻译成功",
+    "failed": "翻译失败"
   }
 }

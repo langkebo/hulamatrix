@@ -13,26 +13,38 @@
       <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
       <div class="flex flex-col z-1">
         <div class="flex flex-col p-20px gap-20px">
-          <!-- 设置项 -->
           <div
-            v-for="item in settings"
-            :key="item.key"
-            class="flex justify-between items-center bg-white p-12px rounded-lg shadow-sm">
-            <div class="text-base">{{ item.label }}</div>
-            <div>
-              <!-- 根据 type 渲染对应组件 -->
-              <n-switch v-if="item.type === 'switch'" v-model:value="item.value" />
-              <n-input v-else-if="item.type === 'input'" v-model:value="item.value" placeholder="请输入" class="w-40" />
-              <n-select
-                v-else-if="item.type === 'select'"
-                v-model:value="item.value"
-                :options="item.options"
-                placeholder="请选择"
-                class="w-40" />
+            v-for="section in sections"
+            :key="section.title"
+            class="bg-white p-12px rounded-lg shadow-sm">
+            <div class="text-base font-medium mb-12px">{{ section.title }}</div>
+            <div class="flex flex-col gap-12px">
+              <div
+                v-for="item in section.items"
+                :key="item.key"
+                class="flex justify-between items-center">
+                <div class="text-sm flex-1">{{ item.label }}</div>
+                <div>
+                  <n-switch v-if="item.type === 'switch'" v-model:value="item.value" />
+                  <n-input
+                    v-else-if="item.type === 'input'"
+                    v-model:value="item.value"
+                    placeholder="请输入"
+                    class="w-40" />
+                  <n-select
+                    v-else-if="item.type === 'select'"
+                    v-model:value="item.value"
+                    :options="item.options"
+                    placeholder="请选择"
+                    class="w-40" />
+                  <n-button v-else-if="item.type === 'link'" text @click="item.action">
+                    <svg class="size-14px"><use href="#right"></use></svg>
+                  </n-button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- 退出登录按钮 -->
           <div class="mt-auto flex justify-center mb-20px">
             <n-button type="error" @click="handleLogout" :disabled="isLoggingOut" :loading="isLoggingOut">
               {{ t('mobile_setting.button.logout') }}
@@ -49,76 +61,116 @@ import { info } from '@tauri-apps/plugin-log'
 import { ThemeEnum } from '@/enums'
 import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting.ts'
-import { useUserStore } from '@/stores/user'
 import { useLogin } from '@/hooks/useLogin'
 import { showDialog } from 'vant'
 import * as ImRequestUtils from '@/utils/ImRequestUtils'
 import router from '@/router'
 import { useI18n } from 'vue-i18n'
 
+interface SettingItem {
+  key: string
+  label: string
+  type: 'link' | 'switch' | 'input' | 'select'
+  value?: any
+  options?: { label: string; value: any }[]
+  action?: () => void
+}
+
+interface SettingSection {
+  title: string
+  items: SettingItem[]
+}
+
 const { t } = useI18n()
 const globalStore = useGlobalStore()
 const { isTrayMenuShow } = storeToRefs(globalStore)
 const settingStore = useSettingStore()
-const userStore = useUserStore()
 
-// 定义设置项
-const settings = reactive([
+const sections = computed<SettingSection[]>(() => [
   {
-    key: 'notifications',
-    label: t('mobile_setting.silent_label'),
-    type: 'switch',
-    value: computed({
-      get: () => true,
-      set: () => {
-        /* 更新通知设置 */
+    title: t('user_menu.notifications.title'),
+    items: [
+      {
+        key: 'notifications',
+        label: t('user_menu.notifications.title'),
+        type: 'link',
+        action: () => router.push('/mobile/mobileMy/notifications')
       }
-    })
-  },
-  {
-    key: 'username',
-    label: t('mobile_setting.nickname'),
-    type: 'input',
-    value: computed({
-      get: () => userStore.userInfo?.name || '',
-      set: () => {}
-    })
-  },
-  {
-    key: 'theme',
-    label: t('mobile_setting.theme'),
-    type: 'select',
-    value: computed({
-      get: () => settingStore.themes.content,
-      set: (val) => settingStore.toggleTheme(val)
-    }),
-    options: [
-      { label: t('mobile_setting.themes.light'), value: ThemeEnum.LIGHT },
-      { label: t('mobile_setting.themes.dark'), value: ThemeEnum.DARK }
     ]
   },
   {
-    key: 'language',
-    label: t('mobile_setting.language'),
-    type: 'select',
-    value: computed({
-      get: () => settingStore.page.lang,
-      set: (v) => {
-        settingStore.page.lang = v
+    title: t('user_menu.privacy.title'),
+    items: [
+      {
+        key: 'privacy',
+        label: t('user_menu.privacy.title'),
+        type: 'link',
+        action: () => router.push('/mobile/mobileMy/privacy')
+      },
+      {
+        key: 'devices',
+        label: t('user_menu.privacy.devices'),
+        type: 'link',
+        action: () => router.push('/mobile/mobileMy/devices')
       }
-    }),
-    options: [
+    ]
+  },
+  {
+    title: t('user_menu.settings.title'),
+    items: [
       {
-        label: 'Automatic',
-        value: 'AUTO'
-      },
+        key: 'settingsCenter',
+        label: t('user_menu.settings.title'),
+        type: 'link',
+        action: () => router.push('/mobile/mobileMy/settingsCenter')
+      }
+    ]
+  },
+  {
+    title: t('mobile_setting.appearance'),
+    items: [
       {
-        label: '简体中文',
-        value: 'zh-CN'
-      },
+        key: 'theme',
+        label: t('mobile_setting.theme'),
+        type: 'select',
+        value: computed({
+          get: () => settingStore.themes.content,
+          set: (val) => settingStore.toggleTheme(val)
+        }),
+        options: [
+          { label: t('mobile_setting.themes.light'), value: ThemeEnum.LIGHT },
+          { label: t('mobile_setting.themes.dark'), value: ThemeEnum.DARK }
+        ]
+      }
+    ]
+  },
+  {
+    title: t('mobile_setting.language'),
+    items: [
       {
-        label: 'English',
-        value: 'en'
+        key: 'language',
+        label: t('mobile_setting.language'),
+        type: 'select',
+        value: computed({
+          get: () => settingStore.page.lang,
+          set: (v) => {
+            settingStore.page.lang = v
+          }
+        }),
+        options: [
+          {
+            label: 'Automatic',
+            value: 'AUTO'
+          },
+          {
+            label: '简体中文',
+            value: 'zh-CN'
+          },
+          {
+            label: 'English',
+            value: 'en'
+          }
+        ]
       }
     ]
   }

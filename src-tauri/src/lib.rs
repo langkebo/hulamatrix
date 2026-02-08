@@ -29,21 +29,11 @@ pub mod command;
 pub mod common;
 pub mod configuration;
 pub mod error;
-mod im_request_client;
-pub mod pojo;
-pub mod repository;
 pub mod timeout_config;
 pub mod utils;
-mod vo;
-pub mod websocket;
 #[cfg(target_os = "ios")]
 mod webview_helper;
 
-use crate::command::app_state_command::is_app_state_ready;
-use crate::command::request_command::{im_request_command, login_command};
-use crate::command::room_member_command::{
-    cursor_page_room_members, get_room_members, page_room, update_my_room_info,
-};
 use crate::command::setting_command::{get_settings, update_settings};
 use crate::command::user_command::remove_tokens;
 use crate::configuration::{Settings, get_configuration};
@@ -63,14 +53,11 @@ use mobiles::splash;
 pub struct AppData {
     db_conn: Arc<RwLock<DatabaseConnection>>,
     user_info: Arc<Mutex<UserInfo>>,
-    pub rc: Arc<Mutex<im_request_client::ImRequestClient>>,
     pub config: Arc<Mutex<Settings>>,
     frontend_task: Mutex<bool>,
     backend_task: Mutex<bool>,
     /// 限制对 SQLite 的写入并发，避免 database is locked
     pub write_lock: Arc<Mutex<()>>,
-    /// 记录正在进行的 AI 流式任务
-    pub stream_tasks: Arc<Mutex<std::collections::HashMap<String, tokio::task::JoinHandle<()>>>>,
 }
 
 pub(crate) static APP_STATE_READY: AtomicBool = AtomicBool::new(false);
@@ -78,16 +65,10 @@ pub(crate) static APP_STATE_READY: AtomicBool = AtomicBool::new(false);
 use crate::command::chat_history_command::query_chat_history;
 use crate::command::contact_command::{hide_contact_command, list_contacts_command};
 use crate::command::database_command::switch_user_database;
-use crate::command::file_manager_command::{
-    debug_message_stats, get_navigation_items, query_files,
-};
 use crate::command::message_command::{
     delete_message, delete_room_messages, page_msg, save_msg, send_msg, sync_messages,
     update_message_recall_status,
 };
-use crate::command::message_mark_command::save_message_mark;
-use crate::command::oauth_command::OauthServerState;
-use crate::command::oauth_command::start_oauth_server;
 
 #[cfg(desktop)]
 use tauri::Listener;
@@ -110,12 +91,6 @@ pub fn run() {
 
 #[cfg(desktop)]
 fn setup_desktop() -> Result<(), CommonError> {
-    // 创建一个缓存实例
-    // let cache: Cache<String, String> = Cache::builder()
-    //     // Time to idle (TTI):  30 minutes
-    //     .time_to_idle(Duration::from_secs(30 * 60))
-    //     // Create the cache.
-    //     .build();
     tauri::Builder::default()
         .init_plugin()
         .init_webwindow_event()
@@ -147,12 +122,10 @@ async fn initialize_app_data(
     (
         Arc<RwLock<DatabaseConnection>>,
         Arc<Mutex<UserInfo>>,
-        Arc<Mutex<im_request_client::ImRequestClient>>,
         Arc<Mutex<Settings>>,
     ),
     CommonError,
 > {
-    use migration::{Migrator, MigratorTrait};
     use tracing::info;
 
     // 加载配置
@@ -171,21 +144,6 @@ async fn initialize_app_data(
             .await?,
     ));
 
-    // 数据库迁移
-    match Migrator::up(&*db.read().await, None).await {
-        Ok(_) => {
-            info!("Database migration completed");
-        }
-        Err(e) => {
-            eprintln!("Warning: Database migration failed: {}", e);
-        }
-    }
-
-    let rc: im_request_client::ImRequestClient = im_request_client::ImRequestClient::new(
-        configuration.lock().await.backend.base_url.clone(),
-    )
-    .unwrap();
-
     // 创建用户信息
     let user_info = UserInfo {
         token: Default::default(),
@@ -194,7 +152,7 @@ async fn initialize_app_data(
     };
     let user_info = Arc::new(Mutex::new(user_info));
 
-    Ok((db, user_info, Arc::new(Mutex::new(rc)), configuration))
+    Ok((db, user_info, configuration))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -263,9 +221,6 @@ pub async fn handle_logout_windows(app_handle: &tauri::AppHandle) {
         // 先隐藏窗口，减少用户感知的延迟
         let _ = window.hide();
 
-        // 添加小延迟，让窗口有时间处理正在进行的操作
-        // tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-
         match window.destroy() {
             Ok(_) => {
                 tracing::info!("[LOGOUT] Successfully closed window: {}", label);
@@ -309,12 +264,6 @@ fn setup_logout_listener(app_handle: tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 fn setup_mobile() {
     splash::show();
-    // 创建一个缓存实例
-    // let cache: Cache<String, String> = Cache::builder()
-    //     // Time to idle (TTI):  30 minutes
-    //     .time_to_idle(Duration::from_secs(30 * 60))
-    //     // Create the cache.
-    //     .build();
 
     if let Err(e) = tauri::Builder::default()
         .init_plugin()
@@ -350,20 +299,17 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 
     // 异步初始化应用数据，避免阻塞主线程
     match tauri::async_runtime::block_on(initialize_app_data(app_handle.clone())) {
-        Ok((db, user_info, rc, settings)) => {
+        Ok((db, user_info, settings)) => {
             // 使用 manage 方法在运行时添加状态
             app_handle.manage(AppData {
                 db_conn: db.clone(),
                 user_info: user_info.clone(),
-                rc: rc,
                 config: settings,
                 frontend_task: Mutex::new(false),
                 // 后端任务默认完成
                 backend_task: Mutex::new(true),
                 write_lock: Arc::new(Mutex::new(())),
-                stream_tasks: Arc::new(Mutex::new(std::collections::HashMap::new())),
             });
-            app_handle.manage(OauthServerState::default());
             APP_STATE_READY.store(true, Ordering::SeqCst);
             if let Err(e) = app_handle.emit("app-state-ready", ()) {
                 tracing::warn!("Failed to emit app-state-ready event: {}", e);
@@ -383,12 +329,9 @@ fn common_setup(app_handle: AppHandle) -> Result<(), Box<dyn std::error::Error>>
 // 公共的命令处理器函数
 fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static
 {
-    use crate::command::ai_command::ai_message_cancel_stream;
-    use crate::command::ai_command::ai_message_send_stream;
     use crate::command::markdown_command::{get_readme_html, parse_markdown};
     #[cfg(mobile)]
     use crate::command::set_complete;
-    use crate::command::upload_command::{qiniu_upload_resumable, upload_file_put};
     use crate::command::user_command::{
         get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
     };
@@ -396,11 +339,6 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
     use crate::mobiles::keyboard::set_webview_keyboard_adjustment;
     #[cfg(mobile)]
     use crate::mobiles::splash::hide_splash_screen;
-    use crate::websocket::commands::{
-        ws_disconnect, ws_force_reconnect, ws_get_app_background_state, ws_get_health,
-        ws_get_state, ws_init_connection, ws_is_connected, ws_send_message,
-        ws_set_app_background_state, ws_update_config,
-    };
 
     tauri::generate_handler![
         // 桌面端特定命令
@@ -441,10 +379,6 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         update_token,
         remove_tokens,
         update_user_last_opt_time,
-        page_room,
-        get_room_members,
-        update_my_room_info,
-        cursor_page_room_members,
         list_contacts_command,
         hide_contact_command,
         page_msg,
@@ -454,38 +388,14 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         delete_message,
         delete_room_messages,
         update_message_recall_status,
-        save_message_mark,
         // 聊天历史相关命令
         query_chat_history,
-        // 文件管理相关命令
-        query_files,
-        get_navigation_items,
-        debug_message_stats,
-        // WebSocket 相关命令
-        ws_init_connection,
-        ws_disconnect,
-        ws_send_message,
-        ws_get_state,
-        ws_get_health,
-        ws_force_reconnect,
-        ws_update_config,
-        ws_is_connected,
-        ws_set_app_background_state,
-        ws_get_app_background_state,
         login_command,
-        im_request_command,
         get_settings,
         update_settings,
-        // AI 相关命令
-        ai_message_send_stream,
-        ai_message_cancel_stream,
-        // OAuth
-        start_oauth_server,
         // Markdown 相关命令
         parse_markdown,
         get_readme_html,
-        upload_file_put,
-        qiniu_upload_resumable,
         #[cfg(mobile)]
         set_complete,
         #[cfg(mobile)]

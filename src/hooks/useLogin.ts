@@ -1,5 +1,3 @@
-import { emit, listen } from '@tauri-apps/api/event'
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { useRouter } from 'vue-router'
 import { EventEnum, MittEnum, TauriCommand } from '@/enums'
 import { useWindow } from '@/hooks/useWindow.ts'
@@ -18,18 +16,77 @@ import { useUserStore } from '../stores/user'
 import { useLoginHistoriesStore } from '../stores/loginHistory'
 import rustWebSocketClient from '@/services/webSocketRust'
 import { useEmojiStore } from '@/stores/emoji'
-import { getAllUserState, getUserDetail } from '../utils/ImRequestUtils'
+import { getAllUserState, getUserDetail } from '@/utils/ImRequestUtils'
 import { useNetwork } from '@vueuse/core'
 import { UserInfoType } from '../services/types'
 import { getEnhancedFingerprint } from '../services/fingerprint'
-import { invoke } from '@tauri-apps/api/core'
 import { useMitt } from './useMitt'
-import { info as logInfo } from '@tauri-apps/plugin-log'
 import { ensureAppStateReady } from '@/utils/AppStateReady'
 import { useI18nGlobal } from '../services/i18n'
 import { useInitialSyncStore } from '@/stores/initialSync'
 import { openExternalUrl } from './useLinkSegments'
 import { TokenManager } from '@/utils/TokenManager'
+import MatrixAuthService from '@/services/matrix/MatrixAuthService'
+import { SexEnum } from '@/enums'
+
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
+let emitImpl: any = null
+let listenImpl: any = null
+let WebviewWindowImpl: any = null
+let invokeImpl: any = null
+let logInfoImpl: any = null
+
+const getTauriEmit = async () => {
+  if (!isTauriContext()) return null
+  if (!emitImpl) {
+    const tauri = await import('@tauri-apps/api/event')
+    emitImpl = tauri.emit
+    listenImpl = tauri.listen
+  }
+  return emitImpl
+}
+
+const getTauriListen = async () => {
+  if (!isTauriContext()) return null
+  if (!listenImpl) {
+    const tauri = await import('@tauri-apps/api/event')
+    emitImpl = tauri.emit
+    listenImpl = tauri.listen
+  }
+  return listenImpl
+}
+
+const getWebviewWindow = async () => {
+  if (!isTauriContext()) return null
+  if (!WebviewWindowImpl) {
+    const webview = await import('@tauri-apps/api/webviewWindow')
+    WebviewWindowImpl = webview.WebviewWindow
+  }
+  return WebviewWindowImpl
+}
+
+const getInvoke = async () => {
+  if (!isTauriContext()) return null
+  if (!invokeImpl) {
+    const tauri = await import('@tauri-apps/api/core')
+    invokeImpl = tauri.invoke
+  }
+  return invokeImpl
+}
+
+const safeLogInfo = async (message: string) => {
+  if (!isTauriContext()) {
+    console.log(message)
+    return
+  }
+  if (!logInfoImpl) {
+    const log = await import('@tauri-apps/plugin-log')
+    logInfoImpl = log.info
+  }
+  await logInfoImpl(message)
+}
 
 export const useLogin = () => {
   const { resizeWindow } = useWindow()
@@ -87,7 +144,7 @@ export const useLogin = () => {
   try {
     router = useRouter()
   } catch (_e) {
-    void logInfo('[useLogin] 无法获取 router 实例,可能不在组件上下文中')
+    void safeLogInfo('[useLogin] 无法获取 router 实例,可能不在组件上下文中')
   }
 
   /** 网络连接是否正常 */
@@ -126,10 +183,18 @@ export const useLogin = () => {
     globalStore.updateCurrentSessionRoomId('')
 
     const sendLogoutEvent = async () => {
-      // ws 退出连接
       await invokeSilently('ws_disconnect')
       await invokeSilently(TauriCommand.REMOVE_TOKENS)
       await invokeSilently(TauriCommand.UPDATE_USER_LAST_OPT_TIME)
+    }
+
+    const matrixLogout = async () => {
+      try {
+        const authService = MatrixAuthService.getInstance()
+        await authService.logout()
+      } catch (error) {
+        console.error('[useLogin] Matrix logout error:', error)
+      }
     }
 
     if (isDesktop()) {
@@ -137,23 +202,26 @@ export const useLogin = () => {
       isTrayMenuShow.value = false
       try {
         await sendLogoutEvent()
-        // 创建登录窗口
+        await matrixLogout()
         await createWebviewWindow('登录', 'login', 320, 448, undefined, false, 320, 448)
-        // 发送登出事件
-        await emit(EventEnum.LOGOUT)
-
-        // 调整托盘大小
+        const emit = await getTauriEmit()
+        if (emit) {
+          await emit(EventEnum.LOGOUT)
+        }
         await resizeWindow('tray', 130, 44)
       } catch (_error) {
-        void logInfo('创建登录窗口失败')
+        void safeLogInfo('创建登录窗口失败')
       }
     } else {
       try {
         await sendLogoutEvent()
-        // 发送登出事件
-        await emit(EventEnum.LOGOUT)
+        await matrixLogout()
+        const emit = await getTauriEmit()
+        if (emit) {
+          await emit(EventEnum.LOGOUT)
+        }
       } catch (_error) {
-        void logInfo('登出失败')
+        void safeLogInfo('登出失败')
         window.$message.error('登出失败')
       }
     }
@@ -176,10 +244,13 @@ export const useLogin = () => {
     loginStore.loginStatus = LoginStatus.Init
     globalStore.updateCurrentSessionRoomId('')
     // 2. 清除系统托盘图标上的未读数
-    if (isMac()) {
-      const homeWindow = await WebviewWindow.getByLabel('home')
-      if (homeWindow) {
-        await homeWindow.setBadgeCount(undefined)
+    if (isMac() && isTauriContext()) {
+      const WebviewWindow = await getWebviewWindow()
+      if (WebviewWindow) {
+        const homeWindow = await WebviewWindow.getByLabel('home')
+        if (homeWindow) {
+          await homeWindow.setBadgeCount(undefined)
+        }
       }
     }
   }
@@ -234,7 +305,7 @@ export const useLogin = () => {
       chatStore.setAllSessionMsgList(20),
       cachedStore.getAllBadgeList()
     ]).catch(() => {
-      void logInfo('[useLogin] 增量预热任务失败')
+      void safeLogInfo('[useLogin] 增量预热任务失败')
     })
   }
 
@@ -260,7 +331,7 @@ export const useLogin = () => {
 
     // 立即获取新账号的会话列表（优先加载，减少空白时间）
     chatStore.getSessionList(true).catch(() => {
-      void logInfo('[useLogin] 获取会话列表失败')
+      void safeLogInfo('[useLogin] 获取会话列表失败')
     })
 
     // 用户相关数据初始化
@@ -275,7 +346,7 @@ export const useLogin = () => {
     loginHistoriesStore.addLoginHistory(account)
     // 初始化表情列表并在后台预取本地缓存（使用 worker + 并发限制）
     void emojiStore.initEmojis().catch(() => {
-      void logInfo('[login] 初始化表情失败')
+      void safeLogInfo('[login] 初始化表情失败')
     })
 
     // 在 sqlite 中存储用户信息
@@ -301,7 +372,7 @@ export const useLogin = () => {
 
     // 登录后立即预热表情本地缓存（异步，不阻塞后续流程）
     void emojiStore.prefetchEmojiToLocal().catch(() => {
-      void logInfo('[login] 预热表情缓存失败')
+      void safeLogInfo('[login] 预热表情缓存失败')
     })
 
     if (isInitialSync) {
@@ -334,18 +405,19 @@ export const useLogin = () => {
    * 移动端: 路由跳转到主页
    */
   const routerOrOpenHomeWindow = async () => {
-    if (isDesktop()) {
-      const registerWindow = await WebviewWindow.getByLabel('register')
-      if (registerWindow) {
-        await registerWindow.close().catch(() => {
-          void logInfo('关闭注册窗口失败')
-        })
+    if (isDesktop() && isTauriContext()) {
+      const WebviewWindow = await getWebviewWindow()
+      if (WebviewWindow) {
+        const registerWindow = await WebviewWindow.getByLabel('register')
+        if (registerWindow) {
+          await registerWindow.close().catch(() => {
+            void safeLogInfo('关闭注册窗口失败')
+          })
+        }
+        await createWebviewWindow('HuLa', 'home', 960, 720, 'login', true, 330, 480, undefined, false)
+        globalStore.isTrayMenuShow = true
       }
-      await createWebviewWindow('HuLa', 'home', 960, 720, 'login', true, 330, 480, undefined, false)
-      // 只有在成功创建home窗口并且已登录的情况下才显示托盘菜单
-      globalStore.isTrayMenuShow = true
     } else {
-      // 移动端使用路由跳转
       router?.push('/mobile/home')
     }
   }
@@ -355,6 +427,13 @@ export const useLogin = () => {
     syncRecentMessages: boolean,
     auto: boolean = settingStore.login.autoLogin
   ) => {
+    if (!isTauriContext()) {
+      window.$message.warning('当前环境不支持登录，请在 Tauri 桌面应用中运行')
+      loading.value = false
+      loginDisabled.value = false
+      return
+    }
+
     loading.value = true
     loginText.value = t('login.status.logging_in')
     loginDisabled.value = true
@@ -365,11 +444,10 @@ export const useLogin = () => {
       loginText.value = isOnline.value ? t('login.button.login.default') : t('login.button.login.network_error')
       uiState.value = 'manual'
       settingStore.setAutoLogin(false)
-      logInfo('自动登录信息已失效，请手动登录')
+      safeLogInfo('自动登录信息已失效，请手动登录')
       return
     }
 
-    // 根据auto参数决定从哪里获取登录信息
     const loginInfo = auto && userStore.userInfo ? (userStore.userInfo as UserInfoType) : info.value
     const account = loginInfo?.account
     const password = loginInfo?.password ?? info.value.password
@@ -381,15 +459,22 @@ export const useLogin = () => {
         uiState.value = 'manual'
         settingStore.setAutoLogin(false)
       }
-      logInfo('账号信息缺失，请重新输入')
+      safeLogInfo('账号信息缺失，请重新输入')
       return
     }
 
-    // 存储此次登陆设备指纹
     const clientId = await getEnhancedFingerprint()
     localStorage.setItem('clientId', clientId)
 
     await ensureAppStateReady()
+
+    const invoke = await getInvoke()
+    if (!invoke) {
+      loading.value = false
+      loginDisabled.value = false
+      window.$message.warning('当前环境不支持登录')
+      return
+    }
 
     invoke('login_command', {
       data: {
@@ -405,20 +490,17 @@ export const useLogin = () => {
       }
     })
       .then(async (_: any) => {
-        // 数据库切换已在后端 login_command 中完成
         loginDisabled.value = true
         loading.value = false
         loginText.value = t('login.status.success_redirect')
 
-        // 仅在移动端的首次手动登录时，才默认打开自动登录开关
         if (!auto && isMobile()) {
           settingStore.setAutoLogin(true)
         }
 
-        // 移动端登录之后，初始化数据
         if (isMobile()) {
           await init()
-          await invoke('hide_splash_screen') // 初始化完再关闭启动页
+          await invoke('hide_splash_screen')
         }
         useMitt.emit(MittEnum.MSG_INIT)
 
@@ -452,6 +534,13 @@ export const useLogin = () => {
   }
 
   const giteeLogin = async () => {
+    if (!isTauriContext()) {
+      window.$message.warning('当前环境不支持第三方登录，请在 Tauri 桌面应用中运行')
+      loading.value = false
+      loginDisabled.value = false
+      return
+    }
+
     try {
       loading.value = true
       loginDisabled.value = true
@@ -462,12 +551,27 @@ export const useLogin = () => {
 
       await ensureAppStateReady()
 
+      const invoke = await getInvoke()
+      if (!invoke) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
       const port: number = await invoke('start_oauth_server')
       const redirectUri = `http://127.0.0.1:${port}/`
 
-      // 监听 OAuth 回调
       let isProcessing = false
-      const unlisten = await listen<string>('oauth-token', async (event) => {
+      const listen = await getTauriListen()
+      if (!listen) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
+      const unlisten = await listen('oauth-token', async (event: any) => {
         if (isProcessing) return
         isProcessing = true
 
@@ -481,7 +585,6 @@ export const useLogin = () => {
             throw new Error('授权回调缺少 token 或 refreshToken')
           }
           const targetUid = uid || undefined
-          // 先切换到用户专属数据库
           if (targetUid) {
             await invoke('switch_user_database', { uid: targetUid })
           }
@@ -512,19 +615,14 @@ export const useLogin = () => {
 
       let baseUrl = ''
 
-      // 1. 优先尝试从 Tauri 后端获取配置 (local.yaml)
       try {
         const backendSettings = (await invoke('get_settings')) as Partial<import('@/services/tauriCommand').Settings>
         if (backendSettings && backendSettings.backend) {
-          // 兼容 snake_case (Rust默认) 和 camelCase (可能的序列化配置)
-          // @ts-expect-error
-          baseUrl = backendSettings.backend.base_url || backendSettings.backend.baseUrl || ''
+          baseUrl = (backendSettings.backend as any).base_url || (backendSettings.backend as any).baseUrl || ''
         }
       } catch (_e) {
-        void logInfo('Failed to get settings from backend')
+        void safeLogInfo('Failed to get settings from backend')
       }
-
-      // 简化：仅从后端配置读取 base_url（来源 base.yaml）
 
       if (!baseUrl) {
         window.$message.error('请先在设置中配置服务器地址')
@@ -533,7 +631,6 @@ export const useLogin = () => {
         return
       }
 
-      // 移除末尾斜杠
       baseUrl = baseUrl.replace(/\/$/, '')
 
       console.log('baseUrl', baseUrl)
@@ -576,6 +673,13 @@ export const useLogin = () => {
   }
 
   const githubLogin = async () => {
+    if (!isTauriContext()) {
+      window.$message.warning('当前环境不支持第三方登录，请在 Tauri 桌面应用中运行')
+      loading.value = false
+      loginDisabled.value = false
+      return
+    }
+
     try {
       loading.value = true
       loginDisabled.value = true
@@ -583,10 +687,27 @@ export const useLogin = () => {
       const clientId = await getEnhancedFingerprint()
       localStorage.setItem('clientId', clientId)
       await ensureAppStateReady()
+
+      const invoke = await getInvoke()
+      if (!invoke) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
       const port: number = await invoke('start_oauth_server')
       const redirectUri = `http://127.0.0.1:${port}/`
       let isProcessing = false
-      const unlisten = await listen<string>('oauth-token', async (event) => {
+      const listen = await getTauriListen()
+      if (!listen) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
+      const unlisten = await listen('oauth-token', async (event: any) => {
         if (isProcessing) return
         isProcessing = true
         try {
@@ -599,7 +720,6 @@ export const useLogin = () => {
             throw new Error('授权回调缺少 token 或 refreshToken')
           }
           const targetUid = uid || undefined
-          // 先切换到用户专属数据库
           if (targetUid) {
             await invoke('switch_user_database', { uid: targetUid })
           }
@@ -669,6 +789,13 @@ export const useLogin = () => {
   }
 
   const gitcodeLogin = async () => {
+    if (!isTauriContext()) {
+      window.$message.warning('当前环境不支持第三方登录，请在 Tauri 桌面应用中运行')
+      loading.value = false
+      loginDisabled.value = false
+      return
+    }
+
     try {
       loading.value = true
       loginDisabled.value = true
@@ -676,10 +803,27 @@ export const useLogin = () => {
       const clientId = await getEnhancedFingerprint()
       localStorage.setItem('clientId', clientId)
       await ensureAppStateReady()
+
+      const invoke = await getInvoke()
+      if (!invoke) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
       const port: number = await invoke('start_oauth_server')
       const redirectUri = `http://127.0.0.1:${port}/`
       let isProcessing = false
-      const unlisten = await listen<string>('oauth-token', async (event) => {
+      const listen = await getTauriListen()
+      if (!listen) {
+        window.$message.warning('当前环境不支持登录')
+        loading.value = false
+        loginDisabled.value = false
+        return
+      }
+
+      const unlisten = await listen('oauth-token', async (event: any) => {
         if (isProcessing) return
         isProcessing = true
         try {
@@ -692,7 +836,6 @@ export const useLogin = () => {
             throw new Error('授权回调缺少 token 或 refreshToken')
           }
           const targetUid = uid || undefined
-          // 先切换到用户专属数据库
           if (targetUid) {
             await invoke('switch_user_database', { uid: targetUid })
           }
@@ -719,8 +862,7 @@ export const useLogin = () => {
       try {
         const backendSettings = (await invoke('get_settings')) as Partial<import('@/services/tauriCommand').Settings>
         if (backendSettings && backendSettings.backend) {
-          // @ts-expect-error
-          baseUrl = backendSettings.backend.base_url || backendSettings.backend.baseUrl || ''
+          baseUrl = (backendSettings.backend as any).base_url || (backendSettings.backend as any).baseUrl || ''
         }
       } catch (_e) {}
       if (!baseUrl) {
@@ -756,6 +898,48 @@ export const useLogin = () => {
     }
   }
 
+  const loginWithMatrix = async (username: string, password: string, homeserver?: string): Promise<boolean> => {
+    try {
+      loading.value = true
+      loginDisabled.value = true
+      loginText.value = t('login.status.logging_in')
+
+      const authService = MatrixAuthService.getInstance()
+      const sessionData = await authService.loginWithPassword(username, password, homeserver)
+
+      const userId = sessionData.userId.replace('@', '').split(':')[0]
+
+      userStore.userInfo = {
+        uid: userId,
+        account: username,
+        password: password,
+        avatar: '',
+        name: username,
+        email: '',
+        modifyNameChance: 0,
+        sex: SexEnum.MAN,
+        userStateId: '',
+        avatarUpdateTime: 0,
+        client: sessionData.deviceId,
+        resume: ''
+      }
+
+      loading.value = false
+      loginDisabled.value = true
+      loginText.value = t('login.status.success_redirect')
+
+      await routerOrOpenHomeWindow()
+      return true
+    } catch (error) {
+      console.error('[useLogin] Matrix login failed:', error)
+      window.$message.error('Matrix 登录失败')
+      loading.value = false
+      loginDisabled.value = false
+      loginText.value = t('login.button.login.default')
+      return false
+    }
+  }
+
   return {
     resetLoginState,
     setLoginState,
@@ -764,6 +948,7 @@ export const useLogin = () => {
     giteeLogin,
     githubLogin,
     gitcodeLogin,
+    loginWithMatrix,
     loading,
     loginText,
     loginDisabled,

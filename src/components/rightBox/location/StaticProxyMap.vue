@@ -65,7 +65,7 @@ const fetchImage = async () => {
     const lat = Math.max(-85, Math.min(85, centerLat.value))
     const lng = Math.max(-180, Math.min(180, centerLng.value))
     const prev = imgSrc.value
-    const next = await getStaticMap(lat, lng, w, h, zoom.value)
+    const next = await getStaticMap({ latitude: lat, longitude: lng }, zoom.value, w, h)
     imgSrc.value = next || prev
     emit('map-ready')
   } catch (e: any) {

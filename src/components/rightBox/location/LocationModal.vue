@@ -187,18 +187,20 @@ const getLocation = async () => {
     ])
 
     // 获取地址信息
-    const geocodeResult = await reverseGeocode(result.transformed.lat, result.transformed.lng).catch((error) => {
-      console.warn(t('message.location.modal.errors.geocode_failed'), error)
-      return null
-    })
+    const geocodeResult = await reverseGeocode(result.transformed.latitude, result.transformed.longitude).catch(
+      (error) => {
+        console.warn(t('message.location.modal.errors.geocode_failed'), error)
+        return null
+      }
+    )
     const address =
       geocodeResult?.formatted_addresses?.recommend ||
       geocodeResult?.address ||
       t('message.location.modal.info.unknown_address')
 
     selectedLocation.value = {
-      latitude: result.transformed.lat,
-      longitude: result.transformed.lng,
+      latitude: result.transformed.latitude,
+      longitude: result.transformed.longitude,
       address,
       timestamp: result.timestamp
     }

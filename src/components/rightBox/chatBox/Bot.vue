@@ -209,10 +209,11 @@ const findPresetByKey = (key: string | null | undefined): AssistantModelPreset |
 }
 
 const formatPresetLabel = (preset: AssistantModelPreset) => {
-  if (!preset.version || preset.modelName.includes(preset.version)) {
-    return preset.modelName
+  const modelName = preset.modelName || ''
+  if (!preset.version || modelName.includes(preset.version)) {
+    return modelName
   }
-  return `${preset.modelName} (${preset.version})`
+  return `${modelName} (${preset.version})`
 }
 
 const assistantModelDropdownOptions = computed<DropdownOption[]>(() =>
@@ -247,8 +248,8 @@ const applyFirstPreset = (options?: { force?: boolean }) => {
   if (!options?.force && selectedModelKey.value === 'local') {
     return
   }
-  selectedModelKey.value = firstPreset.modelKey
-  customModelPath.value = firstPreset.modelUrl
+  selectedModelKey.value = firstPreset.modelKey ?? null
+  customModelPath.value = firstPreset.modelUrl ?? null
 }
 
 watch(
@@ -266,7 +267,7 @@ watch(
     }
     const current = presets.find((preset) => preset.modelKey === selectedModelKey.value)
     if (current) {
-      customModelPath.value = current.modelUrl
+      customModelPath.value = current.modelUrl ?? null
     } else {
       applyFirstPreset({ force: true })
     }
@@ -409,7 +410,7 @@ const openLocalModel = async () => {
 const handlePresetModelSelect = async (key: string) => {
   const preset = findPresetByKey(key)
   if (!preset) return
-  const targetModelPath = preset.modelUrl
+  const targetModelPath = preset.modelUrl ?? null
   if (selectedModelKey.value === key && targetModelPath === customModelPath.value) {
     if (currentView.value.type !== 'assistant') {
       await showAssistant(true, true)

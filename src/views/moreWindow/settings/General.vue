@@ -149,7 +149,9 @@ import { useTopicsList } from './model.tsx'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const settingStore = useSettingStore()
 const { themes, tips, chat, page } = settingStore
 const { showMode, escClose } = storeToRefs(settingStore)
@@ -163,7 +165,9 @@ const showText = computed({
   set: async (v: any) => {
     settingStore.setShowMode(v ? ShowModeEnum.TEXT : ShowModeEnum.ICON)
     await setHomeHeight()
-    await emitTo(appWindow.label, 'startResize')
+    if (appWindow) {
+      await emitTo(appWindow.label, 'startResize')
+    }
   }
 })
 
@@ -174,7 +178,9 @@ const handleTheme = (code: string) => {
 
 /** 调整主界面高度 */
 const setHomeHeight = async () => {
-  invoke('set_height', { height: showMode.value === ShowModeEnum.TEXT ? 505 : 423 })
+  if (isTauriContext()) {
+    invoke('set_height', { height: showMode.value === ShowModeEnum.TEXT ? 505 : 423 })
+  }
 }
 </script>
 <style scoped lang="scss">

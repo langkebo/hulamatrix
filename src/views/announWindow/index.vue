@@ -349,7 +349,7 @@ const handleLoadMore = async () => {
             return
           }
           pageNum.value++
-        } else if (pageNum.value < Number(data.pages)) {
+        } else if (pageNum.value < Number((data as any).pages)) {
           // 如果当前页没有新数据但还没到最后一页，尝试加载下一页
           pageNum.value++
           handleLoadMore()

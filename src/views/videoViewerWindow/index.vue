@@ -100,14 +100,16 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const { addListener } = useTauriListener()
 const videoViewerStore = useVideoViewer()
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 // 支持的视频文件扩展名
 const supportedVideoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v']
 
 // 初始化数据
 const videoList = ref<string[]>([])
 
-const currentLabel = WebviewWindow.getCurrent().label
+const currentLabel = isTauriContext() ? WebviewWindow.getCurrent().label : 'browser'
 const currentIndex = ref(0)
 const isPlaying = ref(false)
 const isMuted = ref(false)
@@ -369,26 +371,30 @@ const showVideoTip = (message: string) => {
 }
 
 onMounted(async () => {
-  await getCurrentWebviewWindow().show()
+  if (isTauriContext()) {
+    await getCurrentWebviewWindow().show()
+  }
 
   // 修改事件名称与发送端保持一致
-  await addListener(
-    appWindow.listen('video-updated', (event: any) => {
-      const { list, index } = event.payload
-      videoList.value = list
-      currentIndex.value = index
-      nextTick(() => {
-        if (videoRef.value) {
-          videoRef.value.load()
-          videoRef.value.play().catch((error) => {
-            console.warn('视频播放失败:', error)
-            isPlaying.value = false
-          })
-        }
-      })
-    }),
-    'video-updated'
-  )
+  if (appWindow) {
+    await addListener(
+      appWindow.listen('video-updated', (event: any) => {
+        const { list, index } = event.payload
+        videoList.value = list
+        currentIndex.value = index
+        nextTick(() => {
+          if (videoRef.value) {
+            videoRef.value.load()
+            videoRef.value.play().catch((error) => {
+              console.warn('视频播放失败:', error)
+              isPlaying.value = false
+            })
+          }
+        })
+      }),
+      'video-updated'
+    )
+  }
 
   // 统一使用列表模式初始化
   const validIndex = Math.min(Math.max(videoViewerStore.currentVideoIndex, 0), videoViewerStore.videoList.length - 1)

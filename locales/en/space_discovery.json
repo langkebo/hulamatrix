@@ -1,0 +1,35 @@
+{
+  "title": "Space Discovery",
+  "search": "Search",
+  "search_placeholder": "Search space name or topic",
+  "search_button": "Search",
+  "filters": "Filters",
+  "all_categories": "All Categories",
+  "all_languages": "All Languages",
+  "category": {
+    "general": "General",
+    "technology": "Technology",
+    "gaming": "Gaming",
+    "art": "Art",
+    "music": "Music",
+    "sports": "Sports"
+  },
+  "sort": {
+    "popular": "Popular",
+    "newest": "Newest",
+    "members": "Members"
+  },
+  "no_spaces": "No spaces found",
+  "no_topic": "No topic",
+  "members": "members",
+  "rooms": "rooms",
+  "joined": "Joined",
+  "join": "Join",
+  "view": "View",
+  "load_more": "Load More",
+  "search_failed": "Search failed",
+  "load_more_failed": "Failed to load more",
+  "join_success": "Successfully joined space",
+  "join_failed": "Failed to join space",
+  "viewing_space": "Viewing space: {name}"
+}

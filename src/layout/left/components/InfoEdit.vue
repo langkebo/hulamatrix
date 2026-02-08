@@ -154,7 +154,9 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { getBadgeList, uploadAvatar } from '@/utils/ImRequestUtils'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const { t } = useI18n()
 const localUserInfo = ref<Partial<ModifyUserInfoType>>({})
 const userStore = useUserStore()
@@ -189,6 +191,10 @@ const {
   }
 })
 
+// Suppress unused variable warnings for template refs
+void fileInput
+void cropperRef
+
 // 处理裁剪，调用hook中的方法
 const handleCrop = async (cropBlob: Blob) => {
   await onCrop(cropBlob)
@@ -208,12 +214,14 @@ const openEditInfo = () => {
 }
 
 onMounted(async () => {
-  await addListener(
-    appWindow.listen('open_edit_info', async () => {
-      openEditInfo()
-    }),
-    'open_edit_info'
-  )
+  if (appWindow) {
+    await addListener(
+      appWindow.listen('open_edit_info', async () => {
+        openEditInfo()
+      }),
+      'open_edit_info'
+    )
+  }
   useMitt.on(MittEnum.OPEN_EDIT_INFO, () => {
     useMitt.emit(MittEnum.CLOSE_INFO_SHOW)
     openEditInfo()
@@ -224,10 +232,26 @@ onMounted(async () => {
 .badge-item {
   .tip {
     transition: opacity 0.4s ease-in-out;
-    @apply absolute top-0 left-0 w-full h-full flex-center gap-4px z-999 opacity-0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    z-index: 999;
+    opacity: 0;
   }
 
-  @apply bg-#ccc relative rounded-50% size-fit p-4px cursor-pointer;
+  background-color: #ccc;
+  position: relative;
+  border-radius: 50%;
+  width: fit-content;
+  height: fit-content;
+  padding: 4px;
+  cursor: pointer;
 
   &:hover .tip {
     @apply opacity-100;

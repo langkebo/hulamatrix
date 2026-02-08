@@ -182,7 +182,6 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 @click="handleStar"
-                href="https://github.com/HuLaSpark/HuLa"
                 class="bg-#363636 cursor-pointer w-70px h-30px rounded-8px flex-center text-(12px #f1f1f1) outline-none no-underline">
                 {{ t('auth.register.modal.cta') }}
               </a>

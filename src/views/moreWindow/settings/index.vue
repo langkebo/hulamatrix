@@ -25,7 +25,6 @@
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://github.com/HuLaSpark/HuLa"
           class="text-(12px #13987f) cursor-pointer no-underline">
           {{ t('setting.common.provider_name') }}
         </a>

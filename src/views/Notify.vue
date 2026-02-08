@@ -82,7 +82,9 @@ type GroupedMessage = {
   roomType: number // 房间类型：1=群聊，2=单聊
 }
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const { checkWinExist, resizeWindow } = useWindow()
 // const { addListener } = useTauriListener()
 const { checkMessageAtMe } = useReplaceMsg()
@@ -195,7 +197,7 @@ onMounted(async () => {
   // 初始化窗口高度
   resizeWindow('notify', 280, 140)
 
-  if (isWindows()) {
+  if (isWindows() && appWindow) {
     appWindow.listen('notify_enter', async (event: Event<any>) => {
       info('监听到enter事件，打开notify窗口')
       await showWindow(event)
@@ -295,17 +297,19 @@ onMounted(async () => {
       }
     })
 
-    homeFocusUnlisten = await appWindow.listen('home_focus', async () => {
-      if (tipVisible.value) {
-        await handleTip()
-      } else {
-        await hideWindow()
-      }
-    })
+    if (appWindow) {
+      homeFocusUnlisten = await appWindow.listen('home_focus', async () => {
+        if (tipVisible.value) {
+          await handleTip()
+        } else {
+          await hideWindow()
+        }
+      })
 
-    homeBlurUnlisten = await appWindow.listen('home_blur', () => {
-      // 保留占位，未来若需要在失焦时处理逻辑可扩展
-    })
+      homeBlurUnlisten = await appWindow.listen('home_blur', () => {
+        // 保留占位，未来若需要在失焦时处理逻辑可扩展
+      })
+    }
   }
 })
 

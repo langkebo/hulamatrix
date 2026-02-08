@@ -1,5 +1,18 @@
-import { invoke } from '@tauri-apps/api/core'
 import { AppException, ErrorType } from '@/common/exception'
+
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
+let invokeImpl: ((command: string, args?: Record<string, any>) => Promise<any>) | null = null
+
+const getInvoke = async () => {
+  if (!isTauriContext()) return null
+  if (!invokeImpl) {
+    const tauri = await import('@tauri-apps/api/core')
+    invokeImpl = tauri.invoke
+  }
+  return invokeImpl
+}
 
 /**
  * Tauri invoke 调用的统一错误处理包装器
@@ -24,8 +37,17 @@ export async function invokeWithErrorHandler<T = any>(
 ): Promise<T> {
   const { showError = true, customErrorMessage, isRetryError = false, errorType = ErrorType.Unknown } = options || {}
 
+  const invoke = await getInvoke()
+  if (!invoke) {
+    console.warn(`[Tauri Invoke] 跳过 ${command} - 非 Tauri 环境`)
+    throw new AppException(`命令 ${command} 在当前环境不可用`, {
+      type: errorType,
+      showError: false
+    })
+  }
+
   try {
-    const result = await invoke<T>(command, args)
+    const result = await invoke(command, args)
     return result
   } catch (error) {
     console.error(`[Tauri Invoke Error] 命令: ${command}`, error)

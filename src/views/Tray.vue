@@ -82,7 +82,9 @@ import { changeUserState } from '@/utils/ImRequestUtils'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const { checkWinExist, createWebviewWindow, resizeWindow } = useWindow()
 const userStatusStore = useUserStatusStore()
 const userStore = useUserStore()
@@ -130,15 +132,15 @@ const toggleStatus = async (item: UserState) => {
 
     stateId.value = item.id
     userStore.userInfo!.userStateId = item.id
-    appWindow.hide()
+    appWindow?.hide()
   } catch (error) {
     console.error('更新状态失败:', error)
-    appWindow.hide()
+    appWindow?.hide()
   }
 }
 
 const toggleMessageSound = () => {
-  appWindow.hide()
+  appWindow?.hide()
   nextTick(() => {
     messageSound.value = !messageSound.value
   })
@@ -193,7 +195,7 @@ onMounted(async () => {
   // 监听系统缩放变化事件，自动调整托盘窗口尺寸
   window.addEventListener('resize-needed', handleTrayResize)
 
-  if (isWindows()) {
+  if (isWindows() && appWindow) {
     homeFocusUnlisten = await appWindow.listen('home_focus', async () => {
       isFocused.value = true
       await stopBlinkTask()

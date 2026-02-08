@@ -54,7 +54,7 @@
             </svg>
           </div>
           <!-- 最小化 -->
-          <div v-if="minW" @click="appWindow.minimize()" class="hover-box">
+          <div v-if="minW" @click="appWindow?.minimize?.()" class="hover-box">
             <svg
               :class="[iconColor !== '' ? `color-${iconColor}` : 'color-[--action-bar-icon-color]']"
               class="size-24px opacity-66 cursor-pointer">
@@ -148,8 +148,16 @@ import { useAlwaysOnTopStore } from '@/stores/alwaysOnTop.ts'
 import { useSettingStore } from '@/stores/setting.ts'
 import { isCompatibility, isMac, isWindows } from '@/utils/PlatformConstants'
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
+const appWindowLabel = computed(() => appWindow?.label ?? 'browser')
+
+function getTauriWindow(): WebviewWindow | null {
+  return isTauriContext() ? WebviewWindow.getCurrent() : null
+}
 const {
   topWinLabel,
   proxy = false,
@@ -203,8 +211,9 @@ const handleEscKeyDown = (event: KeyboardEvent) => {
 
 watchEffect((onCleanup) => {
   tipsRef.type = tips.value.type
-  if (alwaysOnTopStatus.value) {
-    appWindow.setAlwaysOnTop(alwaysOnTopStatus.value as boolean)
+  const win = getTauriWindow()
+  if (alwaysOnTopStatus.value && win) {
+    win.setAlwaysOnTop(alwaysOnTopStatus.value as boolean)
   }
   if (escClose.value && isWindows()) {
     window.addEventListener('keydown', handleEscKeyDown)
@@ -218,10 +227,12 @@ watchEffect((onCleanup) => {
 
 /** 恢复窗口大小 */
 const restoreWindow = async () => {
+  const win = getTauriWindow()
+  if (!win) return
   if (windowMaximized.value) {
-    await appWindow.unmaximize()
+    await win.unmaximize()
   } else {
-    await appWindow.maximize()
+    await win.maximize()
   }
 }
 
@@ -238,10 +249,12 @@ const shrinkWindow = async () => {
 
 /** 设置窗口置顶 */
 const handleAlwaysOnTop = async () => {
+  const win = getTauriWindow()
+  if (!win) return
   if (topWinLabel !== void 0) {
     const isTop = !alwaysOnTopStatus.value
     setWindowTop(topWinLabel, isTop)
-    await appWindow.setAlwaysOnTop(isTop)
+    await win.setAlwaysOnTop(isTop)
   }
 }
 
@@ -251,21 +264,22 @@ const handleConfirm = async () => {
   tips.value.notTips = tipsRef.notTips
   tipsRef.show = false
   if (tips.value.type === CloseBxEnum.CLOSE) {
-    // 设置程序内部关闭标志
     isProgrammaticClose = true
     await emit(EventEnum.EXIT)
   } else {
     await nextTick(() => {
-      appWindow.hide()
+      appWindow?.hide?.()
     })
   }
 }
 
-// 统一更新窗口放大状态（仅 macOS 视为“最大化或全屏”；其他平台仅“最大化”）
+// 统一更新窗口放大状态（仅 macOS 视为"最大化或全屏"；其他平台仅"最大化"）
 const updateWindowMaximized = async () => {
-  const maximized = await appWindow.isMaximized()
+  const win = getTauriWindow()
+  if (!win) return
+  const maximized = await win.isMaximized()
   if (isMac()) {
-    const fullscreen = await appWindow.isFullscreen()
+    const fullscreen = await win.isFullscreen()
     windowMaximized.value = maximized || fullscreen
   } else {
     windowMaximized.value = maximized
@@ -274,7 +288,9 @@ const updateWindowMaximized = async () => {
 
 /** 处理关闭窗口事件 */
 const handleCloseWin = async () => {
-  if (appWindow.label === 'home') {
+  const win = getTauriWindow()
+  if (!win) return
+  if (win.label === 'home') {
     if (!tips.value.notTips) {
       tipsRef.show = true
     } else {
@@ -282,47 +298,47 @@ const handleCloseWin = async () => {
         await emit(EventEnum.EXIT)
       } else {
         await nextTick(() => {
-          appWindow.hide()
+          win.hide()
         })
       }
     }
-  } else if (appWindow.label === 'login') {
+  } else if (win.label === 'login') {
     await exit(0)
   } else {
-    if (appWindow.label.includes('modal-')) {
+    if (win.label.includes('modal-')) {
       const webviews = await WebviewWindow.getAll()
       const need = webviews.find((item) => item.label === 'home' || item.label === 'login')
       await need?.setEnabled(true)
       await need?.setFocus()
     }
-    await emit(EventEnum.WIN_CLOSE, appWindow.label)
-    await appWindow.close()
+    await emit(EventEnum.WIN_CLOSE, win.label)
+    await win.close()
   }
 }
 
 useMitt.on('handleCloseWin', handleCloseWin)
 
 onMounted(async () => {
-  // 初始化状态
   await updateWindowMaximized()
 
-  unlistenResized = await appWindow.onResized?.(() => {
-    updateWindowMaximized()
-  })
-
-  // 监听 home 窗口的关闭事件
-  if (appWindow.label === 'home') {
-    appWindow.onCloseRequested((event) => {
-      info('[ActionBar]监听[home]窗口关闭事件')
-      if (isProgrammaticClose) {
-        // 清理监听器
-        info('[ActionBar]清理[home]窗口的监听器')
-        exit(0)
-      }
-      info('[ActionBar]阻止[home]窗口关闭事件')
-      event.preventDefault()
-      appWindow.hide()
+  const win = getTauriWindow()
+  if (win) {
+    unlistenResized = await win.onResized?.(() => {
+      updateWindowMaximized()
     })
+
+    if (win.label === 'home') {
+      win.onCloseRequested((event) => {
+        info('[ActionBar]监听[home]窗口关闭事件')
+        if (isProgrammaticClose) {
+          info('[ActionBar]清理[home]窗口的监听器')
+          exit(0)
+        }
+        info('[ActionBar]阻止[home]窗口关闭事件')
+        event.preventDefault()
+        win.hide()
+      })
+    }
   }
 })
 

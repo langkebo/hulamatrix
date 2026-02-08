@@ -4,16 +4,36 @@
     class="relative flex min-w-310px bg-[--right-bg-color] h-full"
     :class="{ 'is-dragging-files': isDraggingFiles }">
     <div class="flex flex-1 min-h-0">
-      <!-- 使用keep-alive包裹异步组件 -->
-      <keep-alive>
-        <AsyncLeft />
-      </keep-alive>
-      <keep-alive>
-        <AsyncCenter />
-      </keep-alive>
-      <keep-alive>
-        <AsyncRight v-if="!shrinkStatus" />
-      </keep-alive>
+      <Suspense>
+        <template #default>
+          <keep-alive>
+            <AsyncLeft />
+          </keep-alive>
+        </template>
+        <template #fallback>
+          <div class="w-200px bg-[--right-bg-color]"></div>
+        </template>
+      </Suspense>
+      <Suspense>
+        <template #default>
+          <keep-alive>
+            <AsyncCenter />
+          </keep-alive>
+        </template>
+        <template #fallback>
+          <div class="flex-1 bg-[--right-bg-color]"></div>
+        </template>
+      </Suspense>
+      <Suspense v-if="!shrinkStatus">
+        <template #default>
+          <keep-alive>
+            <AsyncRight />
+          </keep-alive>
+        </template>
+        <template #fallback>
+          <div class="w-300px bg-[--right-bg-color]"></div>
+        </template>
+      </Suspense>
     </div>
     <div v-if="overlayVisible" class="absolute inset-0 z-10 flex items-center justify-center bg-[--right-bg-color]">
       <LoadingSpinner :percentage="loadingPercentage" :loading-text="loadingText" />
@@ -33,7 +53,6 @@
 </template>
 
 <script setup lang="ts">
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { info } from '@tauri-apps/plugin-log'
 import { useI18n } from 'vue-i18n'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -48,6 +67,23 @@ import { MittEnum, MsgEnum, NotificationTypeEnum, TauriCommand } from '@/enums'
 import { clearListener, initListener, readCountQueue } from '@/utils/ReadCountQueue'
 import { emitTo, listen } from '@tauri-apps/api/event'
 import type { UnlistenFn } from '@tauri-apps/api/event'
+
+let WebviewWindowImpl: any = null
+
+const getWebviewWindow = async () => {
+  if (!isTauriContext()) return null
+  if (!WebviewWindowImpl) {
+    const webview = await import('@tauri-apps/api/webviewWindow')
+    WebviewWindowImpl = webview.WebviewWindow
+  }
+  return WebviewWindowImpl
+}
+
+const getCurrentWebviewWindow = async () => {
+  const Impl = await getWebviewWindow()
+  if (!Impl) return null
+  return Impl.getCurrent()
+}
 import { UserAttentionType } from '@tauri-apps/api/window'
 import type { MessageType } from '@/services/types.ts'
 import { WsResponseMessageType } from '@/services/wsType.ts'
@@ -58,6 +94,10 @@ import { useSettingStore } from '@/stores/setting.ts'
 import { useInitialSyncStore } from '@/stores/initialSync.ts'
 import { invokeSilently } from '@/utils/TauriInvokeHandler'
 import { useRoute } from 'vue-router'
+
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 import { audioManager } from '@/utils/AudioManager'
 import { useOverlayController } from '@/hooks/useOverlayController'
 import { useGroupStore } from '@/stores/group'
@@ -77,7 +117,7 @@ const settingStore = useSettingStore()
 const initialSyncStore = useInitialSyncStore()
 const userUid = computed(() => userStore.userInfo?.uid ?? '')
 const hasCachedSessions = computed(() => chatStore.sessionList.length > 0)
-const appWindow = WebviewWindow.getCurrent()
+const appWindow = await getCurrentWebviewWindow()
 const loadingPercentage = ref(10)
 const loadingText = ref(t('home.loading.app'))
 const { resetLoginState, logout, init } = useLogin()
@@ -237,7 +277,7 @@ timerWorker.onmessage = (e) => {
 }
 
 watch(
-  () => appWindow.label === 'home',
+  () => appWindow?.label === 'home',
   (newValue) => {
     if (newValue) {
       // 初始化监听器
@@ -370,7 +410,8 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
     // 只有非免打扰的会话才发送通知和触发图标闪烁
     if (session && session.muteNotification !== NotificationTypeEnum.NOT_DISTURB) {
       // 检查 home 窗口状态
-      const home = await WebviewWindow.getByLabel('home')
+      const WebviewWindowClass = await getWebviewWindow()
+      const home = WebviewWindowClass ? await WebviewWindowClass.getByLabel('home') : null
       let shouldPlaySound = false
 
       if (home) {
@@ -406,7 +447,8 @@ useMitt.on(WsResponseMessageType.RECEIVE_MESSAGE, async (data: MessageType) => {
         globalStore.setTipVisible(true)
       }
 
-      if (WebviewWindow.getCurrent().label === 'home') {
+      const currentWin = await getCurrentWebviewWindow()
+      if (currentWin && currentWin.label === 'home') {
         await emitTo('notify', 'notify_content', data)
       }
     }
@@ -451,8 +493,10 @@ const handleNativeFileDrop = async (paths: string[]) => {
 }
 
 const setupNativeFileDropListeners = async () => {
+  if (!isTauriContext() || !appWindow) return
+
   try {
-    const unlisten = await appWindow.onDragDropEvent((event) => {
+    const unlisten = await appWindow.onDragDropEvent((event: any) => {
       // 只有选中会话时才响应拖拽事件
       if (!globalStore.currentSessionRoomId) return
 
@@ -476,11 +520,7 @@ const setupNativeFileDropListeners = async () => {
   }
 }
 
-listen('relogin', async () => {
-  info('收到重新登录事件')
-  await resetLoginState()
-  await logout()
-})
+let relistenUnlisten: (() => void) | undefined
 
 onBeforeMount(async () => {
   // 获取最新的未读数
@@ -510,8 +550,17 @@ onMounted(async () => {
     duration: CHECK_UPDATE_TIME
   })
 
+  if (isTauriContext()) {
+    relistenUnlisten = await listen('relogin', async () => {
+      info('收到重新登录事件')
+      await resetLoginState()
+      await logout()
+    })
+  }
+
   // 监听home窗口被聚焦的事件，当窗口被聚焦时自动关闭状态栏通知
-  const homeWindow = await WebviewWindow.getByLabel('home')
+  const WebviewWindowClass = await getWebviewWindow()
+  const homeWindow = WebviewWindowClass ? await WebviewWindowClass.getByLabel('home') : null
   if (homeWindow) {
     // 设置业务消息监听器
     await rustWebSocketClient.setupBusinessMessageListeners()
@@ -548,6 +597,7 @@ onMounted(async () => {
 onUnmounted(() => {
   cleanupNativeFileDropListeners()
   clearListener()
+  relistenUnlisten?.()
   // 清除Web Worker计时器
   timerWorker.postMessage({
     type: 'clearTimer',

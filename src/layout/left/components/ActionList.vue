@@ -11,60 +11,75 @@
           showMode === ShowModeEnum.ICON ? 'p-[6px_8px]' : 'w-46px py-4px'
         ]"
         style="text-align: center"
-        @click="pageJumps(item.url, item.title, item.size, item.window)"
+        @click="handleMenuClick(item)"
         :title="item.title">
-        <!-- 已经打开窗口时展示 -->
-        <n-popover :show-arrow="false" v-if="openWindowsList.has(item.url)" trigger="hover" placement="right">
-          <template #trigger>
-            <n-badge :max="99" :value="item.badge">
-              <svg class="size-22px" @click="tipShow = false">
-                <use
-                  :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction || item.icon : item.icon}`"></use>
+        <!-- Spaces 图标使用自定义组件 -->
+        <template v-if="item.url === 'spaces'">
+          <n-badge :max="99" :value="item.badge" :show="(item.badge ?? 0) > 0">
+            <SpaceIcon :size="22" :color="activeUrl === item.url || openWindowsList.has(item.url) ? 'var(--left-active-hover)' : 'currentColor'" />
+          </n-badge>
+        </template>
+        <template v-else>
+          <!-- 已经打开窗口时展示 -->
+          <n-popover :show-arrow="false" v-if="openWindowsList.has(item.url)" trigger="hover" placement="right">
+            <template #trigger>
+              <n-badge :max="99" :value="item.badge">
+                <svg class="size-22px" @click="tipShow = false">
+                  <use
+                    :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction || item.icon : item.icon}`"></use>
+                </svg>
+              </n-badge>
+            </template>
+            <p>{{ item.title }} {{ t('home.action.opened') }}</p>
+          </n-popover>
+          <!-- 该选项有提示时展示 -->
+          <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
+            <template #trigger>
+              <n-badge :max="99" :value="item.badge" dot :show="item.dot">
+                <svg class="size-22px" @click="handleTipShow(item)">
+                  <use
+                    :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
+                </svg>
+              </n-badge>
+            </template>
+            <n-flex align="center" justify="space-between">
+              <p class="select-none">{{ item.tip }}</p>
+              <svg @click="handleTipShow(item)" class="size-12px cursor-pointer">
+                <use href="#close"></use>
               </svg>
-            </n-badge>
-          </template>
-          <p>{{ item.title }} {{ t('home.action.opened') }}</p>
-        </n-popover>
-        <!-- 该选项有提示时展示 -->
-        <n-popover style="padding: 12px" v-else-if="item.tip" trigger="manual" v-model:show="tipShow" placement="right">
-          <template #trigger>
-            <n-badge :max="99" :value="item.badge" dot :show="item.dot">
-              <svg class="size-22px" @click="handleTipShow(item)">
-                <use
-                  :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
-              </svg>
-            </n-badge>
-          </template>
-          <n-flex align="center" justify="space-between">
-            <p class="select-none">{{ item.tip }}</p>
-            <svg @click="handleTipShow(item)" class="size-12px cursor-pointer">
-              <use href="#close"></use>
+            </n-flex>
+          </n-popover>
+          <!-- 该选项无提示时展示 -->
+          <!-- 消息提示 -->
+          <n-badge
+            v-if="item.url === 'message'"
+            :max="99"
+            :value="unReadMark.newMsgUnreadCount"
+            :show="unreadReady && unReadMark.newMsgUnreadCount > 0">
+            <svg class="size-22px">
+              <use
+                :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
             </svg>
-          </n-flex>
-        </n-popover>
-        <!-- 该选项无提示时展示 -->
-        <!-- 消息提示 -->
-        <n-badge
-          v-if="item.url === 'message'"
-          :max="99"
-          :value="unReadMark.newMsgUnreadCount"
-          :show="unreadReady && unReadMark.newMsgUnreadCount > 0">
-          <svg class="size-22px">
-            <use
-              :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
-          </svg>
-        </n-badge>
-        <!-- 好友提示 -->
-        <n-badge
-          v-if="item.url === 'friendsList'"
-          :max="99"
-          :value="unreadApplyCount"
-          :show="unreadApplyCount > 0 && unreadReady">
-          <svg class="size-22px">
-            <use
-              :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
-          </svg>
-        </n-badge>
+          </n-badge>
+          <!-- 好友提示 -->
+          <n-badge
+            v-if="item.url === 'friendsList'"
+            :max="99"
+            :value="unreadApplyCount"
+            :show="unreadApplyCount > 0 && unreadReady">
+            <svg class="size-22px">
+              <use
+                :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
+            </svg>
+          </n-badge>
+          <!-- 其他选项无提示时展示 -->
+          <n-badge v-if="item.url !== 'message' && item.url !== 'friendsList'" :max="99" :value="item.badge" :show="(item.badge ?? 0) > 0">
+            <svg class="size-22px">
+              <use
+                :href="`#${activeUrl === item.url || openWindowsList.has(item.url) ? item.iconAction : item.icon}`"></use>
+            </svg>
+          </n-badge>
+        </template>
         <p v-if="showMode === ShowModeEnum.TEXT && item.title" class="text-(10px center)">
           {{ item.shortTitle }}
         </p>
@@ -251,6 +266,8 @@
         <p v-if="showMode === ShowModeEnum.TEXT" class="text-(10px center)">{{ t('home.action.more') }}</p>
       </div>
     </footer>
+
+    <SpacesPanel v-if="spacesPanelVisible" />
   </div>
 
   <DefinePlugins v-model="menuShow" />
@@ -264,23 +281,24 @@ import { useGlobalStore } from '@/stores/global.ts'
 import { useMenuTopStore } from '@/stores/menuTop.ts'
 import { usePluginsStore } from '@/stores/plugins.ts'
 import { useSettingStore } from '@/stores/setting.ts'
-import { useFeedStore } from '@/stores/feed.ts'
 import { useItemsBottom, useMoreList } from '../config.tsx'
 import { leftHook } from '../hook.ts'
 import DefinePlugins from './definePlugins/index.vue'
+import SpaceIcon from '@/components/common/SpaceIcon.vue'
+import SpacesPanel from './SpacesPanel.vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const { addListener } = useTauriListener()
 const globalStore = useGlobalStore()
 const pluginsStore = usePluginsStore()
-const feedStore = useFeedStore()
 const { showMode } = storeToRefs(useSettingStore())
 const { menuTop } = storeToRefs(useMenuTopStore())
 const itemsBottom = useItemsBottom()
 const { plugins } = storeToRefs(pluginsStore)
-const { unreadCount: feedUnreadCount } = storeToRefs(feedStore)
 const { t } = useI18n()
 const unReadMark = computed(() => globalStore.unReadMark)
 const unreadReady = computed(() => globalStore.unreadReady)
@@ -306,6 +324,16 @@ const { activeUrl, openWindowsList, settingShow, tipShow, pageJumps } = leftHook
 const handleTipShow = (item: any) => {
   tipShow.value = false
   item.dot = false
+}
+
+const spacesPanelVisible = ref(false)
+
+const handleMenuClick = (item: any) => {
+  if (item.url === 'spaces') {
+    spacesPanelVisible.value = !spacesPanelVisible.value
+  } else {
+    pageJumps(item.url, item.title, item.size, item.window)
+  }
 }
 
 const unreadApplyCount = computed(() => {
@@ -356,18 +384,6 @@ const setHomeHeight = () => {
   invoke('set_height', { height: showMode.value === ShowModeEnum.TEXT ? 505 : 423 })
 }
 
-// 监听朋友圈未读数量变化，同步到 dynamic 插件的 badge
-watch(
-  feedUnreadCount,
-  (newCount) => {
-    const dynamicPlugin = plugins.value.find((p) => p.url === 'dynamic')
-    if (dynamicPlugin) {
-      pluginsStore.updatePlugin({ ...dynamicPlugin, badge: newCount })
-    }
-  },
-  { immediate: true }
-)
-
 onMounted(async () => {
   // 初始化窗口高度
   setHomeHeight()
@@ -379,12 +395,14 @@ onMounted(async () => {
   startResize()
 
   // 监听自定义事件，处理设置中菜单显示模式切换和添加插件后，导致高度变化，需重新调整插件菜单显示
-  await addListener(
-    appWindow.listen('startResize', () => {
-      startResize()
-    }),
-    'startResize'
-  )
+  if (appWindow) {
+    await addListener(
+      appWindow.listen('startResize', () => {
+        startResize()
+      }),
+      'startResize'
+    )
+  }
 
   if (tipShow.value) {
     menuTop.value.filter((item) => {

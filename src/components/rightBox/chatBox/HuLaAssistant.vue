@@ -143,7 +143,7 @@ const resolveModelSource = async () => {
     if (presetMeta) {
       const extensionMatch = props.customModel.match(/\.([a-z0-9]+)(?:[?#]|$)/i)
       const extension = extensionMatch ? extensionMatch[1] : 'glb'
-      const fileLabel = `${presetMeta.name}(${presetMeta.version})`
+      const fileLabel = `${presetMeta.modelName || 'model'}(${presetMeta.version || '1.0'})`
 
       if (isRemoteSource(props.customModel) && isDesktop()) {
         try {

@@ -3,7 +3,6 @@ import { StoresEnum } from '@/enums'
 import type { FriendItem, NoticeItem } from '@/services/types'
 import { RequestNoticeAgreeStatus } from '@/services/types'
 import { useGlobalStore } from '@/stores/global'
-import { useFeedStore } from '@/stores/feed'
 import { useGroupStore } from '@/stores/group'
 import {
   deleteFriend,
@@ -17,7 +16,6 @@ import { unreadCountManager } from '@/utils/UnreadCountManager'
 export const pageSize = 20
 export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
   const globalStore = useGlobalStore()
-  const feedStore = useFeedStore()
   const groupStore = useGroupStore()
 
   /** 联系人列表 */
@@ -75,7 +73,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
     globalStore.unReadMark.newFriendUnreadCount = res.unReadCount4Friend
     globalStore.unReadMark.newGroupUnreadCount = res.unReadCount4Group
 
-    unreadCountManager.refreshBadge(globalStore.unReadMark, feedStore.unreadCount)
+    unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
   }
 
   /**
@@ -104,11 +102,12 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
         cursor: isFresh ? '' : applyPageOptions.value.cursor
       })
       if (!res) return
+      const list = res.list || []
       // 刷新模式下替换整个列表，否则追加到列表末尾
       if (isFresh) {
-        requestFriendsList.value.splice(0, requestFriendsList.value.length, ...res.list)
+        requestFriendsList.value.splice(0, requestFriendsList.value.length, ...list)
       } else {
-        requestFriendsList.value.push(...res.list)
+        requestFriendsList.value.push(...list)
       }
 
       // 更新分页信息
@@ -161,7 +160,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
         targetApplyType === 'friend'
           ? (globalStore.unReadMark.newFriendUnreadCount = 0)
           : (globalStore.unReadMark.newGroupUnreadCount = 0)
-        unreadCountManager.refreshBadge(globalStore.unReadMark, feedStore.unreadCount)
+        unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
       }
       // 刷新好友列表
       await getContactList(true)

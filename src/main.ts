@@ -12,16 +12,21 @@ import { startWebVitalObserver } from '@/utils/WebVitalsObserver'
 import { invoke } from '@tauri-apps/api/core'
 import App from '@/App.vue'
 
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+
 initializePlatform()
 startWebVitalObserver()
 
-if (isIOS()) {
+if (isTauriContext() && isIOS()) {
   invoke('request_ios_badge_authorization').catch((error) => {
     console.warn('[HuLaBadge] 请求 iOS 角标权限失败', error)
   })
 }
 
-import('@/services/webSocketAdapter')
+if (isTauriContext()) {
+  import('@/services/webSocketRust')
+}
 
 if (process.env.NODE_ENV === 'development') {
   import('@/utils/Console.ts').then((module) => {
@@ -56,7 +61,9 @@ if (isMobile()) {
 }
 
 async function setup() {
-  await invoke('set_complete', { task: 'frontend' })
+  if (isTauriContext()) {
+    await invoke('set_complete', { task: 'frontend' })
+  }
 }
 
 const app = createApp(App)

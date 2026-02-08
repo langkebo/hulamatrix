@@ -1596,7 +1596,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('click', closeMenu, true)
-  useMitt.off(WsResponseMessageType.VideoCallRequest, () => {})
+  useMitt.off(WsResponseMessageType.VIDEO_CALL_REQUEST, () => {})
   revokeQrExportIcon()
 })
 </script>

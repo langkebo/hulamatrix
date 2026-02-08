@@ -1,67 +1,92 @@
-import { ref } from 'vue'
-import { ImUrlEnum } from '@/enums'
-import { imRequest } from '@/utils/ImRequestUtils'
-
-export type AssistantModelPreset = {
+interface ModelPreset {
   id: string
-  modelKey: string
-  modelName: string
-  modelUrl: string
-  description: string
-  status: boolean
-  version: string
+  name: string
+  description?: string
+  model?: string
+  temperature?: number
+  maxTokens?: number
+  systemPrompt?: string
 }
 
-const assistantModelPresets = ref<AssistantModelPreset[]>([])
-const assistantModelLoaded = ref(false)
-const assistantModelLoading = ref(false)
-const assistantModelError = ref<unknown>(null)
-const assistantModelMeta = ref<Record<string, { name: string; version: string }>>({})
-
-const appendVersionQuery = (url: string, version: string) => {
-  const encoded = encodeURIComponent(version)
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}v=${encoded}`
+interface ModelPresetMeta {
+  modelKey?: string
+  modelUrl?: string
+  version?: string
+  modelName?: string
 }
 
-const fetchAssistantModelPresets = async (force = false) => {
-  if (assistantModelLoading.value || (assistantModelLoaded.value && !force)) return
-  assistantModelLoading.value = true
-  assistantModelError.value = null
-  try {
-    const response = await imRequest<AssistantModelPreset[]>({
-      url: ImUrlEnum.GET_ASSISTANT_MODEL_LIST
-    })
-    const normalized = (response ?? []).map((preset) => ({
-      ...preset,
-      modelUrl: appendVersionQuery(preset.modelUrl, preset.version)
-    }))
-    const sorted = normalized.slice().sort((a, b) => Number(a.id) - Number(b.id))
-    const metaMap: Record<string, { name: string; version: string }> = {}
-    for (const preset of sorted) {
-      metaMap[preset.modelUrl] = {
-        name: preset.modelName,
-        version: preset.version
+export type AssistantModelPreset = ModelPreset & ModelPresetMeta
+
+const defaultPresets: ModelPreset[] = [
+  {
+    id: 'default',
+    name: 'Default',
+    description: 'Default model settings'
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    description: 'More creative and imaginative responses',
+    temperature: 0.9
+  },
+  {
+    id: 'precise',
+    name: 'Precise',
+    description: 'More accurate and focused responses',
+    temperature: 0.3
+  }
+]
+
+async function fetchAssistantModelPresets(forceRefresh = false): Promise<void> {
+  console.log('[useAssistantModelPresets] fetchAssistantModelPresets called, forceRefresh:', forceRefresh)
+}
+
+export function useAssistantModelPresets() {
+  const presets = ref<AssistantModelPreset[]>(defaultPresets.map((p) => ({ ...p, modelName: p.name })))
+  const currentPresetId = ref<string>('default')
+  const metaMap = ref<Record<string, ModelPresetMeta>>({})
+
+  const currentPreset = computed(() => {
+    return presets.value.find((p) => p.id === currentPresetId.value) || presets.value[0]
+  })
+
+  function setPreset(presetId: string): void {
+    if (presets.value.some((p) => p.id === presetId)) {
+      currentPresetId.value = presetId
+    }
+  }
+
+  function addPreset(preset: ModelPreset): void {
+    if (!presets.value.some((p) => p.id === preset.id)) {
+      presets.value.push(preset)
+    }
+  }
+
+  function removePreset(presetId: string): void {
+    if (presetId !== 'default') {
+      presets.value = presets.value.filter((p) => p.id !== presetId)
+      if (currentPresetId.value === presetId) {
+        currentPresetId.value = 'default'
       }
     }
-    assistantModelMeta.value = metaMap
-    assistantModelPresets.value = sorted
-  } catch (error) {
-    console.error('获取 AI 模型列表失败:', error)
-    assistantModelError.value = error
-    assistantModelPresets.value = []
-    assistantModelMeta.value = {}
-  } finally {
-    assistantModelLoading.value = false
-    assistantModelLoaded.value = true
+  }
+
+  function updatePreset(presetId: string, updates: Partial<ModelPreset>): void {
+    const index = presets.value.findIndex((p) => p.id === presetId)
+    if (index !== -1) {
+      presets.value[index] = { ...presets.value[index], ...updates }
+    }
+  }
+
+  return {
+    presets,
+    currentPresetId,
+    currentPreset,
+    metaMap,
+    fetchAssistantModelPresets,
+    setPreset,
+    addPreset,
+    removePreset,
+    updatePreset
   }
 }
-
-export const useAssistantModelPresets = () => ({
-  presets: assistantModelPresets,
-  loaded: assistantModelLoaded,
-  loading: assistantModelLoading,
-  error: assistantModelError,
-  fetchAssistantModelPresets,
-  metaMap: assistantModelMeta
-})

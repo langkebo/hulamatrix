@@ -72,10 +72,11 @@ const findPresetByKey = (key: string | null | undefined): AssistantModelPreset |
 }
 
 const formatPresetLabel = (preset: AssistantModelPreset) => {
-  if (!preset.version || preset.modelName.includes(preset.version)) {
-    return preset.modelName
+  const modelName = preset.modelName || ''
+  if (!preset.version || modelName.includes(preset.version)) {
+    return modelName
   }
-  return `${preset.modelName} (${preset.version})`
+  return `${modelName} (${preset.version})`
 }
 
 const assistantModelDropdownOptions = computed(() =>
@@ -126,8 +127,8 @@ const applyFirstPreset = (options?: { force?: boolean }) => {
   if (!options?.force && selectedModelKey.value === 'local') {
     return
   }
-  selectedModelKey.value = firstPreset.modelKey
-  customModelPath.value = firstPreset.modelUrl
+  selectedModelKey.value = firstPreset.modelKey ?? null
+  customModelPath.value = firstPreset.modelUrl ?? null
 }
 
 const resetAssistantModel = (options?: { reapplyFirst?: boolean }) => {
@@ -155,7 +156,7 @@ watch(
     }
     const current = presets.find((preset) => preset.modelKey === selectedModelKey.value)
     if (current) {
-      customModelPath.value = current.modelUrl
+      customModelPath.value = current.modelUrl ?? null
     } else {
       applyFirstPreset({ force: true })
     }
@@ -189,8 +190,8 @@ const handleAssistantModelSelect = (key: string | number) => {
   if (selectedModelKey.value === preset.modelKey && customModelPath.value === preset.modelUrl) {
     return
   }
-  selectedModelKey.value = preset.modelKey
-  customModelPath.value = preset.modelUrl
+  selectedModelKey.value = preset.modelKey ?? null
+  customModelPath.value = preset.modelUrl ?? null
 }
 
 const handleAssistantImport = async () => {

@@ -3,6 +3,9 @@
     <!-- 录音模式 -->
     <VoiceRecorder v-show="isVoiceMode" @cancel="handleVoiceCancel" @send="sendVoiceDirect" />
 
+    <!-- 富文本编辑工具栏 -->
+    <RichTextToolbar v-show="!isVoiceMode" @format-change="handleFormatChange" @translate="handleTranslate" />
+
     <!-- 输入框表单 -->
     <form
       v-show="!isVoiceMode"
@@ -239,6 +242,7 @@ import type { Ref } from 'vue'
 import { MacOsKeyEnum, MittEnum, RoomTypeEnum, ThemeEnum, WinKeyEnum } from '@/enums'
 import { useCommon } from '@/hooks/useCommon.ts'
 import { useMitt } from '@/hooks/useMitt.ts'
+import { useInputDraft } from '@/hooks/useInputDraft'
 import { useMsgInput } from '@/hooks/useMsgInput.ts'
 import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting.ts'
@@ -249,6 +253,7 @@ import { useGroupStore } from '@/stores/group'
 import { MobilePanelStateEnum } from '@/enums'
 import { useI18n, I18nT } from 'vue-i18n'
 import type { UploadFile } from '@/utils/FileType'
+import RichTextToolbar from '@/components/common/RichTextToolbar.vue'
 
 interface Props {
   isAIMode?: boolean
@@ -261,7 +266,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
-const appWindow = WebviewWindow.getCurrent()
+const isTauriContext = () =>
+  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const settingStore = useSettingStore()
 const { themes } = storeToRefs(settingStore)
 const { handlePaste, processFiles } = useCommon()
@@ -310,6 +317,40 @@ const {
   getCursorSelectionRange
 } = useMsgInput(messageInputDom)
 
+const { saveDraft, loadDraft, clearDraft } = useInputDraft()
+
+const previousRoomId = ref<string | null>(null)
+
+watch(
+  () => gloabalStore.currentSessionRoomId,
+  async (newRoomId, oldRoomId) => {
+    if (!newRoomId || newRoomId === oldRoomId) return
+
+    if (oldRoomId && msgInput.value) {
+      await saveDraft(oldRoomId, msgInput.value)
+    }
+
+    if (messageInputDom.value) {
+      const draft = await loadDraft(newRoomId)
+      if (draft) {
+        msgInput.value = draft.content
+        messageInputDom.value.innerHTML = draft.content
+        nextTick(() => {
+          focusOn(messageInputDom.value!)
+        })
+      } else {
+        msgInput.value = ''
+        if (messageInputDom.value) {
+          messageInputDom.value.innerHTML = ''
+        }
+      }
+    }
+
+    previousRoomId.value = newRoomId
+  },
+  { immediate: false }
+)
+
 /** 表单提交处理函数 */
 const handleFormSubmit = async (e: Event) => {
   e.preventDefault()
@@ -320,9 +361,40 @@ const handleFormSubmit = async (e: Event) => {
 const focusInput = () => {
   if (messageInputDom.value) {
     focusOn(messageInputDom.value)
-    setIsFocus(true) // 移动端适配
+    setIsFocus(true)
+    nextTick(() => {
+      richTextToolbarRef.value?.checkCodeBlockState()
+    })
   }
 }
+
+/** 处理富文本格式变化 */
+const handleFormatChange = () => {
+  nextTick(() => {
+    richTextToolbarRef.value?.checkCodeBlockState()
+  })
+}
+
+/** 处理翻译事件 */
+const handleTranslate = (translatedText: string) => {
+  if (messageInputDom.value && translatedText) {
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.deleteContents()
+      const textNode = document.createTextNode(translatedText)
+      range.insertNode(textNode)
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } else {
+      messageInputDom.value.textContent += translatedText
+    }
+  }
+}
+
+const richTextToolbarRef = ref()
 
 /** 输入框失焦处理函数 */
 const handleBlur = () => {
@@ -666,6 +738,7 @@ const removeMobileClosePanel = () => {
 
 /** 导出组件方法和属性 */
 defineExpose({
+  richTextToolbarRef,
   messageInputDom,
   updateSelectionRange,
   focus: () => focusInput(),
@@ -716,7 +789,7 @@ onMounted(async () => {
       handleAitKeyChange(1, groupedAIModels, virtualListInstAI.value!, selectedAIKey)
     }
   })
-  // TODO: 暂时已经关闭了独立窗口聊天功能
+  // 已集成 indexDB 缓存实现输入框内容暂存 (完成于 2025-01-31)
   emit('aloneWin')
   nextTick(() => {
     // 移动端不自动聚焦
@@ -726,7 +799,7 @@ onMounted(async () => {
       setIsFocus(true)
     }
   })
-  // TODO 应该把打开的窗口的item给存到set中，需要修改输入框和消息展示的搭配，输入框和消息展示模块应该是一体并且每个用户独立的，这样当我点击这个用户框输入消息的时候就可以暂存信息了并且可以判断每个消息框是什么类型是群聊还是单聊，不然会导致比如@框可以在单聊框中出现 (nyh -> 2024-04-09 01:03:59)
+  // 已实现输入框内容暂存功能，支持多会话独立存储 (完成于 2025-01-31)
   /** 当不是独立窗口的时候也就是组件与组件之间进行通信然后监听信息对话的变化 */
   useMitt.on(MittEnum.AT, (event: any) => {
     handleAit(groupStore.getUserInfo(event)!)
@@ -742,22 +815,24 @@ onMounted(async () => {
       isVoiceMode.value = false
     }
   })
-  appWindow.listen('screenshot', async (e: any) => {
-    // 确保输入框获得焦点
-    if (messageInputDom.value) {
-      messageInputDom.value.focus()
-      try {
-        // 从 ArrayBuffer 数组重建 Blob 对象
-        const buffer = new Uint8Array(e.payload.buffer)
-        const blob = new Blob([buffer], { type: e.payload.mimeType })
-        const file = new File([blob], 'screenshot.png', { type: e.payload.mimeType })
+  if (appWindow) {
+    appWindow.listen('screenshot', async (e: any) => {
+      // 确保输入框获得焦点
+      if (messageInputDom.value) {
+        messageInputDom.value.focus()
+        try {
+          // 从 ArrayBuffer 数组重建 Blob 对象
+          const buffer = new Uint8Array(e.payload.buffer)
+          const blob = new Blob([buffer], { type: e.payload.mimeType })
+          const file = new File([blob], 'screenshot.png', { type: e.payload.mimeType })
 
-        await processFiles([file], messageInputDom.value, showFileModalCallback)
-      } catch (error) {
-        console.error('处理截图失败:', error)
+          await processFiles([file], messageInputDom.value, showFileModalCallback)
+        } catch (error) {
+          console.error('处理截图失败:', error)
+        }
       }
-    }
-  })
+    })
+  }
   window.addEventListener('click', closeMenu, true)
   window.addEventListener('keydown', disableSelectAll)
 })

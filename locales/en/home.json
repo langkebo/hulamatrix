@@ -26,7 +26,9 @@
     "more": "More",
     "opened": "opened",
     "start_group_chat": "Start group chat",
-    "add_friend_or_group": "Add friend/group"
+    "add_friend_or_group": "Add friend/group",
+    "spaces": "Spaces",
+    "spaces_short_title": "Spaces"
   },
   "plugins": {
     "dynamic": "Moments",
@@ -485,5 +487,75 @@
   "file_drop": {
     "title": "Release to send files",
     "desc": "Drag and drop images or files, the current session will receive them"
+  },
+  "spaces": {
+    "title": "My Spaces",
+    "empty": "No spaces yet",
+    "create_first": "Create your first space",
+    "create": "Create Space",
+    "create_success": "Space created successfully",
+    "create_failed": "Failed to create space",
+    "name_label": "Space Name",
+    "name_placeholder": "Enter space name",
+    "topic_label": "Description",
+    "topic_placeholder": "Enter space description (optional)",
+    "visibility_label": "Visibility",
+    "visibility_public": "Public Space",
+    "visibility_private": "Private Space",
+    "member_count": "{count} members",
+    "room_count": "{count} rooms",
+    "menu": {
+      "view_details": "View Details",
+      "add_rooms": "Add Rooms",
+      "edit_settings": "Edit Settings",
+      "leave_space": "Leave Space"
+    },
+    "leave_confirm_title": "Leave Space",
+    "leave_confirm_content": "Are you sure you want to leave \"{name}\"?",
+    "leave_success": "Left space successfully",
+    "detail": {
+      "title": "Space Details",
+      "members": "Members",
+      "rooms": "Rooms",
+      "settings": "Settings",
+      "member_count": "{count} members",
+      "room_count": "{count} rooms"
+    },
+    "rooms": {
+      "title": "Room List",
+      "empty": "No rooms",
+      "add_room": "Add Room",
+      "remove_room": "Remove from Space",
+      "remove_confirm": "Are you sure you want to remove this room from the space?"
+    },
+    "members": {
+      "title": "Member List",
+      "empty": "No members",
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "invite": "Invite Member",
+      "remove": "Remove Member",
+      "remove_confirm": "Are you sure you want to remove this member?"
+    },
+    "settings": {
+      "title": "Space Settings",
+      "name_label": "Space Name",
+      "topic_label": "Description",
+      "avatar_label": "Space Avatar"
+    }
+  },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Operation successful",
+    "search": "Search",
+    "no_results": "No results"
   }
 }

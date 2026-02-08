@@ -11,7 +11,7 @@ import type { RTCMemberEventContent, CallNotificationContent } from '@/services/
 export function useMatrixRTC() {
   const activeCalls = ref<CallNotificationContent[]>([])
   const rtcMembers = ref<Map<string, RTCMemberEventContent>>(new Map())
-  const config = ref<MatrixRTCService['getConfig']>(matrixRTCService.getConfig())
+  const config = ref<any>(matrixRTCService.getConfig())
 
   // Subscribe to incoming calls
   const unsubscribeCalls = matrixRTCService.onIncomingCall((_call) => {
