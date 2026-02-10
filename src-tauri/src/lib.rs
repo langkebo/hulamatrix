@@ -35,7 +35,6 @@ pub mod utils;
 mod webview_helper;
 
 use crate::command::setting_command::{get_settings, update_settings};
-use crate::command::user_command::remove_tokens;
 use crate::configuration::{Settings, get_configuration};
 use crate::error::CommonError;
 use sea_orm::DatabaseConnection;
@@ -62,13 +61,7 @@ pub struct AppData {
 
 pub(crate) static APP_STATE_READY: AtomicBool = AtomicBool::new(false);
 
-use crate::command::chat_history_command::query_chat_history;
-use crate::command::contact_command::{hide_contact_command, list_contacts_command};
-use crate::command::database_command::switch_user_database;
-use crate::command::message_command::{
-    delete_message, delete_room_messages, page_msg, save_msg, send_msg, sync_messages,
-    update_message_recall_status,
-};
+use crate::command::app_state_command::is_app_state_ready;
 
 #[cfg(desktop)]
 use tauri::Listener;
@@ -126,8 +119,6 @@ async fn initialize_app_data(
     ),
     CommonError,
 > {
-    use tracing::info;
-
     // 加载配置
     let configuration =
         Arc::new(Mutex::new(get_configuration(&app_handle).map_err(|e| {
@@ -332,9 +323,6 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
     use crate::command::markdown_command::{get_readme_html, parse_markdown};
     #[cfg(mobile)]
     use crate::command::set_complete;
-    use crate::command::user_command::{
-        get_user_tokens, save_user_info, update_token, update_user_last_opt_time,
-    };
     #[cfg(target_os = "ios")]
     use crate::mobiles::keyboard::set_webview_keyboard_adjustment;
     #[cfg(mobile)]
@@ -373,24 +361,7 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         cancel_directory_scan,
         #[cfg(target_os = "windows")]
         get_windows_scale_info,
-        // 通用命令（桌面端和移动端都支持）
-        save_user_info,
-        get_user_tokens,
-        update_token,
-        remove_tokens,
-        update_user_last_opt_time,
-        list_contacts_command,
-        hide_contact_command,
-        page_msg,
-        sync_messages,
-        send_msg,
-        save_msg,
-        delete_message,
-        delete_room_messages,
-        update_message_recall_status,
-        // 聊天历史相关命令
-        query_chat_history,
-        login_command,
+        // 设置相关命令
         get_settings,
         update_settings,
         // Markdown 相关命令
@@ -407,6 +378,5 @@ fn get_invoke_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Se
         #[cfg(target_os = "ios")]
         set_webview_keyboard_adjustment,
         is_app_state_ready,
-        switch_user_database,
     ]
 }

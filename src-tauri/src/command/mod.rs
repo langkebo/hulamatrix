@@ -2,18 +2,9 @@ use tauri::{AppHandle, State};
 
 use crate::AppData;
 
-pub mod ai_command;
 pub mod app_state_command;
-pub mod chat_history_command;
-pub mod contact_command;
-pub mod database_command;
 pub mod markdown_command;
-pub mod message_command;
-pub mod oauth_command;
-pub mod request_command;
 pub mod setting_command;
-pub mod upload_command;
-pub mod user_command;
 
 // A custom task for setting the state of a setup task
 #[tauri::command]
