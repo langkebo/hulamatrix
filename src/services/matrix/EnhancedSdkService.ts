@@ -12,8 +12,9 @@
  * - Performance monitoring
  */
 
-import { SynapseEnhancedClient } from '~/lib/matrix-sdk/enhanced'
+import { SynapseEnhancedClient, UnifiedMatrixClient } from 'matrix-js-sdk'
 import { getMatrixConfig } from '@/config/matrix'
+import MatrixClientService from './MatrixClientService'
 
 interface EnhancedSdkConfig {
   baseUrl: string
@@ -51,6 +52,7 @@ interface RateLimitConfig {
 interface SynapseEnhancedClientConfig {
   baseUrl: string
   accessToken: string
+  userId?: string
   apiPrefix?: string
   timeout?: number
   performance?: PerformanceConfig
@@ -71,6 +73,7 @@ interface PerformanceMetrics {
 class EnhancedSdkService {
   private static instance: EnhancedSdkService | null = null
   private client: SynapseEnhancedClient | null = null
+  private unifiedClient: UnifiedMatrixClient | null = null
   private initialized: boolean = false
 
   // Performance tracking
@@ -126,9 +129,18 @@ class EnhancedSdkService {
       throw new Error('Matrix config is not initialized')
     }
 
+    // Get the shared MatrixClient instance
+    const matrixClient = MatrixClientService.getInstance().getClient()
+    if (!matrixClient) {
+      // We cannot initialize without the shared client because encryption/sync needs to be shared
+      console.warn('[EnhancedSdkService] MatrixClient not initialized, deferring initialization')
+      return
+    }
+
     const clientConfig: SynapseEnhancedClientConfig = {
       baseUrl: matrixConfig.baseUrl,
       accessToken: matrixConfig.accessToken,
+      userId: matrixConfig.userId,
       apiPrefix: '/_synapse/client',
       timeout: 30000,
       performance: this.performanceConfig,
@@ -137,15 +149,30 @@ class EnhancedSdkService {
       ...config
     }
 
-    this.client = new SynapseEnhancedClient(clientConfig)
+    // Initialize UnifiedMatrixClient with the shared MatrixClient
+    this.unifiedClient = new UnifiedMatrixClient(clientConfig, matrixClient)
+    this.client = this.unifiedClient.getEnhancedClient()
     this.initialized = true
   }
 
   public getClient(): SynapseEnhancedClient {
     if (!this.client) {
       this.initialize()
+      if (!this.client) {
+        throw new Error('EnhancedSdkService could not be initialized (MatrixClient missing)')
+      }
     }
     return this.client!
+  }
+
+  public getUnifiedClient(): UnifiedMatrixClient {
+    if (!this.unifiedClient) {
+      this.initialize()
+      if (!this.unifiedClient) {
+        throw new Error('EnhancedSdkService could not be initialized (MatrixClient missing)')
+      }
+    }
+    return this.unifiedClient!
   }
 
   public isInitialized(): boolean {
@@ -299,6 +326,7 @@ class EnhancedSdkService {
    */
   public reset(): void {
     this.client = null
+    this.unifiedClient = null
     this.initialized = false
     this.resetMetrics()
   }
@@ -308,6 +336,7 @@ export const enhancedSdkService = EnhancedSdkService.getInstance()
 
 export function useEnhancedSdk(): {
   client: SynapseEnhancedClient
+  unifiedClient: UnifiedMatrixClient
   isInitialized: boolean
   initialize: (config?: Partial<SynapseEnhancedClientConfig>) => void
   reset: () => void
@@ -319,6 +348,9 @@ export function useEnhancedSdk(): {
   return {
     get client() {
       return enhancedSdkService.getClient()
+    },
+    get unifiedClient() {
+      return enhancedSdkService.getUnifiedClient()
     },
     get isInitialized() {
       return enhancedSdkService.isInitialized()

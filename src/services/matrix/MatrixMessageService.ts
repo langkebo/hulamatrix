@@ -1,5 +1,12 @@
 import MatrixClientService from './MatrixClientService'
 import { ref, type Ref } from 'vue'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  html: false,
+  breaks: true,
+  linkify: true
+})
 
 export interface RichTextContent {
   body: string
@@ -141,23 +148,7 @@ class MatrixMessageService {
   }
 
   private convertMarkdownToHtml(markdown: string): string {
-    const html = markdown
-      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-      .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-      .replace(/_([^_]+)_/g, '<em>$1</em>')
-      .replace(/~~([^~]+)~~/g, '<del>$1</del>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
-      .replace(/\n/g, '<br>')
-
-    return html
+    return md.render(markdown)
   }
 
   async searchMessages(options: SearchOptions): Promise<MessageSearchResult[]> {

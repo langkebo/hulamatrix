@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","names":["MemoryKeyValueStore","LocalStorageKeyValueStore"],"sources":["../../src/storage/index.ts"],"sourcesContent":["export type { IKeyValueStore } from \"./KeyValueStore.ts\";\nexport { MemoryKeyValueStore, LocalStorageKeyValueStore } from \"./KeyValueStore.ts\";\n"],"mappings":"AACA,SAASA,mBAAmB,EAAEC,yBAAyB,QAAQ,oBAAoB","ignoreList":[]}

@@ -35,6 +35,7 @@ export interface ChatroomMessage {
   timestamp: string
   edited?: boolean
   replyTo?: string
+  metadata?: any
 }
 
 export interface PaginatedChatrooms {
@@ -68,6 +69,10 @@ class ChatroomService {
     return enhancedSdkService.getClient()
   }
 
+  private getUnifiedClient() {
+    return enhancedSdkService.getUnifiedClient()
+  }
+
   private getCacheKey(method: string, params?: Record<string, unknown>): string {
     return params ? `${method}:${JSON.stringify(params)}` : method
   }
@@ -93,6 +98,118 @@ class ChatroomService {
       }
     } else {
       this.cache.clear()
+    }
+  }
+
+  async createRoom(params: {
+    name?: string
+    topic?: string
+    isDirect?: boolean
+    isEncrypted?: boolean
+    invite?: string[]
+    preset?: 'private_chat' | 'public_chat' | 'trusted_private_chat'
+  }): Promise<string> {
+    try {
+      const unifiedClient = this.getUnifiedClient()
+
+      // Use PrivateChatApi for trusted private chats
+      if (params.preset === 'trusted_private_chat' || (params.isDirect && !params.preset)) {
+        const client = this.getClient()
+        const creatorId = client.getUserId() || ''
+
+        return await unifiedClient.enhanced.privateChat.createSession({
+          creator_id: creatorId,
+          participants: params.invite || [],
+          session_name: params.name || 'Private Chat',
+          ttl_seconds: 0 // Default, can be updated later
+        })
+      }
+
+      // Fallback for standard rooms using MatrixClient from UnifiedClient
+      const matrixClient = unifiedClient.getMatrixClient()
+      if (!matrixClient) {
+        throw new Error('Matrix client not initialized')
+      }
+
+      const options: any = {
+        name: params.name,
+        topic: params.topic,
+        is_direct: params.isDirect,
+        invite: params.invite,
+        preset: params.preset || (params.isDirect ? 'trusted_private_chat' : 'private_chat')
+      }
+
+      if (params.isEncrypted) {
+        options.initial_state = [
+          {
+            type: 'm.room.encryption',
+            state_key: '',
+            content: {
+              algorithm: 'm.megolm.v1.aes-sha2'
+            }
+          }
+        ]
+      }
+
+      const result = await matrixClient.createRoom(options)
+      this.clearCache('getChatrooms')
+      return result.room_id
+    } catch (error) {
+      logger.error('Failed to create room:', error)
+      throw this.handleError(error)
+    }
+  }
+
+  /**
+   * Update privacy settings for a room (Burn After Reading, Anti-Screenshot)
+   */
+  async setPrivacySettings(
+    roomId: string,
+    settings: { burnAfterRead?: boolean; ttl?: number; screenshot?: boolean }
+  ): Promise<void> {
+    try {
+      const unifiedClient = this.getUnifiedClient()
+      const matrixClient = unifiedClient.getMatrixClient()
+      if (!matrixClient) throw new Error('Matrix client not initialized')
+
+      // Get existing content to merge
+      const room = matrixClient.getRoom(roomId)
+      const existingContent = room?.currentState.getStateEvents('com.hula.privacy' as any, '')?.getContent() || {}
+
+      await matrixClient.sendStateEvent(
+        roomId,
+        'com.hula.privacy' as any,
+        {
+          ...existingContent,
+          burn_after_read:
+            settings.burnAfterRead !== undefined ? settings.burnAfterRead : existingContent.burn_after_read,
+          ttl_seconds: settings.ttl !== undefined ? settings.ttl : existingContent.ttl_seconds,
+          screenshot: settings.screenshot !== undefined ? settings.screenshot : existingContent.screenshot
+        },
+        ''
+      )
+    } catch (error) {
+      logger.error('Failed to set privacy settings:', error)
+      throw this.handleError(error)
+    }
+  }
+
+  getPrivacySettings(roomId: string): { burnAfterRead: boolean; ttl: number; screenshot: boolean } {
+    try {
+      const unifiedClient = this.getUnifiedClient()
+      const matrixClient = unifiedClient.getMatrixClient()
+      if (!matrixClient) return { burnAfterRead: false, ttl: 0, screenshot: false }
+
+      const room = matrixClient.getRoom(roomId)
+      const content = room?.currentState.getStateEvents('com.hula.privacy' as any, '')?.getContent()
+
+      return {
+        burnAfterRead: !!content?.burn_after_read,
+        ttl: Number(content?.ttl_seconds) || 0,
+        screenshot: !!content?.screenshot
+      }
+    } catch (_error) {
+      return { burnAfterRead: false, ttl: 0, screenshot: false }
     }
   }
 
@@ -192,7 +309,12 @@ class ChatroomService {
         messageType: msg.type || msg.msgtype,
         timestamp: msg.timestamp || msg.origin_server_ts,
         edited: msg.edited || false,
-        replyTo: msg.reply_to || msg.thread_root
+        replyTo: msg.reply_to || msg.thread_root,
+        metadata: {
+          ...(msg.content?.info || {}),
+          burn_after_read: msg.content?.burn_after_read,
+          ttl_seconds: msg.content?.ttl_seconds
+        }
       }))
 
       if (!options?.from) {

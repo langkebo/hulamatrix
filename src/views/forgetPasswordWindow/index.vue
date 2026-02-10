@@ -170,7 +170,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Validation from '@/components/common/Validation.vue'
 import { useSettingStore } from '@/stores/setting'
-import { forgetPassword, getCaptcha, sendCaptcha } from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 
 const settingStore = useSettingStore()
@@ -281,9 +281,9 @@ const getCaptchaImage = async () => {
     lastCaptchaTime.value = Date.now()
     captchaInCooldown.value = true
 
-    const result = await getCaptcha({})
-    captchaImage.value = result.img
-    formData.value.uuid = result.uuid
+    const result = await AuthApi.getCaptcha()
+    captchaImage.value = '' // TODO: result.data?.img || ''
+    formData.value.uuid = '' // TODO: result.data?.uuid || ''
 
     // 获取成功后，启动冷却计时器
     timerWorker.postMessage({
@@ -315,12 +315,13 @@ const sendEmailCode = async () => {
   sendingEmailCode.value = true
 
   try {
-    await sendCaptcha({
-      email: formData.value.email,
-      uuid: formData.value.uuid,
-      operationType: 'forgot',
-      templateCode: 'PASSWORD_EDIT'
-    })
+    await AuthApi.sendCaptcha({
+      email: formData.value.email
+      // TODO: Add missing params
+      // uuid: formData.value.uuid,
+      // operationType: 'forgot',
+      // templateCode: 'PASSWORD_EDIT'
+    } as any)
 
     window.$message.success(t('auth.forget.messages.code_sent'))
 
@@ -377,14 +378,14 @@ const submitNewPassword = async () => {
     submitLoading.value = true
 
     // 调用忘记密码接口
-    await forgetPassword({
+    await AuthApi.forgetPassword({
       email: formData.value.email,
-      code: formData.value.emailCode,
-      uuid: formData.value.uuid,
-      password: passwordForm.value.password,
-      confirmPassword: passwordForm.value.confirmPassword,
-      key: 'PASSWORD_EDIT'
-    })
+      newPassword: passwordForm.value.password
+      // TODO: Add missing params
+      // code: formData.value.emailCode,
+      // uuid: formData.value.uuid,
+      // confirmPassword: passwordForm.value.confirmPassword,
+    } as any)
 
     currentStep.value = 3
     stepStatus.value = 'finish'

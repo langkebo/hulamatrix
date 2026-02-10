@@ -6,7 +6,7 @@ import pLimit from 'p-limit'
 import { StoresEnum } from '@/enums'
 import type { EmojiItem } from '@/services/types'
 import { useUserStore } from '@/stores/user'
-import * as imRequestUtils from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 import { detectRemoteFileType, getUserEmojiDir } from '@/utils/PathUtil'
 import { md5FromString } from '@/utils/Md5Util'
 import { isMobile } from '@/utils/PlatformConstants'
@@ -169,13 +169,17 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
       }
       return acc
     }, {})
-    const res = await imRequestUtils.getEmoji().catch(() => {
+    const res = await SystemConfigApi.getEmoji().catch(() => {
       isLoading.value = false
     })
-    if (res && requestUid === currentEmojiOwnerUid.value) {
-      emojiList.value = res.map((item: { id: string | number }) => {
+    if (res && res.data && requestUid === currentEmojiOwnerUid.value) {
+      emojiList.value = res.data.list.map((item: { id: string | number; expressionUrl?: string; url?: string }) => {
         const localUrl = localUrlCache[item.id]
-        return localUrl ? { ...item, localUrl } : item
+        const emojiItem: EmojiItem = {
+          id: String(item.id),
+          expressionUrl: item.expressionUrl || item.url || ''
+        }
+        return localUrl ? { ...emojiItem, localUrl } : emojiItem
       })
     }
     isLoading.value = false
@@ -191,7 +195,7 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
   const addEmoji = async (emojiUrl: string) => {
     const { uid } = userStore.userInfo!
     if (!uid || !emojiUrl) return
-    imRequestUtils.addEmoji({ expressionUrl: emojiUrl }).then((res) => {
+    SystemConfigApi.addEmoji({ expressionUrl: emojiUrl }).then((res) => {
       if (res) {
         window.$message.success('添加表情成功')
       }
@@ -204,7 +208,7 @@ export const useEmojiStore = defineStore(StoresEnum.EMOJI, () => {
    */
   const deleteEmoji = async (id: string) => {
     if (!id) return
-    await imRequestUtils.deleteEmoji({ id })
+    await SystemConfigApi.deleteEmoji({ id })
     await getEmojiList()
   }
 

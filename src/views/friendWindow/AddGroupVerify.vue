@@ -54,7 +54,7 @@ import { getCurrentWebviewWindow, WebviewWindow } from '@tauri-apps/api/webviewW
 import { useCommon } from '@/hooks/useCommon.ts'
 import { useGlobalStore } from '@/stores/global.ts'
 import { useUserStore } from '@/stores/user.ts'
-import { applyGroup } from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -73,7 +73,7 @@ watch(
 )
 
 const addFriend = async () => {
-  await applyGroup({
+  await GroupsApi.applyGroup({
     msg: requestMsg.value,
     account: String(globalStore.addGroupModalInfo.account),
     type: 1

@@ -11,15 +11,15 @@ import type { MarkItemType, MessageType, RevokedMsgType, SessionItem } from '@/s
 import { useGlobalStore } from '@/stores/global.ts'
 import { useGroupStore } from '@/stores/group.ts'
 import { useUserStore } from '@/stores/user.ts'
-import { getSessionDetail, markMsgRead } from '@/utils/ImRequestUtils'
+import { MessagesApi } from '@/services/api'
 import { renderReplyContent } from '@/utils/RenderReplyContent.ts'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { useSessionUnreadStore } from '@/stores/sessionUnread'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
 import { useMitt } from '@/hooks/useMitt'
+import { isTauri } from '@tauri-apps/api/core'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 type RecalledMessage = {
   messageId: string
@@ -165,7 +165,7 @@ export const useChatStore = defineStore(
           updateSession(session.roomId, { unreadCount: 0 })
           // 补一次已读上报，通过队列执行避免并发触发限流
           promises.push(
-            markMsgReadQueue(() => markMsgRead(session.roomId)).catch((error) => {
+            markMsgReadQueue(() => MessagesApi.markMsgRead({ roomId: session.roomId })).catch((error) => {
               console.error('[chat] 补偿已读上报失败:', error)
             })
           )
@@ -197,7 +197,7 @@ export const useChatStore = defineStore(
           })
           updateSession(session.roomId, { unreadCount: 0 })
           promises.push(
-            markMsgReadQueue(() => markMsgRead(session.roomId)).catch((error) => {
+            markMsgReadQueue(() => MessagesApi.markMsgRead({ roomId: session.roomId })).catch((error) => {
               console.error('[chat] 基于已读历史的补偿上报失败:', error)
             })
           )
@@ -672,7 +672,7 @@ export const useChatStore = defineStore(
     }
 
     const addSession = async (roomId: string) => {
-      const resp = await getSessionDetail({ id: roomId })
+      const resp = await MessagesApi.getSessionDetail({ id: roomId })
       // 先插入会话到列表，确保后续的 updateSession 能找到会话
       sessionList.value.unshift(resp)
       // 同步更新 sessionMap
@@ -1150,7 +1150,7 @@ export const useChatStore = defineStore(
       updateSession(roomId, { unreadCount: 0 })
 
       // 4. 上报服务器已读（通过队列串行执行，避免并发请求触发限流）
-      markMsgReadQueue(() => markMsgRead(roomId)).catch((err) => {
+      markMsgReadQueue(() => MessagesApi.markMsgRead({ roomId })).catch((err) => {
         console.error('[markSessionRead] 已读上报失败:', err)
       })
 

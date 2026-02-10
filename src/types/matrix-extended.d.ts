@@ -1,4 +1,4 @@
-import { CallEvent } from '@/lib/matrix-sdk'
+import { CallEvent } from 'matrix-js-sdk'
 
 export const CallType = {
   Voice: 'voice' as const,

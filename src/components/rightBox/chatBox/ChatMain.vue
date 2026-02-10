@@ -43,61 +43,67 @@
 
     <!-- 聊天内容 -->
     <div :class="{ 'bg-#eee': isMobile() }" class="flex flex-col flex-1 min-h-0">
-      <div
+      <DynamicScroller
         id="image-chat-main"
         ref="scrollContainer"
+        :items="chatStore.chatMessageList"
+        :min-item-size="60"
+        key-field="message.id"
         class="scrollbar-container"
         :class="{ 'hide-scrollbar': !showScrollbar }"
-        @scroll="handleScroll"
-        @click="handleChatAreaClick"
-        @mouseenter="showScrollbar = true"
-        @mouseleave="showScrollbar = false">
-        <!-- 消息列表 -->
-        <div ref="messageListRef" class="message-list min-h-full flex flex-col">
+        @scroll.native="handleScroll"
+        @click.native="handleChatAreaClick"
+        @mouseenter.native="showScrollbar = true"
+        @mouseleave.native="showScrollbar = false">
+        <template #before>
           <!-- 没有更多消息提示 -->
           <div
             v-show="chatStore.shouldShowNoMoreMessage"
             class="flex-center gap-6px h-32px flex-shrink-0 cursor-default select-none">
             <p class="text-(12px #909090)">{{ t('home.chat_main.no_more') }}</p>
           </div>
-          <n-flex
-            v-for="(item, index) in chatStore.chatMessageList"
-            :key="item.message.id"
-            vertical
-            class="flex-y-center mb-12px"
-            :data-message-id="item.message.id"
-            :data-message-index="index">
-            <!-- 信息间隔时间 -->
-            <span class="text-(12px #909090) select-none p-4px" v-if="item.timeBlock" @click.stop>
-              {{ timeToStr(item.message.sendTime) }}
-            </span>
-            <!-- 消息内容容器 -->
-            <div
-              @mouseenter="hoverId = item.message.id"
-              :class="[
-                'w-full box-border',
-                item.message.type === MsgEnum.RECALL ? 'min-h-22px' : 'min-h-62px',
-                isGroup ? 'p-[14px_10px_14px_20px]' : 'chat-single p-[4px_10px_10px_20px]',
-                { 'active-reply': activeReply === item.message.id },
-                { 'bg-#90909020': computeMsgHover(item) }
-              ]"
-              @click="
-                () => {
-                  if (chatStore.isMsgMultiChoose && isMessageMultiSelectEnabled(item.message.type)) {
-                    item.isCheck = !item.isCheck
+        </template>
+
+        <template #default="{ item, index, active }">
+          <DynamicScrollerItem
+            :item="item"
+            :active="active"
+            :size-dependencies="[item.message.content, item.message.type, item.isCheck, item.timeBlock]"
+            :data-index="index"
+            :data-message-id="item.message.id">
+            <n-flex vertical class="flex-y-center mb-12px">
+              <!-- 信息间隔时间 -->
+              <span class="text-(12px #909090) select-none p-4px" v-if="item.timeBlock" @click.stop>
+                {{ timeToStr(item.message.sendTime) }}
+              </span>
+              <!-- 消息内容容器 -->
+              <div
+                @mouseenter="hoverId = item.message.id"
+                :class="[
+                  'w-full box-border',
+                  item.message.type === MsgEnum.RECALL ? 'min-h-22px' : 'min-h-62px',
+                  isGroup ? 'p-[14px_10px_14px_20px]' : 'chat-single p-[4px_10px_10px_20px]',
+                  { 'active-reply': activeReply === item.message.id },
+                  { 'bg-#90909020': computeMsgHover(item) }
+                ]"
+                @click="
+                  () => {
+                    if (chatStore.isMsgMultiChoose && isMessageMultiSelectEnabled(item.message.type)) {
+                      item.isCheck = !item.isCheck
+                    }
                   }
-                }
-              ">
-              <RenderMessage
-                :message="item"
-                :is-group="isGroup"
-                :from-user="{ uid: item.fromUser.uid }"
-                :upload-progress="item.uploadProgress"
-                @jump2-reply="jumpToReplyMsg" />
-            </div>
-          </n-flex>
-        </div>
-      </div>
+                ">
+                <RenderMessage
+                  :message="item"
+                  :is-group="isGroup"
+                  :from-user="{ uid: item.fromUser.uid }"
+                  :upload-progress="item.uploadProgress"
+                  @jump2-reply="jumpToReplyMsg" />
+              </div>
+            </n-flex>
+          </DynamicScrollerItem>
+        </template>
+      </DynamicScroller>
     </div>
 
     <!--  悬浮按钮提示(底部悬浮) -->
@@ -195,6 +201,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { info } from '@tauri-apps/plugin-log'
 import { useDebounceFn, useEventListener, useResizeObserver, useTimeoutFn } from '@vueuse/core'
@@ -299,7 +307,7 @@ const computeMsgHover = computed(() => (item: MessageType) => {
 })
 // 是否显示悬浮页脚
 const shouldShowFloatFooter = computed<boolean>(() => {
-  const container = scrollContainerRef.value
+  const container = getScrollerEl()
   if (!container) return false
 
   // 在自动滚动或加载更多消息时不显示
@@ -331,10 +339,16 @@ const shouldShowFloatFooter = computed<boolean>(() => {
 
 // 响应式状态变量
 const activeReply = ref<string>('')
-const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainer')
-const messageListRef = useTemplateRef<HTMLDivElement>('messageListRef')
+const scrollContainerRef = ref<any>(null)
+// const messageListRef = useTemplateRef<HTMLDivElement>('messageListRef') // Removed for virtual scroller
 const showScrollbar = ref<boolean>(true)
 const isAnnouncementHover = ref<boolean>(false)
+
+// Helper to get the underlying DOM element from DynamicScroller component
+const getScrollerEl = (): HTMLElement | null => {
+  return (scrollContainerRef.value?.$el as HTMLElement) || null
+}
+
 const topAnnouncement = ref<AnnouncementData | null>(null)
 const hoverId = ref('')
 // 添加标记，用于识别是否正在加载历史消息
@@ -378,7 +392,7 @@ const normalizeWheelDelta = (event: WheelEvent, target: HTMLElement): number => 
 }
 
 const handleWheel = (event: WheelEvent) => {
-  const container = scrollContainerRef.value
+  const container = getScrollerEl()
   if (!container) return
 
   // 跳过触控板缩放或横向滚动
@@ -399,7 +413,12 @@ const handleWheel = (event: WheelEvent) => {
   container.scrollTop += limitedDelta
 }
 
-const stopWheelListener = useEventListener(scrollContainerRef, 'wheel', handleWheel, { passive: false })
+const stopWheelListener = useEventListener(
+  computed(() => getScrollerEl()),
+  'wheel',
+  handleWheel,
+  { passive: false }
+)
 
 // 监听公告更新和清空事件的变量
 let announcementUpdatedListener: any = null
@@ -425,7 +444,7 @@ const loadTopAnnouncement = async (roomId?: string): Promise<void> => {
       topAnnouncement.value = topNotice || null
 
       if (oldAnnouncement !== topAnnouncement.value) {
-        const container = scrollContainerRef.value
+        const container = getScrollerEl()
         if (container) {
           const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
           if (distanceFromBottom <= 20) {
@@ -547,22 +566,25 @@ const jumpToReplyMsg = async (key: string): Promise<void> => {
 }
 
 // 滚动到指定索引位置
-const scrollToIndex = (index: number, behavior: ScrollBehavior = 'auto'): void => {
-  const container = scrollContainerRef.value
+const scrollToIndex = (index: number, _behavior: ScrollBehavior = 'auto'): void => {
+  // Use DynamicScroller's scrollToItem method if available
+  if (scrollContainerRef.value && typeof scrollContainerRef.value.scrollToItem === 'function') {
+    scrollContainerRef.value.scrollToItem(index)
+    return
+  }
+
+  // Fallback (though normally DynamicScroller should handle this)
+  const container = getScrollerEl()
   if (!container || index < 0) return
 
-  // 查找对应的消息元素
-  const messageElements = container.querySelectorAll('[data-message-index]')
-  const targetElement = messageElements[index] as HTMLElement
-
-  if (targetElement) {
-    targetElement.scrollIntoView({ behavior, block: 'center', inline: 'nearest' })
-  }
+  // 查找对应的消息元素 (Note: virtual scroller only renders visible items, so querySelector might fail for non-rendered items)
+  // With virtual scrolling, scrollToIndex logic relying on querySelectorAll is flawed if item is not rendered.
+  // We MUST use the component's method.
 }
 
 // 根据滚动意图执行相应操作
 const handleScrollByIntent = (intent: ScrollIntentEnum): void => {
-  const container = scrollContainerRef.value
+  const container = getScrollerEl()
   if (!container) return
 
   switch (intent) {
@@ -588,7 +610,17 @@ const handleScrollByIntent = (intent: ScrollIntentEnum): void => {
 // 滚动到底部
 const scrollToBottom = (): void => {
   temporarilySuppressTopLoadMore()
-  const container = scrollContainerRef.value
+
+  // Use DynamicScroller's scrollToBottom if available
+  if (scrollContainerRef.value && typeof scrollContainerRef.value.scrollToBottom === 'function') {
+    chatStore.clearNewMsgCount()
+    isAtBottom.value = true
+    enableAutoScroll(500)
+    scrollContainerRef.value.scrollToBottom()
+    return
+  }
+
+  const container = getScrollerEl()
   if (!container) return
   // 立即清除新消息计数
   chatStore.clearNewMsgCount()
@@ -598,27 +630,15 @@ const scrollToBottom = (): void => {
 
   // 使用 requestAnimationFrame 确保在渲染后执行
   requestAnimationFrame(() => {
-    if (!container) return
-    container.scrollTop = container.scrollHeight
+    // If we have the component ref but not the method (unexpected), fall back to DOM
+    const el = getScrollerEl()
+    if (!el) return
+    el.scrollTop = el.scrollHeight
   })
 }
 // 监听消息列表大小变化，如果当前在底部则自动滚动到底部
-useResizeObserver(messageListRef, () => {
-  const container = scrollContainerRef.value
-  if (!container) return
-
-  // 直接通过 DOM 计算距离，不完全依赖 isAtBottom 状态，避免状态更新延迟导致的问题
-  const { scrollHeight, scrollTop, clientHeight } = container
-  const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-
-  // 如果距离底部小于 150px (允许一定的误差)，或者状态标记为在底部，则执行滚动
-  if (distanceFromBottom <= 150 || isAtBottom.value) {
-    // 使用 nextTick 确保 DOM 状态稳定
-    nextTick(() => {
-      scrollToBottom()
-    })
-  }
-})
+// Removed useResizeObserver as DynamicScroller handles resizing internally and recycling makes this tricky.
+// We rely on chatStore.chatMessageList watcher for new messages.
 
 // 处理悬浮按钮点击 - 重置消息列表并滚动到底部
 const handleFloatButtonClick = async () => {
@@ -708,7 +728,7 @@ watch(
       }
 
       // 新消息计数逻辑（不在底部时）
-      const container = scrollContainerRef.value
+      const container = getScrollerEl()
       if (container) {
         const isOtherUserMessage =
           latestMessage?.fromUser?.uid && String(latestMessage.fromUser.uid) !== String(userUid.value)
@@ -763,7 +783,7 @@ const handleLoadMore = async (): Promise<void> => {
   if (chatStore.currentMessageOptions?.isLoading || isLoadingMore.value || chatStore.currentMessageOptions?.isLast)
     return
 
-  const container = scrollContainerRef.value
+  const container = getScrollerEl()
   if (!container) return
   scrollIntent.value = ScrollIntentEnum.LOAD_MORE
 

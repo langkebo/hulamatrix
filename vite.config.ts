@@ -71,8 +71,6 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   return {
     resolve: {
       alias: {
-        // 配置 Matrix SDK 路径别名
-        '@/lib/matrix-sdk': fileURLToPath(new URL('./lib/matrix-sdk/matrix.js', import.meta.url)),
         // 配置主路径别名@
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         // 配置移动端路径别名#

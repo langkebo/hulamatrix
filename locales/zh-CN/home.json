@@ -166,7 +166,14 @@
         "shield": "屏蔽此人",
         "delete_history": "删除聊天记录",
         "delete_friend": "删除好友",
-        "report": "被骚扰了？举报该用户"
+        "report": "被骚扰了？举报该用户",
+        "privacy": "私密设置",
+        "privacy_settings": "私密设置",
+        "burn_after_reading": "阅后即焚",
+        "anti_screenshot": "防截屏",
+        "ttl": "焚毁时间",
+        "enabled": "已开启",
+        "setting": "未设置"
       },
       "group": {
         "name_placeholder": "请输入群名称(最多12字)",
@@ -246,7 +253,11 @@
       "dissolve_success": "已解散群聊",
       "exit_not_allowed": "无法退出频道",
       "exit_success": "已退出群聊",
-      "group_name_update_failed": "群名称更新失败"
+      "group_name_update_failed": "群名称更新失败",
+      "burn_on": "已开启阅后即焚",
+      "burn_off": "已关闭阅后即焚",
+      "screenshot_on": "已开启防截屏",
+      "screenshot_off": "已关闭防截屏"
     }
   },
   "manage_group_member": {

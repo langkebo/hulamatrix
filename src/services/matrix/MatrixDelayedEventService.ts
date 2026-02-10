@@ -5,7 +5,7 @@
  * Provides support for scheduling and managing delayed events
  */
 
-import { type MatrixEvent } from '@/lib/matrix-sdk'
+import { type MatrixEvent } from 'matrix-js-sdk'
 import MatrixClientService from './MatrixClientService'
 
 // Error codes (fallback since ErrorCode might not have CLIENT_NOT_INITIALIZED)

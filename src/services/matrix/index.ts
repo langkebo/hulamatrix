@@ -7,7 +7,6 @@
 export { default as MatrixClientService } from './MatrixClientService'
 export { default as MatrixSyncService } from './MatrixSyncService'
 export { default as MatrixAuthService } from './MatrixAuthService'
-export { default as MatrixPrivateChatService } from './MatrixPrivateChatService'
 export { default as MatrixUserService } from './MatrixUserService'
 export { default as MatrixMessageService } from './MatrixMessageService'
 export { default as MatrixSettingsService } from './MatrixSettingsService'

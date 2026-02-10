@@ -1,4 +1,4 @@
-import { AutoDiscovery } from '@/lib/matrix-sdk'
+import { AutoDiscovery } from 'matrix-js-sdk'
 
 const DEFAULT_HOMESERVER = 'https://matrix.cjystx.top'
 const DEFAULT_SERVER_NAME = 'cjystx.top'

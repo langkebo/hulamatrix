@@ -1,8 +1,7 @@
 import { listen } from '@tauri-apps/api/event'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, isTauri } from '@tauri-apps/api/core'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 /**
  * 统一管理 后端状态是否可用 的判定，避免在AppData尚未注入时调用 tauri command。

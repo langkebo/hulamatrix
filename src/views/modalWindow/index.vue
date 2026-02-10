@@ -41,7 +41,7 @@ import { useMitt } from '@/hooks/useMitt'
 import { useWindow } from '@/hooks/useWindow'
 import { getDisabledOptions, getFilteredOptions, renderLabel, renderSourceList } from '@/layout/center/model.tsx'
 import { useGroupStore } from '@/stores/group'
-import { inviteGroupMember } from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -69,7 +69,7 @@ const handleInvite = async () => {
 
   try {
     // 调用邀请群成员API
-    await inviteGroupMember({
+    await GroupsApi.inviteGroupMember({
       roomId: roomId.value,
       uidList: selectedValue.value
     })

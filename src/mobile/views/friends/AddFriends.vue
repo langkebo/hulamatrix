@@ -155,7 +155,7 @@ import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { searchFriend, searchGroup } from '@/utils/ImRequestUtils'
+import { FriendsApi } from '@/services/api'
 import { isMobile } from '@/utils/PlatformConstants'
 import router from '@/router'
 
@@ -253,8 +253,8 @@ const handleSearch = useDebounceFn(async () => {
   try {
     if (searchType.value === 'group') {
       // 调用群聊搜索接口
-      const res = await searchGroup({ account: searchValue.value })
-      searchResults.value = res.map((group: any) => ({
+      const res = await FriendsApi.searchGroup({ keyword: searchValue.value })
+      searchResults.value = (res.data?.groups || []).map((group: any) => ({
         account: group.account,
         name: group.name,
         avatar: group.avatar,
@@ -264,8 +264,8 @@ const handleSearch = useDebounceFn(async () => {
       }))
     } else if (searchType.value === 'user') {
       // 调用好友搜索接口
-      const res = await searchFriend({ key: searchValue.value })
-      searchResults.value = res.map((user: any) => ({
+      const res = await FriendsApi.searchFriend({ keyword: searchValue.value })
+      searchResults.value = (res.data?.friends || []).map((user: any) => ({
         uid: user.uid,
         name: user.name,
         avatar: user.avatar,

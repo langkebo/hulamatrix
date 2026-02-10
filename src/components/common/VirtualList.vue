@@ -19,7 +19,8 @@
         v-for="item in visibleData"
         :key="item.message?.id"
         :id="`item-${item.message?.id}`"
-        :data-item-index="item._index">
+        :data-item-index="item._index"
+        v-memo="[item.message?.id, item._index, item.message?.status, item.message?.sendTime, item.message?.loading]">
         <slot :item="item" :index="item._index"></slot>
       </div>
     </div>
@@ -723,5 +724,6 @@ defineExpose<VirtualListExpose>({
   backface-visibility: hidden; /* 防止闪烁 */
   perspective: 1000; /* 增强3D效果 */
   z-index: 1; /* 确保内容在提示文字之上 */
+  contain: layout style;
 }
 </style>

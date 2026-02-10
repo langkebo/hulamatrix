@@ -1,4 +1,4 @@
-import { AuthType } from '@/lib/matrix-sdk'
+import { AuthType } from 'matrix-js-sdk'
 import MatrixClientService from './MatrixClientService'
 import { setMatrixConfig } from '@/config/matrix'
 import { discoverHomeserver } from './ServerDiscoveryService'

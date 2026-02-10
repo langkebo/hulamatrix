@@ -151,7 +151,7 @@ import type { ModifyUserInfoType } from '@/services/types'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { getBadgeList, uploadAvatar } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 
 const isTauriContext = () =>
@@ -176,7 +176,7 @@ const {
 } = useAvatarUpload({
   onSuccess: async (downloadUrl) => {
     // 调用更新头像的API TODO 这里准备删除
-    await uploadAvatar({ avatar: downloadUrl })
+    await UserApi.uploadAvatar({ avatar: downloadUrl } as any)
     // 更新编辑信息
     editInfo.value.content.avatar = downloadUrl
     // 更新用户信息
@@ -208,7 +208,7 @@ const openEditInfo = () => {
   editInfo.value.content = userStore.userInfo!
   localUserInfo.value = { ...userStore.userInfo! }
   /** 获取徽章列表 */
-  getBadgeList().then((res: any) => {
+  UserApi.getBadgeList().then((res: any) => {
     editInfo.value.badgeList = res
   })
 }

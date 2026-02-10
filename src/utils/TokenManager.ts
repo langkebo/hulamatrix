@@ -1,5 +1,5 @@
 import { TauriCommand } from '@/enums'
-import { getUserDetail } from '@/utils/ImRequestUtils'
+import MatrixUserService from '@/services/matrix/MatrixUserService'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 
 /**
@@ -18,8 +18,9 @@ export class TokenManager {
       let targetUid = uid || ''
       if (!targetUid) {
         try {
-          const user = await getUserDetail()
-          targetUid = user?.uid || user?.id || ''
+          const userService = MatrixUserService.getInstance()
+          const profile = userService.currentUser
+          targetUid = profile?.userId?.split(':')[0].replace('@', '') || ''
         } catch (_) {
           // ignore detail fetch error here
         }

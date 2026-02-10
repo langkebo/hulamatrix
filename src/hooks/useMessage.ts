@@ -7,7 +7,7 @@ import { useGlobalStore } from '@/stores/global.ts'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
-import { exitGroup, notification, setSessionTop, shield } from '@/utils/ImRequestUtils'
+import { GroupsApi, SystemConfigApi } from '@/services/api'
 import { invokeWithErrorHandler } from '../utils/TauriInvokeHandler'
 import { useI18n } from 'vue-i18n'
 
@@ -126,7 +126,7 @@ export const useMessage = () => {
       label: (item: SessionItem) => (item.top ? t('menu.unpin') : t('menu.pin')),
       icon: (item: SessionItem) => (item.top ? 'to-bottom' : 'to-top'),
       click: (item: SessionItem) => {
-        setSessionTop({ roomId: item.roomId, top: !item.top })
+        SystemConfigApi.setSessionTop({ roomId: item.roomId, top: !item.top })
           .then(() => {
             // 更新本地会话状态
             chatStore.updateSession(item.roomId, { top: !item.top })
@@ -177,7 +177,7 @@ export const useMessage = () => {
             click: async () => {
               // 如果当前是屏蔽状态，需要先取消屏蔽
               if (item.shield) {
-                await shield({
+                await SystemConfigApi.shield({
                   roomId: item.roomId,
                   state: false
                 })
@@ -192,7 +192,7 @@ export const useMessage = () => {
             click: async () => {
               // 如果当前是屏蔽状态，需要先取消屏蔽
               if (item.shield) {
-                await shield({
+                await SystemConfigApi.shield({
                   roomId: item.roomId,
                   state: false
                 })
@@ -205,7 +205,7 @@ export const useMessage = () => {
             label: () => t('menu.block_group_messages'),
             icon: item.shield ? 'check-small' : '',
             click: async () => {
-              await shield({
+              await SystemConfigApi.shield({
                 roomId: item.roomId,
                 state: !item.shield
               })
@@ -240,7 +240,7 @@ export const useMessage = () => {
       label: (item: SessionItem) => (item.shield ? t('menu.unblock_user_messages') : t('menu.block_user_messages')),
       icon: (item: SessionItem) => (item.shield ? 'message-success' : 'people-unknown'),
       click: async (item: SessionItem) => {
-        await shield({
+        await SystemConfigApi.shield({
           roomId: item.roomId,
           state: !item.shield
         })
@@ -296,7 +296,7 @@ export const useMessage = () => {
         }
 
         // 群聊：解散或退出
-        await exitGroup({ roomId: item.roomId })
+        await GroupsApi.exitGroup({ roomId: item.roomId })
         await handleMsgDelete(item.roomId)
         window.$message.success(
           item.operate === SessionOperateEnum.DISSOLUTION_GROUP
@@ -321,7 +321,7 @@ export const useMessage = () => {
 
   // 添加通知设置变更处理函数
   const handleNotificationChange = async (item: SessionItem, newType: NotificationTypeEnum) => {
-    await notification({
+    await SystemConfigApi.notification({
       roomId: item.roomId,
       type: newType
     })

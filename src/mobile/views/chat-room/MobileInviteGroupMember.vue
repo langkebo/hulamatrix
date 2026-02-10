@@ -91,7 +91,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useChatStore } from '@/stores/chat'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { inviteGroupMember } from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 import router from '@/router'
 
 defineOptions({
@@ -150,7 +150,7 @@ const handleInvite = async () => {
 
   isLoading.value = true
   try {
-    await inviteGroupMember({
+    await GroupsApi.inviteGroupMember({
       roomId: globalStore.currentSessionRoomId,
       uidList: selectedList.value
     })

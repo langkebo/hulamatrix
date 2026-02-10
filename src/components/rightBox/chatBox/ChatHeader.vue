@@ -152,6 +152,43 @@
               </div>
             </div>
 
+            <!-- 私密聊天设置 -->
+            <div class="box-item" v-if="activeItem?.type === RoomTypeEnum.SINGLE">
+              <div class="flex-between-center">
+                <p>{{ t('home.chat_header.sidebar.single.privacy') }}</p>
+                <n-popover trigger="click" placement="bottom" :show-arrow="false">
+                  <template #trigger>
+                    <div class="cursor-pointer text-(12px #13987f)">
+                      {{
+                        privacyState.burnAfterRead
+                          ? t('home.chat_header.sidebar.single.enabled')
+                          : t('home.chat_header.sidebar.single.setting')
+                      }}
+                    </div>
+                  </template>
+                  <div class="flex flex-col gap-10px p-10px w-220px">
+                    <div class="flex-between-center">
+                      <span>{{ t('home.chat_header.sidebar.single.burn_after_reading') }}</span>
+                      <n-switch size="small" :value="privacyState.burnAfterRead" @update:value="toggleBurnAfterRead" />
+                    </div>
+                    <div v-if="privacyState.burnAfterRead" class="flex-between-center">
+                      <span>{{ t('home.chat_header.sidebar.single.ttl') }}</span>
+                      <n-select
+                        size="tiny"
+                        class="w-100px"
+                        v-model:value="privacyState.ttl"
+                        :options="ttlOptions"
+                        @update:value="updateTTL" />
+                    </div>
+                    <div class="flex-between-center">
+                      <span>{{ t('home.chat_header.sidebar.single.anti_screenshot') }}</span>
+                      <n-switch size="small" :value="privacyState.screenshot" @update:value="toggleScreenshot" />
+                    </div>
+                  </div>
+                </n-popover>
+              </div>
+            </div>
+
             <div class="box-item">
               <div class="flex-between-center">
                 <p>{{ t('home.chat_header.sidebar.single.shield') }}</p>
@@ -351,7 +388,7 @@
                       :value="groupStore.countInfo!.allowScanEnter"
                       @update:value="
                         (val: any) => {
-                          updateRoomInfo({
+                          SystemConfigApi.updateRoomInfo({
                             id: groupStore.countInfo!.roomId,
                             allowScanEnter: val
                           })
@@ -612,10 +649,12 @@ import { useGroupStore } from '@/stores/group.ts'
 import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { notification, setSessionTop, shield, updateRoomInfo } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 import { canvasToImageBytes } from '@/utils/Canvas2Dom'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
+
+import ChatroomService from '@/services/matrix/ChatroomService'
 
 // 转发群二维码尺寸
 const QR_IMAGE_SIZE = 200
@@ -889,7 +928,7 @@ const {
   onSuccess: async (downloadUrl) => {
     const session = activeItem.value
     if (!session) return
-    await updateRoomInfo({
+    await SystemConfigApi.updateRoomInfo({
       id: currentSessionRoomId.value,
       avatar: downloadUrl
     })
@@ -1268,11 +1307,84 @@ const handleMedia = () => {
   window.$message.warning(t('home.chat_header.toast.todo'))
 }
 
+// 私密聊天相关逻辑
+const privacyState = reactive({
+  burnAfterRead: false,
+  ttl: 30,
+  screenshot: false
+})
+
+const ttlOptions = [
+  { label: '30s', value: 30 },
+  { label: '1m', value: 60 },
+  { label: '5m', value: 300 },
+  { label: '1h', value: 3600 },
+  { label: '1d', value: 86400 }
+]
+
+const loadPrivacySettings = () => {
+  if (!currentSessionRoomId.value) return
+  const settings = ChatroomService.getInstance().getPrivacySettings(currentSessionRoomId.value)
+  privacyState.burnAfterRead = settings.burnAfterRead
+  privacyState.ttl = settings.ttl || 30
+  privacyState.screenshot = settings.screenshot
+}
+
+watch(
+  () => [currentSessionRoomId.value, sidebarShow.value],
+  ([roomId, show]) => {
+    if (roomId && show) {
+      loadPrivacySettings()
+    }
+  }
+)
+
+const toggleBurnAfterRead = async (val: boolean) => {
+  if (!currentSessionRoomId.value) return
+  try {
+    await ChatroomService.getInstance().setPrivacySettings(currentSessionRoomId.value, {
+      burnAfterRead: val,
+      ttl: privacyState.ttl
+    })
+    privacyState.burnAfterRead = val
+    window.$message.success(val ? t('home.chat_header.toast.burn_on') : t('home.chat_header.toast.burn_off'))
+  } catch (e) {
+    window.$message.error(t('home.chat_header.toast.action_failed'))
+  }
+}
+
+const updateTTL = async (val: number) => {
+  if (!currentSessionRoomId.value) return
+  try {
+    await ChatroomService.getInstance().setPrivacySettings(currentSessionRoomId.value, {
+      ttl: val
+    })
+    privacyState.ttl = val
+  } catch (e) {
+    window.$message.error(t('home.chat_header.toast.action_failed'))
+  }
+}
+
+const toggleScreenshot = async (val: boolean) => {
+  if (!currentSessionRoomId.value) return
+  try {
+    await ChatroomService.getInstance().setPrivacySettings(currentSessionRoomId.value, {
+      screenshot: val
+    })
+    privacyState.screenshot = val
+    window.$message.success(
+      val ? t('home.chat_header.toast.screenshot_on') : t('home.chat_header.toast.screenshot_off')
+    )
+  } catch (e) {
+    window.$message.error(t('home.chat_header.toast.action_failed'))
+  }
+}
+
 /** 置顶 */
 const handleTop = (value: boolean) => {
   const session = activeItem.value
   if (!session) return
-  setSessionTop({ roomId: currentSessionRoomId.value, top: value })
+  SystemConfigApi.setSessionTop({ roomId: currentSessionRoomId.value, top: value })
     .then(() => {
       // 更新本地会话状态
       chatStore.updateSession(currentSessionRoomId.value, { top: value })
@@ -1292,7 +1404,7 @@ const handleNotification = (value: boolean) => {
   if (session.shield) {
     handleShield(false)
   }
-  notification({
+  SystemConfigApi.notification({
     roomId: currentSessionRoomId.value,
     type: newType
   })
@@ -1323,7 +1435,7 @@ const handleNotification = (value: boolean) => {
 const handleShield = (value: boolean) => {
   const session = activeItem.value
   if (!session) return
-  shield({
+  SystemConfigApi.shield({
     roomId: currentSessionRoomId.value,
     state: value
   })
@@ -1557,7 +1669,7 @@ const saveGroupName = async () => {
 
   try {
     // 调用更新群信息的API
-    await updateRoomInfo({
+    await SystemConfigApi.updateRoomInfo({
       id: currentSessionRoomId.value,
       name: trimmedName
     })

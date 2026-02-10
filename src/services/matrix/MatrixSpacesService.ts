@@ -1,4 +1,4 @@
-import { type MatrixClient, type Room, EventType, Preset, Visibility } from '@/lib/matrix-sdk'
+import { type MatrixClient, type Room, EventType, Preset, Visibility } from 'matrix-js-sdk'
 import type {
   SpaceCreateParams,
   SpaceHierarchyNode,

@@ -53,7 +53,7 @@ import { useCommon } from '@/hooks/useCommon.ts'
 import router from '@/router'
 import { useGlobalStore } from '@/stores/global.ts'
 import { useUserStore } from '@/stores/user.ts'
-import { applyGroup } from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
@@ -70,7 +70,7 @@ watch(
 )
 
 const addFriend = async () => {
-  await applyGroup({
+  await GroupsApi.applyGroup({
     msg: requestMsg.value,
     account: String(globalStore.addGroupModalInfo.account),
     type: 2

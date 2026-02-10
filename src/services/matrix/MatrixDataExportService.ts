@@ -1,6 +1,6 @@
 import MatrixClientService from './MatrixClientService'
 import JSZip from 'jszip'
-import { EventType, EventTimeline } from '@/lib/matrix-sdk'
+import { EventType, EventTimeline } from 'matrix-js-sdk'
 
 interface ExportOptions {
   includeMessages: boolean

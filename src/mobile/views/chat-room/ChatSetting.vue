@@ -266,15 +266,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import {
-  deleteFriend,
-  getGroupDetail,
-  modifyFriendRemark,
-  notification,
-  setSessionTop,
-  shield,
-  updateRoomInfo
-} from '@/utils/ImRequestUtils'
+import { FriendsApi, SystemConfigApi } from '@/services/api'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
 import { useI18n, I18nT } from 'vue-i18n'
 
@@ -432,7 +424,7 @@ async function handleExit() {
             window.$message.warning(t('mobile_chat_setting.get_friend_info_failed'))
             return
           }
-          await deleteFriend({ targetUid: detailId })
+          await FriendsApi.deleteFriend({ userId: detailId })
           window.$message.success(t('mobile_chat_setting.delete_friend_success'))
         }
 
@@ -506,7 +498,7 @@ const handleLoadGroupAnnoun = async () => {
 const handleTop = (value: boolean) => {
   const session = activeItem.value
   if (!session) return
-  setSessionTop({ roomId: currentSessionRoomId.value, top: value })
+  SystemConfigApi.setSessionTop({ roomId: currentSessionRoomId.value, top: value })
     .then(() => {
       // 更新本地会话状态
       chatStore.updateSession(currentSessionRoomId.value, { top: value })
@@ -550,8 +542,8 @@ const handleInfoUpdate = async () => {
       window.$message.warning(t('mobile_chat_setting.get_friend_info_failed'))
       return
     }
-    await modifyFriendRemark({
-      targetUid: detailId,
+    await FriendsApi.modifyFriendRemark({
+      userId: detailId,
       remark: remarkValue.value
     })
 
@@ -574,7 +566,7 @@ const handleGroupInfoUpdate = async () => {
     return
   }
 
-  await updateRoomInfo({
+  await SystemConfigApi.updateRoomInfo({
     id: currentSessionRoomId.value,
     name: nameValue.value,
     avatar: avatarValue.value
@@ -616,7 +608,7 @@ const fetchGroupMembers = async (roomId: string) => {
 const handleShield = (value: boolean) => {
   const session = activeItem.value
   if (!session) return
-  shield({
+  SystemConfigApi.shield({
     roomId: currentSessionRoomId.value,
     state: value
   })
@@ -652,7 +644,7 @@ const handleNotification = (value: boolean) => {
   if (session.shield) {
     handleShield(false)
   }
-  notification({
+  SystemConfigApi.notification({
     roomId: currentSessionRoomId.value,
     type: newType
   })
@@ -700,10 +692,11 @@ const handleSearchChatContent = () => {
 onMounted(async () => {
   await handleLoadGroupAnnoun()
   if (isGroup.value) {
-    await getGroupDetail(globalStore.currentSessionRoomId)
-      .then((response: any) => {
+    await SystemConfigApi.getGroupDetail(globalStore.currentSessionRoomId)
+      .then((res: any) => {
+        const response = res.data || res
         item.value = response
-        nameValue.value = response.groupName || ''
+        nameValue.value = response.groupName || response.name || ''
         avatarValue.value = response.avatar
         nicknameValue.value = response.myName || ''
         remarkValue.value = response.remark || ''

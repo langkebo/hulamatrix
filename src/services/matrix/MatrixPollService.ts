@@ -275,7 +275,7 @@ class MatrixPollService {
     }
 
     try {
-      const sdk = await import('@/lib/matrix-sdk')
+      const sdk = await import('matrix-js-sdk')
       const PollClass = sdk.Poll
       if (!PollClass) {
         console.warn('[MatrixPollService] Poll class not available')

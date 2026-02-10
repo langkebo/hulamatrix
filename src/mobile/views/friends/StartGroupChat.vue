@@ -97,7 +97,7 @@ import { useContactStore } from '@/stores/contacts'
 import { useGroupStore } from '@/stores/group'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 import { useChatStore } from '@/stores/chat.ts'
 import { useGlobalStore } from '@/stores/global.ts'
 
@@ -166,20 +166,23 @@ const createGroup = async () => {
   }
 
   try {
-    const result: any = await ImRequestUtils.createGroup({ uidList: selectedList.value })
+    const result = await GroupsApi.createGroup({
+      name: '群聊',
+      uidList: selectedList.value
+    })
+
+    if (!result.success) {
+      window.$message.error('创建群聊失败')
+      return
+    }
 
     await chatStore.getSessionList(true)
 
     const resultRoomId = result?.roomId != null ? String(result.roomId) : undefined
-    const resultId = result?.id != null ? String(result.id) : undefined
 
     const matchedSession = chatStore.sessionList.find((session) => {
       const sessionRoomId = String(session.roomId)
-      const sessionDetailId = session.detailId != null ? String(session.detailId) : undefined
-      return (
-        (resultRoomId !== undefined && sessionRoomId === resultRoomId) ||
-        (resultId !== undefined && (sessionDetailId === resultId || sessionRoomId === resultId))
-      )
+      return resultRoomId !== undefined && sessionRoomId === resultRoomId
     })
 
     if (matchedSession?.roomId) {

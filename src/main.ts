@@ -9,11 +9,10 @@ import router from '@/router'
 import { pinia } from '@/stores'
 import { initializePlatform, isIOS, isMobile } from '@/utils/PlatformConstants'
 import { startWebVitalObserver } from '@/utils/WebVitalsObserver'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, isTauri } from '@tauri-apps/api/core'
 import App from '@/App.vue'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 initializePlatform()
 startWebVitalObserver()

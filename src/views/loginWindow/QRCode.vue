@@ -87,7 +87,7 @@ import { loginCommand } from '@/services/tauriCommand'
 import { TauriCommand } from '@/enums'
 import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting'
-import { checkQRStatus, generateQRCode } from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import ThirdPartyLogin, { type ThirdPartyLoginContext } from './ThirdPartyLogin.vue'
 
 const globalStore = useGlobalStore()
@@ -223,7 +223,7 @@ const startPolling = () => {
     }
     pollingRequesting.value = true
     try {
-      const res: any = await checkQRStatus({
+      const res: any = await AuthApi.checkQRStatus({
         qrId: qrCodeResp.value.qrId,
         clientId: localStorage.getItem('clientId') as string,
         deviceHash: qrCodeResp.value.deviceHash,
@@ -262,7 +262,7 @@ const startPolling = () => {
 /** 处理二维码显示和刷新 */
 const handleQRCodeLogin = async () => {
   try {
-    qrCodeResp.value = await generateQRCode({})
+    qrCodeResp.value = await AuthApi.generateQRCode({})
     qrCodeValue.value = JSON.stringify({ type: 'login', qrId: qrCodeResp.value.qrId })
     loadTextKey.value = 'scan_hint'
     loading.value = false

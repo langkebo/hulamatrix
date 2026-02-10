@@ -212,7 +212,7 @@ import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime.ts'
 import { vOnLongPress } from '@vueuse/components'
-import { markMsgRead, setSessionTop } from '@/utils/ImRequestUtils'
+import { MessagesApi, SystemConfigApi } from '@/services/api'
 import { useContactStore } from '@/stores/contacts'
 import { useI18n } from 'vue-i18n'
 
@@ -360,7 +360,7 @@ const handleToggleTop = async (item: SessionItem | null) => {
   try {
     const newTopState = !item.top
 
-    await setSessionTop({
+    await SystemConfigApi.setSessionTop({
       roomId: item.roomId,
       top: newTopState
     })
@@ -394,7 +394,7 @@ const handleToggleReadStatus = async (markAsRead: boolean, sessionItem?: Session
     globalStore.updateGlobalUnreadCount()
 
     if (markAsRead) {
-      await markMsgRead(item.roomId)
+      await MessagesApi.markMsgRead({ roomId: item.roomId })
     }
 
     window.$message.success(successMsg)

@@ -132,7 +132,7 @@ import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime.ts'
 import { useGroupStore } from '@/stores/group'
-import { getGroupInfo } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 
 const userStore = useUserStore()
 const contactStore = useContactStore()
@@ -182,7 +182,8 @@ const getGroupDetail = async (roomId: string) => {
   // 开始加载
   loadingGroups.value.add(roomId)
   try {
-    const groupInfo = await getGroupInfo(roomId)
+    const resp = await SystemConfigApi.getGroupInfo(roomId)
+    const groupInfo = resp.data
     if (groupInfo) {
       groupDetailsMap.value[roomId] = groupInfo
       return groupInfo

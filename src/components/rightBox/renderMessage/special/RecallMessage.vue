@@ -8,7 +8,7 @@
           重新编辑
         </p>
       </n-flex>
-      <span v-else class="text-12px color-#909090 select-none" v-html="recallText"></span>
+      <span v-else class="text-12px color-#909090 select-none">{{ recallText }}</span>
     </template>
     <template v-else>
       <n-flex align="center" :size="6">

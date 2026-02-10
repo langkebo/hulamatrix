@@ -18,7 +18,7 @@
           </div>
           <div>
             <h3 class="text-16px font-bold text-[--text-color]">
-              {{ session?.sessionName || sessionName }}
+              {{ session?.name || sessionName }}
             </h3>
             <n-flex align="center" :size="4">
               <span class="text-12px text-[--info-text-color]">{{ t('private_chat.encrypted_chat') }}</span>
@@ -85,11 +85,7 @@
               :align="'flex-start'"
               :justify="message.senderId === currentUserId ? 'flex-end' : 'flex-start'"
               :size="8">
-              <n-avatar
-                v-if="message.senderId !== currentUserId"
-                :size="32"
-                round
-                :src="getAvatar(message.senderId)" />
+              <n-avatar v-if="message.senderId !== currentUserId" :size="32" round :src="getAvatar(message.senderId)" />
               <div
                 class="message-bubble max-w-70% p-8px rounded-12px"
                 :class="[
@@ -109,7 +105,9 @@
                   </svg>
                   <span class="text-12px truncate max-w-120px">{{ message.content }}</span>
                 </div>
-                <div v-else-if="message.messageType === 'audio' || message.messageType === 'voice'" class="message-audio">
+                <div
+                  v-else-if="message.messageType === 'audio' || message.messageType === 'voice'"
+                  class="message-audio">
                   <n-button quaternary circle size="small">
                     <template #icon>
                       <svg class="size-16px">
@@ -117,10 +115,10 @@
                       </svg>
                     </template>
                   </n-button>
-                  <span class="text-12px">{{ message.duration || 0 }}s</span>
+                  <span class="text-12px">{{ Math.round((message.metadata?.duration || 0) / 1000) }}s</span>
                 </div>
                 <div class="message-time text-10px mt-4px opacity-70">
-                  {{ formatTime(message.createdAt) }}
+                  {{ formatTime(message.timestamp) }}
                 </div>
               </div>
             </n-flex>
@@ -165,29 +163,14 @@
             <n-avatar :size="64" round :src="getSessionAvatar()" />
           </div>
           <h4 class="text-16px font-bold text-center text-[--text-color] mb-16px">
-            {{ session.sessionName || sessionName }}
+            {{ session.name || sessionName }}
           </h4>
           <n-divider />
-          <div class="participants-list">
-            <h5 class="text-14px font-medium text-[--text-color] mb-8px">
-              {{ t('private_chat.participants') }}
-            </h5>
-            <div v-for="participant in session.participants" :key="participant" class="participant-item p-8px">
-              <n-flex align="center" :size="8">
-                <n-avatar :size="32" round :src="getAvatar(participant)" />
-                <span class="text-14px text-[--text-color]">{{ getParticipantName(participant) }}</span>
-              </n-flex>
+          <div class="session-stats">
+            <div class="info-item flex justify-between py-8px">
+              <span class="text-[--info-text-color]">{{ t('private_chat.participants_count') }}</span>
+              <span class="text-[--text-color]">{{ session.memberCount }}</span>
             </div>
-          </div>
-          <n-divider />
-          <div class="statistics">
-            <h5 class="text-14px font-medium text-[--text-color] mb-8px">
-              {{ t('private_chat.statistics') }}
-            </h5>
-            <n-statistic-group>
-              <n-statistic :label="t('private_chat.message_count')" :value="statistics?.messageCount || 0" />
-              <n-statistic :label="t('private_chat.participant_count')" :value="statistics?.participantCount || 0" />
-            </n-statistic-group>
           </div>
           <n-divider />
           <n-button block type="error" ghost @click="handleLeaveSession">
@@ -204,52 +187,39 @@ import { ref, onMounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGroupStore } from '@/stores/group'
 import MatrixClientService from '@/services/matrix/MatrixClientService'
-import MatrixPrivateChatService, {
-  type PrivateChatSession,
-  type PrivateChatMessage,
-  type SessionStatistics
-} from '@/services/matrix/MatrixPrivateChatService'
+import ChatroomService, { type Chatroom, type ChatroomMessage } from '@/services/matrix/ChatroomService'
 import { formatTime } from '@/utils/ComputedTime'
 
 const { t } = useI18n()
 const groupStore = useGroupStore()
 
 const props = defineProps<{
-  session: PrivateChatSession
+  session: Chatroom
 }>()
 
 const emit = defineEmits<(e: 'close') => void>()
 
 const loading = ref(true)
 const sending = ref(false)
-const messages = ref<PrivateChatMessage[]>([])
+const messages = ref<ChatroomMessage[]>([])
 const messageContent = ref('')
 const currentUserId = ref('')
 const scrollContainer = ref<HTMLElement | null>(null)
 const showSearchPanel = ref(false)
 const searchQuery = ref('')
 const showInfoPanel = ref(false)
-const statistics = ref<SessionStatistics | null>(null)
 const sessionName = ref('')
 
 const loadMessages = async () => {
   loading.value = true
   try {
-    messages.value = await MatrixPrivateChatService.getInstance().getMessages(props.session.sessionId)
+    messages.value = await ChatroomService.getInstance().getMessages(props.session.roomId, { limit: 50 })
     await nextTick()
     scrollToBottom()
   } catch (error) {
     console.error('[PrivateChatWindow] Failed to load messages:', error)
   } finally {
     loading.value = false
-  }
-}
-
-const loadStatistics = async () => {
-  try {
-    statistics.value = await MatrixPrivateChatService.getInstance().getSessionStatistics(props.session.sessionId)
-  } catch (error) {
-    console.error('[PrivateChatWindow] Failed to load statistics:', error)
   }
 }
 
@@ -261,9 +231,9 @@ const handleSendMessage = async () => {
   messageContent.value = ''
 
   try {
-    await MatrixPrivateChatService.getInstance().sendMessage(props.session.sessionId, {
-      content,
-      messageType: 'text'
+    await ChatroomService.getInstance().sendMessage(props.session.roomId, {
+      body: content,
+      msgtype: 'm.text'
     })
     await loadMessages()
   } catch (error) {
@@ -286,7 +256,14 @@ const handleSearchMessages = () => {
   }
 }
 
-const handleSearchInput = () => {}
+const handleSearchInput = async () => {
+  if (!searchQuery.value) return
+  try {
+    messages.value = await ChatroomService.getInstance().searchMessages(props.session.roomId, searchQuery.value)
+  } catch (error) {
+    console.error('[PrivateChatWindow] Failed to search messages:', error)
+  }
+}
 
 const handleSessionInfo = () => {
   showInfoPanel.value = true
@@ -300,7 +277,7 @@ const handleLeaveSession = async () => {
     negativeText: t('common.cancel'),
     onPositiveClick: async () => {
       try {
-        await MatrixPrivateChatService.getInstance().closeSession(props.session.sessionId)
+        await ChatroomService.getInstance().leaveRoom(props.session.roomId)
         window.$message.success(t('private_chat.leave_success'))
         emit('close')
       } catch (error) {
@@ -330,10 +307,7 @@ const getParticipantName = (userId: string): string => {
 }
 
 const getSessionAvatar = (): string => {
-  if (props.session.participants.length === 1) {
-    return getAvatar(props.session.participants[0])
-  }
-  return ''
+  return props.session.avatarUrl || ''
 }
 
 onMounted(async () => {
@@ -341,18 +315,15 @@ onMounted(async () => {
   const client = clientService.getClient()
   currentUserId.value = client?.getUserId() || ''
 
-  sessionName.value =
-    props.session.sessionName || props.session.participants.map((p) => getParticipantName(p)).join(', ')
+  sessionName.value = props.session.name || 'Chat'
 
   await loadMessages()
-  await loadStatistics()
 })
 
 watch(
   () => props.session,
   async () => {
     await loadMessages()
-    await loadStatistics()
   }
 )
 </script>

@@ -195,7 +195,7 @@ import { useSettingStore } from '@/stores/setting'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { deleteAnnouncement, editAnnouncement, pushAnnouncement } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 import { extractLinkSegments, openExternalUrl } from '@/hooks/useLinkSegments'
 import { useI18n } from 'vue-i18n'
 
@@ -393,7 +393,10 @@ const handleDel = async (announcement: any) => {
     announcementStates.value[announcement.id].deleteLoading = true
 
     // 同时处理删除请求和最小延迟时间
-    await Promise.all([deleteAnnouncement({ id: announcement.id }), new Promise((resolve) => setTimeout(resolve, 600))])
+    await Promise.all([
+      SystemConfigApi.deleteAnnouncement({ announcementId: announcement.id }),
+      new Promise((resolve) => setTimeout(resolve, 600))
+    ])
 
     // 重置该公告的确认框状态
     announcementStates.value[announcement.id].showDeleteConfirm = false
@@ -457,14 +460,13 @@ const handlePushAnnouncement = async () => {
 
   const apiCall = isEdit.value
     ? () =>
-        editAnnouncement({
-          id: editAnnoouncement.value.id,
-          roomId: roomId.value,
+        SystemConfigApi.editAnnouncement({
+          announcementId: editAnnoouncement.value.id,
           content: announContent.value,
           top: isTop.value
         })
     : () =>
-        pushAnnouncement({
+        SystemConfigApi.pushAnnouncement({
           roomId: roomId.value,
           content: announContent.value,
           top: isTop.value

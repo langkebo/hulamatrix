@@ -53,7 +53,7 @@ import { useCommon } from '@/hooks/useCommon.ts'
 import { useGlobalStore } from '@/stores/global.ts'
 import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { sendAddFriendRequest } from '@/utils/ImRequestUtils'
+import { FriendsApi } from '@/services/api'
 import { useGroupStore } from '@/stores/group'
 import { useI18n } from 'vue-i18n'
 
@@ -75,9 +75,9 @@ watch(
 )
 
 const addFriend = async () => {
-  await sendAddFriendRequest({
-    msg: requestMsg.value,
-    targetUid: globalStore.addFriendModalInfo.uid as string
+  await FriendsApi.sendAddFriendRequest({
+    userId: globalStore.addFriendModalInfo.uid as string,
+    message: requestMsg.value
   })
   window.$message.success(t('message.friend_verify.toast_success'))
   setTimeout(async () => {

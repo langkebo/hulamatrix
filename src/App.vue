@@ -54,7 +54,7 @@ import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import { useAnnouncementStore } from '@/stores/announcement'
 import type { MarkItemType, RevokedMsgType, UserItem } from '@/services/types.ts'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import { listen } from '@tauri-apps/api/event'
 import { useTauriListener } from '@/hooks/useTauriListener'
 import { updateSettings } from '@/services/tauriCommand.ts'
@@ -359,7 +359,7 @@ useMitt.on(WsResponseMessageType.TOKEN_EXPIRED, async (wsTokenExpire: WsTokenExp
           timestamp: Date.now()
         }
       })
-      await ImRequestUtils.logout({ autoLogin: login.value.autoLogin })
+      await AuthApi.logout({ autoLogin: login.value.autoLogin })
       await resetLoginState()
       await logout()
     }

@@ -169,7 +169,14 @@
         "shield": "Block user",
         "delete_history": "Delete chat history",
         "delete_friend": "Remove friend",
-        "report": "Harassed? Report this user"
+        "report": "Harassed? Report this user",
+        "privacy": "Privacy Settings",
+        "privacy_settings": "Privacy Settings",
+        "burn_after_reading": "Burn After Reading",
+        "anti_screenshot": "Anti-Screenshot",
+        "ttl": "Burn Timer",
+        "enabled": "Enabled",
+        "setting": "Not Set"
       },
       "group": {
         "name_placeholder": "Enter group name (max 12 chars)",
@@ -250,7 +257,11 @@
       "dissolve_success": "Group disbanded",
       "exit_not_allowed": "Cannot leave channel",
       "exit_success": "Left group",
-      "group_name_update_failed": "Failed to rename group"
+      "group_name_update_failed": "Failed to rename group",
+      "burn_on": "Burn After Reading Enabled",
+      "burn_off": "Burn After Reading Disabled",
+      "screenshot_on": "Anti-Screenshot Enabled",
+      "screenshot_off": "Anti-Screenshot Disabled"
     }
   },
   "manage_group_member": {

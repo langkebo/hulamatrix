@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, isTauri } from '@tauri-apps/api/core'
 import { type } from '@tauri-apps/plugin-os'
 import {
   createRouter,
@@ -58,8 +58,7 @@ import SyncData from '#/views/SyncData.vue'
 /**! 创建窗口后再跳转页面就会导致样式没有生效所以不能使用懒加载路由的方式，有些页面需要快速响应的就不需要懒加载 */
 const { BASE_URL } = import.meta.env
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 const isMobile = (() => {
   if (isTauriContext()) {

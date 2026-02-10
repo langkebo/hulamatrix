@@ -1,7 +1,7 @@
 import { AppException, ErrorType } from '@/common/exception'
+import { isTauri } from '@tauri-apps/api/core'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 let invokeImpl: ((command: string, args?: Record<string, any>) => Promise<any>) | null = null
 

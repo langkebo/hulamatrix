@@ -35,7 +35,7 @@ import { saveFileAttachmentAs, saveVideoAttachmentAs } from '@/utils/AttachmentS
 import { isDiffNow } from '@/utils/ComputedTime.ts'
 import { extractFileName, removeTag } from '@/utils/Formatting'
 import { detectImageFormat, imageUrlToUint8Array, isImageUrl } from '@/utils/ImageUtils'
-import { recallMsg, removeGroupMember, updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { GroupsApi, MessagesApi } from '@/services/api'
 import { detectRemoteFileType, getFilesMeta } from '@/utils/PathUtil'
 import { isMac, isMobile } from '@/utils/PlatformConstants'
 import { invokeWithErrorHandler } from '@/utils/TauriInvokeHandler'
@@ -128,7 +128,10 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
         remark
       }
       await cachedStore.updateMyRoomInfo(payload)
-      await updateMyRoomInfo(payload)
+      await GroupsApi.updateMyRoomInfo({
+        roomId: payload.id,
+        displayName: payload.myName
+      })
       groupStore.updateUserItem(currentUid, { myName: trimmedName }, roomId)
       await groupStore.updateGroupDetail(roomId, { myName: trimmedName })
       if (currentUid === userUid.value) {
@@ -243,9 +246,12 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
         // 在调用 API 前先保存原始类型，避免 WebSocket 消息先到达导致 type 被修改
         const originalType = item.message.type
         const originalContent = item.message.body.content
-        const res = await recallMsg({ roomId: globalStore.currentSessionRoomId, msgId: item.message.id })
-        if (res) {
-          window.$message.error(res)
+        const res = await MessagesApi.recallMsg({
+          roomId: globalStore.currentSessionRoomId,
+          eventId: item.message.id
+        })
+        if (!res.success) {
+          window.$message.error('撤回失败')
           return
         }
         chatStore.recordRecallMsg({
@@ -964,7 +970,7 @@ export const useChatMain = (isHistoryMode = false, options: UseChatMainOptions =
         if (!roomId) return
 
         try {
-          await removeGroupMember({ roomId, uidList: [targetUid] })
+          await GroupsApi.removeGroupMember({ roomId, userId: targetUid })
           // 从群成员列表中移除该用户
           groupStore.removeUserItem(targetUid, roomId)
           window.$message.success(t('menu.remove_from_group_success'))

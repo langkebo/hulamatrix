@@ -1,19 +1,21 @@
-import { createClient, ClientEvent, type MatrixClient } from '@/lib/matrix-sdk'
+import { createClient, ClientEvent, type MatrixClient, IndexedDBStore, type ICreateClientOpts } from 'matrix-js-sdk'
+import { isTauri } from '@tauri-apps/api/core'
+import IndexedDBWorker from '@/workers/indexeddb.worker?worker'
 import { getMatrixConfig, setMatrixConfig, clearMatrixConfig } from '@/config/matrix'
 import type { MatrixConfig, SyncState } from '@/types/matrix'
+import type { IndexedDBCryptoStore } from '@/types/global'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
-function createCryptoStore(): { new (db: IDBFactory, storeName: string): any } | undefined {
+interface ExtendedMatrixClient extends MatrixClient {
+  getFriendSystemManager?(): unknown
+}
+
+function createCryptoStore(): (new (db: IDBFactory, storeName: string) => IndexedDBCryptoStore) | undefined {
   if (typeof window === 'undefined' || !window.indexedDB) {
     return undefined
   }
-  const storeClass = (
-    window as unknown as {
-      IndexedDBCryptoStore?: new (db: IDBFactory, storeName: string) => any
-    }
-  ).IndexedDBCryptoStore
+  const storeClass = window.IndexedDBCryptoStore
   return storeClass
 }
 
@@ -46,7 +48,10 @@ class MatrixClientService {
       return null
     }
 
-    const clientOptions: any = {
+    // Initialize worker factory for IndexedDB
+    const workerFactory = () => new IndexedDBWorker()
+
+    const clientOptions: ICreateClientOpts = {
       baseUrl: matrixConfig.baseUrl,
       accessToken: matrixConfig.accessToken,
       userId: matrixConfig.userId,
@@ -55,7 +60,17 @@ class MatrixClientService {
 
     const storeClass = createCryptoStore()
     if (storeClass && typeof window !== 'undefined' && window.indexedDB) {
-      clientOptions.cryptoStore = new storeClass(window.indexedDB, 'matrix-js-sdk:crypto')
+      ;(clientOptions as any).cryptoStore = new storeClass(window.indexedDB, 'matrix-js-sdk:crypto')
+    }
+
+    // Use IndexedDBStore with worker support
+    if (typeof window !== 'undefined' && window.indexedDB) {
+      clientOptions.store = new IndexedDBStore({
+        indexedDB: window.indexedDB,
+        localStorage: window.localStorage,
+        dbName: 'matrix-js-sdk:riot-web-sync',
+        workerFactory
+      })
     }
 
     this.client = createClient(clientOptions)
@@ -78,18 +93,30 @@ class MatrixClientService {
     }
   }
 
-  async startClient(options?: { initialSyncLimit?: number }): Promise<void> {
+  async startClient(options?: { initialSyncLimit?: number; useSlidingSync?: boolean }): Promise<void> {
     if (!this.client) {
       throw new Error('Matrix client not initialized')
     }
 
     const config = getMatrixConfig()
-    const syncOptions = {
-      initialSyncLimit: options?.initialSyncLimit || config.initialSyncLimit || 20
-    }
+
+    // Enable Sliding Sync if requested or configured
+    // TODO: Update Sliding Sync implementation to match latest SDK. Currently disabled due to API mismatch (SlidingSync constructor args).
+    const useSlidingSync = options?.useSlidingSync ?? false
 
     try {
-      await this.client.startClient(syncOptions)
+      if (useSlidingSync) {
+        // const slidingSync = new SlidingSync(config.baseUrl!)
+        // const slidingSyncSdk = new SlidingSyncSdk(slidingSync, this.client)
+        // await this.client.slidingSync(slidingSyncSdk)
+        console.warn('Sliding Sync is currently disabled/unimplemented')
+      } else {
+        const syncOptions = {
+          initialSyncLimit: options?.initialSyncLimit || config.initialSyncLimit || 20
+        }
+        await this.client.startClient(syncOptions)
+      }
+
       this.syncState = 'SYNCING'
       this.reconnectAttempts = 0
     } catch (error) {
@@ -132,12 +159,13 @@ class MatrixClientService {
     return this.client
   }
 
-  getFriendSystemManager(): any {
+  getFriendSystemManager(): unknown {
     if (!this.client) {
       return null
     }
 
-    return (this.client as any).getFriendSystemManager?.()
+    const extendedClient = this.client as ExtendedMatrixClient
+    return extendedClient.getFriendSystemManager?.()
   }
 
   getSyncState(): SyncState {

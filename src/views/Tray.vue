@@ -78,7 +78,7 @@ import { useGlobalStore } from '@/stores/global.ts'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
-import { changeUserState } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 
@@ -128,7 +128,7 @@ const handleExit = () => {
 
 const toggleStatus = async (item: UserState) => {
   try {
-    await changeUserState({ id: item.id })
+    await UserApi.changeUserState({ id: item.id })
 
     stateId.value = item.id
     userStore.userInfo!.userStateId = item.id

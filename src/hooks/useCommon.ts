@@ -13,7 +13,7 @@ import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { removeTag } from '@/utils/Formatting'
 import { SUPPORTED_IMAGE_EXTENSIONS, getFileExtension } from '@/utils/FileType'
-import { getSessionDetailWithFriends } from '@/utils/ImRequestUtils'
+import { MessagesApi } from '@/services/api'
 import { getImageCache } from '@/utils/PathUtil.ts'
 import { isPathUploadFile, type UploadFile } from '@/utils/FileType'
 import { isMobile } from '@/utils/PlatformConstants'
@@ -831,27 +831,31 @@ export const useCommon = () => {
     }
 
     info('打开消息会话')
-    const res = await getSessionDetailWithFriends({ id: uid, roomType: type })
+    const res = await MessagesApi.getSessionDetailWithFriends({ id: uid, roomType: type })
+
+    // Get roomId from response data
+    const roomId = res.data?.roomId || uid
+
     // 把隐藏的会话先显示
     try {
-      await invokeWithErrorHandler('hide_contact_command', { data: { roomId: res.roomId, hide: false } })
+      await invokeWithErrorHandler('hide_contact_command', { data: { roomId, hide: false } })
     } catch (_error) {
       window.$message.error('显示会话失败')
     }
 
     // 先检查会话是否已存在
-    const existingSession = chatStore.getSession(res.roomId)
+    const existingSession = chatStore.getSession(roomId)
     if (!existingSession) {
       // 只有当会话不存在时才更新会话列表顺序
-      chatStore.updateSessionLastActiveTime(res.roomId)
+      chatStore.updateSessionLastActiveTime(roomId)
       // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
       await chatStore.getSessionList(true)
     }
-    globalStore.updateCurrentSessionRoomId(res.roomId)
+    globalStore.updateCurrentSessionRoomId(roomId)
 
     // 发送消息定位
-    useMitt.emit(MittEnum.LOCATE_SESSION, { roomId: res.roomId })
-    handleMsgClick(res as any)
+    useMitt.emit(MittEnum.LOCATE_SESSION, { roomId })
+    handleMsgClick(res.data || (res as any))
     useMitt.emit(MittEnum.TO_SEND_MSG, { url: 'message' })
   }
 

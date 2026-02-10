@@ -1,6 +1,7 @@
 import type { UnlistenFn } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { error, info } from '@tauri-apps/plugin-log'
+import { isTauri } from '@tauri-apps/api/core'
 import { getCurrentInstance, onUnmounted } from 'vue'
 
 // 全局监听器管理
@@ -25,8 +26,7 @@ export const useTauriListener = () => {
   const listeners: Promise<UnlistenFn>[] = []
   const listenerIds: string[] = []
   const instance = getCurrentInstance()
-  const isTauriContext = () =>
-    Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+  const isTauriContext = () => isTauri()
   const windowLabel = isTauriContext() ? WebviewWindow.getCurrent()?.label : 'browser'
   let isComponentMounted = true
 

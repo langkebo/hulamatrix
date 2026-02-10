@@ -3,7 +3,7 @@ import { MittEnum, ModalEnum, PluginEnum } from '@/enums'
 import { useLogin } from '@/hooks/useLogin.ts'
 import { useMitt } from '@/hooks/useMitt.ts'
 import { useWindow } from '@/hooks/useWindow.ts'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 
 /**
  * 这里的顶部的操作栏使用pinia写入了localstorage中
@@ -96,7 +96,7 @@ const useMoreList = () => {
       icon: 'power',
       click: async () => {
         try {
-          await ImRequestUtils.logout({})
+          await AuthApi.logout({})
           await resetLoginState()
           await logout()
         } catch (error) {

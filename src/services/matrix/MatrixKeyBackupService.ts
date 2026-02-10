@@ -1,5 +1,5 @@
 import MatrixClientService from './MatrixClientService'
-import { type MatrixClient } from '@/lib/matrix-sdk'
+import { type MatrixClient } from 'matrix-js-sdk'
 
 interface BackupStatus {
   enabled: boolean

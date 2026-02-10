@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { StoresEnum, TauriCommand } from '@/enums'
 import type { CacheBadgeItem, CacheUserItem } from '@/services/types'
-import { getBadgeList } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 import { invokeSilently } from '@/utils/TauriInvokeHandler.ts'
 
 // 定义基础用户信息类型，只包含uid、头像和名称
@@ -15,9 +15,15 @@ export const useCachedStore = defineStore(StoresEnum.CACHED, () => {
   })
 
   const getAllBadgeList = async () => {
-    await getBadgeList()
-      .then((data) => {
-        badgeList.value = data
+    await UserApi.getBadgeList()
+      .then((res) => {
+        // Transform Badge type to CacheBadgeItem
+        badgeList.value = (res.data?.list || []).map((badge) => ({
+          itemId: badge.id,
+          img: badge.url,
+          describe: badge.name,
+          lastModifyTime: Date.now()
+        }))
       })
       .catch((e) => {
         console.error('获取徽章列表失败', e)

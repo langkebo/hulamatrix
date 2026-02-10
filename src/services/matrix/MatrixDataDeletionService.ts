@@ -1,5 +1,5 @@
 import MatrixClientService from './MatrixClientService'
-import type { Room } from '@/lib/matrix-sdk'
+import type { Room } from 'matrix-js-sdk'
 import { createServiceLogger } from '@/utils/Logger'
 
 const logger = createServiceLogger('MatrixDataDeletionService')

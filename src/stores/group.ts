@@ -3,7 +3,7 @@ import { OnlineEnum, RoleEnum, RoomTypeEnum, StoresEnum } from '@/enums'
 import type { GroupDetailReq, UserItem } from '@/services/types'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { GroupsApi, SystemConfigApi } from '@/services/api'
 import { useChatStore } from './chat'
 
 export const useGroupStore = defineStore(
@@ -179,16 +179,45 @@ export const useGroupStore = defineStore(
     })
 
     const setGroupDetails = async () => {
-      const data = await ImRequestUtils.groupList({})
-      groupDetails.value = data
+      const resp = await SystemConfigApi.groupList({})
+      if (resp.data?.list) {
+        // Convert API response to GroupDetailReq format
+        groupDetails.value = resp.data.list.map((group: any) => ({
+          avatar: group.avatar || '',
+          groupName: group.name || group.roomId,
+          onlineNum: 0, // TODO: Get from Matrix presence
+          roleId: RoleEnum.NORMAL,
+          roomId: group.roomId,
+          account: group.roomId.split(':')[0].replace('@', ''),
+          memberNum: group.memberCount || 0,
+          remark: '',
+          myName: '',
+          allowScanEnter: false
+        }))
+      }
     }
 
     const addGroupDetail = async (roomId: string) => {
       if (groupDetails.value.find((item) => item.roomId === roomId)) {
         return
       }
-      const data = await ImRequestUtils.getGroupDetail(roomId)
-      groupDetails.value.push(data)
+      const resp = await SystemConfigApi.getGroupDetail(roomId)
+      if (resp.data) {
+        // Convert API response to GroupDetailReq format
+        const groupDetail: GroupDetailReq = {
+          avatar: resp.data.avatar || '',
+          groupName: resp.data.name || resp.data.roomId || roomId,
+          onlineNum: 0, // TODO: Get from Matrix presence
+          roleId: RoleEnum.NORMAL,
+          roomId: resp.data.roomId || roomId,
+          account: (resp.data.roomId || roomId).split(':')[0].replace('@', ''),
+          memberNum: resp.data.memberCount || 0,
+          remark: '',
+          myName: '',
+          allowScanEnter: false
+        }
+        groupDetails.value.push(groupDetail)
+      }
     }
 
     const userMapByRoomId = computed(() => {
@@ -513,15 +542,25 @@ export const useGroupStore = defineStore(
         setRoomMemberList(roomId, [])
       }
 
-      const data = await ImRequestUtils.groupListMember(roomId)
-      if (!data) {
+      const resp = await SystemConfigApi.groupListMember({ roomId })
+      if (!resp?.data?.list) {
         userListOptions.loading = false
         return []
       }
 
       userListOptions.loading = false
 
-      const list = Array.isArray(data) ? [...data] : []
+      // Convert API response to UserItem format
+      const list = resp.data.list.map((member: any) => ({
+        uid: member.userId,
+        name: member.displayName || member.userId,
+        avatar: member.avatarUrl || '',
+        roleId: member.isAdmin ? RoleEnum.ADMIN : RoleEnum.NORMAL,
+        activeStatus: OnlineEnum.OFFLINE, // TODO: Get from Matrix presence
+        remark: '',
+        lastOptTime: 0,
+        account: member.userId.split(':')[0].replace('@', '')
+      }))
       updateMemberCache(roomId, list)
 
       return userListMap[roomId]
@@ -670,7 +709,7 @@ export const useGroupStore = defineStore(
      * @param uidList 要添加为管理员的用户ID列表
      */
     const addAdmin = async (uidList: string[]) => {
-      await ImRequestUtils.addAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
+      await SystemConfigApi.addAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
       // 更新本地群成员列表中的角色信息
       const targetRoomId = globalStore.currentSessionRoomId
       if (!targetRoomId) return
@@ -690,7 +729,7 @@ export const useGroupStore = defineStore(
      * @param uidList 要撤销的管理员ID列表
      */
     const revokeAdmin = async (uidList: string[]) => {
-      await ImRequestUtils.revokeAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
+      await SystemConfigApi.revokeAdmin({ roomId: globalStore.currentSessionRoomId, uidList })
       // 更新本地群成员列表中的角色信息
       const targetRoomId = globalStore.currentSessionRoomId
       if (!targetRoomId) return
@@ -717,7 +756,7 @@ export const useGroupStore = defineStore(
       }
 
       // 调用踢人接口
-      await ImRequestUtils.removeGroupMember({ roomId: targetRoomId, uidList })
+      await GroupsApi.removeGroupMember({ roomId: targetRoomId, userId: uidList[0] })
 
       // 更新本地群成员列表，移除被踢出的成员
       const currentUserList = userListMap[targetRoomId] || []
@@ -732,7 +771,7 @@ export const useGroupStore = defineStore(
     const exitGroup = async (roomId: string) => {
       if (!roomId) return
 
-      await ImRequestUtils.exitGroup({ roomId })
+      await GroupsApi.exitGroup({ roomId })
 
       // 更新群成员缓存，移除自己
       const currentUserList = userListMap[roomId] || []

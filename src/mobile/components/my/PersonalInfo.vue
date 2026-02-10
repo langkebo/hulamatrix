@@ -145,7 +145,7 @@ import { useChatStore } from '@/stores/chat'
 import { useContactStore } from '@/stores/contacts'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import { getSessionDetailWithFriends } from '@/utils/ImRequestUtils'
+import { MessagesApi } from '@/services/api'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -183,16 +183,17 @@ const isBotUser = (uid: string) => groupStore.getUserInfo(uid)?.account === User
 
 const toChatRoom = async () => {
   try {
-    const res = await getSessionDetailWithFriends({ id: uid, roomType: 2 })
+    const res = await MessagesApi.getSessionDetailWithFriends({ id: uid, roomType: 2 })
+    const roomId = res.data?.roomId || uid
     // 先检查会话是否已存在
-    const existingSession = chatStore.getSession(res.roomId)
+    const existingSession = chatStore.getSession(roomId)
     if (!existingSession) {
       // 只有当会话不存在时才更新会话列表顺序
-      chatStore.updateSessionLastActiveTime(res.roomId)
+      chatStore.updateSessionLastActiveTime(roomId)
       // 如果会话不存在，需要重新获取会话列表，但保持当前选中的会话
       await chatStore.getSessionList(true)
     }
-    await preloadChatRoom(res.roomId)
+    await preloadChatRoom(roomId)
     router.push(`/mobile/chatRoom/chatMain`)
   } catch (error) {
     console.error('私聊尝试进入聊天室失败:', error)

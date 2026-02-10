@@ -5,7 +5,7 @@
  * Provides safety violation detection and user notifications
  */
 
-import { type MatrixEvent } from '@/lib/matrix-sdk'
+import { type MatrixEvent } from 'matrix-js-sdk'
 import MatrixClientService from './MatrixClientService'
 
 // M_SAFETY error types (MSC4387)

@@ -159,7 +159,7 @@ import type { SessionItem } from '@/services/types'
 import { useChatStore } from '@/stores/chat'
 import { useSettingStore } from '@/stores/setting'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { notification, shield } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 import { assign } from 'es-toolkit/compat'
 import { useI18n } from 'vue-i18n'
 
@@ -390,14 +390,14 @@ const handleNotificationChange = async (
       case 'allow':
         // 如果当前是屏蔽状态，需要先取消屏蔽
         if (session.shield) {
-          await shield({
+          await SystemConfigApi.shield({
             roomId: session.roomId,
             state: false
           })
           applySessionUpdate(session, { shield: false })
         }
 
-        await notification({
+        await SystemConfigApi.notification({
           roomId: session.roomId,
           type: NotificationTypeEnum.RECEPTION
         })
@@ -414,14 +414,14 @@ const handleNotificationChange = async (
       case 'mute':
         // 如果当前是屏蔽状态，需要先取消屏蔽
         if (session.shield) {
-          await shield({
+          await SystemConfigApi.shield({
             roomId: session.roomId,
             state: false
           })
           applySessionUpdate(session, { shield: false })
         }
 
-        await notification({
+        await SystemConfigApi.notification({
           roomId: session.roomId,
           type: NotificationTypeEnum.NOT_DISTURB
         })
@@ -438,7 +438,7 @@ const handleNotificationChange = async (
         break
 
       case 'shield':
-        await shield({
+        await SystemConfigApi.shield({
           roomId: session.roomId,
           state: true
         })

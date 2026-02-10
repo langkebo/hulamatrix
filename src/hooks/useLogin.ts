@@ -16,7 +16,8 @@ import { useUserStore } from '../stores/user'
 import { useLoginHistoriesStore } from '../stores/loginHistory'
 import rustWebSocketClient from '@/services/webSocketRust'
 import { useEmojiStore } from '@/stores/emoji'
-import { getAllUserState, getUserDetail } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
+import MatrixUserService from '@/services/matrix/MatrixUserService'
 import { useNetwork } from '@vueuse/core'
 import { UserInfoType } from '../services/types'
 import { getEnhancedFingerprint } from '../services/fingerprint'
@@ -28,9 +29,9 @@ import { openExternalUrl } from './useLinkSegments'
 import { TokenManager } from '@/utils/TokenManager'
 import MatrixAuthService from '@/services/matrix/MatrixAuthService'
 import { SexEnum } from '@/enums'
+import { isTauri } from '@tauri-apps/api/core'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 let emitImpl: any = null
 let listenImpl: any = null
@@ -335,8 +336,22 @@ export const useLogin = () => {
     })
 
     // 用户相关数据初始化
-    userStatusStore.stateList = await getAllUserState()
-    const userDetail: any = await getUserDetail()
+    userStatusStore.stateList = await UserApi.getAllUserState()
+
+    // 获取用户详情
+    const userService = MatrixUserService.getInstance()
+    await userService.loadCurrentProfile()
+    const profile = userService.currentProfile.value
+
+    // 构建用户详情对象
+    const userDetail: any = {
+      uid: profile?.userId.split(':')[0].replace('@', '') || '',
+      account: profile?.userId.split(':')[0].replace('@', '') || '',
+      name: profile?.displayName || '',
+      avatar: profile?.avatarUrl || '',
+      userStateId: '1'
+    }
+
     userStatusStore.stateId = userDetail.userStateId
     const account = {
       ...userDetail,

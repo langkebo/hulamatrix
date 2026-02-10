@@ -1,5 +1,5 @@
-import { RoomEvent } from '@/lib/matrix-sdk'
-import type { MatrixEvent, Room } from '@/lib/matrix-sdk'
+import { RoomEvent } from 'matrix-js-sdk'
+import type { MatrixEvent, Room } from 'matrix-js-sdk'
 import MatrixClientService from './MatrixClientService'
 import type { SyncState, MatrixSyncResponse, MatrixEventWrapper } from '@/types/matrix'
 

@@ -121,14 +121,22 @@ class FriendsService {
 
     try {
       const client = this.getClient()
-      const result = (await client.friends.getFriends({ page, limit, category: categoryId })) as any
+      const result = await client.friends.getFriends({ page, limit, category: categoryId })
 
       const paginatedResult: PaginatedFriends = {
-        items: result?.items || result || [],
-        total: result?.total || result?.length || 0,
+        items: result.items.map((f) => ({
+          userId: f.friend_id,
+          displayName: f.display_name || '',
+          avatarUrl: f.avatar_url || '',
+          remark: f.remark || '',
+          tags: [], // IFriend doesn't have tags?
+          isOnline: false, // IFriend doesn't have presence
+          lastSeen: ''
+        })),
+        total: result.pagination.total,
         page,
         pageSize: limit,
-        hasMore: (result?.items || result || []).length === limit
+        hasMore: result.items.length === limit
       }
 
       if (page === 1) {
@@ -139,6 +147,32 @@ class FriendsService {
     } catch (error) {
       logger.error('Failed to get friends:', error)
       if (cached) return cached
+      throw this.handleError(error)
+    }
+  }
+
+  async getFriendsBatch(userIds: string[]): Promise<Friend[]> {
+    if (!userIds.length) return []
+    try {
+      const client = this.getClient()
+      const resultMap = await client.friends.getFriendsBatch(userIds)
+
+      return userIds.map((id) => {
+        const f = resultMap.get(id)
+        if (!f) return { userId: id } as Friend
+
+        return {
+          userId: f.friend_id,
+          displayName: f.display_name || '',
+          avatarUrl: f.avatar_url || '',
+          remark: f.remark || '',
+          tags: [],
+          isOnline: false,
+          lastSeen: ''
+        }
+      })
+    } catch (error) {
+      logger.error('Failed to get friends batch:', error)
       throw this.handleError(error)
     }
   }
@@ -157,18 +191,18 @@ class FriendsService {
   async sendFriendRequest(targetUserId: string, message?: string): Promise<FriendRequest> {
     try {
       const client = this.getClient()
-      const result = await (client.friends.sendFriendRequest as any)(targetUserId, message)
+      const result = await client.friends.sendFriendRequest({ target_id: targetUserId, message })
 
       this.clearCache('getFriends')
       this.clearCache('getPendingRequests')
 
       return {
-        requestId: result?.request_id || result?.id || '',
-        senderId: result?.sender_id || '',
-        receiverId: result?.receiver_id || targetUserId,
-        status: 'pending',
+        requestId: result.request_id || '',
+        senderId: (this.getClient() as any).getUserId() || '',
+        receiverId: targetUserId,
+        status: result.status as any,
         message,
-        createdAt: result?.created_at || new Date().toISOString()
+        createdAt: new Date().toISOString()
       }
     } catch (error) {
       logger.error('Failed to send friend request:', error)
@@ -187,13 +221,13 @@ class FriendsService {
       const client = this.getClient()
       const result = await client.friends.getPendingRequests()
 
-      const requests: FriendRequest[] = (result || []).map((req: any) => ({
-        requestId: req.request_id || req.room_id,
-        senderId: req.sender_id || req.from_user,
-        receiverId: req.receiver_id || req.to_user,
-        status: req.status || 'pending',
+      const requests: FriendRequest[] = result.map((req) => ({
+        requestId: req.request_id,
+        senderId: req.requester_id,
+        receiverId: req.target_id,
+        status: req.status as any,
         message: req.message,
-        createdAt: req.created_at || new Date().toISOString()
+        createdAt: req.created_at
       }))
 
       this.setCache(cacheKey, requests)
@@ -248,16 +282,16 @@ class FriendsService {
   async createCategory(name: string, parentId?: string): Promise<FriendCategory> {
     try {
       const client = this.getClient()
-      const result = await (client.friends.createCategory as any)(name, parentId)
+      const result = await client.friends.createCategory(name)
 
       this.clearCache('getCategories')
 
       return {
-        categoryId: result?.category_id || result?.id || '',
-        name: result?.name || name,
-        parentId: result?.parent_id || parentId,
+        categoryId: result.id,
+        name: result.name,
+        parentId,
         friendCount: 0,
-        createdAt: result?.created_at || new Date().toISOString()
+        createdAt: result.created_at
       }
     } catch (error) {
       logger.error('Failed to create category:', error)
@@ -343,12 +377,12 @@ class FriendsService {
 
     try {
       const client = this.getClient()
-      const result = await (client.friends.getBlockedUsers as any)(page, limit)
+      const result = await client.friends.getBlockedUsers({ page, limit })
 
-      const blockedUsers: BlockedUser[] = (result?.items || result || []).map((user: any) => ({
-        userId: user.user_id || user.id,
-        displayName: user.display_name,
-        avatarUrl: user.avatar_url,
+      const blockedUsers: BlockedUser[] = result.items.map((user) => ({
+        userId: user.user_id,
+        displayName: undefined,
+        avatarUrl: '',
         blockedAt: user.blocked_at || new Date().toISOString(),
         reason: user.reason
       }))
@@ -384,14 +418,14 @@ class FriendsService {
 
     try {
       const client = this.getClient()
-      const stats = await ((client.friends as any)?.getStats?.() || {})
+      const stats = await client.friends.getFriendStats()
 
       const result: FriendStatistics = {
-        totalFriends: (stats as any)?.total_friends || (stats as any)?.total || 0,
-        onlineFriends: (stats as any)?.online_friends || 0,
-        pendingRequests: (stats as any)?.pending_requests || 0,
-        blockedCount: (stats as any)?.blocked_count || 0,
-        categoryDistribution: (stats as any)?.category_distribution || {}
+        totalFriends: stats.total_friends,
+        onlineFriends: 0,
+        pendingRequests: stats.pending_requests,
+        blockedCount: stats.blocked_count,
+        categoryDistribution: {}
       }
 
       this.setCache(cacheKey, result)

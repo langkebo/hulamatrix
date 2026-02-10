@@ -220,7 +220,7 @@ import { useGroupStore } from '@/stores/group'
 import { useImageViewer } from '@/stores/imageViewer'
 import { useGlobalStore } from '@/stores/global'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { getGroupDetail } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 
 const { t } = useI18n()
 const { openMsgSession } = useCommon()
@@ -299,11 +299,14 @@ watchEffect(async () => {
     nicknameSnapshot.value = ''
     announcementContent.value = ''
   } else {
-    await getGroupDetail(content.uid)
+    await SystemConfigApi.getGroupDetail(content.uid)
       .then((response: any) => {
-        item.value = response
-        const normalizedNickname = resolveMyRoomNickname({ roomId: response.roomId, myName: response.myName })
-        const normalizedRemark = response.remark || ''
+        item.value = response.data || response
+        const normalizedNickname = resolveMyRoomNickname({
+          roomId: response.data?.roomId || response.roomId,
+          myName: response.data?.myName || response.myName
+        })
+        const normalizedRemark = response.data?.remark || response.remark || ''
         nicknameValue.value = normalizedNickname
         nicknameSnapshot.value = normalizedNickname
         remarkSnapshot.value = normalizedRemark

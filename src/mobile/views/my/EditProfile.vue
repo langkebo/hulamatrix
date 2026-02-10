@@ -153,7 +153,7 @@ import { useGroupStore } from '@/stores/group'
 import { useLoginHistoriesStore } from '@/stores/loginHistory'
 import { useUserStore } from '@/stores/user.ts'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { ModifyUserInfo } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -257,14 +257,16 @@ const saveEditInfo = () => {
   //   return
   // }
 
-  ModifyUserInfo({
-    name: localUserInfo.value.name!,
-    sex: localUserInfo.value.sex!,
-    phone: localUserInfo.value.phone ?? '',
-    avatar: localUserInfo.value.avatar ?? '',
-    resume: localUserInfo.value.resume ?? '',
-    modifyNameChance: localUserInfo.value.modifyNameChance!
-  }).then(() => {
+  UserApi.ModifyUserInfo({
+    displayName: localUserInfo.value.name!,
+    avatarUrl: localUserInfo.value.avatar ?? '',
+    customData: {
+      sex: localUserInfo.value.sex!,
+      phone: localUserInfo.value.phone ?? '',
+      resume: localUserInfo.value.resume ?? '',
+      modifyNameChance: localUserInfo.value.modifyNameChance!
+    }
+  } as any).then(() => {
     // 更新本地缓存的用户信息
     userStore.userInfo!.name = localUserInfo.value.name!
     userStore.userInfo!.sex = localUserInfo.value.sex!

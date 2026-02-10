@@ -7,9 +7,9 @@ import { useChatStore } from '@/stores/chat'
 import { clearQueue, readCountQueue } from '@/utils/ReadCountQueue.ts'
 import { useMitt } from '@/hooks/useMitt.ts'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
+import { isTauri } from '@tauri-apps/api/core'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 export const useGlobalStore = defineStore(
   StoresEnum.GLOBAL,

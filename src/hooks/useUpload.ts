@@ -50,19 +50,6 @@ export interface UploadOptions {
 const Max = 500 // 单位M
 const MAX_FILE_SIZE = Max * 1024 * 1024 // 最大上传限制
 
-let cryptoJS: any | null = null
-
-const loadCryptoJS = async () => {
-  if (!cryptoJS) {
-    const module = await import('crypto-js')
-    cryptoJS = module.default ?? module
-  }
-  return cryptoJS as {
-    lib: { WordArray: { create: (arr: ArrayBuffer | Uint8Array) => any } }
-    MD5: (wordArray: any) => { toString: () => string }
-  }
-}
-
 /**
  * 文件上传Hook
  */
@@ -119,11 +106,9 @@ export const useUpload = () => {
       const arrayBuffer = await file.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
       let hash: string
-
       if (isAndroid()) {
-        const CryptoJS = await loadCryptoJS()
-        const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer as ArrayBuffer)
-        hash = CryptoJS.MD5(wordArray).toString()
+        const Md5 = await getWasmMd5()
+        hash = await Md5.digest_u8(uint8Array)
       } else {
         const Md5 = await getWasmMd5()
         hash = await Md5.digest_u8(uint8Array)

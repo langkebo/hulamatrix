@@ -69,9 +69,9 @@
         <div v-else class="session-list">
           <div
             v-for="session in filteredSessions"
-            :key="session.sessionId"
+            :key="session.roomId"
             class="session-item p-12px cursor-pointer hover:bg-[--bg-menu-hover] transition-colors"
-            :class="{ 'bg-[--bg-menu-hover]': selectedSessionId === session.sessionId }"
+            :class="{ 'bg-[--bg-menu-hover]': selectedSessionId === session.roomId }"
             @click="handleSelectSession(session)">
             <n-flex align="center" :size="12">
               <n-avatar
@@ -83,10 +83,10 @@
               <div class="flex-1 min-w-0">
                 <n-flex justify="space-between" align="center">
                   <span class="font-bold text-14px text-[--text-color] truncate">
-                    {{ session.sessionName || getParticipantNames(session.participants) }}
+                    {{ session.name || getParticipantNames(session) }}
                   </span>
                   <span class="text-12px text-[--info-text-color]">
-                    {{ formatTime(session.updatedAt || session.createdAt) }}
+                    {{ formatTime(session.lastActive || '') }}
                   </span>
                 </n-flex>
                 <n-flex justify="space-between" align="center" class="mt-4px">
@@ -107,7 +107,11 @@
     </div>
 
     <!-- 创建会话模态框 -->
-    <n-modal v-model:show="showCreateModal" preset="card" :title="t('private_chat.create_session')" style="width: 480px">
+    <n-modal
+      v-model:show="showCreateModal"
+      preset="card"
+      :title="t('private_chat.create_session')"
+      style="width: 480px">
       <div class="create-session-form">
         <div class="mb-16px">
           <label class="block text-14px font-medium text-[--text-color] mb-8px">
@@ -151,21 +155,17 @@
             <n-avatar :size="64" round :src="getSessionAvatar(selectedSession)" />
           </div>
           <h4 class="text-16px font-bold text-center text-[--text-color] mb-16px">
-            {{ selectedSession.sessionName || getParticipantNames(selectedSession.participants) }}
+            {{ selectedSession.name || getParticipantNames(selectedSession) }}
           </h4>
           <n-divider />
           <div class="detail-info">
             <div class="info-item">
               <span class="info-label">{{ t('private_chat.created_at') }}</span>
-              <span class="info-value">{{ formatTime(selectedSession.createdAt) }}</span>
+              <span class="info-value">{{ formatTime(selectedSession.lastActive || '') }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">{{ t('private_chat.participants_count') }}</span>
-              <span class="info-value">{{ selectedSession.participants.length }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">{{ t('private_chat.ttl') }}</span>
-              <span class="info-value">{{ formatTtl(selectedSession.ttlSeconds) }}</span>
+              <span class="info-value">{{ selectedSession.memberCount }}</span>
             </div>
           </div>
           <n-divider />
@@ -200,8 +200,8 @@ import { storeToRefs } from 'pinia'
 import { ThemeEnum } from '@/enums'
 import { useSettingStore } from '@/stores/setting'
 import { useGroupStore } from '@/stores/group'
-import MatrixPrivateChatService, { type PrivateChatSession } from '@/services/matrix/MatrixPrivateChatService'
-import MatrixFriendsService from '@/services/matrix/MatrixFriendsService'
+import ChatroomService, { type Chatroom } from '@/services/matrix/ChatroomService'
+import FriendsService from '@/services/matrix/FriendsService'
 import { formatTime, formatTtl } from '@/utils/ComputedTime'
 
 const { t } = useI18n()
@@ -210,13 +210,13 @@ const groupStore = useGroupStore()
 const { themes } = storeToRefs(settingStore)
 
 const loading = ref(true)
-const sessions = ref<PrivateChatSession[]>([])
+const sessions = ref<Chatroom[]>([])
 const selectedSessionId = ref<string | null>(null)
 const searchQuery = ref('')
 const showSearch = ref(false)
 const showCreateModal = ref(false)
 const showDetailPanel = ref(false)
-const selectedSession = ref<PrivateChatSession | null>(null)
+const selectedSession = ref<Chatroom | null>(null)
 const newSessionName = ref('')
 const selectedParticipants = ref<string[]>([])
 const isEncrypted = ref(true)
@@ -229,16 +229,18 @@ const filteredSessions = computed(() => {
   }
   const query = searchQuery.value.toLowerCase()
   return sessions.value.filter((session) => {
-    const name = session.sessionName?.toLowerCase() || ''
-    const participants = session.participants.join(' ').toLowerCase()
-    return name.includes(query) || participants.includes(query)
+    const name = session.name?.toLowerCase() || ''
+    // Chatroom doesn't list participants directly in search usually,
+    // but we can try matching room name or topic
+    return name.includes(query)
   })
 })
 
 const loadSessions = async () => {
   loading.value = true
   try {
-    sessions.value = await MatrixPrivateChatService.getInstance().getSessions()
+    const result = await ChatroomService.getInstance().getChatrooms(1, 100)
+    sessions.value = result.items.filter((r) => r.isDirect) // Only show direct chats
   } catch (error) {
     console.error('[PrivateChatList] Failed to load sessions:', error)
   } finally {
@@ -248,10 +250,11 @@ const loadSessions = async () => {
 
 const loadFriends = async () => {
   try {
-    const { friends } = await MatrixFriendsService.getInstance().getFriendsList()
+    const result = await FriendsService.getInstance().getFriends()
+    const friends = result.items
     friendOptions.value = friends.map((friend) => ({
-      label: friend.display_name || friend.user_id,
-      value: friend.user_id
+      label: friend.displayName || friend.userId,
+      value: friend.userId
     }))
   } catch (error) {
     console.error('[PrivateChatList] Failed to load friends:', error)
@@ -281,17 +284,18 @@ const handleConfirmCreate = async () => {
 
   creating.value = true
   try {
-    const sessionId = await MatrixPrivateChatService.getInstance().createSession({
-      participants: selectedParticipants.value,
-      sessionName: newSessionName.value || undefined,
-      isEncrypted: isEncrypted.value
+    const roomId = await ChatroomService.getInstance().createRoom({
+      invite: selectedParticipants.value,
+      name: newSessionName.value || undefined,
+      isEncrypted: isEncrypted.value,
+      isDirect: true
     })
     window.$message.success(t('private_chat.create_success'))
     showCreateModal.value = false
     await loadSessions()
-    const session = sessions.value.find((s) => s.sessionId === sessionId)
+    const session = sessions.value.find((s) => s.roomId === roomId)
     if (session) {
-      selectedSessionId.value = sessionId
+      selectedSessionId.value = roomId
       selectedSession.value = session
       showDetailPanel.value = true
     }
@@ -303,15 +307,17 @@ const handleConfirmCreate = async () => {
   }
 }
 
-const handleSelectSession = (session: PrivateChatSession) => {
-  selectedSessionId.value = session.sessionId
+const handleSelectSession = (session: Chatroom) => {
+  selectedSessionId.value = session.roomId
   selectedSession.value = session
   showDetailPanel.value = true
 }
 
 const handleOpenChat = () => {
   if (selectedSession.value) {
-    emit('openChat', selectedSession.value)
+    // Map Chatroom back to PrivateChatSession interface for compatibility if needed by parent
+    // Or update parent to accept Chatroom
+    emit('openChat', selectedSession.value as any)
     showDetailPanel.value = false
   }
 }
@@ -326,7 +332,7 @@ const handleCloseSession = async () => {
     negativeText: t('common.cancel'),
     onPositiveClick: async () => {
       try {
-        await MatrixPrivateChatService.getInstance().closeSession(selectedSession.value!.sessionId)
+        await ChatroomService.getInstance().leaveRoom(selectedSession.value!.roomId)
         window.$message.success(t('private_chat.close_session_success'))
         showDetailPanel.value = false
         selectedSession.value = null
@@ -339,28 +345,19 @@ const handleCloseSession = async () => {
   })
 }
 
-const getSessionAvatar = (session: PrivateChatSession): string => {
-  if (session.participants.length === 1) {
-    const userId = session.participants[0]
-    const user = groupStore.getUserInfo(userId)
-    return user?.avatar || ''
-  }
-  return ''
+const getSessionAvatar = (session: Chatroom): string => {
+  return session.avatarUrl || ''
 }
 
-const getParticipantNames = (participants: string[]): string => {
-  const names = participants.map((userId) => {
-    const user = groupStore.getUserInfo(userId)
-    return user?.name || userId
-  })
-  return names.join(', ')
+const getParticipantNames = (session: Chatroom): string => {
+  return session.name || 'Chat'
 }
 
-const getLastMessagePreview = (_session: PrivateChatSession): string => {
-  return t('private_chat.no_messages')
+const getLastMessagePreview = (session: Chatroom): string => {
+  return session.lastMessage || t('private_chat.no_messages')
 }
 
-const emit = defineEmits<(e: 'openChat', session: PrivateChatSession) => void>()
+const emit = defineEmits<(e: 'openChat', session: any) => void>()
 
 onMounted(async () => {
   await loadSessions()

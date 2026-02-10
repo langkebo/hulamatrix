@@ -1,4 +1,5 @@
 import { type, version } from '@tauri-apps/plugin-os'
+import { isTauri } from '@tauri-apps/api/core'
 
 /**
  * 平台类型枚举
@@ -10,8 +11,7 @@ export type PlatformType = 'desktop' | 'mobile'
  */
 export type OSType = 'windows' | 'macos' | 'linux' | 'android' | 'ios'
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 /**
  * 平台检测结果 - 应用启动时执行一次，全局共享

@@ -13,16 +13,10 @@
       <img src="@/assets/mobile/chat-home/background.webp" class="w-100% absolute top-0 -z-1" alt="hula" />
       <div class="flex flex-col z-1">
         <div class="flex flex-col p-20px gap-20px">
-          <div
-            v-for="section in sections"
-            :key="section.title"
-            class="bg-white p-12px rounded-lg shadow-sm">
+          <div v-for="section in sections" :key="section.title" class="bg-white p-12px rounded-lg shadow-sm">
             <div class="text-base font-medium mb-12px">{{ section.title }}</div>
             <div class="flex flex-col gap-12px">
-              <div
-                v-for="item in section.items"
-                :key="item.key"
-                class="flex justify-between items-center">
+              <div v-for="item in section.items" :key="item.key" class="flex justify-between items-center">
                 <div class="text-sm flex-1">{{ item.label }}</div>
                 <div>
                   <n-switch v-if="item.type === 'switch'" v-model:value="item.value" />
@@ -63,7 +57,7 @@ import { useGlobalStore } from '@/stores/global'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useLogin } from '@/hooks/useLogin'
 import { showDialog } from 'vant'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import router from '@/router'
 import { useI18n } from 'vue-i18n'
 
@@ -198,7 +192,7 @@ async function handleLogout() {
   })
     .then(async () => {
       try {
-        await ImRequestUtils.logout({ autoLogin: true })
+        await AuthApi.logout({ autoLogin: true })
         logoutSuccess = true
       } catch (error) {
         console.error('服务器登出失败：', error)

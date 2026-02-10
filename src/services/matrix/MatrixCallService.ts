@@ -1,4 +1,4 @@
-import { createNewMatrixCall, CallEvent, type MatrixCall } from '@/lib/matrix-sdk'
+import { createNewMatrixCall, CallEvent, type MatrixCall } from 'matrix-js-sdk'
 import MatrixClientService from './MatrixClientService'
 import { ref, type Ref } from 'vue'
 

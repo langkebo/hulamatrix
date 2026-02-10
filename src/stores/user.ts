@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { StoresEnum } from '@/enums'
 import type { UserInfoType } from '@/services/types'
-import { getUserDetail } from '@/utils/ImRequestUtils'
+import MatrixUserService from '@/services/matrix/MatrixUserService'
 import * as PathUtil from '@/utils/PathUtil'
 import { useGlobalStore } from './global'
 
@@ -12,9 +12,21 @@ export const useUserStore = defineStore(
     const globalStore = useGlobalStore()
 
     const getUserDetailAction = () => {
-      getUserDetail()
-        .then((res: any) => {
-          userInfo.value = { ...userInfo.value, ...res }
+      const userService = MatrixUserService.getInstance()
+      userService
+        .loadCurrentProfile()
+        .then(() => {
+          const profile = userService.currentProfile.value
+          if (profile) {
+            const localPart = profile.userId.split(':')[0].replace('@', '')
+            userInfo.value = {
+              ...userInfo.value!,
+              uid: localPart,
+              account: localPart,
+              name: profile.displayName || localPart,
+              avatar: profile.avatarUrl || ''
+            } as UserInfoType
+          }
         })
         .catch((e) => {
           console.error('获取用户详情失败:', e)

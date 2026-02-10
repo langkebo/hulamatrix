@@ -1,1 +1,0 @@
-{"version":3,"file":"friends-verification.d.ts","sourceRoot":"","sources":["../../../src/enhanced/api/friends-verification.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,yBAAyB,EAAE,MAAM,kBAAkB,CAAC;AAKlE,OAAO,EAAE,OAAO,EAAE,MAAM,sBAAsB,CAAC;AAE/C,qBAAa,sBAAuB,SAAQ,OAAO;gBAC5B,UAAU,EAAE,yBAAyB;IAI3C,YAAY,CAAC,QAAQ,EAAE,MAAM,GAAG,OAAO,CAAC,OAAO,CAAC;CAWhE"}

@@ -1,4 +1,4 @@
-import type { IRoomEvent, MatrixEvent } from '@/lib/matrix-sdk'
+import type { IRoomEvent, MatrixEvent } from 'matrix-js-sdk'
 
 export interface MatrixConfig {
   baseUrl: string

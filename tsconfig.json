@@ -10,9 +10,7 @@
     "paths": {
       "~/*": ["./*"],
       "@/*": ["./src/*"],
-      "#/*": ["./src/mobile/*"],
-      "@/lib/matrix-sdk": ["./lib/matrix-sdk"],
-      "@/lib/matrix-sdk/*": ["./lib/matrix-sdk/*"]
+      "#/*": ["./src/mobile/*"]
     },
 
     /** Bundler mode */

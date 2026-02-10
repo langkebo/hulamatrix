@@ -2,7 +2,7 @@ import { useCachedStore } from '@/stores/cached'
 import { useChatStore } from '@/stores/chat'
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user.ts'
-import { updateMyRoomInfo } from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 
 type UpdatePayload = {
   roomId: string
@@ -44,7 +44,10 @@ export const useMyRoomInfoUpdater = () => {
         updated = await cacheStore.updateMyRoomInfo(payload)
       }
     }
-    await updateMyRoomInfo(payload)
+    await GroupsApi.updateMyRoomInfo({
+      roomId: payload.id,
+      displayName: payload.myName
+    })
 
     groupStore.myNameInCurrentGroup = myName
     if (groupStore.countInfo) {

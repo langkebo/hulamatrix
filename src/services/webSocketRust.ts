@@ -1,5 +1,6 @@
 import MatrixClientService from './matrix/MatrixClientService'
 import { getMatrixConfig } from '@/config/matrix'
+import { isTauri } from '@tauri-apps/api/core'
 
 export enum ConnectionState {
   DISCONNECTED = 'disconnected',
@@ -18,8 +19,7 @@ interface RustWebSocketClient {
   setupBusinessMessageListeners(): void
 }
 
-const isTauriContext = () =>
-  Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
+const isTauriContext = () => isTauri()
 
 const matrixWebSocketClient: RustWebSocketClient = {
   async initConnect(): Promise<void> {

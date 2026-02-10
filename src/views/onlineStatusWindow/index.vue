@@ -55,7 +55,7 @@ import type { UserState } from '@/services/types'
 import { useUserStore } from '@/stores/user'
 import { useUserStatusStore } from '@/stores/userStatus'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus.ts'
-import { changeUserState } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 
 const userStatusStore = useUserStatusStore()
 const userStore = useUserStore()
@@ -88,7 +88,7 @@ watchEffect(() => {
  */
 const handleActive = async (item: UserState) => {
   try {
-    await changeUserState({ id: item.id })
+    await UserApi.changeUserState({ id: item.id })
 
     stateId.value = item.id
     userStore.userInfo!.userStateId = item.id

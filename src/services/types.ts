@@ -881,3 +881,14 @@ export enum FeedPermission {
   PART_VISIBLE = 'partVisible', // 部分可见
   NOT_ANYONE = 'notAnyone' // 不给谁看
 }
+
+export interface UserDetail {
+  id?: string
+  uid: string
+  account: string
+  name: string
+  avatar: string
+  userStateId: string
+  email?: string
+  phone?: string
+}

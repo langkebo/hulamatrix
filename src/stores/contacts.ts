@@ -4,14 +4,9 @@ import type { FriendItem, NoticeItem } from '@/services/types'
 import { RequestNoticeAgreeStatus } from '@/services/types'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
-import {
-  deleteFriend,
-  getFriendPage,
-  getNoticeUnreadCount,
-  handleInvite,
-  requestNoticePage
-} from '@/utils/ImRequestUtils'
+import FriendsService from '@/services/matrix/FriendsService'
 import { unreadCountManager } from '@/utils/UnreadCountManager'
+
 // 定义分页大小常量
 export const pageSize = 20
 export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
@@ -35,7 +30,6 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
   const getContactList = async (isFresh = false) => {
     // 非刷新模式下，如果已经加载完或正在加载中，则直接返回
     if (!isFresh) {
-      console.log(contactsOptions.value.isLast)
       if (contactsOptions.value.isLast) return
     }
     if (isFresh) {
@@ -44,17 +38,30 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
     }
     contactsOptions.value.isLoading = true
     try {
-      const data = await getFriendPage({ cursor: contactsOptions.value.cursor })
+      const friendsService = FriendsService.getInstance()
+      const page = isFresh ? 1 : Math.floor(contactsList.value.length / pageSize) + 1
+      const data = await friendsService.getFriends(page, pageSize)
 
-      if (!data) return
-      // 刷新模式下替换整个列表，否则追加到列表末尾
+      // Use getFriendsBatch to enrich data if needed, or if getFriends returns partial data
+      // Currently getFriends returns full data, but we can use getFriendsBatch to refresh specific fields if we had a list of IDs
+      // For now, we rely on getFriends as it's paginated.
+
+      const mappedList: FriendItem[] = data.items.map((f) => ({
+        uid: f.userId,
+        remark: f.remark || f.displayName || f.userId,
+        activeStatus: 1, // TODO: Get real online status
+        lastOptTime: f.lastActive ? new Date(f.lastActive).getTime() : Date.now(),
+        hideMyPosts: false,
+        hideTheirPosts: false
+      }))
+
       if (isFresh) {
-        contactsList.value = data.list
+        contactsList.value = mappedList
       } else {
-        contactsList.value.push(...data.list)
+        contactsList.value.push(...mappedList)
       }
-      contactsOptions.value.cursor = data.cursor
-      contactsOptions.value.isLast = data.isLast
+      // Update pagination
+      contactsOptions.value.isLast = !data.hasMore
     } catch (error) {
       console.error('获取联系人列表失败:', error)
     } finally {
@@ -63,17 +70,47 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
   }
 
   /**
+   * 批量刷新好友详情 (使用 getFriendsBatch)
+   * @param uids 用户ID列表
+   */
+  const refreshContactsBatch = async (uids: string[]) => {
+    if (!uids.length) return
+    try {
+      const friendsService = FriendsService.getInstance()
+      const details = await friendsService.getFriendsBatch(uids)
+
+      // Update local list
+      details.forEach((detail) => {
+        const index = contactsList.value.findIndex((c) => c.uid === detail.userId)
+        if (index !== -1) {
+          const existing = contactsList.value[index]
+          contactsList.value[index] = {
+            ...existing,
+            remark: detail.remark || detail.displayName || detail.userId
+            // activeStatus: detail.isOnline ? 1 : 2, // If supported
+          }
+        }
+      })
+    } catch (error) {
+      console.error('批量刷新好友详情失败:', error)
+    }
+  }
+
+  /**
    * 获取好友申请未读数
    * 更新全局store中的未读计数
    */
   const getApplyUnReadCount = async () => {
-    const res: any = await getNoticeUnreadCount()
-    if (!res) return
-    // 更新全局store中的未读计数
-    globalStore.unReadMark.newFriendUnreadCount = res.unReadCount4Friend
-    globalStore.unReadMark.newGroupUnreadCount = res.unReadCount4Group
+    try {
+      const stats = await FriendsService.getInstance().getStatistics()
+      // 更新全局store中的未读计数
+      globalStore.unReadMark.newFriendUnreadCount = stats.pendingRequests
+      // globalStore.unReadMark.newGroupUnreadCount = ... // Group stats not in FriendsService
 
-    unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
+      unreadCountManager.refreshBadge(globalStore.unReadMark, 0)
+    } catch (error) {
+      console.error('获取未读数失败', error)
+    }
   }
 
   /**
@@ -81,7 +118,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
    * @param isFresh 是否刷新列表，true则重新加载，false则加载更多
    * @param click 是否点击刷新，true则点击清空通知未读，false则仅仅请求通知列表
    */
-  const getApplyPage = async (applyType: string, isFresh = false, click = false) => {
+  const getApplyPage = async (applyType: string, isFresh = false, _click = false) => {
     // 非刷新模式下，如果已经加载完或正在加载中，则直接返回
     if (!isFresh) {
       if (applyPageOptions.value.isLast) return
@@ -94,31 +131,36 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
     }
 
     try {
-      const res = await requestNoticePage({
-        pageNo: applyPageOptions.value.pageNo,
-        pageSize: 30,
-        click: click,
-        applyType,
-        cursor: isFresh ? '' : applyPageOptions.value.cursor
-      })
-      if (!res) return
-      const list = res.list || []
-      // 刷新模式下替换整个列表，否则追加到列表末尾
-      if (isFresh) {
-        requestFriendsList.value.splice(0, requestFriendsList.value.length, ...list)
-      } else {
-        requestFriendsList.value.push(...list)
-      }
+      if (applyType === 'friend') {
+        const requests = await FriendsService.getInstance().getPendingRequests()
 
-      // 更新分页信息
-      applyPageOptions.value.cursor = res.cursor
-      applyPageOptions.value.isLast = res.isLast
+        // Map to NoticeItem
+        const list: NoticeItem[] = requests.map((req) => ({
+          id: req.requestId,
+          eventType: 1, // Friend Apply
+          type: 2, // Friend
+          senderId: req.senderId,
+          receiverId: req.receiverId,
+          applyId: req.requestId,
+          roomId: '', // Friend request doesn't usually have room id yet
+          content: req.message || '',
+          status: req.status === 'pending' ? 0 : req.status === 'accepted' ? 1 : 2,
+          isRead: false,
+          createTime: new Date(req.createdAt).getTime()
+        }))
 
-      // 如果有返回pageNo，则使用服务器返回的pageNo，否则自增页码
-      if (res.pageNo) {
-        applyPageOptions.value.pageNo = res.pageNo + 1
+        if (isFresh) {
+          requestFriendsList.value = list
+        } else {
+          // Since getPendingRequests returns ALL, we don't push, we just replace.
+          // Pagination is not supported by backend yet for pending requests?
+          // FriendsService.getPendingRequests returns array.
+          requestFriendsList.value = list
+        }
+
+        applyPageOptions.value.isLast = true // Assume all fetched
       } else {
-        applyPageOptions.value.pageNo++
+        // Group invites logic placeholder
       }
     } catch (error) {
       console.error('获取好友申请列表失败:', error)
@@ -152,7 +194,17 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
     const markAsRead = apply.markAsRead ?? false
 
     try {
-      await handleInvite({ applyId: apply.applyId, state: apply.state })
+      if (targetApplyType === 'friend') {
+        if (apply.state === RequestNoticeAgreeStatus.ACCEPTED) {
+          // 2?
+          await FriendsService.getInstance().acceptFriendRequest(apply.applyId)
+        } else if (apply.state === RequestNoticeAgreeStatus.REJECTED) {
+          // 3?
+          await FriendsService.getInstance().rejectFriendRequest(apply.applyId)
+        }
+      } else {
+        // Group invite handling
+      }
 
       // 刷新好友申请列表
       await getApplyPage(targetApplyType, true, markAsRead)
@@ -167,7 +219,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
       // 获取最新的未读数
       await getApplyUnReadCount()
 
-      // 如果是同意群邀请/群申请，则刷新群信息与成员列表
+      // ... group logic ...
       const isGroupApply =
         apply.state === RequestNoticeAgreeStatus.ACCEPTED &&
         targetApplyType === 'group' &&
@@ -205,7 +257,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
   const onDeleteFriend = async (uid: string) => {
     if (!uid) return
     // 删除好友
-    await deleteFriend({ targetUid: uid })
+    await FriendsService.getInstance().removeFriend(uid)
     // 刷新好友列表
     await getContactList(true)
   }
@@ -220,6 +272,7 @@ export const useContactStore = defineStore(StoresEnum.CONTACTS, () => {
     applyPageOptions,
     onDeleteFriend,
     onHandleInvite,
-    deleteContact
+    deleteContact,
+    refreshContactsBatch
   }
 })
