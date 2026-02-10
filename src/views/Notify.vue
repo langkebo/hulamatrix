@@ -66,8 +66,6 @@ import { AvatarUtils } from '@/utils/AvatarUtils'
 import { isWindows } from '@/utils/PlatformConstants'
 import { useI18n } from 'vue-i18n'
 
-// import { useTauriListener } from '../hooks/useTauriListener'
-
 // 定义分组消息的类型
 type GroupedMessage = {
   id: string
@@ -86,7 +84,6 @@ const isTauriContext = () =>
   Boolean((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ || (window as any).__TAURI_INVOKE__)
 const appWindow = isTauriContext() ? WebviewWindow.getCurrent() : null
 const { checkWinExist, resizeWindow } = useWindow()
-// const { addListener } = useTauriListener()
 const { checkMessageAtMe } = useReplaceMsg()
 const globalStore = useGlobalStore()
 const chatStore = useChatStore()

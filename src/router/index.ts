@@ -589,7 +589,6 @@ const router: any = createRouter({
 router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   // 桌面端直接放行
   if (!isMobile) {
-    console.log('[守卫] 非移动端，直接放行')
     return next()
   }
 
@@ -600,7 +599,6 @@ router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormal
     const isAgreementPage = to.path === '/mobile/serviceAgreement' || to.path === '/mobile/privacyAgreement'
 
     // 闪屏页白名单：不论登录状态都允许进入
-    console.log('路由守卫to->', to.path)
     if (isSplashPage || isForgetPage || isAgreementPage) {
       return next()
     }
