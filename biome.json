@@ -60,7 +60,7 @@
       },
       "suspicious": {
         "noGlobalIsNan": "off",
-        "noExplicitAny": "off",
+        "noExplicitAny": "warn",
         "noAssignInExpressions": "off",
         "noImplicitAnyLet": "off",
         "noConfusingVoidType": "off",

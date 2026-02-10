@@ -152,7 +152,7 @@ import { useChatStore } from '@/stores/chat'
 import { useGlobalStore } from '@/stores/global'
 import { useGroupStore } from '@/stores/group'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { mergeMsg } from '@/utils/ImRequestUtils'
+import { MessagesApi } from '@/services/api'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { sendMessageWithChannel } from '@/utils/MessageSender'
@@ -392,11 +392,11 @@ const sendMsg = async () => {
       await sendCustomForwardTask(selectedRoomIds)
     } else {
       const selectedMsgIds = selectedMsgs.value.map((item) => item.message.id)
-      await mergeMsg({
+      await MessagesApi.mergeMsg({
         roomIds: selectedRoomIds,
         type: mergeMessageType,
         messageIds: selectedMsgIds,
-        fromRoomId: globalStore.currentSessionRoomId
+        sourceRoomId: globalStore.currentSessionRoomId
       })
     }
     window.$message.success(t('message.multi_choose.forward_success'))

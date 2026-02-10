@@ -145,10 +145,11 @@ import { useMitt } from '@/hooks/useMitt.ts'
 import { useWindow } from '@/hooks/useWindow'
 import router from '@/router'
 import { useChatStore } from '@/stores/chat.ts'
+import { useContactStore } from '@/stores/contacts'
 import { useGlobalStore } from '@/stores/global.ts'
 import { useGroupStore } from '@/stores/group'
 import { useSettingStore } from '@/stores/setting.ts'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { GroupsApi } from '@/services/api'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { options, renderLabel, renderSourceList, renderTargetList } from './model.tsx'
 import { useI18n } from 'vue-i18n'
@@ -160,6 +161,7 @@ const { t } = useI18n()
 const { createWebviewWindow } = useWindow()
 
 const chatStore = useChatStore()
+const contactStore = useContactStore()
 const settingStore = useSettingStore()
 const globalStore = useGlobalStore()
 const groupStore = useGroupStore()
@@ -341,7 +343,18 @@ const resetCreateGroupState = () => {
 const handleCreateGroup = async () => {
   if (selectedValue.value.length < 2) return
   try {
-    const result: any = await ImRequestUtils.createGroup({ uidList: selectedValue.value })
+    // Generate a default group name based on selected members
+    const selectedFriends = contactStore.contactsList.filter((c) => selectedValue.value.includes(c.uid))
+    const groupMembers = selectedFriends.map((f) => f.remark).slice(0, 3)
+    const defaultName =
+      groupMembers.length > 0
+        ? `${groupMembers.join('、')}等${selectedValue.value.length}人`
+        : `群聊 (${new Date().toLocaleDateString()})`
+
+    const result: any = await GroupsApi.createGroup({
+      name: defaultName,
+      uidList: selectedValue.value
+    })
 
     // 创建成功后刷新会话列表以显示新群聊
     await chatStore.getSessionList(true)

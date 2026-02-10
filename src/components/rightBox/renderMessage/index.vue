@@ -165,15 +165,9 @@
             :special-menu="specialMenuList(message.message.type)"
             @reply-emoji="handleEmojiSelect($event, message)"
             @click="handleMsgClick(message)">
-            <component
-              v-memo="[
-                message.message.id,
-                message.message.status,
-                message.message.body?.translatedText?.text || '',
-                uploadProgress,
-                searchKeyword,
-                historyMode
-              ]"
+            <BurnMessageWrapper
+              :message="message"
+              :is-me="isMe"
               :class="[
                 message.message.type === MsgEnum.VOICE ? 'select-none cursor-pointer' : 'select-text cursor-text',
                 !isSpecialMsgType(message.message.type) ? (isMe ? 'bubble-oneself' : 'bubble') : '',
@@ -183,20 +177,33 @@
                     !isSpecialMsgType(message.message.type) &&
                     message.message.type !== MsgEnum.VOICE &&
                     !isMobile()
-                }
-              ]"
-              :is="componentMap[message.message.type]"
-              :body="message.message.body"
-              :message-status="message.message.status"
-              :upload-progress="uploadProgress"
-              :from-user-uid="fromUser?.uid"
-              :message="message.message"
-              :data-message-id="message.message.id"
-              :is-group="isGroup"
-              :on-image-click="onImageClick"
-              :onVideoClick="onVideoClick"
-              :search-keyword="searchKeyword"
-              :history-mode="historyMode" />
+                },
+                message.message.type === MsgEnum.IMAGE || message.message.type === MsgEnum.VIDEO
+                  ? 'rounded-8px overflow-hidden inline-block align-top'
+                  : ''
+              ]">
+              <component
+                v-memo="[
+                  message.message.id,
+                  message.message.status,
+                  message.message.body?.translatedText?.text || '',
+                  uploadProgress,
+                  searchKeyword,
+                  historyMode
+                ]"
+                :is="componentMap[message.message.type]"
+                :body="message.message.body"
+                :message-status="message.message.status"
+                :upload-progress="uploadProgress"
+                :from-user-uid="fromUser?.uid"
+                :message="message.message"
+                :data-message-id="message.message.id"
+                :is-group="isGroup"
+                :on-image-click="onImageClick"
+                :onVideoClick="onVideoClick"
+                :search-keyword="searchKeyword"
+                :history-mode="historyMode" />
+            </BurnMessageWrapper>
 
             <!-- 显示翻译文本 -->
             <Transition name="fade-translate" appear mode="out-in">
@@ -313,7 +320,7 @@ import { formatTimestamp } from '@/utils/ComputedTime.ts'
 import { isMessageMultiSelectEnabled } from '@/utils/MessageSelect'
 import { useChatStore } from '@/stores/chat'
 import { useUserStore } from '@/stores/user'
-import { markMsg, getUserByIds } from '@/utils/ImRequestUtils'
+import { MessagesApi, UserApi } from '@/services/api'
 import { createMacContextSelectionGuard } from '@/utils/MacSelectionGuard'
 import { isMobile } from '@/utils/PlatformConstants'
 import Announcement from './Announcement.vue'
@@ -332,6 +339,7 @@ import VideoCall from './VideoCall.vue'
 import Voice from './Voice.vue'
 import { toFriendInfoPage } from '@/utils/RouterUtils'
 import { vOnLongPress } from '@vueuse/components'
+import BurnMessageWrapper from './BurnMessageWrapper.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -431,11 +439,16 @@ const ensureSenderInfo = async (uid: string) => {
   if (!roomId) return
   resolvingUserSet.add(uid)
   try {
-    const users = await getUserByIds([uid])
+    const users = await UserApi.getUserByIds({ userIds: [uid] })
     const user = Array.isArray(users) ? users[0] : null
-    if (user?.uid) {
+    if (user?.userId) {
       // 将缺失用户信息写入消息所属的房间，避免污染其他房间或丢弃结果
-      groupStore.updateUserItem(user.uid, user, roomId)
+      // Note: UserBasicInfo 返回 userId，需要转换为 uid 格式供 updateUserItem 使用
+      groupStore.updateUserItem(
+        user.userId,
+        { uid: user.userId, name: user.displayName, avatar: user.avatarUrl } as any,
+        roomId
+      )
     }
   } catch (error) {
     console.error('[Message] 拉取缺失用户信息失败:', error)
@@ -517,9 +530,10 @@ const cancelReplyEmoji = async (item: MessageType, type: number): Promise<void> 
       const data = {
         msgId: item.message.id,
         markType: type, // 使用对应的MarkEnum类型
-        actType: 2 // 使用Confirm作为操作类型
+        actType: 2, // 使用Confirm作为操作类型
+        roomId: globalStore.currentSessionRoomId
       }
-      await markMsg(data)
+      await MessagesApi.markMsg(data)
     } catch (error) {
       console.error('取消表情标记失败:', error)
     }
@@ -591,10 +605,11 @@ const handleEmojiSelect = async (
   // 只给没有标记过的图标标记
   if (!userMarked) {
     try {
-      await markMsg({
+      await MessagesApi.markMsg({
         msgId: item.message.id,
         markType: context.value,
-        actType: 1
+        actType: 1,
+        roomId: globalStore.currentSessionRoomId
       })
     } catch (error) {
       console.error('标记表情失败:', error)

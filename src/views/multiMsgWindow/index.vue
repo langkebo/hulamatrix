@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import RenderMessage from '@/components/rightBox/renderMessage/index.vue'
-import { MsgEnum } from '@/enums'
+import { MsgEnum, OnlineEnum } from '@/enums'
 import { useChatMain } from '@/hooks/useChatMain'
 import { useImageViewer } from '@/hooks/useImageViewer'
 import { useVideoViewer } from '@/hooks/useVideoViewer'
@@ -56,7 +56,7 @@ import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { AvatarUtils } from '@/utils/AvatarUtils'
 import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { getMsgList, getUserByIds } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 
 type Msg = {
   msgId: string
@@ -146,12 +146,22 @@ const handleVideoClick = async (videoUrl: string) => {
 
 const getAllMsg = async () => {
   const msgIds = choosedMsgs.value.map((msg) => msg.msgId)
-  msgs.value = await getMsgList({ msgIds })
+  // TODO: Implement with Matrix Event API
+  // For now, just use empty array since getMsgList was a mock function
+  msgs.value = []
 }
 
 const getAllUserInfo = async () => {
   const uids = choosedMsgs.value.map((msg) => msg.fromUid)
-  users.value = await getUserByIds(uids)
+  const res = await UserApi.getUserByIds({ userIds: uids })
+  users.value = res.map((user) => ({
+    uid: user.userId,
+    name: user.displayName || '',
+    avatar: user.avatarUrl || '',
+    account: user.userId.split(':')[0].replace('@', ''),
+    activeStatus: OnlineEnum.OFFLINE,
+    lastOptTime: Date.now()
+  }))
 }
 
 onMounted(async () => {

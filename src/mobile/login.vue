@@ -289,7 +289,7 @@ import type { RegisterUserReq, UserInfoType } from '@/services/types'
 import { useLoginHistoriesStore } from '@/stores/loginHistory.ts'
 import { useMobileStore } from '@/stores/mobile'
 import { AvatarUtils } from '@/utils/AvatarUtils'
-import { register, sendCaptcha } from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import { isAndroid, isIOS } from '@/utils/PlatformConstants'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 import { useMitt } from '../hooks/useMitt'
@@ -557,11 +557,11 @@ const handleSendEmailCode = async () => {
 
   sendCodeLoading.value = true
   try {
-    await sendCaptcha({
+    await AuthApi.sendCaptcha({
       email: registerInfo.value.email,
       operationType: 'register',
       templateCode: 'REGISTER_EMAIL'
-    })
+    } as any)
     window.$message.success(t('login.mobile.code_sent_email'))
     startSendCodeCountdown()
   } catch (error) {
@@ -588,10 +588,16 @@ const handleRegisterComplete = async () => {
     const avatarId = avatarNum.toString().padStart(3, '0')
     registerInfo.value.avatar = avatarId
 
-    // 注册 - 只传递API需要的字段
-    const { ...apiRegisterInfo } = registerInfo.value
+    // 注册 - 映射表单字段到 API 参数
+    const apiRegisterInfo = {
+      username: registerInfo.value.nickName || registerInfo.value.email,
+      password: registerInfo.value.password,
+      email: registerInfo.value.email,
+      captcha: registerInfo.value.code,
+      deviceId: registerInfo.value.uuid
+    }
 
-    await register(apiRegisterInfo)
+    await AuthApi.register(apiRegisterInfo)
 
     // 关闭弹窗并切换到登录页面
     activeTab.value = 'login'

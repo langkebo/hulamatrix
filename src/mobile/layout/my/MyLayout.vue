@@ -20,7 +20,7 @@ import { useMitt } from '@/hooks/useMitt'
 import router from '@/router'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
-import { getGroupDetail, scanQRCodeAPI } from '@/utils/ImRequestUtils'
+import { SystemConfigApi, AuthApi } from '@/services/api'
 
 interface ScanData {
   type: string // 必须有
@@ -35,15 +35,15 @@ const handleScanLogin = async (data: ScanData) => {
 
   const { qrId } = data
 
-  const result = await scanQRCodeAPI({ qrId: qrId })
+  const result = await AuthApi.scanQRCodeAPI({ qrId: qrId })
 
   router.push({
     name: 'mobileConfirmQRLogin',
     params: {
-      ip: result.ip,
-      expireTime: result.expireTime,
-      deviceType: result.deviceType,
-      locPlace: Object.hasOwn(result, 'locPlace') ? (result.locPlace ? result.locPlace : '深圳') : '深圳',
+      ip: result.data?.ip || '',
+      expireTime: result.data?.expireTime || 0,
+      deviceType: result.data?.deviceType || '',
+      locPlace: result.data?.locPlace || '深圳',
       qrId
     }
   })
@@ -91,11 +91,13 @@ const handleScanEnterGroup = async (data: ScanData) => {
   const roomId = data.roomId as string
 
   // 可能是扫码出来的
-  const groupDetail = await getGroupDetail(roomId)
+  const res = await SystemConfigApi.getGroupDetail(roomId)
+  // Note: GroupInfoResponse has nested data structure with code and data properties
+  const groupInfo = res.data || (res as any).data || {}
 
-  globalStore.addGroupModalInfo.account = groupDetail.account
-  globalStore.addGroupModalInfo.name = groupDetail.groupName
-  globalStore.addGroupModalInfo.avatar = groupDetail.avatar
+  globalStore.addGroupModalInfo.account = (groupInfo as any).roomId || ''
+  globalStore.addGroupModalInfo.name = (groupInfo as any).name || ''
+  globalStore.addGroupModalInfo.avatar = (groupInfo as any).avatar || ''
 
   setTimeout(() => {
     router.push({ name: 'mobileConfirmAddGroup' })

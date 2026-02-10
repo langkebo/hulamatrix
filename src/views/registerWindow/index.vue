@@ -248,7 +248,7 @@ import Validation from '@/components/common/Validation.vue'
 import { useWindow } from '@/hooks/useWindow'
 import type { RegisterUserReq } from '@/services/types.ts'
 import { useSettingStore } from '@/stores/setting'
-import * as ImRequestUtils from '@/utils/ImRequestUtils'
+import { AuthApi } from '@/services/api'
 import { isMac, isWindows } from '@/utils/PlatformConstants'
 import { validateAlphaNumeric, validateSpecialChar } from '@/utils/Validate'
 
@@ -450,7 +450,7 @@ const handleStepAction = async () => {
   try {
     const email = info.email.trim()
     info.email = email
-    await ImRequestUtils.sendCaptcha({
+    await AuthApi.sendCaptcha({
       email,
       operationType: 'register',
       templateCode: 'REGISTER_EMAIL'
@@ -509,8 +509,17 @@ const register = async () => {
 
     info.confirmPassword = confirmPassword.value
 
+    // 注册 - 映射表单字段到 API 参数
+    const apiRegisterInfo = {
+      username: info.nickName || info.email,
+      password: info.password,
+      email: info.email,
+      captcha: info.code,
+      deviceId: info.uuid
+    }
+
     // 注册
-    await ImRequestUtils.register({ ...info })
+    await AuthApi.register(apiRegisterInfo)
     window.$message.success(t('auth.register.messages.register_success'))
 
     // 关闭弹窗并跳转到登录页

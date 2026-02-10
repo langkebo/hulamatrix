@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalStore } from '@/stores/global'
-import { getAnnouncementDetail, editAnnouncement, pushAnnouncement } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 
 defineOptions({
   name: 'mobileChatNoticeEdit'
@@ -102,14 +102,16 @@ const loadAnnouncementDetail = async () => {
   }
 
   try {
-    const data = await getAnnouncementDetail({
-      roomId: globalStore.currentSessionRoomId,
+    const res = await SystemConfigApi.getAnnouncementDetail({
       announcementId: route.params.id as string
     })
+    const data = res.data
 
     // 填充表单数据
-    announcementContent.value = data.content
-    top.value = data.top || false
+    if (data) {
+      announcementContent.value = data.content || ''
+      top.value = data.top || false
+    }
     console.log('announcementContent ', announcementContent)
   } catch (error) {
     console.error('加载公告详情失败:', error)
@@ -135,16 +137,16 @@ const handleSubmit = async () => {
     if (isEditMode.value) {
       // 编辑模式
       const announcementData = {
-        id: route.params.id as string,
+        announcementId: route.params.id as string,
         roomId: (route.query.roomId as string) || globalStore.currentSessionRoomId,
         content: announcementContent.value,
         top: top.value
       }
 
-      await editAnnouncement(announcementData)
+      await SystemConfigApi.editAnnouncement(announcementData)
       window.$message?.success('公告修改成功')
       router.push({
-        path: `/mobile/chatRoom/notice/detail/${announcementData.id}`
+        path: `/mobile/chatRoom/notice/detail/${announcementData.announcementId}`
       })
     } else {
       // 新增模式
@@ -154,7 +156,7 @@ const handleSubmit = async () => {
         top: top.value
       }
 
-      await pushAnnouncement(announcementData)
+      await SystemConfigApi.pushAnnouncement(announcementData)
       window.$message?.success('公告发布成功')
       router.back()
     }
