@@ -41,7 +41,8 @@
                   :class="{ active: activeItem === item.uid }"
                   class="item-box w-full h-75px mb-5px"
                   v-for="item in sortedContacts"
-                  :key="item.uid">
+                  :key="item.uid"
+                  v-memo="[item.uid, item.activeStatus, activeItem === item.uid]">
                   <n-flex align="center" :size="10" class="h-75px pl-6px pr-8px flex-1 truncate">
                     <n-avatar
                       round
@@ -96,7 +97,8 @@
               :class="{ active: activeItem === item.roomId }"
               class="item-box w-full h-75px mb-5px"
               v-for="item in groupChatList"
-              :key="item.roomId">
+              :key="item.roomId"
+              v-memo="[item.roomId, item.avatar, item.remark, item.groupName, activeItem === item.roomId]">
               <n-flex align="center" :size="10" class="h-75px pl-6px pr-8px flex-1 truncate">
                 <n-avatar
                   round
@@ -120,6 +122,7 @@
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useDebounceFn } from '@vueuse/core'
 import { MittEnum, OnlineEnum, RoomTypeEnum, ThemeEnum, UserType } from '@/enums'
 import { useMitt } from '@/hooks/useMitt.ts'
 import type { DetailsContent } from '@/services/types'
@@ -159,21 +162,37 @@ const groupChatList = computed(() => {
     return 0
   })
 })
-/** 统计在线用户人数 */
+/** 统计在线用户人数 - 优化：在数据变化时计算并缓存 */
 const onlineCount = computed(() => {
-  return contactStore.contactsList.filter((item) => item.activeStatus === OnlineEnum.ONLINE).length
+  const list = contactStore.contactsList
+  let count = 0
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].activeStatus === OnlineEnum.ONLINE) {
+      count++
+    }
+  }
+  return count
 })
-/** 排序好友列表 */
+/** 排序好友列表 - 优化性能使用缓存 */
 const sortedContacts = computed(() => {
-  return [...contactStore.contactsList].sort((a, b) => {
-    const aIsBot = isBotUser(a.uid)
-    const bIsBot = isBotUser(b.uid)
+  const contacts = contactStore.contactsList
+  if (!contacts.length) return []
+
+  // 创建排序索引而不是排序整个对象
+  const indices = contacts.map((_, i) => i)
+  indices.sort((a, b) => {
+    const itemA = contacts[a]
+    const itemB = contacts[b]
+    const aIsBot = isBotUser(itemA.uid)
+    const bIsBot = isBotUser(itemB.uid)
     if (aIsBot && !bIsBot) return -1
     if (!aIsBot && bIsBot) return 1
-    if (a.activeStatus === OnlineEnum.ONLINE && b.activeStatus !== OnlineEnum.ONLINE) return -1
-    if (a.activeStatus !== OnlineEnum.ONLINE && b.activeStatus === OnlineEnum.ONLINE) return 1
+    if (itemA.activeStatus === OnlineEnum.ONLINE && itemB.activeStatus !== OnlineEnum.ONLINE) return -1
+    if (itemA.activeStatus !== OnlineEnum.ONLINE && itemB.activeStatus === OnlineEnum.ONLINE) return 1
     return 0
   })
+
+  return indices.map((i) => contacts[i])
 })
 
 const handleClick = (index: string, type: number) => {
@@ -197,10 +216,19 @@ const handleSelect = (event: MouseEvent) => {
   console.log(event)
 }
 
+/** 使用防抖处理滚动加载更多 */
+const debouncedLoadMore = useDebounceFn(() => {
+  if (!contactStore.contactsOptions.isLoading && !contactStore.contactsOptions.isLast) {
+    contactStore.getContactList(false)
+  }
+}, 200)
+
 const handleFriendScroll = (e: Event) => {
   const { scrollTop, scrollHeight, clientHeight } = e.target as HTMLElement
-  if (scrollHeight - scrollTop - clientHeight < 20) {
-    contactStore.getContactList(false)
+  const distanceToBottom = scrollHeight - scrollTop - clientHeight
+  // 距离底部100px时触发加载
+  if (distanceToBottom < 100) {
+    debouncedLoadMore()
   }
 }
 

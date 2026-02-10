@@ -11,7 +11,7 @@ import { useMenuTopStore } from '@/stores/menuTop.ts'
 import { useSettingStore } from '@/stores/setting.ts'
 import { useUserStore } from '@/stores/user.ts'
 import { useUserStatusStore } from '@/stores/userStatus.ts'
-import { ModifyUserInfo, setUserBadge } from '@/utils/ImRequestUtils'
+import { UserApi } from '@/services/api'
 import { storeToRefs } from 'pinia'
 
 export const leftHook = () => {
@@ -57,14 +57,26 @@ export const leftHook = () => {
     themeColor.value = prefers.matches ? 'rgba(63,63,63, 0.2)' : 'rgba(241,241,241, 0.2)'
   }
 
-  watchEffect(() => {
-    /** 判断是否是跟随系统主题 */
-    if (themes.pattern === ThemeEnum.OS) {
-      followOS()
-      prefers.addEventListener('change', followOS)
-    } else {
+  // 使用 watch 代替 watchEffect 以便正确清理事件监听器
+  const stopWatch = watch(
+    () => themes.pattern,
+    (pattern) => {
+      // 先移除旧的监听器
       prefers.removeEventListener('change', followOS)
-    }
+
+      // 判断是否是跟随系统主题
+      if (pattern === ThemeEnum.OS) {
+        followOS()
+        prefers.addEventListener('change', followOS)
+      }
+    },
+    { immediate: true }
+  )
+
+  // 在组件卸载时清理监听器
+  onUnmounted(() => {
+    prefers.removeEventListener('change', followOS)
+    stopWatch()
   })
 
   /** 更新缓存里面的用户信息 */
@@ -85,7 +97,7 @@ export const leftHook = () => {
       window.$message.error('改名次数不足')
       return
     }
-    ModifyUserInfo(localUserInfo).then(() => {
+    UserApi.ModifyUserInfo(localUserInfo).then(() => {
       // 更新本地缓存的用户信息
       userStore.userInfo!.name = localUserInfo.name!
       loginHistoriesStore.updateLoginHistory(<UserInfoType>userStore.userInfo) // 更新登录历史记录
@@ -100,7 +112,7 @@ export const leftHook = () => {
   const toggleWarningBadge = async (badge: BadgeType) => {
     if (!badge?.id) return
     try {
-      await setUserBadge({ badgeId: badge.id })
+      await UserApi.setUserBadge({ badgeId: badge.id })
       // 更新本地缓存中的用户徽章信息
       const currentUser = userStore.userInfo!.uid && groupStore.getUserInfo(userStore.userInfo!.uid)
       if (currentUser) {

@@ -1,7 +1,7 @@
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { error, info } from '@tauri-apps/plugin-log'
-import { initConfig } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 import { CallTypeEnum, RTCCallStatus } from '@/enums'
 import rustWebSocketClient from '@/services/webSocketRust'
 import { useUserStore } from '@/stores/user'
@@ -76,8 +76,8 @@ let configuration: RTCConfiguration = {
 
 const loadIceServers = async () => {
   try {
-    const init: any = await initConfig()
-    const ice = init?.iceServer
+    const init: any = await SystemConfigApi.initConfig()
+    const ice = init?.data?.iceServer
     if (ice && Array.isArray(ice.urls) && ice.urls.length > 0) {
       const entry: RTCIceServer =
         ice.username && ice.credential
@@ -1138,6 +1138,8 @@ export const useWebRtc = (roomId: string, remoteUserId: string, callType: CallTy
   onUnmounted(() => {
     // 移除 WebRTC 信令消息监听器
     useMitt.off(WsResponseMessageType.WEBRTC_SIGNAL, handleSignalMessage)
+    // 清理 RTC 资源，防止内存泄漏
+    clear()
   })
 
   return {

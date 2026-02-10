@@ -83,7 +83,7 @@ import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
 import { useUserStore } from '@/stores/user'
 import { formatTimestamp } from '@/utils/ComputedTime.ts'
-import { getAnnouncementDetail } from '@/utils/ImRequestUtils'
+import { SystemConfigApi } from '@/services/api'
 
 defineOptions({
   name: 'mobileChatNoticeDetail'
@@ -135,10 +135,10 @@ const fetchAnnouncementDetail = async () => {
   try {
     loading.value = true
 
-    const data = await getAnnouncementDetail({
-      roomId: globalStore.currentSessionRoomId,
+    const res = await SystemConfigApi.getAnnouncementDetail({
       announcementId: route.params.id as string
     })
+    const data = res.data
     announcement.value = data
   } catch (err) {
     console.error('获取公告详情失败:', err)
